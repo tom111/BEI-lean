@@ -1,1 +1,11 @@
-import BEI.Basic
+import BEI.Definitions
+import BEI.Groebner
+import BEI.MonomialOrder
+import BEI.GraphProperties
+import BEI.AdmissiblePaths
+import BEI.ClosedGraphs
+import BEI.GroebnerBasis
+import BEI.CohenMacaulay
+import BEI.PrimeIdeals
+import BEI.PrimeDecomposition
+import BEI.MinimalPrimes
