@@ -25,14 +25,18 @@ A graph is closed with respect to the linear order on V if it
 satisfies Condition (b) of Theorem 1.1 in Herzog et al. (2010).
 
 It requires that for any pair of edges (i,j) and (i,k)
-sharing a vertex:
-1. If they diverge from a common minimum (i.e. i < j and i < k),
+sharing a distinct pair of endpoints:
+1. If they diverge from a common minimum (i.e. i < j, i < k, j ≠ k),
    the endpoints are connected: (j,k) ∈ G.
-2. If they converge to a common maximum (i < k and j < k),
-  the startpoints are connected: (i,j) ∈ G.
+2. If they converge to a common maximum (i < k, j < k, i ≠ j),
+   the startpoints are connected: (i,j) ∈ G.
+
+The distinctness conditions j ≠ k (resp. i ≠ j) are necessary because
+SimpleGraph.Adj is irreflexive: without them, applying condition 1 with
+k := j would require G.Adj j j, which is always false.
 -/
 def IsClosedGraph (G : SimpleGraph V) : Prop :=
-  (∀ {i j k : V}, i < j → i < k → G.Adj i j → G.Adj i k → G.Adj j k) ∧
-  (∀ {i j k : V}, i < k → j < k → G.Adj i k → G.Adj j k → G.Adj i j)
+  (∀ {i j k : V}, i < j → i < k → j ≠ k → G.Adj i j → G.Adj i k → G.Adj j k) ∧
+  (∀ {i j k : V}, i < k → j < k → i ≠ j → G.Adj i k → G.Adj j k → G.Adj i j)
 
 end

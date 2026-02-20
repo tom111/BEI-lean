@@ -75,7 +75,36 @@ theorem primeComponent_isPrime (G : SimpleGraph V) (S : Finset V) :
 /-- `J_G ⊆ P_S(G)` for every subset S. -/
 theorem binomialEdgeIdeal_le_primeComponent (G : SimpleGraph V) (S : Finset V) :
     binomialEdgeIdeal (K := K) G ≤ primeComponent (K := K) G S := by
-  sorry
+  apply Ideal.span_le.mpr
+  intro f hf
+  obtain ⟨i, j, hAdj, hij, rfl⟩ := hf
+  -- f = x i * y j - x j * y i, with G.Adj i j and i < j
+  by_cases hiS : i ∈ S
+  · -- i ∈ S: X(Sum.inl i) and X(Sum.inr i) are generators of P_S(G)
+    have hxi : X (Sum.inl i) ∈ primeComponent (K := K) G S :=
+      Ideal.subset_span (Set.mem_union_left _ ⟨i, hiS, Or.inl rfl⟩)
+    have hyi : X (Sum.inr i) ∈ primeComponent (K := K) G S :=
+      Ideal.subset_span (Set.mem_union_left _ ⟨i, hiS, Or.inr rfl⟩)
+    -- x i * y j = X(Sum.inl i) * y j ∈ P_S(G) since X(Sum.inl i) ∈ P_S(G)
+    -- x j * y i = x j * X(Sum.inr i) ∈ P_S(G) since X(Sum.inr i) ∈ P_S(G)
+    apply (primeComponent (K := K) G S).sub_mem
+    · exact Ideal.mul_mem_right _ _ hxi
+    · exact (primeComponent (K := K) G S).mul_mem_left _ hyi
+  · by_cases hjS : j ∈ S
+    · -- j ∈ S: X(Sum.inl j) and X(Sum.inr j) are generators of P_S(G)
+      have hxj : X (Sum.inl j) ∈ primeComponent (K := K) G S :=
+        Ideal.subset_span (Set.mem_union_left _ ⟨j, hjS, Or.inl rfl⟩)
+      have hyj : X (Sum.inr j) ∈ primeComponent (K := K) G S :=
+        Ideal.subset_span (Set.mem_union_left _ ⟨j, hjS, Or.inr rfl⟩)
+      apply (primeComponent (K := K) G S).sub_mem
+      · exact (primeComponent (K := K) G S).mul_mem_left _ hyj
+      · exact Ideal.mul_mem_right _ _ hxj
+    · -- i ∉ S and j ∉ S: the generator is directly in P_S(G) via SameComponent
+      -- i and j are adjacent in G and both not in S, so they are in the same
+      -- connected component of G[V \ S]
+      apply Ideal.subset_span
+      exact Set.mem_union_right _
+        ⟨i, j, hij, ⟨hiS, hjS, Relation.ReflTransGen.single ⟨hAdj, hiS, hjS⟩⟩, rfl⟩
 
 /-! ## Lemma 3.1: Height formula -/
 
