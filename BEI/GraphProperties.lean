@@ -216,4 +216,39 @@ theorem edge_is_admissible (G : SimpleGraph V) {i j : V}
     · exact Or.inl rfl
     · exact Or.inr (Or.inl rfl)
   · simp [List.Chain', h]
-  · intros; sorry
+  · intro π' hSub hNe hHead hLast _
+    have hij_ne : i ≠ j := G.ne_of_adj h
+    apply hNe
+    -- Extract the leading vertex: π' = i :: t
+    obtain ⟨t, rfl⟩ : ∃ t, π' = i :: t := by
+      cases π' with
+      | nil => simp at hHead
+      | cons a t =>
+        simp only [List.head?_cons, Option.some.injEq] at hHead
+        exact ⟨t, by rw [hHead]⟩
+    -- Case-split on how (i :: t) is a sublist of (i :: [j])
+    cases hSub with
+    | cons _ hSub' =>
+      -- hSub' : (i :: t) <+ [j]; length forces t = []
+      exfalso
+      cases t with
+      | nil =>
+        simp at hLast
+        exact hij_ne hLast
+      | cons _ _ =>
+        have h1 := hSub'.length_le
+        simp only [List.length_cons, List.length_nil] at h1
+        omega
+    | cons₂ _ hSub' =>
+      -- hSub' : t <+ [j]
+      cases hSub' with
+      | cons _ hSub'' =>
+        -- hSub'' : t <+ []; forces t = []
+        exfalso
+        cases hSub''
+        simp at hLast
+        exact hij_ne hLast
+      | cons₂ _ hSub'' =>
+        -- t = j :: t'' with hSub'' : t'' <+ []
+        cases hSub''
+        rfl

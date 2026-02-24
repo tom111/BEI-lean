@@ -36,8 +36,7 @@ def generatorSet (G : SimpleGraph V) :
 
 /-- The generator set spans `binomialEdgeIdeal G`. -/
 theorem generatorSet_span (G : SimpleGraph V) :
-    Ideal.span (generatorSet (K := K) G) = binomialEdgeIdeal (K := K) G := by
-  sorry
+    Ideal.span (generatorSet (K := K) G) = binomialEdgeIdeal (K := K) G := rfl
 
 /-! ## Gröbner basis predicate -/
 

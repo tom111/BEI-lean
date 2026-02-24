@@ -2,6 +2,7 @@ import BEI.Definitions
 import Mathlib.RingTheory.Ideal.Quotient.Basic
 import Mathlib.RingTheory.Ideal.MinimalPrime.Basic
 import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
+import Mathlib.Combinatorics.SimpleGraph.Connectivity.WalkCounting
 
 variable {K : Type*} [Field K]
 variable {V : Type*} [LinearOrder V] [DecidableEq V] [Fintype V]
@@ -31,14 +32,21 @@ open MvPolynomial SimpleGraph
 The number of connected components of the induced subgraph on `V \ S`.
 This is `c(S)` in the paper's notation.
 
-We define this as a sorry for now; the correct definition uses
-`Fintype.card (inducedSubgraph.ConnectedComponent)`.
+Defined as `Nat.card` of the `ConnectedComponent` type of the induced subgraph of `G`
+on `{v : V | v ∉ S}`. Using `Nat.card` (rather than `Fintype.card`) avoids requiring
+a `DecidableRel G.Adj` instance; it equals `Fintype.card` whenever the type is finite.
 -/
-noncomputable def componentCount (G : SimpleGraph V) (S : Finset V) : ℕ := sorry
+noncomputable def componentCount (G : SimpleGraph V) (S : Finset V) : ℕ :=
+  Nat.card (G.induce {v : V | v ∉ S}).ConnectedComponent
 
-/-- c(∅) equals the number of connected components of G. -/
+/-- c(∅) equals the number of connected components of G itself.
+When S = ∅ the induced subgraph is G.induce Set.univ ≃g G. -/
 theorem componentCount_empty (G : SimpleGraph V) :
-    componentCount G ∅ = sorry := sorry
+    componentCount G ∅ = Nat.card G.ConnectedComponent := by
+  unfold componentCount
+  have hset : {v : V | v ∉ (∅ : Finset V)} = Set.univ := by ext v; simp
+  rw [hset]
+  exact Nat.card_congr G.induceUnivIso.connectedComponentEquiv
 
 /-! ## The prime ideal P_S(G) -/
 
