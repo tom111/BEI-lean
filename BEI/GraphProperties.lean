@@ -22,11 +22,22 @@ open SimpleGraph
 /-! ## Chordal and claw-free graphs -/
 
 /--
-A graph is **chordal** if every cycle of length ≥ 4 has a chord.
-Equivalently, every minimal induced cycle has length 3.
+A graph is **chordal** if every cycle of length ≥ 4 has a chord (an edge between
+two non-consecutive vertices of the cycle). Equivalently, G has no induced cycle
+of length ≥ 4.
+
+We use the induced-cycle formulation: for any injective map f : Fin n → V (n ≥ 4)
+whose consecutive pairs are all adjacent (forming a cycle), some non-consecutive
+pair is also adjacent.
+
+Note: the walk-based statement `∀ w : IsCycle, w.length ≤ 3` is *too strong* —
+K₄ is closed and has 4-cycles. The correct statement allows chords.
 -/
 def IsChordal (G : SimpleGraph V) : Prop :=
-  ∀ (v : V) (w : G.Walk v v), w.IsCycle → w.length ≤ 3
+  ∀ (n : ℕ) (hn : 4 ≤ n) (f : Fin n ↪ V),
+    (∀ i : Fin n, G.Adj (f i) (f ⟨(i.val + 1) % n, Nat.mod_lt _ (by omega)⟩)) →
+    ∃ (i j : Fin n),
+      (j.val + 1) % n ≠ i.val ∧ (i.val + 1) % n ≠ j.val ∧ G.Adj (f i) (f j)
 
 /--
 A graph is **claw-free** if it contains no induced subgraph isomorphic to K_{1,3}.
@@ -112,7 +123,106 @@ theorem prop_1_5 (G : SimpleGraph V) :
 /-- Proposition 1.2(1): Every closed graph is chordal. -/
 theorem closedGraph_isChordal (G : SimpleGraph V) (h : IsClosedGraph G) :
     IsChordal G := by
-  sorry
+  intro n hn f hcycle
+  have hn_pos : 0 < n := by omega
+  -- Pick the index i₀ where f is minimised
+  obtain ⟨i₀, _, hi₀_min⟩ :=
+    Finset.exists_min_image Finset.univ (f : Fin n → V)
+      ⟨⟨0, hn_pos⟩, Finset.mem_univ _⟩
+  -- The successor j = i₀ + 1 (mod n) and predecessor k = i₀ - 1 (mod n)
+  let j : Fin n := ⟨(i₀.val + 1) % n, Nat.mod_lt _ hn_pos⟩
+  let k : Fin n := ⟨(i₀.val + n - 1) % n, Nat.mod_lt _ hn_pos⟩
+  -- Auxiliary: (k.val + 1) % n = i₀.val (k is the predecessor of i₀ in the cycle)
+  -- omega can't handle % with variable n, so we do explicit cases on i₀.val
+  have hk_succ : (k.val + 1) % n = i₀.val := by
+    simp only [k]
+    rcases Nat.eq_zero_or_pos i₀.val with h0 | hpos
+    · rw [h0, Nat.zero_add, Nat.mod_eq_of_lt (by omega : n - 1 < n),
+          show n - 1 + 1 = n from by omega, Nat.mod_self]
+    · rw [show i₀.val + n - 1 = (i₀.val - 1) + n from by omega,
+          Nat.add_mod_right, Nat.mod_eq_of_lt (by omega : i₀.val - 1 < n),
+          show i₀.val - 1 + 1 = i₀.val from by omega,
+          Nat.mod_eq_of_lt i₀.isLt]
+  -- i₀ ≠ j (n ≥ 4 > 1)
+  have hi₀j : i₀ ≠ j := by
+    intro heq
+    have hval := congr_arg Fin.val heq
+    simp only [j] at hval
+    rcases Nat.lt_or_ge (i₀.val + 1) n with hlt | hge
+    · rw [Nat.mod_eq_of_lt hlt] at hval; omega
+    · rw [show i₀.val + 1 = n from by omega, Nat.mod_self] at hval; omega
+  -- i₀ ≠ k (n ≥ 4 > 1)
+  have hi₀k : i₀ ≠ k := by
+    intro heq
+    have hval := congr_arg Fin.val heq
+    simp only [k] at hval
+    rcases Nat.eq_zero_or_pos i₀.val with h0 | hpos
+    · rw [h0, Nat.zero_add, Nat.mod_eq_of_lt (by omega : n - 1 < n)] at hval; omega
+    · rw [show i₀.val + n - 1 = (i₀.val - 1) + n from by omega,
+          Nat.add_mod_right, Nat.mod_eq_of_lt (by omega : i₀.val - 1 < n)] at hval
+      omega
+  -- j ≠ k (n ≥ 4 > 2)
+  have hjk : j ≠ k := by
+    intro heq
+    have hval := congr_arg Fin.val heq
+    simp only [j, k] at hval
+    rcases Nat.lt_or_ge (i₀.val + 1) n with hlt | hge
+    · rw [Nat.mod_eq_of_lt hlt] at hval
+      rcases Nat.eq_zero_or_pos i₀.val with h0 | hpos
+      · -- i₀.val = 0: hval becomes 1 = (n-1) % n = n-1, contradicting n ≥ 4
+        simp only [h0, Nat.zero_add] at hval
+        rw [Nat.mod_eq_of_lt (by omega : n - 1 < n)] at hval; omega
+      · rw [show i₀.val + n - 1 = (i₀.val - 1) + n from by omega,
+            Nat.add_mod_right, Nat.mod_eq_of_lt (by omega : i₀.val - 1 < n)] at hval
+        omega
+    · rw [show i₀.val + 1 = n from by omega, Nat.mod_self] at hval
+      rw [show i₀.val + n - 1 = (i₀.val - 1) + n from by omega,
+          Nat.add_mod_right, Nat.mod_eq_of_lt (by omega : i₀.val - 1 < n)] at hval
+      omega
+  -- Minimality gives strict lower bounds
+  have hfj : f i₀ < f j :=
+    lt_of_le_of_ne (hi₀_min j (Finset.mem_univ j)) (f.injective.ne hi₀j)
+  have hfk : f i₀ < f k :=
+    lt_of_le_of_ne (hi₀_min k (Finset.mem_univ k)) (f.injective.ne hi₀k)
+  -- Cycle edges at i₀ and at k
+  have hAdj_j : G.Adj (f i₀) (f j) := hcycle i₀
+  have hAdj_k : G.Adj (f i₀) (f k) := by
+    have hck := hcycle k
+    have : (⟨(k.val + 1) % n, Nat.mod_lt _ hn_pos⟩ : Fin n) = i₀ := Fin.ext hk_succ
+    rw [this] at hck; exact G.symm hck
+  -- Closed condition gives the chord f j — f k
+  have hchord : G.Adj (f j) (f k) :=
+    h.1 hfj hfk (f.injective.ne hjk) hAdj_j hAdj_k
+  -- j and k are non-consecutive (distance 2 in a cycle of length ≥ 4)
+  refine ⟨j, k, ?_, ?_, hchord⟩
+  · -- (k.val + 1) % n ≠ j.val  ←→  i₀.val ≠ (i₀.val + 1) % n
+    rw [hk_succ]; simp only [j]
+    rcases Nat.lt_or_ge (i₀.val + 1) n with hlt | hge
+    · rw [Nat.mod_eq_of_lt hlt]; omega
+    · rw [show i₀.val + 1 = n from by omega, Nat.mod_self]; omega
+  · -- (j.val + 1) % n ≠ k.val  (j's successor is i₀+2 mod n, not i₀-1)
+    simp only [j, k]
+    rcases Nat.eq_zero_or_pos i₀.val with h0 | hpos
+    · -- i₀.val = 0: j.val = 1, j.succ.val = 2, k.val = n-1
+      rw [h0, Nat.zero_add, Nat.mod_eq_of_lt (by omega : 1 < n),
+          show (1 : ℕ) + 1 = 2 from rfl, Nat.mod_eq_of_lt (by omega : 2 < n),
+          Nat.zero_add, Nat.mod_eq_of_lt (by omega : n - 1 < n)]
+      omega
+    · rcases Nat.lt_or_ge (i₀.val + 1) n with hlt | hge
+      · -- j.val = i₀.val + 1, k.val = i₀.val - 1
+        rw [Nat.mod_eq_of_lt hlt,
+            show i₀.val + n - 1 = (i₀.val - 1) + n from by omega,
+            Nat.add_mod_right, Nat.mod_eq_of_lt (by omega : i₀.val - 1 < n)]
+        rcases Nat.lt_or_ge (i₀.val + 2) n with hlt2 | hge2
+        · rw [show i₀.val + 1 + 1 = i₀.val + 2 from by omega,
+              Nat.mod_eq_of_lt hlt2]; omega
+        · rw [show i₀.val + 1 + 1 = n from by omega, Nat.mod_self]; omega
+      · -- i₀.val = n - 1: j.val = 0, j.succ.val = 1, k.val = n - 2
+        rw [show i₀.val + 1 = n from by omega, Nat.mod_self, Nat.zero_add,
+            Nat.mod_eq_of_lt (by omega : 1 < n),
+            show i₀.val + n - 1 = (i₀.val - 1) + n from by omega,
+            Nat.add_mod_right, Nat.mod_eq_of_lt (by omega : i₀.val - 1 < n)]
+        omega
 
 /-- Proposition 1.2(2): Every closed graph is claw-free. -/
 theorem closedGraph_isClawFree (G : SimpleGraph V) (h : IsClosedGraph G) :

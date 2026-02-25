@@ -134,12 +134,37 @@ theorem lemma_3_1 (G : SimpleGraph V) (S : Finset V) :
   sorry
 
 /--
-For connected G, `P_∅(G)` equals `J_G`.
-(The only component of `G[V]` is G itself, and the complete graph on V(G) is J_G.)
+For connected G, `P_∅(G)` equals the binomial edge ideal of the **complete graph** on V.
+Every pair j < k has `SameComponent G ∅ j k` (since G is connected and S = ∅),
+so the generators of P_∅(G) are all `x_j y_k - x_k y_j` for j < k,
+which is exactly `J_{K_V} = binomialEdgeIdeal ⊤`.
+
+Note: the statement `P_∅(G) = J_G` would only hold if G were itself complete.
 -/
 theorem primeComponent_empty_connected (G : SimpleGraph V) (hConn : G.Connected) :
-    primeComponent (K := K) G ∅ = binomialEdgeIdeal (K := K) G := by
-  sorry
+    primeComponent (K := K) G ∅ = binomialEdgeIdeal (K := K) (⊤ : SimpleGraph V) := by
+  apply le_antisymm
+  · -- P_∅(G) ≤ J_{K_V}: every generator x_j y_k - x_k y_j is in J_{K_V}
+    -- since (⊤ : SimpleGraph V).Adj j k = j ≠ k, and j < k implies j ≠ k
+    apply Ideal.span_le.mpr
+    intro f hf
+    simp only [Set.mem_union, Set.mem_setOf_eq] at hf
+    rcases hf with ⟨i, hiS, _⟩ | ⟨j, k, hjk, _, rfl⟩
+    · exact absurd hiS (Finset.notMem_empty i)
+    · exact Ideal.subset_span ⟨j, k, (SimpleGraph.top_adj j k).mpr (ne_of_lt hjk), hjk, rfl⟩
+  · -- J_{K_V} ≤ P_∅(G): every generator x_i y_j - x_j y_i is in P_∅(G)
+    -- because G.Connected gives G.Reachable i j, hence SameComponent G ∅ i j
+    apply Ideal.span_le.mpr
+    intro f hf
+    obtain ⟨i, j, _, hij, rfl⟩ := hf
+    apply Ideal.subset_span
+    refine Set.mem_union_right _ ⟨i, j, hij, ?_, rfl⟩
+    -- Prove SameComponent G ∅ i j
+    refine ⟨Finset.notMem_empty _, Finset.notMem_empty _, ?_⟩
+    -- G.Reachable i j ↔ Relation.ReflTransGen G.Adj i j; then strengthen to include ∉ ∅
+    apply Relation.ReflTransGen.mono
+      (fun a b h => ⟨h, Finset.notMem_empty _, Finset.notMem_empty _⟩)
+    exact (SimpleGraph.reachable_iff_reflTransGen i j).mp (hConn.preconnected i j)
 
 /-! ## Proposition 3.6: When J_G is prime -/
 

@@ -1,5 +1,8 @@
 import BEI.PrimeIdeals
 import Mathlib.RingTheory.Ideal.MinimalPrime.Basic
+import Mathlib.RingTheory.Ideal.MinimalPrime.Noetherian
+import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.RingTheory.Artinian.Ring
 
 variable {K : Type*} [Field K]
 variable {V : Type*} [LinearOrder V] [DecidableEq V] [Fintype V]
@@ -53,7 +56,46 @@ theorem prop_3_8 (G : SimpleGraph V) (S T : Finset V) :
     T ≤ S ∧
     ∀ (u v : V), u ∉ T → v ∉ T → u ∉ S → v ∉ S →
       SameComponent G T u v → SameComponent G S u v := by
-  sorry
+  constructor
+  · -- (→): P_T ≤ P_S implies T ≤ S and components of G[V\T] refine into G[V\S].
+    -- (Hard direction: requires showing X(inl i) ∉ P_S when i ∉ S, needs Gröbner basis.)
+    intro _; exact ⟨sorry, sorry⟩
+  · -- (←): T ≤ S and component-preservation implies P_T ≤ P_S.
+    -- Every generator of P_T is in P_S by 3 cases on membership in S.
+    intro ⟨hTS, hComp⟩
+    apply Ideal.span_le.mpr
+    intro f hf
+    simp only [Set.mem_union, Set.mem_setOf_eq] at hf
+    rcases hf with ⟨i, hiT, hf_eq⟩ | ⟨j, k, hjk, hscT, rfl⟩
+    · -- Generator of P_T type 1: f = X(inl i) or X(inr i) with i ∈ T ⊆ S
+      rcases hf_eq with rfl | rfl
+      · exact Ideal.subset_span (Set.mem_union_left _ ⟨i, hTS hiT, Or.inl rfl⟩)
+      · exact Ideal.subset_span (Set.mem_union_left _ ⟨i, hTS hiT, Or.inr rfl⟩)
+    · -- Generator of P_T type 2: f = x_j * y_k - x_k * y_j with SameComponent G T j k
+      have hjT := hscT.1
+      have hkT := hscT.2.1
+      by_cases hjS : j ∈ S
+      · -- j ∈ S: X(inl j) and X(inr j) are in P_S; use them
+        have hxj : X (Sum.inl j) ∈ primeComponent (K := K) G S :=
+          Ideal.subset_span (Set.mem_union_left _ ⟨j, hjS, Or.inl rfl⟩)
+        have hyj : X (Sum.inr j) ∈ primeComponent (K := K) G S :=
+          Ideal.subset_span (Set.mem_union_left _ ⟨j, hjS, Or.inr rfl⟩)
+        apply (primeComponent (K := K) G S).sub_mem
+        · exact Ideal.mul_mem_right _ _ hxj
+        · exact (primeComponent (K := K) G S).mul_mem_left _ hyj
+      · by_cases hkS : k ∈ S
+        · -- k ∈ S: X(inl k) and X(inr k) are in P_S; use them
+          have hxk : X (Sum.inl k) ∈ primeComponent (K := K) G S :=
+            Ideal.subset_span (Set.mem_union_left _ ⟨k, hkS, Or.inl rfl⟩)
+          have hyk : X (Sum.inr k) ∈ primeComponent (K := K) G S :=
+            Ideal.subset_span (Set.mem_union_left _ ⟨k, hkS, Or.inr rfl⟩)
+          apply (primeComponent (K := K) G S).sub_mem
+          · exact (primeComponent (K := K) G S).mul_mem_left _ hyk
+          · exact Ideal.mul_mem_right _ _ hxk
+        · -- j ∉ S, k ∉ S: use component-preservation to get SameComponent G S j k
+          apply Ideal.subset_span
+          exact Set.mem_union_right _ ⟨j, k, hjk,
+            hComp j k hjT hkT hjS hkS hscT, rfl⟩
 
 /-! ## Corollary 3.9: Minimal prime characterization -/
 
@@ -73,27 +115,11 @@ theorem corollary_3_9 (G : SimpleGraph V) (S : Finset V)
 
 /-- The set of minimal primes of J_G is finite. -/
 theorem minimalPrimes_finite (G : SimpleGraph V) :
-    Set.Finite (binomialEdgeIdeal (K := K) G).minimalPrimes := by
-  sorry
-
-/-! ## Monotonicity of component count -/
-
-/--
-`c(S)` is monotone non-decreasing in S:
-adding more vertices to S can only create more components in G[V\S].
--/
-theorem componentCount_mono (G : SimpleGraph V) {S T : Finset V} (hST : S ≤ T) :
-    componentCount G S ≤ componentCount G T := by
-  sorry
-
-/--
-Adding a single vertex to S increases c by at most 1:
-  `c(S) ≤ c(S ∪ {i}) ≤ c(S) + 1`
--/
-theorem componentCount_insert_le (G : SimpleGraph V) (S : Finset V) (i : V) (hi : i ∉ S) :
-    componentCount G S ≤ componentCount G (insert i S) ∧
-    componentCount G (insert i S) ≤ componentCount G S + 1 := by
-  constructor <;> sorry
+    Set.Finite (binomialEdgeIdeal (K := K) G).minimalPrimes :=
+  -- MvPolynomial over a field in finitely many variables is Noetherian:
+  -- Field K → Artinian → Noetherian; BinomialEdgeVars V = V ⊕ V is Finite when V is.
+  Ideal.finite_minimalPrimes_of_isNoetherianRing
+    (MvPolynomial (BinomialEdgeVars V) K) (binomialEdgeIdeal (K := K) G)
 
 /--
 `i` is a cut-vertex relative to S iff adding i to `S \ {i}` strictly increases c(S):
