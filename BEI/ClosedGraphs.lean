@@ -4,7 +4,7 @@ import Mathlib.RingTheory.MvPolynomial.MonomialOrder
 import Mathlib.RingTheory.MvPolynomial.Groebner
 
 variable {K : Type*} [Field K]
-variable {V : Type*} [LinearOrder V] [DecidableEq V]
+variable {V : Type*} [LinearOrder V] [DecidableEq V] [Fintype V]
 
 /-!
 # Closed graphs and the Gröbner basis condition (Theorem 1.1)

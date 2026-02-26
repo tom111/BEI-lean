@@ -16,7 +16,7 @@ def binomialEdgeLE (a b : BinomialEdgeVars V) : Prop :=
 The term order is lex on the variable order where
 x > y and indices are descending 1 > 2 > ...
 -/
-instance : LinearOrder (BinomialEdgeVars V) where
+@[reducible] instance : LinearOrder (BinomialEdgeVars V) where
   le := binomialEdgeLE
   toDecidableLE := Classical.decRel binomialEdgeLE
 

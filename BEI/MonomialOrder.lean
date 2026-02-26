@@ -1,8 +1,9 @@
 import BEI.Groebner
 import Mathlib.Data.Finsupp.MonomialOrder
 import Mathlib.RingTheory.MvPolynomial.MonomialOrder
+import Mathlib.Data.Fintype.Card
 
-variable {V : Type*} [LinearOrder V]
+variable {V : Type*} [LinearOrder V] [Finite V]
 
 /-!
 # Monomial order for binomial edge ideals
@@ -32,19 +33,22 @@ x-variables, and within each block the order on V is well-founded.
 -/
 
 /--
-The strict order `>` on `BinomialEdgeVars V` is well-founded.
-Proof: the order is isomorphic (as a strict order) to a well-order since
-y-variables are a terminal segment and x-variables a co-final segment.
--/
-instance instWellFoundedGT : WellFoundedGT (BinomialEdgeVars V) := by
-  sorry
-
-/--
 The lex monomial order on `BinomialEdgeVars V →₀ ℕ`, inducing the variable order
 `x_n > ... > x_1 > y_n > ... > y_1` (i.e., all x above all y, indices descending).
+
+We construct this directly as a `MonomialOrder` structure (rather than via `MonomialOrder.lex`)
+to avoid a LT-instance diamond that prevents Lean from synthesizing `WellFoundedGT` in the
+context of `MonomialOrder.lex`. The `wf` field provides `WellFoundedGT` inline where the
+LT context is already fixed by the surrounding structure fields.
 -/
-def binomialEdgeMonomialOrder : MonomialOrder (BinomialEdgeVars V) :=
-  sorry
+noncomputable def binomialEdgeMonomialOrder : MonomialOrder (BinomialEdgeVars V) where
+  syn := Lex (BinomialEdgeVars V →₀ ℕ)
+  toSyn := { toEquiv := toLex
+             map_add' := toLex_add }
+  toSyn_monotone := Finsupp.toLex_monotone
+  wf := by
+    haveI : Finite (BinomialEdgeVars V) := Sum.instFinite
+    exact Finsupp.Lex.wellFoundedLT_of_finite
 
 /-! ## Leading terms of the generators -/
 

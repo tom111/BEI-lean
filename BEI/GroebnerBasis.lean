@@ -5,7 +5,7 @@ import Mathlib.RingTheory.MvPolynomial.Groebner
 import Mathlib.RingTheory.Ideal.Operations
 
 variable {K : Type*} [Field K]
-variable {V : Type*} [LinearOrder V] [DecidableEq V]
+variable {V : Type*} [LinearOrder V] [DecidableEq V] [Fintype V]
 
 /-!
 # The reduced Gröbner basis and the radical property (Theorems 2.1 and 2.2)
