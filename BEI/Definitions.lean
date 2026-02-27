@@ -1,6 +1,7 @@
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Mathlib.Algebra.MvPolynomial.CommRing
 import Mathlib.RingTheory.Ideal.Basic
+import Mathlib.Data.Finite.Sum
 
 variable {K : Type*} [Field K]
 variable {V : Type*} [LinearOrder V] -- variables are ordered
@@ -9,8 +10,22 @@ noncomputable section
 
 open MvPolynomial
 
--- The set of variables contains two copies of the same set
-abbrev BinomialEdgeVars (V : Type*) := V ⊕ V
+/--
+The set of variables for the binomial edge ideal polynomial ring.
+Contains two copies of V: `Sum.inl i` represents `x_i` and `Sum.inr i` represents `y_i`.
+
+This is intentionally a `def` (opaque) rather than `abbrev` to prevent Lean from
+finding `Sum.instLESum`/`Sum.instLTSum` (which use `Sum.LiftRel`, a product ordering)
+when resolving `LE`/`LT` on `BinomialEdgeVars V`. This avoids an instance diamond
+between `Finsupp.instLTLex` and the LT derived from our custom `LinearOrder`.
+-/
+def BinomialEdgeVars (V : Type*) := V ⊕ V
+
+instance [DecidableEq V] : DecidableEq (BinomialEdgeVars V) :=
+  inferInstanceAs (DecidableEq (V ⊕ V))
+
+instance [Finite V] : Finite (BinomialEdgeVars V) :=
+  inferInstanceAs (Finite (V ⊕ V))
 
 -- Abbreviations for x i and y j notation.
 def x (i : V) : MvPolynomial (BinomialEdgeVars V) K := X (Sum.inl i)
