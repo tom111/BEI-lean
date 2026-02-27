@@ -1,5 +1,8 @@
 import BEI.Definitions
 import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
+import Mathlib.Combinatorics.SimpleGraph.Metric
+import Mathlib.Combinatorics.SimpleGraph.Acyclic
+import Mathlib.Combinatorics.SimpleGraph.Finite
 
 variable {V : Type*} [LinearOrder V] [DecidableEq V]
 
@@ -269,26 +272,35 @@ def IsDirectedWalk (G : SimpleGraph V) : List V → Prop
   | (a :: b :: rest) => directedAdj G a b ∧ IsDirectedWalk G (b :: rest)
 
 /--
-Proposition 1.4: G is closed iff for any two adjacent vertices i < j, all
-shortest paths from i to j in G are directed.
+**Proposition 1.4** (Herzog et al. 2010): G is closed with respect to the given
+linear order if and only if for every adjacent pair i < j, all shortest walks
+from i to j in G are directed (every edge goes from smaller to larger vertex).
 
-Reference: Herzog et al. (2010), Proposition 1.4.
+Equivalently, the associated acyclic directed graph G* (with arrow i → j whenever
+{i,j} ∈ E(G) and i < j) is "closed": all shortest paths between vertices are directed.
+
+Reference: Herzog et al. (2010), Proposition 1.4 ("characterization").
 -/
 theorem prop_1_4 (G : SimpleGraph V) :
     IsClosedGraph G ↔
-    ∀ (π : List V), IsDirectedWalk G π → True := by
+    ∀ (i j : V), i < j → G.Adj i j →
+    ∀ (w : G.Walk i j), w.length = G.dist i j → IsDirectedWalk G w.support := by
   sorry
 
 /--
-Corollary 1.3: A bipartite graph is closed iff it is a path
-(every vertex has degree ≤ 2).
+**Corollary 1.3** (Herzog et al. 2010): A bipartite graph is closed if and only if
+it is a **path graph** (a forest in which every vertex has degree at most 2,
+i.e., a disjoint union of paths).
+
+Proof sketch: A bipartite graph has no odd cycles. A closed graph is chordal,
+and a chordal graph with no odd cycles must be a forest. If that forest is not
+a disjoint union of paths, it contains an induced claw, contradicting Prop. 1.2(2).
 
 Reference: Herzog et al. (2010), Corollary 1.3.
 -/
-theorem cor_1_3 (G : SimpleGraph V)
+theorem cor_1_3 (G : SimpleGraph V) [Fintype V] [DecidableRel G.Adj]
     (hBip : ∃ (φ : V → Bool), ∀ ⦃u v : V⦄, G.Adj u v → φ u ≠ φ v) :
-    IsClosedGraph G ↔
-    ∀ v u w z : V, G.Adj v u → G.Adj v w → G.Adj v z → u = w ∨ u = z ∨ w = z := by
+    IsClosedGraph G ↔ G.IsAcyclic ∧ ∀ v, G.degree v ≤ 2 := by
   sorry
 
 /-! ## Admissible paths (Section 2) -/

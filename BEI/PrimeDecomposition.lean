@@ -21,13 +21,9 @@ noncomputable section
 
 open MvPolynomial SimpleGraph
 
-/-! ## Krull dimension placeholder -/
-
-/--
-Placeholder for the Krull dimension of a commutative ring.
-The correct Mathlib API depends on the Mathlib version; use a sorry stub.
--/
-noncomputable def ringKrullDim (R : Type*) [CommRing R] : ℕ := sorry
+/-! ## Krull dimension -/
+-- `ringKrullDim` is provided by Mathlib (via `Mathlib.RingTheory.Ideal.Height`),
+-- returning `WithBot ℕ∞`. No local definition needed.
 
 /-! ## Theorem 3.2: Prime decomposition -/
 

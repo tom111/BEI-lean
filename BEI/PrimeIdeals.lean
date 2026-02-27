@@ -1,6 +1,7 @@
 import BEI.Definitions
 import Mathlib.RingTheory.Ideal.Quotient.Basic
 import Mathlib.RingTheory.Ideal.MinimalPrime.Basic
+import Mathlib.RingTheory.Ideal.Height
 import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
 import Mathlib.Combinatorics.SimpleGraph.Connectivity.WalkCounting
 
@@ -117,20 +118,19 @@ theorem binomialEdgeIdeal_le_primeComponent (G : SimpleGraph V) (S : Finset V) :
 /-! ## Lemma 3.1: Height formula -/
 
 /--
-Placeholder for ideal height (Krull height of a prime ideal).
-The correct Mathlib API is `Ideal.primeHeight` or similar.
--/
-noncomputable def idealHeight (I : Ideal (MvPolynomial (BinomialEdgeVars V) K)) : ℕ := sorry
-
-/--
 **Lemma 3.1** (Herzog et al. 2010):
   `height(P_S(G)) = |S| + (|V| - c(S))`
+
+The height is `Ideal.height`, defined as the infimum of `Ideal.primeHeight` over
+minimal primes of `P_S(G)`. Since `P_S(G)` is itself prime (see `primeComponent_isPrime`),
+this equals `Ideal.primeHeight (primeComponent G S)` directly.
+The value lives in `ℕ∞`.
 
 Reference: Herzog et al. (2010), Lemma 3.1.
 -/
 theorem lemma_3_1 (G : SimpleGraph V) (S : Finset V) :
-    idealHeight (primeComponent (K := K) G S) =
-      S.card + (Fintype.card V - componentCount G S) := by
+    Ideal.height (primeComponent (K := K) G S) =
+      (S.card + (Fintype.card V - componentCount G S) : ℕ) := by
   sorry
 
 /--

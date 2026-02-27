@@ -20,8 +20,8 @@
 - [x] `fij_leadingCoeff_isUnit` — 1 is a unit
 
 ## Phase 3 — Graph Theory Properties
-- [ ] `prop_1_4` — closed ↔ all shortest paths are directed (currently trivially stated)
-- [ ] `cor_1_3` — bipartite closed ↔ degree ≤ 2
+- [~] `prop_1_4` — statement fixed (was tautological); now: `IsClosedGraph G ↔ ∀ i<j adj, every shortest walk is directed (IsDirectedWalk G w.support)`; proof still sorry
+- [~] `cor_1_3` — statement fixed (was wrong); now: bipartite ↔ `G.IsAcyclic ∧ ∀ v, G.degree v ≤ 2` (forest with max degree 2 = disjoint union of paths); proof still sorry
 
 ## Phase 4 — Admissible Paths Membership
 - [ ] `groebnerElement_mem` — `u_π · f_{ij} ∈ binomialEdgeIdeal G`
