@@ -20,7 +20,7 @@
 - [x] `fij_leadingCoeff_isUnit` — 1 is a unit
 
 ## Phase 3 — Graph Theory Properties
-- [~] `prop_1_4` — statement fixed (removed G.Adj precondition per paper); (←) proved: not-directed walk of length 2 via shared neighbor gives contradiction; (→) still sorry
+- [x] `prop_1_4` — both directions proved: (←) length-2 walk gives contradiction; (→) strong induction on walk length, using closedness to shortcut non-directed first steps
 - [~] `cor_1_3` — statement fixed (was wrong); now: bipartite ↔ `G.IsAcyclic ∧ ∀ v, G.degree v ≤ 2` (forest with max degree 2 = disjoint union of paths); proof still sorry
 
 ## Phase 4 — Admissible Paths Membership

@@ -271,6 +271,38 @@ def IsDirectedWalk (G : SimpleGraph V) : List V → Prop
   | [_]         => True
   | (a :: b :: rest) => directedAdj G a b ∧ IsDirectedWalk G (b :: rest)
 
+private lemma isDW_first_lt {G : SimpleGraph V} {u v w : V} (h : G.Adj u v)
+    (p : G.Walk v w) (hdw : IsDirectedWalk G (Walk.cons h p).support) : u < v := by
+  cases p with
+  | nil => simp only [Walk.support, IsDirectedWalk] at hdw; exact hdw.1.2
+  | cons h' p' => simp only [Walk.support, IsDirectedWalk] at hdw; exact hdw.1.2
+
+private lemma isDW_head_lt {G : SimpleGraph V} {u v : V} (w : G.Walk u v)
+    (hlen : 0 < w.length) (hw : IsDirectedWalk G w.support) : u < v := by
+  induction w with
+  | nil => simp at hlen
+  | cons h₁ w' ih =>
+    cases w' with
+    | nil =>
+      simp only [Walk.support, IsDirectedWalk] at hw; exact hw.1.2
+    | cons h₂ w'' =>
+      simp only [Walk.support, IsDirectedWalk] at hw
+      exact lt_trans hw.1.2 (ih (by simp [Walk.length_cons]) hw.2)
+
+private lemma isDW_penultimate_lt {G : SimpleGraph V} {u v : V} (w : G.Walk u v)
+    (hnil : ¬w.Nil) (hw : IsDirectedWalk G w.support) : w.penultimate < v := by
+  induction w with
+  | nil => exact absurd Walk.Nil.nil hnil
+  | cons h₁ w' ih =>
+    cases w' with
+    | nil =>
+      simp only [Walk.support, IsDirectedWalk, Walk.penultimate_cons_nil] at *
+      exact hw.1.2
+    | cons h₂ w'' =>
+      rw [Walk.penultimate_cons_of_not_nil _ _ (by simp)]
+      simp only [Walk.support, IsDirectedWalk] at hw
+      exact ih (by simp) hw.2
+
 /--
 **Proposition 1.4** (Herzog et al. 2010): G is closed with respect to the given
 linear order if and only if for every pair i < j, all shortest walks from i to j
@@ -291,9 +323,111 @@ theorem prop_1_4 (G : SimpleGraph V) :
     ∀ (w : G.Walk i j), w.length = G.dist i j → IsDirectedWalk G w.support := by
   constructor
   · -- (→) closed graph → all shortest walks directed
-    -- Proof: if not directed, find first local extremum, use closedness to shortcut. Sorry.
-    intro _hClosed
-    sorry
+    -- Proof by strong induction on n = G.dist i j = w.length.
+    intro hClosed
+    -- Reduce to a statement with an explicit length parameter for induction
+    suffices H : ∀ (n : ℕ) (i j : V), i < j →
+        ∀ (w : G.Walk i j), w.length = n → n = G.dist i j → IsDirectedWalk G w.support from
+      fun i j hij w hw => H w.length i j hij w rfl hw
+    intro n
+    induction n using Nat.strong_induction_on with
+    | _ n ih =>
+    intro i j hij w hnlen hndist
+    subst hnlen
+    cases w with
+    | nil => exact absurd hij (lt_irrefl i)
+    | cons h₁ w' =>
+      -- w = cons h₁ w' where h₁ : G.Adj i v₁ and w' : G.Walk v₁ j
+      rename_i v₁
+      -- Establish distance facts
+      have hd_le : G.dist v₁ j ≤ w'.length := dist_le w'
+      have hd_ij : G.dist i j = 1 + w'.length := by
+        simp only [Walk.length_cons] at hndist; omega
+      have hd_tri : G.dist i j ≤ 1 + G.dist v₁ j := by
+        obtain ⟨q₀, hq₀⟩ := w'.reachable.exists_walk_length_eq_dist
+        have := dist_le (Walk.cons h₁ q₀)
+        simp only [Walk.length_cons] at this
+        omega
+      have hd_v₁j : G.dist v₁ j = w'.length := by omega
+      -- Base case: w' = nil means v₁ = j
+      cases w' with
+      | nil =>
+        simp only [Walk.support, IsDirectedWalk, directedAdj]
+        exact ⟨⟨h₁, hij⟩, trivial⟩
+      | cons h₂ w'' =>
+        rename_i v₂
+        -- Prove i < v₁
+        have hi_lt_v₁ : i < v₁ := by
+          by_contra h_neg
+          push_neg at h_neg
+          -- v₁ ≤ i, but v₁ ≠ i (adjacent), so v₁ < i
+          have hv₁_lt_i : v₁ < i := lt_of_le_of_ne h_neg (G.ne_of_adj h₁).symm
+          -- Since v₁ < i < j, there exists a shortest walk from v₁ to j
+          have hv₁j : v₁ < j := lt_trans hv₁_lt_i hij
+          obtain ⟨q, hq_len⟩ := (Walk.cons h₂ w'').reachable.exists_walk_length_eq_dist
+          -- hq_len : q.length = G.dist v₁ j
+          rw [hd_v₁j] at hq_len  -- hq_len : q.length = (Walk.cons h₂ w'').length
+          have hq_dir : IsDirectedWalk G q.support :=
+            ih (Walk.cons h₂ w'').length (by simp [Walk.length_cons]) v₁ j hv₁j q
+              hq_len hd_v₁j.symm
+          cases q with
+          | nil => simp [Walk.length_cons] at hq_len
+          | cons h_q q' =>
+            rename_i v₂'
+            -- v₁ < v₂' from the first directed edge; h_q : G.Adj v₁ v₂'
+            have hv₁_lt_v₂' : v₁ < v₂' := isDW_first_lt h_q q' hq_dir
+            rcases eq_or_ne v₂' i with h_eq | h_ne
+            · subst h_eq
+              have := dist_le q'
+              simp only [Walk.length_cons] at hq_len hd_ij
+              omega
+            · have hadj_i_v₂' := hClosed.1 hv₁_lt_i hv₁_lt_v₂' h_ne.symm h₁.symm h_q
+              have := dist_le (Walk.cons hadj_i_v₂' q')
+              simp only [Walk.length_cons] at hq_len hd_ij this
+              omega
+        -- Prove v₁ < j
+        have hv₁_lt_j : v₁ < j := by
+          rcases lt_trichotomy v₁ j with hlt | heq | hgt
+          · exact hlt
+          · exfalso
+            have hd0 : G.dist v₁ j = 0 := by rw [heq]; exact dist_self
+            simp only [Walk.length_cons] at hd_v₁j; omega
+          · exfalso
+            -- v₁ > j: get shortest walk q : G.Walk j v₁, apply IH to get it's directed
+            have hreach_jv₁ : G.Reachable j v₁ := (Walk.cons h₂ w'').reachable.symm
+            have hd_jv₁ : G.dist j v₁ = (Walk.cons h₂ w'').length := by
+              rw [dist_comm]; exact hd_v₁j
+            obtain ⟨q, hq_len⟩ := hreach_jv₁.exists_walk_length_eq_dist
+            rw [hd_jv₁] at hq_len  -- hq_len : q.length = (Walk.cons h₂ w'').length
+            have hq_dir := ih (Walk.cons h₂ w'').length (by simp [Walk.length_cons])
+              j v₁ hgt q hq_len hd_jv₁.symm
+            have hq_notnil : ¬q.Nil := by
+              intro hnil; cases hnil; simp [Walk.length_cons] at hq_len
+            have hpenu_lt := isDW_penultimate_lt q hq_notnil hq_dir
+            have hpenu_adj := Walk.adj_penultimate hq_notnil
+            -- q.dropLast : G.Walk j q.penultimate, length = q.length - 1
+            have hdrop_len : q.dropLast.length = q.length - 1 := by
+              simp [Walk.dropLast, Walk.take_length]
+            rcases eq_or_ne q.penultimate i with h_eq | h_ne
+            · -- penultimate = i: q.dropLast.reverse : G.Walk i j, length = q.length - 1
+              have hdist_pen := dist_le q.dropLast.reverse
+              rw [Walk.length_reverse, hdrop_len, h_eq] at hdist_pen
+              -- hdist_pen : G.dist i j ≤ q.length - 1
+              simp only [Walk.length_cons] at hq_len hd_ij
+              omega
+            · -- penultimate ≠ i: closedness cond 2 gives G.Adj i q.penultimate
+              -- (both i < v₁ and q.penultimate < v₁, and i ≠ q.penultimate)
+              have hadj_i_p := hClosed.2 hi_lt_v₁ hpenu_lt h_ne.symm h₁ hpenu_adj
+              -- Walk.cons hadj_i_p q.dropLast.reverse : G.Walk i j
+              have hdist_w := dist_le (Walk.cons hadj_i_p q.dropLast.reverse)
+              rw [Walk.length_cons, Walk.length_reverse, hdrop_len] at hdist_w
+              simp only [Walk.length_cons] at hq_len hd_ij
+              omega
+        -- Both i < v₁ and v₁ < j proved; apply IH to Walk.cons h₂ w''
+        simp only [Walk.support, IsDirectedWalk]
+        exact ⟨⟨h₁, hi_lt_v₁⟩,
+          ih (Walk.cons h₂ w'').length (by simp [Walk.length_cons]) v₁ j hv₁_lt_j
+            (Walk.cons h₂ w'') rfl hd_v₁j.symm⟩
   · -- (←) all shortest walks directed → closed graph
     intro h
     refine ⟨?_, ?_⟩
