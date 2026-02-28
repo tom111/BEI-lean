@@ -273,19 +273,84 @@ def IsDirectedWalk (G : SimpleGraph V) : List V → Prop
 
 /--
 **Proposition 1.4** (Herzog et al. 2010): G is closed with respect to the given
-linear order if and only if for every adjacent pair i < j, all shortest walks
-from i to j in G are directed (every edge goes from smaller to larger vertex).
+linear order if and only if for every pair i < j, all shortest walks from i to j
+in G are directed (every edge goes from smaller to larger vertex).
 
-Equivalently, the associated acyclic directed graph G* (with arrow i → j whenever
-{i,j} ∈ E(G) and i < j) is "closed": all shortest paths between vertices are directed.
+The associated acyclic directed graph G* (with arrow i → j whenever {i,j} ∈ E(G)
+and i < j) satisfies: all shortest undirected paths between any two vertices are
+directed. This characterizes closed graphs.
+
+Note: The hypothesis applies to ALL pairs i < j (not just adjacent ones). When
+i and j are not connected, the quantifier over walks is vacuously true.
 
 Reference: Herzog et al. (2010), Proposition 1.4 ("characterization").
 -/
 theorem prop_1_4 (G : SimpleGraph V) :
     IsClosedGraph G ↔
-    ∀ (i j : V), i < j → G.Adj i j →
+    ∀ (i j : V), i < j →
     ∀ (w : G.Walk i j), w.length = G.dist i j → IsDirectedWalk G w.support := by
-  sorry
+  constructor
+  · -- (→) closed graph → all shortest walks directed
+    -- Proof: if not directed, find first local extremum, use closedness to shortcut. Sorry.
+    intro _hClosed
+    sorry
+  · -- (←) all shortest walks directed → closed graph
+    intro h
+    refine ⟨?_, ?_⟩
+    · -- Condition 1: i < j → i < k → j ≠ k → G.Adj i j → G.Adj i k → G.Adj j k
+      intro i j k hij hik hjk_ne hadj_ij hadj_ik
+      rcases lt_or_gt_of_ne hjk_ne with hjk | hkj
+      · -- Case j < k: build walk j → i → k, get contradiction
+        by_contra h_nadj
+        let W := Walk.cons hadj_ij.symm (Walk.cons hadj_ik Walk.nil)
+        have hW_len : W.length = 2 := rfl
+        have hd_le : G.dist j k ≤ 2 := hW_len ▸ dist_le W
+        have hd_pos : 0 < G.dist j k := W.reachable.pos_dist_of_ne (ne_of_lt hjk)
+        have hd1 : G.dist j k ≠ 1 := mt dist_eq_one_iff_adj.mp h_nadj
+        have hd2 : G.dist j k = 2 := by omega
+        have hdirected := h j k hjk W (by rw [hW_len, hd2])
+        -- hdirected : IsDirectedWalk G [j, i, k]; first step requires j < i, false
+        exact absurd hdirected.1.2 (not_lt.mpr hij.le)
+      · -- Case k < j: build walk k → i → j, get contradiction
+        -- hkj : j > k, equivalently k < j
+        by_contra h_nadj
+        let W := Walk.cons hadj_ik.symm (Walk.cons hadj_ij Walk.nil)
+        have hW_len : W.length = 2 := rfl
+        have hkj' : k < j := hkj
+        have hd_le : G.dist k j ≤ 2 := hW_len ▸ dist_le W
+        have hd_pos : 0 < G.dist k j := W.reachable.pos_dist_of_ne (ne_of_lt hkj')
+        have hd1 : G.dist k j ≠ 1 := fun h => h_nadj (dist_eq_one_iff_adj.mp h).symm
+        have hd2 : G.dist k j = 2 := by omega
+        have hdirected := h k j hkj' W (by rw [hW_len, hd2])
+        -- hdirected : IsDirectedWalk G [k, i, j]; first step requires k < i, false
+        exact absurd hdirected.1.2 (not_lt.mpr hik.le)
+    · -- Condition 2: i < k → j < k → i ≠ j → G.Adj i k → G.Adj j k → G.Adj i j
+      intro i j k hik hjk hij_ne hadj_ik hadj_jk
+      rcases lt_or_gt_of_ne hij_ne with hij | hji
+      · -- Case i < j: build walk i → k → j, get contradiction
+        by_contra h_nadj
+        let W := Walk.cons hadj_ik (Walk.cons hadj_jk.symm Walk.nil)
+        have hW_len : W.length = 2 := rfl
+        have hd_le : G.dist i j ≤ 2 := hW_len ▸ dist_le W
+        have hd_pos : 0 < G.dist i j := W.reachable.pos_dist_of_ne (ne_of_lt hij)
+        have hd1 : G.dist i j ≠ 1 := mt dist_eq_one_iff_adj.mp h_nadj
+        have hd2 : G.dist i j = 2 := by omega
+        have hdirected := h i j hij W (by rw [hW_len, hd2])
+        -- hdirected : IsDirectedWalk G [i, k, j]; second step requires k < j, false
+        exact absurd hdirected.2.1.2 (not_lt.mpr hjk.le)
+      · -- Case j < i: build walk j → k → i, get contradiction
+        -- hji : i > j, equivalently j < i
+        by_contra h_nadj
+        let W := Walk.cons hadj_jk (Walk.cons hadj_ik.symm Walk.nil)
+        have hW_len : W.length = 2 := rfl
+        have hji' : j < i := hji
+        have hd_le : G.dist j i ≤ 2 := hW_len ▸ dist_le W
+        have hd_pos : 0 < G.dist j i := W.reachable.pos_dist_of_ne (ne_of_lt hji')
+        have hd1 : G.dist j i ≠ 1 := fun h => h_nadj (dist_eq_one_iff_adj.mp h).symm
+        have hd2 : G.dist j i = 2 := by omega
+        have hdirected := h j i hji' W (by rw [hW_len, hd2])
+        -- hdirected : IsDirectedWalk G [j, k, i]; second step requires k < i, false
+        exact absurd hdirected.2.1.2 (not_lt.mpr hik.le)
 
 /--
 **Corollary 1.3** (Herzog et al. 2010): A bipartite graph is closed if and only if
