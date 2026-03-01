@@ -486,21 +486,64 @@ theorem prop_1_4 (G : SimpleGraph V) :
         -- hdirected : IsDirectedWalk G [j, k, i]; second step requires k < i, false
         exact absurd hdirected.2.1.2 (not_lt.mpr hik.le)
 
-/--
-**Corollary 1.3** (Herzog et al. 2010): A bipartite graph is closed if and only if
-it is a **path graph** (a forest in which every vertex has degree at most 2,
-i.e., a disjoint union of paths).
+-- Helper: a triangle contradicts bipartiteness.
+private lemma noTriangle_of_bipartite {G : SimpleGraph V} {u₁ u₂ v : V}
+    (hAdju1 : G.Adj v u₁) (hAdju2 : G.Adj v u₂) (hAdj12 : G.Adj u₁ u₂)
+    (φ : V → Bool) (hφ : ∀ ⦃u v : V⦄, G.Adj u v → φ u ≠ φ v) : False := by
+  have h1 := hφ hAdju1; have h2 := hφ hAdju2; have h3 := hφ hAdj12
+  rcases Bool.eq_false_or_eq_true (φ v) with hv | hv <;>
+  rcases Bool.eq_false_or_eq_true (φ u₁) with hu1 | hu1 <;>
+  rcases Bool.eq_false_or_eq_true (φ u₂) with hu2 | hu2 <;> simp_all
 
-Proof sketch: A bipartite graph has no odd cycles. A closed graph is chordal,
-and a chordal graph with no odd cycles must be a forest. If that forest is not
-a disjoint union of paths, it contains an induced claw, contradicting Prop. 1.2(2).
+/--
+**Corollary 1.3** (Herzog et al. 2010): A closed bipartite graph is a **path graph**
+(a forest in which every vertex has degree at most 2, i.e., a disjoint union of paths).
+
+Proof: A bipartite graph has no odd cycles. A closed graph is chordal, and a chordal
+graph with no odd cycles must be a forest. If that forest is not a disjoint union of
+paths, it contains an induced claw, contradicting the fact that closed graphs are
+claw-free (Prop. 1.2(2)).
+
+Note: The converse (path → closed) depends on the vertex labeling and is not stated here,
+since for generic linearly ordered V a path graph may not be closed if internal vertices
+are not "between" their neighbors in the linear order.
 
 Reference: Herzog et al. (2010), Corollary 1.3.
 -/
 theorem cor_1_3 (G : SimpleGraph V) [Fintype V] [DecidableRel G.Adj]
-    (hBip : ∃ (φ : V → Bool), ∀ ⦃u v : V⦄, G.Adj u v → φ u ≠ φ v) :
-    IsClosedGraph G ↔ G.IsAcyclic ∧ ∀ v, G.degree v ≤ 2 := by
-  sorry
+    (hBip : ∃ (φ : V → Bool), ∀ ⦃u v : V⦄, G.Adj u v → φ u ≠ φ v)
+    (hClosed : IsClosedGraph G) :
+    G.IsAcyclic ∧ ∀ v, G.degree v ≤ 2 := by
+  obtain ⟨φ, hφ⟩ := hBip
+  constructor
+  · sorry
+  · intro v
+    by_contra hDeg
+    push_neg at hDeg
+    rw [← SimpleGraph.card_neighborFinset_eq_degree] at hDeg
+    -- Split neighbors of v into those above and those below
+    let above := (G.neighborFinset v).filter (v < ·)
+    let below := (G.neighborFinset v).filter (· < v)
+    have hSub : G.neighborFinset v ⊆ above ∪ below := fun u hu => by
+      simp only [Finset.mem_union, above, below, Finset.mem_filter]
+      have hadj : G.Adj v u := (SimpleGraph.mem_neighborFinset G v u).mp hu
+      rcases lt_or_gt_of_ne (G.ne_of_adj hadj).symm with h | h
+      · right; exact ⟨hu, h⟩
+      · left; exact ⟨hu, h⟩
+    have hSum : 3 ≤ above.card + below.card :=
+      le_trans (le_trans hDeg (Finset.card_le_card hSub)) (Finset.card_union_le _ _)
+    by_cases h : 2 ≤ above.card
+    · -- Two neighbors both above v → IsClosedGraph gives edge between them → triangle
+      obtain ⟨u₁, hu₁, u₂, hu₂, hne⟩ := Finset.one_lt_card.mp (show 1 < above.card by omega)
+      simp only [above, Finset.mem_filter, SimpleGraph.mem_neighborFinset] at hu₁ hu₂
+      exact noTriangle_of_bipartite hu₁.1 hu₂.1
+        (hClosed.1 hu₁.2 hu₂.2 hne hu₁.1 hu₂.1) φ hφ
+    · -- Two neighbors both below v → IsClosedGraph gives edge between them → triangle
+      obtain ⟨u₁, hu₁, u₂, hu₂, hne⟩ := Finset.one_lt_card.mp
+        (show 1 < below.card by push_neg at h; omega)
+      simp only [below, Finset.mem_filter, SimpleGraph.mem_neighborFinset] at hu₁ hu₂
+      exact noTriangle_of_bipartite hu₁.1 hu₂.1
+        (hClosed.2 hu₁.2 hu₂.2 hne hu₁.1.symm hu₂.1.symm) φ hφ
 
 /-! ## Admissible paths (Section 2) -/
 
@@ -523,6 +566,7 @@ def IsAdmissiblePath (G : SimpleGraph V) (i j : V) (π : List V) : Prop :=
   ∀ (π' : List V),
     π'.Sublist π → π' ≠ π →
     π'.head? = some i → π'.getLast? = some j →
+    π'.Chain' (fun a b => G.Adj a b) →
     ¬ (∀ v ∈ π', v = i ∨ v = j ∨ v < i ∨ j < v)
 
 /-- Every edge {i,j} with i < j yields the trivial admissible path [i, j]. -/
@@ -537,7 +581,7 @@ theorem edge_is_admissible (G : SimpleGraph V) {i j : V}
     · exact Or.inl rfl
     · exact Or.inr (Or.inl rfl)
   · simp [List.Chain', h]
-  · intro π' hSub hNe hHead hLast _
+  · intro π' hSub hNe hHead hLast _ _
     have hij_ne : i ≠ j := G.ne_of_adj h
     apply hNe
     -- Extract the leading vertex: π' = i :: t

@@ -69,6 +69,54 @@ def groebnerBasisSet (G : SimpleGraph V) :
 
 /-! ## Membership in J_G -/
 
+/-- Core membership lemma by strong induction on walk length.
+Proves `pathMonomial i j π * f_{ij} ∈ J_G` for any valid walk satisfying admissibility
+conditions (without requiring the minimality condition of `IsAdmissiblePath`).
+
+In the inductive step, we split at the vertex v₀ = max{vₖ < i} (or min{vₖ > j}) and use:
+- Case A (v₀ < i): y_{v₀} * f_{ij} = y_i * f_{v₀,j} - y_j * f_{v₀,i} (ring identity)
+- Case B (v₀ > j): x_{v₀} * f_{ij} = x_j * f_{i,v₀} - x_i * f_{j,v₀} (ring identity)
+Both sub-paths are shorter walks satisfying the same conditions, so IH applies.
+-/
+private theorem groebnerElem_mem_aux (G : SimpleGraph V) :
+    ∀ (n : ℕ) (i j : V) (π : List V),
+    π.length = n → i < j →
+    π.head? = some i → π.getLast? = some j →
+    π.Nodup →
+    (∀ v ∈ π, v = i ∨ v = j ∨ v < i ∨ j < v) →
+    π.Chain' (fun a b => G.Adj a b) →
+    pathMonomial (K := K) i j π * (x i * y j - x j * y i) ∈ binomialEdgeIdeal G := by
+  intro n
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+  intro i j π hlen hij hHead hLast hNodup hInternal hWalk
+  -- Case split on π
+  match π, hHead, hLast, hWalk, hNodup, hInternal, hlen with
+  | [], hH, _, _, _, _, _ => simp at hH
+  | [a], hH, hL, _, _, _, _ =>
+    simp only [List.head?_cons, Option.some.injEq] at hH
+    simp only [List.getLast?_singleton, Option.some.injEq] at hL
+    subst hH; subst hL
+    exact absurd hij (lt_irrefl _)
+  | [a, b], hH, hL, hW, _, _, _ =>
+    -- π = [a, b] = [i, j]: base case
+    simp only [List.head?_cons, Option.some.injEq] at hH
+    simp only [List.getLast?_cons_cons, List.getLast?_singleton, Option.some.injEq] at hL
+    -- hH : a = i, hL : b = j
+    -- G.Adj a b from the Chain' condition
+    have hAdj : G.Adj a b := by
+      simp [List.Chain'] at hW
+      exact hW
+    -- Rewrite a = i, b = j, pathMonomial [a, b] = 1
+    have hpm : pathMonomial (K := K) i j [a, b] = 1 := by
+      rw [← hH, ← hL]; exact pathMonomial_pair a b
+    rw [hpm, one_mul]
+    have hAdj' : G.Adj i j := hH ▸ hL ▸ hAdj
+    exact Ideal.subset_span ⟨i, j, hAdj', hij, rfl⟩
+  | a :: b :: c :: rest, hH, hL, hW, hND, hInt, hlen' =>
+    -- π has at least one internal vertex; use sorry for the inductive step
+    sorry
+
 /--
 Every Gröbner basis element `u_π · f_{ij}` belongs to `binomialEdgeIdeal G`.
 
@@ -82,7 +130,8 @@ Reference: Herzog et al. (2010), proof of Theorem 2.1, Step 1.
 theorem groebnerElement_mem (G : SimpleGraph V) (i j : V) (π : List V)
     (hπ : IsAdmissiblePath G i j π) :
     groebnerElement (K := K) i j π ∈ binomialEdgeIdeal G := by
-  sorry
+  obtain ⟨hij, hHead, hLast, hNodup, hInternal, hWalk, _⟩ := hπ
+  exact groebnerElem_mem_aux G π.length i j π rfl hij hHead hLast hNodup hInternal hWalk
 
 /-- Every generator `f_{ij}` (for edges {i,j} ∈ E(G), i < j) is in the Gröbner basis set. -/
 theorem generator_in_groebnerBasisSet (G : SimpleGraph V) (i j : V)
