@@ -3,6 +3,7 @@ import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
 import Mathlib.Combinatorics.SimpleGraph.Metric
 import Mathlib.Combinatorics.SimpleGraph.Acyclic
 import Mathlib.Combinatorics.SimpleGraph.Finite
+import Mathlib.Combinatorics.SimpleGraph.ConcreteColorings
 
 variable {V : Type*} [LinearOrder V] [DecidableEq V]
 
@@ -486,6 +487,22 @@ theorem prop_1_4 (G : SimpleGraph V) :
         -- hdirected : IsDirectedWalk G [j, k, i]; second step requires k < i, false
         exact absurd hdirected.2.1.2 (not_lt.mpr hik.le)
 
+-- Helper: snd of a non-nil closed walk is in the support tail.
+private lemma snd_mem_tail' {G : SimpleGraph V} {v : V} (c : G.Walk v v) (hnil : ¬c.Nil) :
+    c.snd ∈ c.support.tail := by
+  obtain ⟨_, _, _, h, p, rfl⟩ := Walk.not_nil_iff.mp hnil
+  simp [Walk.snd, Walk.support]
+
+-- Helper: penultimate of a non-nil closed walk is in the support tail (given it ≠ start).
+private lemma penultimate_mem_tail' {G : SimpleGraph V} {v : V} (c : G.Walk v v) (hnil : ¬c.Nil)
+    (hne : c.penultimate ≠ v) : c.penultimate ∈ c.support.tail := by
+  have hmem : c.penultimate ∈ c.support := Walk.getVert_mem_support c (c.length - 1)
+  cases c with
+  | nil => exact absurd Walk.Nil.nil hnil
+  | cons h p =>
+    simp only [Walk.support, List.tail_cons, List.mem_cons] at hmem ⊢
+    exact hmem.resolve_left hne
+
 -- Helper: a triangle contradicts bipartiteness.
 private lemma noTriangle_of_bipartite {G : SimpleGraph V} {u₁ u₂ v : V}
     (hAdju1 : G.Adj v u₁) (hAdju2 : G.Adj v u₂) (hAdj12 : G.Adj u₁ u₂)
@@ -516,7 +533,47 @@ theorem cor_1_3 (G : SimpleGraph V) [Fintype V] [DecidableRel G.Adj]
     G.IsAcyclic ∧ ∀ v, G.degree v ≤ 2 := by
   obtain ⟨φ, hφ⟩ := hBip
   constructor
-  · sorry
+  · -- G.IsAcyclic: min-vertex argument
+    -- In any cycle, the minimum vertex m has both neighbours > m;
+    -- IsClosedGraph.1 gives a chord, forming a triangle; bipartiteness gives False.
+    intro v c hc
+    have col : G.Coloring Bool := ⟨φ, fun h => hφ h⟩
+    have hlen_even : Even c.length := by rw [col.even_length_iff_congr c]
+    have hlen3 : 3 ≤ c.length := hc.three_le_length
+    obtain ⟨k, hk⟩ := hlen_even
+    have hlen4 : 4 ≤ c.length := by omega
+    -- Minimum vertex in the cycle support
+    have hsupp_ne : c.support.toFinset.Nonempty :=
+      ⟨v, List.mem_toFinset.mpr (Walk.start_mem_support c)⟩
+    let m := c.support.toFinset.min' hsupp_ne
+    have hm_mem : m ∈ c.support := List.mem_toFinset.mp (Finset.min'_mem _ _)
+    have hm_min : ∀ w ∈ c.support, m ≤ w :=
+      fun w hw => Finset.min'_le _ _ (List.mem_toFinset.mpr hw)
+    -- Rotate c to start at m
+    let c' := c.rotate hm_mem
+    have hc'_cycle : c'.IsCycle := hc.rotate hm_mem
+    have hnil' : ¬c'.Nil := hc'_cycle.not_nil
+    -- Rotation preserves support membership
+    have hrot_sup : c'.support.tail ~r c.support.tail := Walk.support_rotate c hm_mem
+    -- Adjacency of snd and penultimate to m
+    have h_snd_adj : G.Adj m c'.snd := Walk.adj_snd hnil'
+    have h_pen_adj : G.Adj c'.penultimate m := Walk.adj_penultimate hnil'
+    -- Both are in c.support (via rotation)
+    have h_snd_in_c : c'.snd ∈ c.support :=
+      List.mem_of_mem_tail (hrot_sup.mem_iff.mp (snd_mem_tail' c' hnil'))
+    have h_pen_ne : c'.penultimate ≠ m := G.ne_of_adj h_pen_adj
+    have h_pen_in_c : c'.penultimate ∈ c.support :=
+      List.mem_of_mem_tail (hrot_sup.mem_iff.mp (penultimate_mem_tail' c' hnil' h_pen_ne))
+    -- Both are strictly above m
+    have hm_lt_snd : m < c'.snd :=
+      lt_of_le_of_ne (hm_min _ h_snd_in_c) (G.ne_of_adj h_snd_adj)
+    have hm_lt_pen : m < c'.penultimate :=
+      lt_of_le_of_ne (hm_min _ h_pen_in_c) (Ne.symm h_pen_ne)
+    -- Chord from IsClosedGraph
+    have h_chord : G.Adj c'.snd c'.penultimate :=
+      hClosed.1 hm_lt_snd hm_lt_pen hc'_cycle.snd_ne_penultimate h_snd_adj h_pen_adj.symm
+    -- Triangle contradicts bipartiteness
+    exact noTriangle_of_bipartite h_snd_adj h_pen_adj.symm h_chord φ hφ
   · intro v
     by_contra hDeg
     push_neg at hDeg

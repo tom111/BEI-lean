@@ -21,10 +21,10 @@
 
 ## Phase 3 — Graph Theory Properties
 - [x] `prop_1_4` — both directions proved: (←) length-2 walk gives contradiction; (→) strong induction on walk length, using closedness to shortcut non-directed first steps
-- [~] `cor_1_3` — closed + bipartite → path graph:
+- [x] `cor_1_3` — closed + bipartite → path graph:
   - [x] `noTriangle_of_bipartite` helper lemma (bipartite coloring + triangle → False)
   - [x] degree bound: `∀ v, G.degree v ≤ 2` proved via pigeonhole + IsClosedGraph + noTriangle
-  - [ ] acyclicity `G.IsAcyclic` — strategy: bipartite → all cycles even → even cycle ≥ 4 → IsChordal gives chord → same-color chord violates bipartite (base n=4) or sub-cycles contradict IH (n>4 by strong induction); formalizing chord-splitting in Walk API is complex
+  - [x] acyclicity `G.IsAcyclic` — min-vertex rotation argument: rotate cycle at min vertex m → snd and penultimate both > m → IsClosedGraph.1 gives chord → triangle → noTriangle_of_bipartite → False
 
 ## Phase 4 — Admissible Paths Membership
 - [~] `groebnerElement_mem` — `u_π · f_{ij} ∈ binomialEdgeIdeal G`
@@ -74,7 +74,7 @@
 ## Sorry Count by File (as of this session)
 | File | Sorries |
 |------|---------|
-| GraphProperties.lean | 1 (cor_1_3 acyclicity) |
+| GraphProperties.lean | 0 |
 | AdmissiblePaths.lean | 1 (groebnerElem_mem_aux inductive step) |
 | PrimeIdeals.lean | 3 (isPrime, lemma_3_1, prop_3_6) |
 | MinimalPrimes.lean | 3 (prop_3_8 → ×2, corollary_3_9) |
@@ -82,7 +82,7 @@
 | PrimeDecomposition.lean | 7 (thm3_2, minPrimesChar, cor3_3 ×2, cor3_4, cor3_7 ×2) |
 | ClosedGraphs.lean | 3 (thm1_1, closed→GB, GB→closed) |
 | CohenMacaulay.lean | 4 (def + 3 thms, all deferred) |
-| **Total** | **27** |
+| **Total** | **26** |
 
 ---
 
