@@ -149,9 +149,10 @@ The `sPolynomial` is already in Mathlib; we ported the missing pieces.
   (needs `IsRemainder` existence + uniqueness-type arguments)
 
 ### 8C. Leading coefficient lemma
-- [ ] `groebnerElement_leadingCoeff` — `leadingCoeff (u_π · f_{ij}) = 1`
+- [x] `groebnerElement_leadingCoeff` — `leadingCoeff (u_π · f_{ij}) = 1`
   Proof: `leadingCoeff(pathMonomial) = 1` (product of monic variables) and
   `leadingCoeff(fij) = 1` (proved as `fij_leadingCoeff`); use `leadingCoeff_mul`.
+  DONE: uses leadingCoeff_mul + fij_leadingCoeff + list induction on X variables.
 
 ### 8D. S-polynomial reductions (Buchberger case analysis)
 - [ ] `theorem_2_1_groebner` — groebnerBasisSet is a Gröbner basis via Buchberger
@@ -184,8 +185,8 @@ The `sPolynomial` is already in Mathlib; we ported the missing pieces.
 2. ~~Phase 6 `prop_3_8_var_not_mem`~~ DONE — proved via eval argument
 3. ~~Phase 8A~~ DONE — `groebnerElement_leadingMonomial_squarefree`
 4. ~~Phase 8B API~~ DONE — `IsRemainder`, `IsGroebnerBasis`, `exists_isRemainder`
-5. **Phase 8B Buchberger** — `isGroebnerBasis_iff_sPolynomial_isRemainder` (port from groebner_proj)
-6. **Phase 8C** — `groebnerElement_leadingCoeff` (mechanical, uses `fij_leadingCoeff`)
+5. **Phase 8B Buchberger** — `isGroebnerBasis_iff_sPolynomial_isRemainder` (port from groebner_proj; ~400K heartbeats)
+6. ~~Phase 8C~~ DONE — `groebnerElement_leadingCoeff`
 7. **Phase 8D** — S-polynomial case analysis (long but each case manageable)
 8. **Phase 9** — `theorem_1_1` (once 8B+8D done)
 9. **Phase 5A** — `primeComponent_isPrime` (needed for prime decomposition)
@@ -223,13 +224,13 @@ The `sPolynomial` is already in Mathlib; we ported the missing pieces.
 | AdmissiblePaths.lean | 0 |
 | MonomialOrder.lean | 0 |
 | GroebnerAPI.lean | 1 (Buchberger criterion) |
-| GroebnerBasis.lean | 4 (groebnerElement_leadingCoeff, theorem_2_1_groebner, _leading, _reduced; cor2_2) |
+| GroebnerBasis.lean | 4 (theorem_2_1_groebner, _leading, _reduced; cor2_2) |
 | PrimeIdeals.lean | 3 (isPrime, lemma_3_1, prop_3_6) |
 | MinimalPrimes.lean | 2 (prop_3_8 component preservation, corollary_3_9) |
 | PrimeDecomposition.lean | 7 (thm3_2 ⊇, minPrimesChar, cor3_3 ×2, cor3_4, cor3_7 ×2) |
 | ClosedGraphs.lean | 3 (thm1_1, closed→GB, GB→closed) |
 | CohenMacaulay.lean | 4 (def + 3 thms, all deferred) |
-| **Total** | **24** |
+| **Total** | **23** |
 
 ---
 
