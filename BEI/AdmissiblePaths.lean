@@ -294,7 +294,187 @@ private lemma pathMonomial_split_above (G : SimpleGraph V) (i j v₀ : V)
     (hα' : α' = (π.take (π.idxOf v₀ + 1)).reverse) :
     pathMonomial (K := K) i j π =
       x v₀ * pathMonomial j v₀ β.reverse * pathMonomial i v₀ α'.reverse := by
-  sorry
+  -- Step 1: index setup
+  have hv₀_in_π : v₀ ∈ π :=
+    (List.tail_sublist π).subset ((List.dropLast_sublist π.tail).subset hv₀Int)
+  let k := π.idxOf v₀
+  have hk_lt : k < π.length := List.idxOf_lt_length_of_mem hv₀_in_π
+  have hπk : π[k] = v₀ := List.getElem_idxOf hk_lt
+  have hne : π ≠ [] := List.ne_nil_iff_length_pos.mpr (by omega)
+  have h0lt : 0 < π.length := List.length_pos_of_ne_nil hne
+  have hπ0i : π[0] = i := by
+    have h0 : π[0]? = some i := by rwa [← List.head?_eq_getElem?]
+    exact Option.some.inj ((List.getElem?_eq_getElem h0lt).symm.trans h0)
+  have hπ_last_j : π[π.length - 1] = j := by
+    rw [← (List.getLast_eq_getElem hne)]
+    exact Option.some.inj ((List.getLast?_eq_some_getLast hne).symm.trans hπLast)
+  have hk_pos : 0 < k := by
+    rcases Nat.eq_zero_or_pos k with h | h
+    · exfalso
+      have heq : π[0] = v₀ := by simp only [h] at hπk; exact hπk
+      exact absurd (heq.symm.trans hπ0i) (ne_of_gt (lt_trans hij hv₀j))
+    · exact h
+  have hk_lt_pred : k < π.length - 1 := by
+    rcases Nat.lt_or_ge k (π.length - 1) with h | h
+    · exact h
+    · exfalso
+      have hk_eq : k = π.length - 1 := Nat.le_antisymm (by omega) (by omega)
+      have heq : v₀ = j := by
+        have h1 : π[k]? = some v₀ :=
+          (List.getElem?_eq_getElem hk_lt).trans (congrArg some hπk)
+        have h2 : π[π.length - 1]? = some j :=
+          (List.getElem?_eq_getElem (by omega)).trans (congrArg some hπ_last_j)
+        have h3 : π[k]? = π[π.length - 1]? := by congr 1
+        exact Option.some.inj (h1.symm.trans (h3.trans h2))
+      exact absurd heq (ne_of_gt hv₀j)
+  -- Step 2: list equality for internalVertices (identical to split_below)
+  have hintEq : internalVertices π = (internalVertices α').reverse ++ [v₀] ++ internalVertices β := by
+    simp only [internalVertices]
+    rw [hα', hβ]
+    have htake_ne : π.take k ≠ [] := by simp [List.take_eq_nil_iff, hk_pos.ne', hne]
+    have hdrop_ne : π.drop (k + 1) ≠ [] := by
+      intro h; simp [List.drop_eq_nil_iff] at h; omega
+    have hrev_tail : ((π.take (k + 1)).reverse).tail = (π.take k).reverse := by
+      rw [List.take_add_one, List.getElem?_eq_getElem hk_lt, Option.toList_some,
+          List.reverse_append, List.reverse_singleton]; rfl
+    have hint_α'_rev : (((π.take (k + 1)).reverse).tail.dropLast).reverse = (π.take k).tail := by
+      rw [hrev_tail, List.dropLast_reverse, List.reverse_reverse]
+    have hβ_tail : (π.drop k).tail = π.drop (k + 1) := by
+      rw [← List.getElem_cons_drop hk_lt, List.tail_cons]
+    have htail_cons : π.tail = (π.take k).tail ++ (π[k] :: π.drop (k + 1)) := by
+      have h1 : π.drop k = π[k] :: π.drop (k + 1) := (List.getElem_cons_drop hk_lt).symm
+      have h2 : π = π.take k ++ (π[k] :: π.drop (k + 1)) := by
+        have := List.take_append_drop k π; rw [h1] at this; exact this.symm
+      rw [congrArg List.tail h2, List.tail_append_of_ne_nil htake_ne]
+    have htail_dl : π.tail.dropLast =
+        (π.take k).tail ++ [π[k]] ++ (π.drop (k + 1)).dropLast := by
+      rw [congrArg List.dropLast htail_cons,
+          List.dropLast_append_of_ne_nil (List.cons_ne_nil _ _),
+          List.dropLast_cons_of_ne_nil hdrop_ne]
+      simp [List.append_assoc]
+    rw [hint_α'_rev]
+    rw [← hβ_tail, hπk] at htail_dl
+    exact htail_dl
+  -- Step 3: non-membership / Nodup facts
+  have hint_nd : (internalVertices π).Nodup :=
+    (hπND.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
+  have hi_not_int : i ∉ internalVertices π := by
+    simp only [internalVertices]; intro h
+    cases π with
+    | nil => exact absurd rfl hne
+    | cons a rest =>
+      simp only [List.head?_cons, Option.some.injEq] at hπHead; subst hπHead
+      exact (List.nodup_cons.mp hπND).1 ((List.dropLast_sublist _).subset h)
+  have hj_not_int : j ∉ internalVertices π := by
+    simp only [internalVertices]; intro h
+    have hj_last : π.getLast hne = j :=
+      Option.some.inj ((List.getLast?_eq_some_getLast hne).symm.trans hπLast)
+    have hj_count : π.count j = 1 :=
+      List.nodup_iff_count_le_one.mp hπND |> fun hle =>
+        Nat.le_antisymm (hle _) (List.count_pos_iff.mpr (hj_last ▸ List.getLast_mem hne))
+    have hmem_dl : j ∈ π.dropLast := by
+      cases π with
+      | nil => exact absurd rfl hne
+      | cons a rest =>
+        simp only [List.tail_cons] at h; cases rest with
+        | nil => simp at h
+        | cons b rest2 =>
+          rw [List.dropLast_cons_of_ne_nil (List.cons_ne_nil b rest2)]
+          exact List.mem_cons_of_mem a h
+    have hpos : 0 < π.dropLast.count j := List.count_pos_iff.mpr hmem_dl
+    have heq := congrArg (List.count j) (List.dropLast_append_getLast hne)
+    simp only [List.count_append, hj_last, List.count_singleton_self] at heq
+    omega
+  have hv₀_not_int_α' : v₀ ∉ internalVertices α' := by
+    intro h
+    have hint_nd' := hint_nd
+    rw [hintEq] at hint_nd'
+    have hnd1 := (List.nodup_append.mp hint_nd').1
+    exact absurd rfl ((List.nodup_append.mp hnd1).2.2 v₀ (List.mem_reverse.mpr h) v₀
+      (List.mem_singleton_self v₀))
+  have hv₀_not_int_β : v₀ ∉ internalVertices β := by
+    intro h
+    have hint_nd' := hint_nd
+    rw [hintEq] at hint_nd'
+    exact absurd rfl ((List.nodup_append.mp hint_nd').2.2 v₀
+      (List.mem_append_right _ (List.mem_singleton_self v₀)) v₀ h)
+  -- Step 4: subset facts
+  have hα'_sub : ∀ v ∈ internalVertices α', v ∈ internalVertices π := fun v hv => by
+    rw [hintEq]; exact List.mem_append_left _ (List.mem_append_left _
+      (List.mem_reverse.mpr hv))
+  have hβ_sub : ∀ v ∈ internalVertices β, v ∈ internalVertices π := fun v hv => by
+    rw [hintEq]; exact List.mem_append_right _ hv
+  -- Step 5: reverse identities (β.reverse and α'.reverse internal vertices)
+  have hβ_rev_int : β.reverse.tail.dropLast = (β.tail.dropLast).reverse := by
+    rw [List.tail_reverse, List.dropLast_reverse, List.tail_dropLast]
+  have hα'_rev_int : α'.reverse.tail.dropLast = (α'.tail.dropLast).reverse := by
+    rw [List.tail_reverse, List.dropLast_reverse, List.tail_dropLast]
+  -- Step 6: filter equalities (adapted for Case B: v₀ > j)
+  have hfilt_α'_x : (internalVertices α').filter (fun v => decide (j < v)) =
+      (internalVertices α').filter (fun v => decide (v₀ < v)) := by
+    apply List.filter_congr; intro v hv
+    have hv_π : v ∈ π :=
+      (List.tail_sublist _).subset ((List.dropLast_sublist _).subset (hα'_sub v hv))
+    rcases hπInt v hv_π with rfl | rfl | hlt | hgt
+    · exact absurd (hα'_sub v hv) hi_not_int
+    · exact absurd (hα'_sub v hv) hj_not_int
+    · simp [not_lt.mpr (le_of_lt (lt_trans hlt hij)),
+            not_lt.mpr (le_of_lt (lt_trans (lt_trans hlt hij) hv₀j))]
+    · have hle := hv₀Min v (hα'_sub v hv) hgt
+      simp [hgt, lt_of_le_of_ne hle (fun h => hv₀_not_int_α' (h ▸ hv))]
+  have hfilt_β_x : (internalVertices β).filter (fun v => decide (j < v)) =
+      (internalVertices β).filter (fun v => decide (v₀ < v)) := by
+    apply List.filter_congr; intro v hv
+    have hv_π : v ∈ π :=
+      (List.tail_sublist _).subset ((List.dropLast_sublist _).subset (hβ_sub v hv))
+    rcases hπInt v hv_π with rfl | rfl | hlt | hgt
+    · exact absurd (hβ_sub v hv) hi_not_int
+    · exact absurd (hβ_sub v hv) hj_not_int
+    · simp [not_lt.mpr (le_of_lt (lt_trans hlt hij)),
+            not_lt.mpr (le_of_lt (lt_trans (lt_trans hlt hij) hv₀j))]
+    · have hle := hv₀Min v (hβ_sub v hv) hgt
+      simp [hgt, lt_of_le_of_ne hle (fun h => hv₀_not_int_β (h ▸ hv))]
+  have hfilt_β_y : (internalVertices β).filter (fun v => decide (v < i)) =
+      (internalVertices β).filter (fun v => decide (v < j)) := by
+    apply List.filter_congr; intro v hv
+    have hv_π : v ∈ π :=
+      (List.tail_sublist _).subset ((List.dropLast_sublist _).subset (hβ_sub v hv))
+    rcases hπInt v hv_π with rfl | rfl | hlt | hgt
+    · exact absurd (hβ_sub v hv) hi_not_int
+    · exact absurd (hβ_sub v hv) hj_not_int
+    · simp [hlt, lt_trans hlt hij]
+    · simp [not_lt.mpr (le_of_lt (lt_trans hij hgt)), not_lt.mpr (le_of_lt hgt)]
+  -- Step 7: algebraic closure
+  simp only [pathMonomial, internalVertices]
+  rw [show π.tail.dropLast = (α'.tail.dropLast).reverse ++ [v₀] ++ β.tail.dropLast from by
+    have := hintEq; simp only [internalVertices] at this; exact this]
+  rw [hβ_rev_int, hα'_rev_int]
+  have hjv₀ : decide (j < v₀) = true := decide_eq_true hv₀j
+  have hiv₀ : decide (v₀ < i) = false :=
+    decide_eq_false (not_lt.mpr (le_of_lt (lt_trans hij hv₀j)))
+  have hfα'_x' : α'.tail.dropLast.filter (fun v => decide (j < v)) =
+      α'.tail.dropLast.filter (fun v => decide (v₀ < v)) := by
+    have := hfilt_α'_x; simp only [internalVertices] at this; exact this
+  have hfβ_x' : β.tail.dropLast.filter (fun v => decide (j < v)) =
+      β.tail.dropLast.filter (fun v => decide (v₀ < v)) := by
+    have := hfilt_β_x; simp only [internalVertices] at this; exact this
+  have hfβ_y' : β.tail.dropLast.filter (fun v => decide (v < i)) =
+      β.tail.dropLast.filter (fun v => decide (v < j)) := by
+    have := hfilt_β_y; simp only [internalVertices] at this; exact this
+  have hx : ((α'.tail.dropLast).reverse ++ [v₀] ++ β.tail.dropLast).filter
+        (fun v => decide (j < v)) =
+      (α'.tail.dropLast.filter (fun v => decide (v₀ < v))).reverse ++ [v₀] ++
+        β.tail.dropLast.filter (fun v => decide (v₀ < v)) := by
+    simp only [List.filter_append, List.filter_reverse, hfα'_x', hfβ_x']; simp [hjv₀]
+  have hy : ((α'.tail.dropLast).reverse ++ [v₀] ++ β.tail.dropLast).filter
+        (fun v => decide (v < i)) =
+      (α'.tail.dropLast.filter (fun v => decide (v < i))).reverse ++
+        β.tail.dropLast.filter (fun v => decide (v < j)) := by
+    simp only [List.filter_append, List.filter_reverse, hfβ_y']; simp [hiv₀]
+  rw [hx, hy]
+  simp only [List.map_append, List.map_reverse, List.prod_append, List.prod_reverse,
+             List.map_singleton, List.prod_singleton, List.filter_reverse, x, y]
+  ring
 
 /--
 Sub-walk properties: the drop and take-reverse at an internal vertex's position satisfy
