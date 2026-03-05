@@ -56,7 +56,21 @@ Since `groebnerElement i j π = pathMonomial i j π * fij i j`, the leading coef
 is `leadingCoeff(pathMonomial) * leadingCoeff(fij) = 1 * 1 = 1`. -/
 theorem groebnerElement_leadingCoeff (i j : V) (π : List V) (hij : i < j) :
     binomialEdgeMonomialOrder.leadingCoeff (groebnerElement (K := K) i j π) = 1 := by
-  sorry
+  change binomialEdgeMonomialOrder.leadingCoeff
+      (pathMonomial (K := K) i j π * fij (K := K) i j) = 1
+  rw [MonomialOrder.leadingCoeff_mul, fij_leadingCoeff i j hij, mul_one]
+  simp only [pathMonomial, x, y, internalVertices]
+  rw [MonomialOrder.leadingCoeff_mul]
+  have : ∀ (l : List V) (f : V → BinomialEdgeVars V),
+      binomialEdgeMonomialOrder.leadingCoeff
+        ((l.map (fun v => (X (f v) : MvPolynomial (BinomialEdgeVars V) K))).prod) = 1 := by
+    intro l f
+    induction l with
+    | nil => exact binomialEdgeMonomialOrder.leadingCoeff_one
+    | cons a t ih =>
+      simp only [List.map_cons, List.prod_cons, MonomialOrder.leadingCoeff_mul,
+                 MonomialOrder.leadingCoeff_X, ih, one_mul]
+  simp [this]
 
 /-- The leading coefficient of each groebnerElement is a unit. -/
 theorem groebnerElement_leadingCoeff_isUnit
