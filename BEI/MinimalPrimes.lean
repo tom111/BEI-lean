@@ -40,6 +40,38 @@ Reference: Herzog et al. (2010), Corollary 3.9.
 def IsCutVertexRelative (G : SimpleGraph V) (S : Finset V) (i : V) : Prop :=
   i ∈ S ∧ componentCount G (S.erase i) < componentCount G S
 
+/-! ## Key sub-lemma: variables outside S are not in P_S -/
+
+/-- If `i ∉ S`, then `X(Sum.inl i) ∉ primeComponent G S`.
+Proved by evaluating at the point `x_i = 1`, everything else `= 0`. -/
+lemma prop_3_8_var_not_mem (G : SimpleGraph V) (S : Finset V) (i : V) (hi : i ∉ S) :
+    X (Sum.inl i) ∉ primeComponent (K := K) G S := by
+  -- Evaluate at σ: x_i ↦ 1, everything else ↦ 0
+  let σ : BinomialEdgeVars V → K := fun v => if v = Sum.inl i then 1 else 0
+  -- Every generator of primeComponent G S evaluates to 0 under σ
+  have hker : primeComponent (K := K) G S ≤ RingHom.ker (MvPolynomial.eval σ) := by
+    apply Ideal.span_le.mpr
+    intro f hf
+    simp only [SetLike.mem_coe, RingHom.mem_ker]
+    simp only [Set.mem_union, Set.mem_setOf_eq] at hf
+    rcases hf with ⟨s, hsS, rfl | rfl⟩ | ⟨j, k, _, _, rfl⟩
+    · -- X(Sum.inl s): s ∈ S but i ∉ S, so s ≠ i
+      simp only [MvPolynomial.eval_X, σ]
+      apply if_neg
+      intro heq
+      have hsi : s = i := by
+        change (Sum.inl s : V ⊕ V) = Sum.inl i at heq; exact Sum.inl.inj heq
+      exact hi (hsi ▸ hsS)
+    · -- X(Sum.inr s): different constructor from Sum.inl
+      simp [σ]
+    · -- x j * y k - x k * y j: y-variables all evaluate to 0
+      simp [x, y, σ]
+  -- Contradiction: if X(inl i) ∈ primeComponent G S, eval σ gives 1 = 0
+  intro hmem
+  have h0 : MvPolynomial.eval σ (X (Sum.inl i) : MvPolynomial (BinomialEdgeVars V) K) = 0 :=
+    RingHom.mem_ker.mp (hker hmem)
+  simp [σ] at h0
+
 /-! ## Proposition 3.8: Containment of prime ideals -/
 
 /--
@@ -58,8 +90,13 @@ theorem prop_3_8 (G : SimpleGraph V) (S T : Finset V) :
       SameComponent G T u v → SameComponent G S u v := by
   constructor
   · -- (→): P_T ≤ P_S implies T ≤ S and components of G[V\T] refine into G[V\S].
-    -- (Hard direction: requires showing X(inl i) ∉ P_S when i ∉ S, needs Gröbner basis.)
-    intro _; exact ⟨sorry, sorry⟩
+    intro h
+    refine ⟨fun a haT => ?_, sorry⟩
+    -- T ≤ S: if a ∈ T then a ∈ S. If a ∉ S, prop_3_8_var_not_mem gives X(inl a) ∉ P_S,
+    -- but X(inl a) ∈ P_T ≤ P_S — contradiction.
+    by_contra haS
+    exact prop_3_8_var_not_mem G S a haS
+      (h (Ideal.subset_span (Set.mem_union_left _ ⟨a, haT, Or.inl rfl⟩)))
   · -- (←): T ≤ S and component-preservation implies P_T ≤ P_S.
     -- Every generator of P_T is in P_S by 3 cases on membership in S.
     intro ⟨hTS, hComp⟩
