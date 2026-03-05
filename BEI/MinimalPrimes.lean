@@ -74,6 +74,115 @@ lemma prop_3_8_var_not_mem (G : SimpleGraph V) (S : Finset V) (i : V) (hi : i �
 
 /-! ## Proposition 3.8: Containment of prime ideals -/
 
+/-- Component preservation sub-lemma for `prop_3_8` (→ direction):
+If `P_T ≤ P_S` and `u, v ∉ T ∪ S` are in the same component of `G[V\T]`,
+then they are in the same component of `G[V\S]`.
+
+**Proof** (by contradiction, evaluation map argument):
+Define `σ : BinomialEdgeVars V → K` by `σ(x_u) = 1`, `σ(y_v) = 1`, everything else `= 0`.
+- Every generator of `P_S` evaluates to 0 under `σ`:
+  - `X(inl s)` for `s ∈ S`: `s ≠ u` since `u ∉ S`, so `σ(Sum.inl s) = 0`.
+  - `X(inr s)` for `s ∈ S`: `s ≠ v` since `v ∉ S`, so `σ(Sum.inr s) = 0`.
+  - `x_j y_k - x_k y_j` with `SameComponent G S j k`:
+    the evaluation is nonzero only if `(j=u, k=v)` or `(k=u, j=v)`.
+    Both cases require `SameComponent G S u v`, contradicting the assumption.
+- But `x_u y_v - x_v y_u ∈ P_T ≤ P_S` (it is a generator of `P_T`, or negated generator
+  if `u > v`), and `σ(x_u y_v - x_v y_u) = 1 ≠ 0`. Contradiction. -/
+private lemma prop_3_8_sameComponent_preserved
+    (G : SimpleGraph V) (S T : Finset V)
+    (hle : primeComponent (K := K) G T ≤ primeComponent (K := K) G S)
+    (u v : V) (huT : u ∉ T) (hvT : v ∉ T) (huS : u ∉ S) (hvS : v ∉ S)
+    (hsc : SameComponent G T u v) : SameComponent G S u v := by
+  by_contra hnotSC
+  have hnotpath : ¬Relation.ReflTransGen (fun a b => G.Adj a b ∧ a ∉ S ∧ b ∉ S) u v :=
+    fun hpath => hnotSC ⟨huS, hvS, hpath⟩
+  have huv : u ≠ v := fun heq => hnotpath (heq ▸ Relation.ReflTransGen.refl)
+  -- Symmetry helpers
+  have hR_sym_T : Symmetric (fun a b => G.Adj a b ∧ a ∉ T ∧ b ∉ T) :=
+    fun a b ⟨ha, hb, hc⟩ => ⟨G.symm ha, hc, hb⟩
+  have hR_sym_S : Symmetric (fun a b => G.Adj a b ∧ a ∉ S ∧ b ∉ S) :=
+    fun a b ⟨ha, hb, hc⟩ => ⟨G.symm ha, hc, hb⟩
+  -- x_u * y_v - x_v * y_u ∈ P_T
+  have hmem_T : x u * y v - x v * y u ∈ primeComponent (K := K) G T := by
+    rcases lt_or_gt_of_ne huv with hlt | hlt
+    · exact Ideal.subset_span (Set.mem_union_right _ ⟨u, v, hlt, hsc, rfl⟩)
+    · have hscvu : SameComponent G T v u :=
+        ⟨hvT, huT, Relation.ReflTransGen.symmetric hR_sym_T hsc.2.2⟩
+      have hgen : x v * y u - x u * y v ∈ primeComponent (K := K) G T :=
+        Ideal.subset_span (Set.mem_union_right _ ⟨v, u, hlt, hscvu, rfl⟩)
+      have hneg := (primeComponent (K := K) G T).neg_mem hgen
+      rwa [neg_sub] at hneg
+  have hmem_S := hle hmem_T
+  -- Evaluation map: x_u ↦ 1, y_v ↦ 1, everything else ↦ 0
+  let σ : BinomialEdgeVars V → K :=
+    fun w => if w = Sum.inl u then 1 else if w = Sum.inr v then 1 else 0
+  -- Every generator of P_S evaluates to 0 under σ
+  have hker : primeComponent (K := K) G S ≤ RingHom.ker (MvPolynomial.eval σ) := by
+    apply Ideal.span_le.mpr
+    intro f hf
+    simp only [SetLike.mem_coe, RingHom.mem_ker, Set.mem_union, Set.mem_setOf_eq] at hf ⊢
+    rcases hf with ⟨s, hsS, rfl | rfl⟩ | ⟨j, k, hjk, hjkS, rfl⟩
+    · -- X(inl s): s ≠ u since s ∈ S but u ∉ S
+      simp only [MvPolynomial.eval_X, σ,
+        if_neg (show (Sum.inl s : BinomialEdgeVars V) ≠ Sum.inl u from
+          fun h => huS (Sum.inl.inj h ▸ hsS)),
+        if_neg (show (Sum.inl s : BinomialEdgeVars V) ≠ Sum.inr v from by simp)]
+    · -- X(inr s): s ≠ v since s ∈ S but v ∉ S
+      simp only [MvPolynomial.eval_X, σ,
+        if_neg (show (Sum.inr s : BinomialEdgeVars V) ≠ Sum.inl u from by simp),
+        if_neg (show (Sum.inr s : BinomialEdgeVars V) ≠ Sum.inr v from
+          fun h => hvS (Sum.inr.inj h ▸ hsS))]
+    · -- x_j * y_k - x_k * y_j: eval = 0 (SameComponent G S j k cannot give path u→v)
+      simp only [x, y, MvPolynomial.eval_sub, MvPolynomial.eval_mul, MvPolynomial.eval_X, σ,
+        if_neg (show (Sum.inl j : BinomialEdgeVars V) ≠ Sum.inr v from by simp),
+        if_neg (show (Sum.inr k : BinomialEdgeVars V) ≠ Sum.inl u from by simp),
+        if_neg (show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inr v from by simp),
+        if_neg (show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inl u from by simp)]
+      -- Goal: (if Sum.inl j = Sum.inl u then 1 else 0) * (if Sum.inr k = Sum.inr v then 1 else 0)
+      --     - (if Sum.inl k = Sum.inl u then 1 else 0) * (if Sum.inr j = Sum.inr v then 1 else 0) = 0
+      rcases eq_or_ne j u with hjU | hjU
+      · -- j = u: k ≠ u (since j < k), so second product = 0
+        have hkU : k ≠ u := ne_of_gt (hjU ▸ hjk)
+        simp only [if_pos (congrArg Sum.inl hjU), one_mul,
+                   if_neg (show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl u from
+                     fun h => hkU (Sum.inl.inj h)), zero_mul, sub_zero]
+        -- Goal: (if Sum.inr k = Sum.inr v then 1 else 0) = 0
+        rcases eq_or_ne k v with hkV | hkV
+        · rw [hjU, hkV] at hjkS; exact absurd hjkS.2.2 hnotpath
+        · simp [show (Sum.inr k : BinomialEdgeVars V) ≠ Sum.inr v from
+            fun h => hkV (Sum.inr.inj h)]
+      · -- j ≠ u: first product = 0
+        simp only [if_neg (show (Sum.inl j : BinomialEdgeVars V) ≠ Sum.inl u from
+                     fun h => hjU (Sum.inl.inj h)),
+                   zero_mul, zero_sub, neg_eq_zero]
+        -- Goal: (if Sum.inl k = Sum.inl u then 1 else 0) * (if Sum.inr j = Sum.inr v then 1 else 0) = 0
+        rcases eq_or_ne k u with hkU | hkU
+        · simp only [if_pos (congrArg Sum.inl hkU), one_mul]
+          -- Goal: (if Sum.inr j = Sum.inr v then 1 else 0) = 0
+          rcases eq_or_ne j v with hjV | hjV
+          · rw [hkU, hjV] at hjkS
+            exact absurd (Relation.ReflTransGen.symmetric hR_sym_S hjkS.2.2) hnotpath
+          · simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr v from
+              fun h => hjV (Sum.inr.inj h)]
+        · simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl u from
+            fun h => hkU (Sum.inl.inj h)]
+  -- Contradiction: eval σ (x_u * y_v - x_v * y_u) = 1, but it's in the kernel (= 0)
+  have heval : MvPolynomial.eval σ (x u * y v - x v * y u) = 1 := by
+    simp only [x, y, MvPolynomial.eval_sub, MvPolynomial.eval_mul, MvPolynomial.eval_X]
+    have h1 : σ (Sum.inl u) = 1 := by simp [σ]
+    have h2 : σ (Sum.inr v) = 1 := by
+      simp [σ, show (Sum.inr v : BinomialEdgeVars V) ≠ Sum.inl u from by simp]
+    have h3 : σ (Sum.inl v) = 0 := by
+      simp [σ, show (Sum.inl v : BinomialEdgeVars V) ≠ Sum.inl u from
+              fun h => huv (Sum.inl.inj h).symm,
+            show (Sum.inl v : BinomialEdgeVars V) ≠ Sum.inr v from by simp]
+    have h4 : σ (Sum.inr u) = 0 := by
+      simp [σ, show (Sum.inr u : BinomialEdgeVars V) ≠ Sum.inl u from by simp,
+            show (Sum.inr u : BinomialEdgeVars V) ≠ Sum.inr v from
+              fun h => huv (Sum.inr.inj h)]
+    simp [h1, h2, h3, h4]
+  exact one_ne_zero (heval.symm.trans (RingHom.mem_ker.mp (hker hmem_S)))
+
 /--
 **Proposition 3.8** (Herzog et al. 2010):
 `P_T(G) ⊆ P_S(G)` if and only if:
@@ -91,12 +200,14 @@ theorem prop_3_8 (G : SimpleGraph V) (S T : Finset V) :
   constructor
   · -- (→): P_T ≤ P_S implies T ≤ S and components of G[V\T] refine into G[V\S].
     intro h
-    refine ⟨fun a haT => ?_, sorry⟩
-    -- T ≤ S: if a ∈ T then a ∈ S. If a ∉ S, prop_3_8_var_not_mem gives X(inl a) ∉ P_S,
-    -- but X(inl a) ∈ P_T ≤ P_S — contradiction.
-    by_contra haS
-    exact prop_3_8_var_not_mem G S a haS
-      (h (Ideal.subset_span (Set.mem_union_left _ ⟨a, haT, Or.inl rfl⟩)))
+    exact ⟨fun a haT => by
+      -- T ≤ S: if a ∈ T then a ∈ S. If a ∉ S, prop_3_8_var_not_mem gives X(inl a) ∉ P_S,
+      -- but X(inl a) ∈ P_T ≤ P_S — contradiction.
+      by_contra haS
+      exact prop_3_8_var_not_mem G S a haS
+        (h (Ideal.subset_span (Set.mem_union_left _ ⟨a, haT, Or.inl rfl⟩))),
+      fun u v huT hvT huS hvS hsc =>
+        prop_3_8_sameComponent_preserved G S T h u v huT hvT huS hvS hsc⟩
   · -- (←): T ≤ S and component-preservation implies P_T ≤ P_S.
     -- Every generator of P_T is in P_S by 3 cases on membership in S.
     intro ⟨hTS, hComp⟩
