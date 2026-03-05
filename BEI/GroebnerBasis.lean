@@ -1,5 +1,6 @@
 import BEI.AdmissiblePaths
 import BEI.MonomialOrder
+import BEI.GroebnerAPI
 import Mathlib.RingTheory.MvPolynomial.MonomialOrder
 import Mathlib.RingTheory.MvPolynomial.Groebner
 import Mathlib.RingTheory.Ideal.Operations
@@ -48,9 +49,66 @@ theorem theorem_2_1 (G : SimpleGraph V) :
     obtain ⟨i, j, hAdj, hij, rfl⟩ := hf
     exact Ideal.subset_span (generator_in_groebnerBasisSet G i j hAdj hij)
 
+/-! ## Leading coefficient of groebnerElement -/
+
+/-- The leading coefficient of `groebnerElement i j π` is 1 (a unit).
+Since `groebnerElement i j π = pathMonomial i j π * fij i j`, the leading coefficient
+is `leadingCoeff(pathMonomial) * leadingCoeff(fij) = 1 * 1 = 1`. -/
+theorem groebnerElement_leadingCoeff (i j : V) (π : List V) (hij : i < j) :
+    binomialEdgeMonomialOrder.leadingCoeff (groebnerElement (K := K) i j π) = 1 := by
+  sorry
+
+/-- The leading coefficient of each groebnerElement is a unit. -/
+theorem groebnerElement_leadingCoeff_isUnit
+    (i j : V) (π : List V) (hπ : IsAdmissiblePath G i j π) :
+    IsUnit (binomialEdgeMonomialOrder.leadingCoeff (groebnerElement (K := K) i j π)) := by
+  rw [groebnerElement_leadingCoeff i j π hπ.1]
+  exact isUnit_one
+
+/-! ## Theorem 2.1: Gröbner basis via Buchberger's criterion -/
+
+/--
+**Theorem 2.1** (Herzog et al. 2010, main part): The set `groebnerBasisSet G` is a Gröbner basis
+of `J_G` with respect to the lex monomial order.
+
+**Proof via Buchberger's criterion**: By `isGroebnerBasis_iff_sPolynomial_isRemainder`,
+it suffices to show that for every pair of elements `e₁, e₂ ∈ groebnerBasisSet G`,
+the S-polynomial `S(e₁, e₂)` reduces to 0 modulo `groebnerBasisSet G`.
+
+**S-polynomial cases**: For `e₁ = u_{π₁} f_{i₁j₁}` and `e₂ = u_{π₂} f_{i₂j₂}`:
+- **Coprime case**: If `{i₁,j₁}` and `{i₂,j₂}` share no variable in their leading monomials,
+  then `S(e₁,e₂)` is a trivial combination of `e₁` and `e₂` that reduces to 0.
+- **Shared first endpoint** (`i₁ = i₂`): Use the admissible path structure.
+- **Shared last endpoint** (`j₁ = j₂`): Symmetric to above.
+- **Cross case** (`i₁ = j₂` or `j₁ = i₂`): Use path concatenation.
+
+Reference: Herzog et al. (2010), Theorem 2.1.
+-/
+theorem theorem_2_1_groebner (G : SimpleGraph V) :
+    binomialEdgeMonomialOrder.IsGroebnerBasis
+      (groebnerBasisSet (K := K) G) (binomialEdgeIdeal (K := K) G) := by
+  -- Rewrite the ideal using the span equality from theorem_2_1
+  rw [show binomialEdgeIdeal (K := K) G = Ideal.span (groebnerBasisSet (K := K) G) from
+    (theorem_2_1 G).symm]
+  -- Apply Buchberger's criterion
+  rw [isGroebnerBasis_iff_sPolynomial_isRemainder (hG := fun g hg => by
+    obtain ⟨i, j, π, hπ, rfl⟩ := hg
+    exact groebnerElement_leadingCoeff_isUnit i j π hπ)]
+  -- For each pair of basis elements, show S-polynomial reduces to 0
+  intro ⟨e₁, he₁⟩ ⟨e₂, he₂⟩
+  obtain ⟨i₁, j₁, π₁, hπ₁, rfl⟩ := he₁
+  obtain ⟨i₂, j₂, π₂, hπ₂, rfl⟩ := he₂
+  -- TODO: case analysis on how the two generators relate:
+  -- 1. Coprime leading monomials (disjoint variable sets in leading terms)
+  -- 2. Shared first endpoint (i₁ = i₂): use f_{i₁j₁} and f_{i₁j₂}
+  -- 3. Shared last endpoint (j₁ = j₂): symmetric
+  -- 4. Cross cases
+  -- Each case: S-polynomial is a combination of groebnerBasisSet elements
+  sorry
+
 theorem theorem_2_1_leading (G : SimpleGraph V) (f : MvPolynomial (BinomialEdgeVars V) K)
     (hf : f ∈ binomialEdgeIdeal G) :
-    -- Part 2: the leading term of f is divisible by some leading term in the basis set
+    -- The leading term of f is divisible by some leading term in the basis set
     ∃ (i j : V) (π : List V) (_ : IsAdmissiblePath G i j π),
       binomialEdgeMonomialOrder.degree (groebnerElement (K := K) i j π) ≤
       binomialEdgeMonomialOrder.degree f := by
@@ -60,7 +118,7 @@ theorem theorem_2_1_reduced (G : SimpleGraph V)
     (i₁ j₁ : V) (π₁ : List V) (_ : IsAdmissiblePath G i₁ j₁ π₁)
     (i₂ j₂ : V) (π₂ : List V) (_ : IsAdmissiblePath G i₂ j₂ π₂)
     (hne : (i₁, j₁, π₁) ≠ (i₂, j₂, π₂)) :
-    -- Part 3: no leading monomial divides another
+    -- No leading monomial divides another
     ¬ (binomialEdgeMonomialOrder.degree (groebnerElement (K := K) i₁ j₁ π₁) ≤
        binomialEdgeMonomialOrder.degree (groebnerElement (K := K) i₂ j₂ π₂)) := by
   sorry

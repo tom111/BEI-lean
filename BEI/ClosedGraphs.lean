@@ -1,7 +1,7 @@
 import BEI.MonomialOrder
 import BEI.GraphProperties
+import BEI.GroebnerAPI
 import Mathlib.RingTheory.MvPolynomial.MonomialOrder
-import Mathlib.RingTheory.MvPolynomial.Groebner
 
 variable {K : Type*} [Field K]
 variable {V : Type*} [LinearOrder V] [DecidableEq V] [Fintype V]
@@ -15,7 +15,6 @@ with respect to the lex order if and only if G is a closed graph.
 
 ## Key definitions
 - `generatorSet G`: the set of quadratic generators of `J_G`
-- `IsGroebnerBasis`: membership of a set in Gröbner basis (via S-polynomial criterion)
 
 ## Reference: Herzog et al. (2010), Theorem 1.1
 -/
@@ -38,35 +37,6 @@ def generatorSet (G : SimpleGraph V) :
 theorem generatorSet_span (G : SimpleGraph V) :
     Ideal.span (generatorSet (K := K) G) = binomialEdgeIdeal (K := K) G := rfl
 
-/-! ## Gröbner basis predicate -/
-
-/--
-A set `S` of polynomials is a **Gröbner basis** of an ideal `I` with respect to
-a monomial order `m` if `S ⊆ I` and for every `f ∈ I`, some element of `S`
-has a leading term dividing the leading term of `f`.
-
-Equivalently (Buchberger criterion): `S` is a Gröbner basis iff for every pair
-`f, g ∈ S`, the S-polynomial `Spoly(f, g)` reduces to 0 modulo `S`.
--/
-def IsGroebnerBasis (m : MonomialOrder (BinomialEdgeVars V))
-    (I : Ideal (MvPolynomial (BinomialEdgeVars V) K))
-    (S : Set (MvPolynomial (BinomialEdgeVars V) K)) : Prop :=
-  Ideal.span S = I ∧
-  ∀ f g : MvPolynomial (BinomialEdgeVars V) K, f ∈ S → g ∈ S → True
-
--- Note: The above is a placeholder. The proper statement uses
--- MonomialOrder.sPolynomial from Mathlib.RingTheory.MvPolynomial.MonomialOrder.
--- A proper definition is:
-
-/-- A generating set S is a Gröbner basis iff every S-polynomial reduces to 0. -/
-def IsGroebnerBasis' (m : MonomialOrder (BinomialEdgeVars V))
-    (I : Ideal (MvPolynomial (BinomialEdgeVars V) K))
-    (S : Set (MvPolynomial (BinomialEdgeVars V) K)) : Prop :=
-  Ideal.span S = I ∧
-  ∀ f g : MvPolynomial (BinomialEdgeVars V) K, f ∈ S → g ∈ S →
-    -- The S-polynomial of f and g reduces to 0 modulo S
-    True  -- placeholder for: m.sPolynomial f g reduces to 0 mod S
-
 /-! ## Theorem 1.1 -/
 
 /--
@@ -85,21 +55,21 @@ Proof outline:
 Reference: Herzog et al. (2010), Theorem 1.1.
 -/
 theorem theorem_1_1 (G : SimpleGraph V) :
-    IsGroebnerBasis' binomialEdgeMonomialOrder (binomialEdgeIdeal (K := K) G)
-      (generatorSet (K := K) G) ↔
+    binomialEdgeMonomialOrder.IsGroebnerBasis (generatorSet (K := K) G)
+      (binomialEdgeIdeal (K := K) G) ↔
     IsClosedGraph G := by
   sorry
 
 /-- Forward direction of Theorem 1.1: closed graph → Gröbner basis. -/
 theorem closed_implies_groebner (G : SimpleGraph V) (h : IsClosedGraph G) :
-    IsGroebnerBasis' binomialEdgeMonomialOrder (binomialEdgeIdeal (K := K) G)
-      (generatorSet (K := K) G) := by
+    binomialEdgeMonomialOrder.IsGroebnerBasis (generatorSet (K := K) G)
+      (binomialEdgeIdeal (K := K) G) := by
   sorry
 
 /-- Backward direction of Theorem 1.1: Gröbner basis → closed graph. -/
 theorem groebner_implies_closed (G : SimpleGraph V)
-    (h : IsGroebnerBasis' binomialEdgeMonomialOrder (binomialEdgeIdeal (K := K) G)
-      (generatorSet (K := K) G)) :
+    (h : binomialEdgeMonomialOrder.IsGroebnerBasis (generatorSet (K := K) G)
+      (binomialEdgeIdeal (K := K) G)) :
     IsClosedGraph G := by
   sorry
 
