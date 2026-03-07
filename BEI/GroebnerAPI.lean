@@ -78,6 +78,42 @@ def IsGroebnerBasis {R : Type*} [CommSemiring R]
 
 /-! ## Buchberger's criterion -/
 
+/-! ### Helper lemma: S-polynomial degree bound -/
+
+/-- The S-polynomial of two polynomials has strictly smaller `toSyn`-degree than the lcm
+of the individual degrees.  Proved by normalising to equal-degree inputs via monomial scaling,
+then applying `sPolynomial_lt_of_degree_ne_zero_of_degree_eq`. -/
+private lemma sPolynomial_toSyn_lt_lcm {σ : Type*} (m : MonomialOrder σ)
+    {R : Type*} [CommRing R] [Nontrivial R] [NoZeroDivisors R]
+    {b₁ b₂ : MvPolynomial σ R}
+    (hs : m.sPolynomial b₁ b₂ ≠ 0) :
+    m.toSyn (m.degree (m.sPolynomial b₁ b₂)) <
+    m.toSyn (m.degree b₁ ⊔ m.degree b₂) := by
+  classical
+  set d₁₂ := m.degree b₁ ⊔ m.degree b₂
+  set f₁ := monomial (d₁₂ - m.degree b₁) (1 : R) * b₁
+  set f₂ := monomial (d₁₂ - m.degree b₂) (1 : R) * b₂
+  have hSrel : m.sPolynomial f₁ f₂ = m.sPolynomial b₁ b₂ := by
+    rw [show f₁ = monomial (d₁₂ - m.degree b₁) (1 : R) * b₁ from rfl,
+        show f₂ = monomial (d₁₂ - m.degree b₂) (1 : R) * b₂ from rfl,
+        sPolynomial_monomial_mul]
+    simp [tsub_add_cancel_of_le le_sup_left, tsub_add_cancel_of_le le_sup_right, d₁₂]
+  have hb₁_ne : b₁ ≠ 0 := fun hb₁ => hs (by simp [hb₁])
+  have hb₂_ne : b₂ ≠ 0 := fun hb₂ => hs (by simp [hb₂])
+  have hmono1 : (monomial (d₁₂ - m.degree b₁) (1 : R) : MvPolynomial σ R) ≠ 0 := by simp
+  have hmono2 : (monomial (d₁₂ - m.degree b₂) (1 : R) : MvPolynomial σ R) ≠ 0 := by simp
+  have hdeg_f₁ : m.degree f₁ = d₁₂ := by
+    rw [show f₁ = monomial (d₁₂ - m.degree b₁) (1 : R) * b₁ from rfl,
+        degree_mul hmono1 hb₁_ne, degree_monomial (1 : R),
+        if_neg one_ne_zero, tsub_add_cancel_of_le le_sup_left]
+  have hdeg_f₂ : m.degree f₂ = d₁₂ := by
+    rw [show f₂ = monomial (d₁₂ - m.degree b₂) (1 : R) * b₂ from rfl,
+        degree_mul hmono2 hb₂_ne, degree_monomial (1 : R),
+        if_neg one_ne_zero, tsub_add_cancel_of_le le_sup_right]
+  have heq : m.degree f₁ = m.degree f₂ := by rw [hdeg_f₁, hdeg_f₂]
+  have hlt := sPolynomial_lt_of_degree_ne_zero_of_degree_eq heq (by rwa [hSrel])
+  rwa [hSrel, hdeg_f₁] at hlt
+
 /-- **Buchberger's criterion**: `G` is a Gröbner basis of `Ideal.span G` if and only if
 for every pair of elements `g₁, g₂ ∈ G`, the S-polynomial `S(g₁, g₂)` reduces to 0 modulo `G`.
 
@@ -130,42 +166,119 @@ theorem isGroebnerBasis_iff_sPolynomial_isRemainder {R : Type*} [Field R]
     obtain ⟨deg_g, ⟨g, hg_mem, rfl⟩, hg_deg⟩ := hlt_mem (m.degree r) hlt_support
     exact hirr (m.degree r) hdeg_r g hg_mem hg_deg
   · -- (←) If all S-polynomials reduce to 0, then G is a Gröbner basis.
-    --
-    -- Proof sketch (WFI on the representation max-degree D : m.syn):
-    --
-    -- Key lemma: ∀ f ∈ Ideal.span G, f ≠ 0 → ∃ g ∈ G, m.degree g ≤ m.degree f.
-    --
-    -- Proof by WFI on D := max_{b ∈ B} m.toSyn(m.degree(c_b * b)) over some representation
-    -- f = ∑_{b ∈ B} c_b * b (b ∈ G).
-    --
-    -- Case A (D = m.toSyn(m.degree f)):
-    --   Some b* achieves the max, so m.degree(c_{b*} * b*) = m.degree f (as σ →₀ ℕ elements,
-    --   since m.toSyn is injective). Then m.degree(b*) ≤ m.degree(c_{b*} * b*) = m.degree f
-    --   (natural order: m.degree(c_{b*} * b*) = m.degree(c_{b*}) + m.degree(b*) ≥ m.degree(b*)).
-    --
-    -- Case B (D > m.toSyn(m.degree f)):
-    --   All B_D := {b ∈ B : m.toSyn(m.degree(c_b * b)) = D} have the SAME leading monomial
-    --   α = m.toSyn⁻¹(D) (injectivity of m.toSyn). Sum ∑_{b ∈ B_D} c_b * b has degree < D
-    --   (the degree-D terms cancel since D > degree(f)).
-    --
-    --   By `sPolynomial_decomposition'` (needs [Field R]):
-    --     ∑_{b ∈ B_D} c_b * b = ∑_{b₁,b₂ ∈ B_D} coeff • S(c_{b₁} * b₁, c_{b₂} * b₂)
-    --   where each S-poly has degree < D.
-    --
-    --   Key algebraic fact (S-poly scaling):
-    --     S(c_{b₁} * b₁, c_{b₂} * b₂) = monomial(α - (m.degree b₁ ⊔ m.degree b₂)) * S(b₁, b₂)
-    --   (when c_{b₁} * b₁ and c_{b₂} * b₂ have the same leading monomial α).
-    --
-    --   By the S-poly hypothesis: S(b₁, b₂) = ∑_k h_k * b_k with deg(h_k * b_k) ≤ deg(S(b₁, b₂)).
-    --   Multiplying by monomial(α - lcm): the new terms have degree < D.
-    --
-    --   Substituting back gives a new representation of f with max degree < D.
-    --   By WFI on D, we eventually reach Case A, proving the key lemma.
-    --
-    -- With the key lemma, we show Ideal.span(lt(span G)) ⊆ Ideal.span(lt(G)):
-    --   For any f ∈ Ideal.span G (f ≠ 0), lt(f) ∈ span(lt(G)) via the key lemma +
-    --   span_leadingTerm_eq_span_monomial + mem_ideal_span_monomial_image.
-    sorry
+    intro hSP
+    refine ⟨Ideal.subset_span, ?_⟩
+    -- Need: span(lt(span G)) = span(lt(G))
+    apply le_antisymm
+    · -- span(lt(span G)) ⊆ span(lt(G))
+      --
+      -- Key lemma: for any nonzero f ∈ span G, ∃ g ∈ G with m.degree g ≤ m.degree f.
+      -- Proof by WFI on D = max_{b ∈ support(c)} m.toSyn(m.degree(c(b)*b)) where
+      -- f = c.sum (fun b q => q • b) is a G-linear combination.
+      --
+      -- Case A (D = m.toSyn(m.degree f)):
+      --   Some b₀ achieves D = m.toSyn(m.degree(c b₀ * b₀)).
+      --   By toSyn injectivity: m.degree(c b₀ * b₀) = m.degree f.
+      --   By degree_mul: m.degree b₀ ≤ m.degree(c b₀ * b₀) = m.degree f (componentwise).
+      --
+      -- Case B (D > m.toSyn(m.degree f)):
+      --   All b ∈ support with max degree have the SAME degree α̃ = m.toSyn⁻¹(D).
+      --   By sPolynomial_decomposition': the sub-sum decomposes into S-polynomials.
+      --   By hSP + sPolynomial_toSyn_lt_lcm: each new term has toSyn-degree < D.
+      --   New representation of f has max degree < D → apply WFI.
+      --
+      -- We generalise over all G-representations to allow the induction.
+      suffices hkey :
+          ∀ (D : m.syn) (c : MvPolynomial σ R →₀ MvPolynomial σ R),
+            ↑c.support ⊆ G →
+            (c.sum fun b q => q • b) ≠ 0 →
+            (∀ b ∈ c.support, m.toSyn (m.degree (c b * b)) ≤ D) →
+            ∃ g ∈ G, m.degree g ≤ m.degree (c.sum fun b q => q • b) by
+        -- Use hkey to prove the span inclusion
+        apply Ideal.span_le.mpr
+        rintro _ ⟨f, hf_mem, rfl⟩
+        simp only [SetLike.mem_coe] at hf_mem
+        rcases eq_or_ne f 0 with rfl | hf_ne
+        · simp only [leadingTerm_zero]; exact Ideal.zero_mem _
+        obtain ⟨c, hcG, hcsum⟩ := Submodule.mem_span_set.mp hf_mem
+        have hcne : c.support.Nonempty := by
+          simp only [Finset.nonempty_iff_ne_empty]
+          intro h
+          apply hf_ne
+          rw [← hcsum, show c = 0 from Finsupp.support_eq_empty.mp h]
+          exact Finsupp.sum_zero_index
+        obtain ⟨g, hg_G, hg_deg⟩ := hkey
+            (c.support.sup' hcne (fun b => m.toSyn (m.degree (c b * b))))
+            c hcG (by rw [hcsum]; exact hf_ne)
+            (fun b hb => Finset.le_sup' (fun b => m.toSyn (m.degree (c b * b))) hb)
+        -- Now show lt(f) ∈ span(lt(G))
+        rw [hcsum] at hg_deg
+        rw [span_leadingTerm_eq_span_monomial hG,
+            show (fun p ↦ monomial (m.degree p) (1 : R)) '' G =
+                (fun s ↦ monomial s (1 : R)) '' (m.degree '' G) from by ext; simp [Set.mem_image]]
+        simp only [SetLike.mem_coe, mem_ideal_span_monomial_image]
+        intro xi hxi
+        simp only [leadingTerm] at hxi; classical
+        rw [support_monomial, if_neg (leadingCoeff_ne_zero_iff.mpr hf_ne),
+            Finset.mem_singleton] at hxi
+        exact ⟨m.degree g, ⟨g, hg_G, rfl⟩, hxi ▸ hg_deg⟩
+      -- WFI on D
+      intro D
+      apply WellFounded.induction wellFounded_lt D
+      intro D ih c hcG hcne hdeg
+      set f := c.sum fun b q => q • b with hf_def
+      -- c.support is nonempty since f ≠ 0
+      have hcne' : c.support.Nonempty := by
+        simp only [Finset.nonempty_iff_ne_empty]
+        intro h
+        apply hcne
+        rw [hf_def, show c = 0 from Finsupp.support_eq_empty.mp h]
+        exact Finsupp.sum_zero_index
+      -- Case split on whether D = m.toSyn(m.degree f)
+      by_cases hDA : m.toSyn (m.degree f) = D
+      · -- Case A: D = toSyn(deg f).
+        -- Some b₀ ∈ c.support achieves toSyn(deg(c b₀ * b₀)) = D.
+        -- (If all were strictly less, degree_sum_le would contradict hDA.)
+        obtain ⟨b₀, hb₀_mem, hb₀_max⟩ : ∃ b₀ ∈ c.support,
+            m.toSyn (m.degree (c b₀ * b₀)) = D := by
+          by_contra hall
+          push_neg at hall
+          -- All terms have toSyn-degree < D
+          have hlt : ∀ b ∈ c.support, m.toSyn (m.degree (c b * b)) < D := fun b hb =>
+            (hdeg b hb).lt_of_ne (hall b hb)
+          -- degree_sum_le: toSyn(deg f) ≤ sup' of term degrees < D — contradicts hDA
+          have hfsum : f = ∑ b ∈ c.support, c b * b := by
+            simp [hf_def, Finsupp.sum, smul_eq_mul]
+          have hdeg_le : m.toSyn (m.degree f) ≤
+              c.support.sup' hcne' (fun b => m.toSyn (m.degree (c b * b))) := by
+            rw [hfsum, Finset.sup'_eq_sup hcne']
+            exact degree_sum_le
+          have hsup_lt : c.support.sup' hcne' (fun b => m.toSyn (m.degree (c b * b))) < D :=
+            (Finset.sup'_lt_iff hcne').mpr hlt
+          exact absurd hDA (ne_of_lt (hdeg_le.trans_lt hsup_lt))
+        -- b₀ ∈ G by hcG
+        have hb₀_G : b₀ ∈ G := hcG (Finset.mem_coe.mpr hb₀_mem)
+        -- c b₀ ≠ 0 (b₀ ∈ support), b₀ ≠ 0 (b₀ ∈ G and leadingCoeff is unit → b₀ ≠ 0)
+        have hcb₀ : c b₀ ≠ 0 := Finsupp.mem_support_iff.mp hb₀_mem
+        have hb₀_ne : b₀ ≠ 0 := isUnit_leadingCoeff.mp (hG b₀ hb₀_G)
+        -- m.degree(c b₀ * b₀) = m.degree f (toSyn injective, both = D)
+        have hdeg_eq : m.degree (c b₀ * b₀) = m.degree f :=
+          m.toSyn.injective (by rw [hb₀_max, hDA])
+        -- m.degree b₀ ≤ m.degree(c b₀ * b₀) componentwise (degree_mul + zero ≤ anything)
+        have hdeg_b₀ : m.degree b₀ ≤ m.degree (c b₀ * b₀) := by
+          rw [degree_mul hcb₀ hb₀_ne]
+          exact le_add_left le_rfl
+        exact ⟨b₀, hb₀_G, hdeg_b₀.trans (le_of_eq hdeg_eq)⟩
+      · -- Case B: D > m.toSyn(m.degree f).
+        -- Construction: replace the B_D terms using S-polynomial decomposition,
+        -- then use hSP to get a new G-representation with max degree < D.
+        -- Full proof: sPolynomial_decomposition' + sPolynomial_monomial_mul + hSP
+        -- + sPolynomial_toSyn_lt_lcm + toSyn additivity.
+        sorry
+    · -- span(lt(G)) ⊆ span(lt(span G)) — easy direction
+      apply Ideal.span_le.mpr
+      rintro _ ⟨g, hg_G, rfl⟩
+      exact Ideal.subset_span ⟨g, Ideal.subset_span hg_G, rfl⟩
 
 end MonomialOrder
 
