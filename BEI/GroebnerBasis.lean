@@ -126,10 +126,37 @@ theorem theorem_2_1_leading (G : SimpleGraph V) (f : MvPolynomial (BinomialEdgeV
     ∃ (i j : V) (π : List V) (_ : IsAdmissiblePath G i j π),
       binomialEdgeMonomialOrder.degree (groebnerElement (K := K) i j π) ≤
       binomialEdgeMonomialOrder.degree f := by
-  -- Follows from theorem_2_1_groebner: since G is a Gröbner basis of binomialEdgeIdeal G,
-  -- the leading term of any nonzero ideal element is divisible by some basis leading term.
-  -- This is the definition of Gröbner basis (initial ideal containment).
-  sorry
+  -- Follows from theorem_2_1_groebner: the IsGroebnerBasis condition gives
+  -- span(lt(I)) = span(lt(G)), so lt(f) ∈ span(lt(G)), and some basis element
+  -- has leading monomial dividing lt(f).
+  obtain ⟨_, hInitIdeal⟩ := theorem_2_1_groebner (K := K) G
+  -- lt(f) ∈ span(lt(binomialEdgeIdeal G))
+  have hlt_mem : binomialEdgeMonomialOrder.leadingTerm f ∈
+      Ideal.span (binomialEdgeMonomialOrder.leadingTerm ''
+        ↑(binomialEdgeIdeal (K := K) G)) :=
+    Ideal.subset_span ⟨f, hf, rfl⟩
+  -- Rewrite using hGB: span(lt(I)) = span(lt(G))
+  rw [hInitIdeal] at hlt_mem
+  -- All groebnerBasisSet elements have unit leading coefficients
+  have hG_units : ∀ g ∈ (groebnerBasisSet (K := K) G),
+      IsUnit (binomialEdgeMonomialOrder.leadingCoeff g) := by
+    intro g ⟨i, j, π, hπ, hge⟩
+    rw [hge]; exact groebnerElement_leadingCoeff_isUnit i j π hπ
+  -- Rewrite span(lt(G)) = span({monomial(deg g) 1 : g ∈ G})
+  rw [span_leadingTerm_eq_span_monomial hG_units,
+      ← Set.image_image (fun s => monomial s (1 : K)) binomialEdgeMonomialOrder.degree,
+      mem_ideal_span_monomial_image] at hlt_mem
+  -- degree f ∈ (leadingTerm f).support (since f ≠ 0)
+  have hdeg_supp : binomialEdgeMonomialOrder.degree f ∈
+      (binomialEdgeMonomialOrder.leadingTerm f).support := by
+    simp only [MonomialOrder.leadingTerm]
+    classical
+    rw [support_monomial, if_neg (MonomialOrder.leadingCoeff_ne_zero_iff.mpr hf0)]
+    exact Finset.mem_singleton_self _
+  -- Extract: ∃ g ∈ groebnerBasisSet G, degree g ≤ degree f
+  obtain ⟨si, ⟨g, hg_mem, rfl⟩, hle⟩ := hlt_mem _ hdeg_supp
+  obtain ⟨i, j, π, hπ, rfl⟩ := hg_mem
+  exact ⟨i, j, π, hπ, hle⟩
 
 /-! ## Degree computation helpers -/
 
