@@ -38,6 +38,226 @@ def generatorSet (G : SimpleGraph V) :
 theorem generatorSet_span (G : SimpleGraph V) :
     Ideal.span (generatorSet (K := K) G) = binomialEdgeIdeal (K := K) G := rfl
 
+/-! ## Helper lemmas for the Buchberger case analysis -/
+
+private lemma zero_le_syn (d : BinomialEdgeVars V →₀ ℕ) :
+    binomialEdgeMonomialOrder.toSyn 0 ≤ binomialEdgeMonomialOrder.toSyn d := by
+  simp only [binomialEdgeMonomialOrder, MonomialOrder.lex, map_zero]
+  exact bot_le
+
+/-- If `f ∈ G`, then `q * f` has remainder `0` modulo `G`. -/
+lemma isRemainder_single_mul
+    (f q : MvPolynomial (BinomialEdgeVars V) K)
+    (G : Set (MvPolynomial (BinomialEdgeVars V) K))
+    (h_mem : f ∈ G) :
+    binomialEdgeMonomialOrder.IsRemainder (q * f) G 0 := by
+  constructor
+  · classical
+    set b₀ : G := ⟨f, h_mem⟩
+    refine ⟨Finsupp.single b₀ q, ?_, ?_⟩
+    · simp only [Finsupp.linearCombination_single, smul_eq_mul, add_zero, b₀]
+    · intro b
+      simp only [Finsupp.single_apply]
+      split_ifs with heq
+      · cases heq; simp only [b₀]; rw [mul_comm]
+      · simp only [mul_zero, MonomialOrder.degree_zero]; exact zero_le_syn _
+  · intro c hc; simp at hc
+
+/-! ### Finsupp sup/tsub helpers -/
+
+/-- Sup of two finsupps sharing `inl i`: the `inr` components are disjoint. -/
+private lemma finsupp_ext_shared_inl (i j₁ j₂ : V) (hj : j₁ ≠ j₂) :
+    let d₁ := Finsupp.single (Sum.inl i : BinomialEdgeVars V) 1 +
+      Finsupp.single (Sum.inr j₁) 1
+    let d₂ := Finsupp.single (Sum.inl i : BinomialEdgeVars V) 1 +
+      Finsupp.single (Sum.inr j₂) 1
+    (d₁ ⊔ d₂ = d₁ + Finsupp.single (Sum.inr j₂ : BinomialEdgeVars V) 1) ∧
+    (d₁ + Finsupp.single (Sum.inr j₂ : BinomialEdgeVars V) 1 - d₁ =
+      Finsupp.single (Sum.inr j₂ : BinomialEdgeVars V) 1) ∧
+    (d₁ + Finsupp.single (Sum.inr j₂ : BinomialEdgeVars V) 1 - d₂ =
+      Finsupp.single (Sum.inr j₁ : BinomialEdgeVars V) 1) := by
+  refine ⟨?_, ?_, ?_⟩ <;> {
+    ext v; simp only [Finsupp.sup_apply, Finsupp.tsub_apply,
+      Finsupp.add_apply, Finsupp.single_apply]
+    rcases v with u | u
+    · have : (Sum.inr j₁ : BinomialEdgeVars V) ≠ Sum.inl u := Sum.inr_ne_inl
+      have : (Sum.inr j₂ : BinomialEdgeVars V) ≠ Sum.inl u := Sum.inr_ne_inl
+      simp_all
+    · have : (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inr u := Sum.inl_ne_inr
+      simp_all only [ne_eq, ite_false, zero_add]
+      by_cases h1 : j₁ = u <;> by_cases h2 : j₂ = u
+      · exact absurd (h1.trans h2.symm) hj
+      · simp [h1, h2]
+      · simp [h1, h2]
+      · simp [h1, h2]
+  }
+
+/-- Sup of two finsupps sharing `inr j`: the `inl` components are disjoint. -/
+private lemma finsupp_ext_shared_inr (i₁ i₂ j : V) (hi : i₁ ≠ i₂) :
+    let d₁ := Finsupp.single (Sum.inl i₁ : BinomialEdgeVars V) 1 +
+      Finsupp.single (Sum.inr j) 1
+    let d₂ := Finsupp.single (Sum.inl i₂ : BinomialEdgeVars V) 1 +
+      Finsupp.single (Sum.inr j) 1
+    (d₁ ⊔ d₂ = d₁ + Finsupp.single (Sum.inl i₂ : BinomialEdgeVars V) 1) ∧
+    (d₁ + Finsupp.single (Sum.inl i₂ : BinomialEdgeVars V) 1 - d₁ =
+      Finsupp.single (Sum.inl i₂ : BinomialEdgeVars V) 1) ∧
+    (d₁ + Finsupp.single (Sum.inl i₂ : BinomialEdgeVars V) 1 - d₂ =
+      Finsupp.single (Sum.inl i₁ : BinomialEdgeVars V) 1) := by
+  refine ⟨?_, ?_, ?_⟩ <;> {
+    ext v; simp only [Finsupp.sup_apply, Finsupp.tsub_apply,
+      Finsupp.add_apply, Finsupp.single_apply]
+    rcases v with u | u
+    · have : (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inl u := Sum.inr_ne_inl
+      simp_all only [ne_eq, ite_false, add_zero]
+      by_cases h1 : i₁ = u <;> by_cases h2 : i₂ = u
+      · exact absurd (h1.trans h2.symm) hi
+      · simp [h1, h2]
+      · simp [h1, h2]
+      · simp [h1, h2]
+    · have : (Sum.inl i₁ : BinomialEdgeVars V) ≠ Sum.inr u := Sum.inl_ne_inr
+      have : (Sum.inl i₂ : BinomialEdgeVars V) ≠ Sum.inr u := Sum.inl_ne_inr
+      simp_all
+  }
+
+/-! ### S-polynomial identities -/
+
+set_option maxHeartbeats 400000 in
+/-- S-polynomial of generators sharing first endpoint:
+`S(f_{i,j₁}, f_{i,j₂}) = -(y_i) * f_{j₁,j₂}`. -/
+lemma sPolynomial_fij_shared_first (i j₁ j₂ : V) (hij₁ : i < j₁)
+    (hij₂ : i < j₂) (hj : j₁ ≠ j₂) :
+    binomialEdgeMonomialOrder.sPolynomial (fij (K := K) i j₁)
+      (fij (K := K) i j₂) = -(y i) * fij j₁ j₂ := by
+  rw [sPolynomial_def, fij_degree i j₁ hij₁, fij_degree i j₂ hij₂,
+      fij_leadingCoeff (K := K) i j₁ hij₁,
+      fij_leadingCoeff (K := K) i j₂ hij₂]
+  obtain ⟨hsup, htsub1, htsub2⟩ := finsupp_ext_shared_inl i j₁ j₂ hj
+  rw [hsup, htsub1, htsub2]
+  change (y j₂ : MvPolynomial (BinomialEdgeVars V) K) * fij i j₁ -
+    (y j₁ : MvPolynomial (BinomialEdgeVars V) K) * fij i j₂ =
+    -(y i) * fij j₁ j₂
+  unfold fij x y; ring
+
+set_option maxHeartbeats 400000 in
+/-- S-polynomial of generators sharing last endpoint:
+`S(f_{i₁,j}, f_{i₂,j}) = x_j * f_{i₁,i₂}`. -/
+lemma sPolynomial_fij_shared_last (i₁ i₂ j : V) (hi₁j : i₁ < j)
+    (hi₂j : i₂ < j) (hi : i₁ ≠ i₂) :
+    binomialEdgeMonomialOrder.sPolynomial (fij (K := K) i₁ j)
+      (fij (K := K) i₂ j) = x j * fij i₁ i₂ := by
+  rw [sPolynomial_def, fij_degree i₁ j hi₁j, fij_degree i₂ j hi₂j,
+      fij_leadingCoeff (K := K) i₁ j hi₁j,
+      fij_leadingCoeff (K := K) i₂ j hi₂j]
+  obtain ⟨hsup, htsub1, htsub2⟩ := finsupp_ext_shared_inr i₁ i₂ j hi
+  rw [hsup, htsub1, htsub2]
+  change (x i₂ : MvPolynomial (BinomialEdgeVars V) K) * fij i₁ j -
+    (x i₁ : MvPolynomial (BinomialEdgeVars V) K) * fij i₂ j =
+    x j * fij i₁ i₂
+  unfold fij x y; ring
+
+/-! ### Coprime case helpers -/
+
+/-- Sup/tsub for coprime finsupps (no shared inl or inr components). -/
+private lemma finsupp_ext_coprime (i₁ i₂ j₁ j₂ : V) (hi : i₁ ≠ i₂)
+    (hj : j₁ ≠ j₂) :
+    let d₁ := Finsupp.single (Sum.inl i₁ : BinomialEdgeVars V) 1 +
+      Finsupp.single (Sum.inr j₁) 1
+    let d₂ := Finsupp.single (Sum.inl i₂ : BinomialEdgeVars V) 1 +
+      Finsupp.single (Sum.inr j₂) 1
+    (d₁ ⊔ d₂ = d₁ + d₂) ∧ (d₁ + d₂ - d₁ = d₂) ∧
+    (d₁ + d₂ - d₂ = d₁) := by
+  refine ⟨?_, ?_, ?_⟩ <;> {
+    ext v; simp only [Finsupp.sup_apply, Finsupp.tsub_apply,
+      Finsupp.add_apply, Finsupp.single_apply]
+    rcases v with u | u
+    · have : (Sum.inr j₁ : BinomialEdgeVars V) ≠ Sum.inl u :=
+        Sum.inr_ne_inl
+      have : (Sum.inr j₂ : BinomialEdgeVars V) ≠ Sum.inl u :=
+        Sum.inr_ne_inl
+      simp_all only [ne_eq, ite_false, add_zero]
+      by_cases h1 : i₁ = u <;> by_cases h2 : i₂ = u
+      · exact absurd (h1.trans h2.symm) hi
+      · simp [h1, h2]
+      · simp [h1, h2]
+      · simp [h1, h2]
+    · have : (Sum.inl i₁ : BinomialEdgeVars V) ≠ Sum.inr u :=
+        Sum.inl_ne_inr
+      have : (Sum.inl i₂ : BinomialEdgeVars V) ≠ Sum.inr u :=
+        Sum.inl_ne_inr
+      simp_all only [ne_eq, ite_false, zero_add]
+      by_cases h1 : j₁ = u <;> by_cases h2 : j₂ = u
+      · exact absurd (h1.trans h2.symm) hj
+      · simp [h1, h2]
+      · simp [h1, h2]
+      · simp [h1, h2]
+  }
+
+private lemma monomial_sum_eq_mul (a b : BinomialEdgeVars V) :
+    (monomial (Finsupp.single a 1 + Finsupp.single b 1)) (1 : K) =
+    X a * X b := by
+  rw [show (1 : K) = 1 * 1 from (mul_one 1).symm, ← monomial_mul]
+  rfl
+
+set_option maxHeartbeats 800000 in
+/-- S-polynomial of generators with coprime leading monomials. -/
+lemma sPolynomial_fij_coprime (i₁ i₂ j₁ j₂ : V) (hi₁j₁ : i₁ < j₁)
+    (hi₂j₂ : i₂ < j₂) (hi : i₁ ≠ i₂) (hj : j₁ ≠ j₂) :
+    binomialEdgeMonomialOrder.sPolynomial (fij (K := K) i₁ j₁)
+      (fij (K := K) i₂ j₂) =
+    x j₂ * y i₂ * fij i₁ j₁ - x j₁ * y i₁ * fij i₂ j₂ := by
+  rw [sPolynomial_def, fij_degree i₁ j₁ hi₁j₁, fij_degree i₂ j₂ hi₂j₂,
+      fij_leadingCoeff (K := K) i₁ j₁ hi₁j₁,
+      fij_leadingCoeff (K := K) i₂ j₂ hi₂j₂]
+  obtain ⟨hsup, htsub1, htsub2⟩ :=
+    finsupp_ext_coprime i₁ i₂ j₁ j₂ hi hj
+  rw [hsup, htsub1, htsub2, monomial_sum_eq_mul,
+    monomial_sum_eq_mul]
+  unfold fij x y; ring
+
+/-- `IsRemainder` for `q₁ * f₁ - q₂ * f₂` when `f₁, f₂ ∈ G`, `f₁ ≠ f₂`,
+and the degree bounds hold. -/
+lemma isRemainder_sub_mul
+    (f₁ f₂ q₁ q₂ : MvPolynomial (BinomialEdgeVars V) K)
+    (G : Set (MvPolynomial (BinomialEdgeVars V) K))
+    (h₁ : f₁ ∈ G) (h₂ : f₂ ∈ G) (hne : f₁ ≠ f₂)
+    (hdeg₁ : binomialEdgeMonomialOrder.degree (q₁ * f₁)
+      ≼[binomialEdgeMonomialOrder]
+      binomialEdgeMonomialOrder.degree (q₁ * f₁ - q₂ * f₂))
+    (hdeg₂ : binomialEdgeMonomialOrder.degree (q₂ * f₂)
+      ≼[binomialEdgeMonomialOrder]
+      binomialEdgeMonomialOrder.degree (q₁ * f₁ - q₂ * f₂)) :
+    binomialEdgeMonomialOrder.IsRemainder
+      (q₁ * f₁ - q₂ * f₂) G 0 := by
+  constructor
+  · classical
+    set b₁ : G := ⟨f₁, h₁⟩
+    set b₂ : G := ⟨f₂, h₂⟩
+    have hb_ne : b₁ ≠ b₂ :=
+      fun h => hne (congr_arg Subtype.val h)
+    refine ⟨Finsupp.single b₁ q₁ + Finsupp.single b₂ (-q₂),
+      ?_, ?_⟩
+    · simp only [map_add, Finsupp.linearCombination_single,
+        smul_eq_mul, add_zero, b₁, b₂]; ring
+    · intro b
+      simp only [Finsupp.add_apply, Finsupp.single_apply]
+      by_cases hb1 : b₁ = b
+      · have hb2 : ¬(b₂ = b) :=
+          fun h => hb_ne (hb1.trans h.symm)
+        simp only [if_pos hb1, if_neg hb2, add_zero]
+        rw [show b.val = f₁ from
+          congr_arg Subtype.val hb1.symm, mul_comm]
+        exact hdeg₁
+      · by_cases hb2 : b₂ = b
+        · simp only [if_neg hb1, if_pos hb2, zero_add]
+          rw [show b.val = f₂ from
+            congr_arg Subtype.val hb2.symm,
+            mul_neg, MonomialOrder.degree_neg, mul_comm]
+          exact hdeg₂
+        · simp only [if_neg hb1, if_neg hb2, add_zero,
+            mul_zero, MonomialOrder.degree_zero]
+          exact zero_le_syn _
+  · intro c hc; simp at hc
+
 /-! ## Theorem 1.1 -/
 
 /--
