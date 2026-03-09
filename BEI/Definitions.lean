@@ -27,6 +27,9 @@ instance [DecidableEq V] : DecidableEq (BinomialEdgeVars V) :=
 instance [Finite V] : Finite (BinomialEdgeVars V) :=
   inferInstanceAs (Finite (V ⊕ V))
 
+instance [Fintype V] : Fintype (BinomialEdgeVars V) :=
+  inferInstanceAs (Fintype (V ⊕ V))
+
 -- Abbreviations for x i and y j notation.
 def x (i : V) : MvPolynomial (BinomialEdgeVars V) K := X (Sum.inl i)
 def y (i : V) : MvPolynomial (BinomialEdgeVars V) K := X (Sum.inr i)

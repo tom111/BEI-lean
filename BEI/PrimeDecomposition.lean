@@ -40,7 +40,11 @@ Reference: Herzog et al. (2010), Theorem 3.2.
 -/
 theorem theorem_3_2 (G : SimpleGraph V) :
     binomialEdgeIdeal (K := K) G = ⨅ S : Finset V, primeComponent (K := K) G S := by
-  sorry
+  apply le_antisymm
+  · -- ⊆: J_G ≤ ⋂ P_S(G), from binomialEdgeIdeal_le_primeComponent
+    exact le_iInf (fun S => binomialEdgeIdeal_le_primeComponent G S)
+  · -- ⊇: ⋂ P_S(G) ≤ J_G — uses J_G radical + minimal primes ⊆ {P_S}
+    sorry
 
 /--
 The minimal primes of `J_G` are exactly the minimal elements among `{P_S(G)}`.
