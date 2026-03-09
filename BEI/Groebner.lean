@@ -8,18 +8,19 @@ noncomputable section
 /--
 The ordering on `BinomialEdgeVars V` for the Gröbner basis term order.
 Under this ordering: `y < x` (all y-variables precede all x-variables),
-and within each block, indices are descending (`x_n > ... > x_1`, `y_n > ... > y_1`).
+and smaller index means larger variable (`x_1 > x_2 > ... > x_n`, `y_1 > ... > y_n`),
+matching the convention in Herzog et al. (2010).
 -/
 @[reducible] def binomialEdgeLE (a b : BinomialEdgeVars V) : Prop :=
   match a, b with
-  | Sum.inl u, Sum.inl v => u ≥ v -- Reversed order for x
-  | Sum.inr u, Sum.inr v => u ≥ v -- Reversed order for y
+  | Sum.inl u, Sum.inl v => u ≥ v -- x_i > x_j when i < j (paper convention)
+  | Sum.inr u, Sum.inr v => u ≥ v -- y_i > y_j when i < j (paper convention)
   | Sum.inl _, Sum.inr _ => False -- x is never <= y
   | Sum.inr _, Sum.inl _ => True  -- y is always <= x
 
 /--
-The term order is lex on the variable order where
-x > y and indices are descending: x_n > ... > x_1 > y_n > ... > y_1
+The term order is lex on the variable order
+x_1 > x_2 > ... > x_n > y_1 > y_2 > ... > y_n (as in Herzog et al. (2010)).
 -/
 noncomputable instance : LinearOrder (BinomialEdgeVars V) where
   le := binomialEdgeLE

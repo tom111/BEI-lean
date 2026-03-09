@@ -31,8 +31,17 @@ There is no test suite — correctness is enforced by Lean's type checker. A suc
 ## Project Structure
 
 - `BEI/Definitions.lean` — Core mathematical definitions: `BinomialEdgeVars V` (= `V ⊕ V`), notation `x i` and `y i` for the two copies of variables, `binomialEdgeIdeal G`, and `IsClosedGraph G` (Condition (b) of Theorem 1.1 in Herzog et al.)
-- `BEI/Groebner.lean` — Term order for Gröbner basis computations: defines `binomialEdgeLE` (lex with `x > y`, descending indices) and the corresponding `LinearOrder (BinomialEdgeVars V)` instance
-- `BEI/Basic.lean` — Placeholder, currently unused
+- `BEI/Groebner.lean` — Term order: defines `binomialEdgeLE` (lex with `x_1 > x_2 > ... > x_n > y_1 > ... > y_n`) and the corresponding `LinearOrder (BinomialEdgeVars V)` instance
+- `BEI/MonomialOrder.lean` — Connects the linear order to Mathlib's `MonomialOrder` infrastructure; proves leading term of `f_{ij}` is `x_i · y_j`
+- `BEI/GraphProperties.lean` — `IsChordal`, `IsClawFree`, `graphClosure`; Propositions 1.2, 1.4, 1.5, Corollary 1.3
+- `BEI/AdmissiblePaths.lean` — `pathMonomial`, `groebnerElement`, `groebnerBasisSet`; admissible path membership
+- `BEI/GroebnerAPI.lean` — `IsRemainder`, `IsGroebnerBasis`, Buchberger's criterion (fully proved)
+- `BEI/ClosedGraphs.lean` — **Theorem 1.1**: closed graph ↔ quadratic Gröbner basis (fully proved)
+- `BEI/GroebnerBasis.lean` — Theorem 2.1 (reduced Gröbner basis) and Corollary 2.2 (radical)
+- `BEI/PrimeIdeals.lean` — `primeComponent`, `componentCount`; Section 3 prime ideal properties
+- `BEI/MinimalPrimes.lean` — Proposition 3.8, Corollary 3.9; minimal prime characterization
+- `BEI/PrimeDecomposition.lean` — Theorem 3.2 (prime decomposition), dimension corollaries
+- `BEI/CohenMacaulay.lean` — Placeholder for Cohen-Macaulay results (deferred; not in Mathlib)
 - `BEI.lean` — Root library entry point
 - `BEI.tex` — Reference paper with the mathematical content being formalized
 
@@ -41,7 +50,7 @@ There is no test suite — correctness is enforced by Lean's type checker. A suc
 - **Variables**: The polynomial ring uses `V ⊕ V` as the index type; `Sum.inl i` represents `x_i` and `Sum.inr i` represents `y_i`.
 - **Binomial edge ideal**: `J_G = ⟨x_i y_j - x_j y_i : {i,j} ∈ E(G), i < j⟩` as a `Ideal (MvPolynomial (BinomialEdgeVars V) K)`.
 - **Closed graph**: The `IsClosedGraph` property encodes that for any edges sharing a vertex, certain additional edges must exist (the condition that characterizes when `J_G` has a quadratic Gröbner basis).
-- **Term order**: The Gröbner order has `y < x` (all `y`-variables precede all `x`-variables) and within each block indices are descending (i.e., `x_n > x_{n-1} > … > x_1`).
+- **Term order**: The Gröbner order is `x_1 > x_2 > … > x_n > y_1 > y_2 > … > y_n` (all `x`-variables above all `y`-variables, smaller index = larger variable), matching the paper.
 
 ## Lean/Mathlib Conventions
 

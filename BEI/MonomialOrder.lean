@@ -27,7 +27,7 @@ open MvPolynomial MonomialOrder
 
 /-! ## Well-foundedness -/
 
-/-- The reversed lex order on `BinomialEdgeVars V` is well-founded
+/-- The linear order on `BinomialEdgeVars V` is well-founded
 (descending chains must terminate, since the type is finite). -/
 noncomputable instance : WellFoundedGT (BinomialEdgeVars V) := Finite.to_wellFoundedGT
 
@@ -42,7 +42,7 @@ and the LT derived from `Finsupp.Lex.linearOrder` resolve to the same instance.
 
 /--
 The lex monomial order on `BinomialEdgeVars V →₀ ℕ`, inducing the variable order
-`x_n > ... > x_1 > y_n > ... > y_1` (i.e., all x above all y, indices descending).
+`x_1 > ... > x_n > y_1 > ... > y_n` (all x above all y, as in Herzog et al.).
 -/
 noncomputable def binomialEdgeMonomialOrder : MonomialOrder (BinomialEdgeVars V) :=
   MonomialOrder.lex
@@ -101,7 +101,7 @@ private lemma fij_lex_lt (i j : V) (hij : i < j) :
 
 /--
 Under `binomialEdgeMonomialOrder`, the leading monomial of `f_{ij}` (with `i < j`)
-is `x_i · y_j`. The key: in the lex order `x_i > x_j` (since `i < j` reverses),
+is `x_i · y_j`. The key: `x_i > x_j` when `i < j` (the paper's convention),
 so `x_i y_j > x_j y_i`, and `degree_sub_of_lt` applies.
 -/
 theorem fij_degree (i j : V) (hij : i < j) :
