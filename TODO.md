@@ -30,14 +30,16 @@
 
 ## Phase 5 — Prime Ideal Properties
 
-### 5A. `primeComponent_isPrime` — broken into sub-steps
-The paper strategy: K[x,y]/P_S(G) injects into `⊗_{component C} K[t_v : v ∈ C, s]` via xᵢ ↦ tᵢ, yᵢ ↦ s·tᵢ.
+### 5A. `primeComponent_isPrime` — **PROVED** ✅
+Actual strategy used: construct φ : K[x,y] → K[x,y] directly (not a quotient target).
+φ sends x_i,y_i ↦ 0 for i∈S; x_j ↦ X(inl j), y_j ↦ X(inl j)*X(inr(rep j)) for j∉S.
+ker(φ) = P_S(G) via primeComponent_le_ker + ker_primeComponentMap_le (strong induction on
+support size using normExp/FiberEquiv/monomial_swap_mem). P_S(G) prime by RingHom.ker_isPrime.
 
-- [ ] **5A-i** Define the ring map `φ : MvPolynomial (BinomialEdgeVars V) K → Target` where
-  `Target` is a product of polynomial rings (one per connected component of G[V\S])
-- [ ] **5A-ii** Show φ kills each generator of P_S(G)
-- [ ] **5A-iii** Show Target is an integral domain
-- [ ] **5A-iv** Conclude P_S(G) is prime
+- [x] **5A-i** `primeComponentMap G S` defined via `MvPolynomial.aeval`
+- [x] **5A-ii** `primeComponent_le_ker`: generators map to 0
+- [x] **5A-iii** Target K[x,y] is integral domain (no need for product ring)
+- [x] **5A-iv** `primeComponent_isPrime`: PROVED
 
 - [ ] `lemma_3_1` — height formula (very hard; needs chain of prime ideals)
 - [ ] `prop_3_6` — J_G prime ↔ each component complete
@@ -50,7 +52,7 @@ The paper strategy: K[x,y]/P_S(G) injects into `⊗_{component C} K[t_v : v ∈ 
 - [x] `prop_3_8` (→): T ⊆ S via `prop_3_8_var_not_mem`
 - [x] `prop_3_8_sameComponent_preserved` — proved via eval
 - [x] `prop_3_8` (←): T⊆S + component preservation → P_T ≤ P_S
-- [ ] `corollary_3_9` — depends on `primeComponent_isPrime` (Phase 5A, hard)
+- [ ] `corollary_3_9` — now unblocked (primeComponent_isPrime proved); still hard
 
 ---
 
@@ -128,7 +130,7 @@ Strategy: Apply `isGroebnerBasis_iff_sPolynomial_isRemainder` then case analysis
 
 ## Priority Order (what to work on next)
 
-1. **Phase 5A: `primeComponent_isPrime`** — key unblocking lemma for rest
+1. **Phase 6: `corollary_3_9`** — now unblocked; cut-vertex characterization of minimal primes
 2. **Phase 7: `theorem_3_2` ⊇** — radical ideal argument
 3. **Phase 7: corollaries** — once Thm 3.2 proved
 
@@ -160,12 +162,12 @@ Strategy: Apply `isGroebnerBasis_iff_sPolynomial_isRemainder` then case analysis
 | MonomialOrder.lean | 0 |
 | GroebnerAPI.lean | 0 (Buchberger criterion PROVED) |
 | GroebnerBasis.lean | 2 (theorem_2_1_groebner; cor2_2) |
-| PrimeIdeals.lean | 3 (isPrime, lemma_3_1, prop_3_6) |
-| MinimalPrimes.lean | 1 (corollary_3_9, blocked on primeComponent_isPrime) |
+| PrimeIdeals.lean | 2 (lemma_3_1, prop_3_6) — **isPrime PROVED** |
+| MinimalPrimes.lean | 1 (corollary_3_9, now unblocked) |
 | PrimeDecomposition.lean | 7 (thm3_2 ⊇, minPrimesChar, cor3_3 ×2, cor3_4, cor3_7 ×2) |
 | ClosedGraphs.lean | 0 (**Theorem 1.1 FULLY PROVED**) |
 | CohenMacaulay.lean | 4 (def + 3 thms, all deferred) |
-| **Total** | **17** |
+| **Total** | **16** |
 
 ---
 
