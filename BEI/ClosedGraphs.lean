@@ -258,34 +258,182 @@ lemma isRemainder_sub_mul
           exact zero_le_syn _
   · intro c hc; simp at hc
 
+/-! ### Coprime degree bound helpers -/
+
+private lemma fij_ne_zero (a b : V) (hab : a < b) :
+    fij (K := K) a b ≠ 0 := by
+  intro h
+  have := fij_leadingCoeff_isUnit (K := K) a b hab
+  rw [h, MonomialOrder.leadingCoeff_zero] at this
+  exact not_isUnit_zero this
+
+/-- The degree of `x j * y i * fij a b` splits as sum of degrees. -/
+private lemma degree_xy_mul_fij (i j a b : V) (hab : a < b) :
+    binomialEdgeMonomialOrder.degree
+      (x j * y i * fij (K := K) a b) =
+    Finsupp.single (Sum.inl j : BinomialEdgeVars V) 1 +
+      Finsupp.single (Sum.inr i) 1 +
+      (Finsupp.single (Sum.inl a : BinomialEdgeVars V) 1 +
+       Finsupp.single (Sum.inr b) 1) := by
+  simp only [x, y]
+  rw [MonomialOrder.degree_mul
+    (mul_ne_zero (X_ne_zero _) (X_ne_zero _))
+    (fij_ne_zero a b hab),
+    MonomialOrder.degree_mul (X_ne_zero _) (X_ne_zero _),
+    MonomialOrder.degree_X, MonomialOrder.degree_X,
+    fij_degree a b hab]
+
+/-- The degrees of the two terms in the coprime S-polynomial are distinct.
+Discriminator: evaluate at `Sum.inl i₁` — one side has 1, the other has 0. -/
+private lemma coprime_degrees_ne (i₁ i₂ j₁ j₂ : V)
+    (hi₁j₁ : i₁ < j₁) (hi₂j₂ : i₂ < j₂) (hi : i₁ ≠ i₂) :
+    binomialEdgeMonomialOrder.toSyn
+      (binomialEdgeMonomialOrder.degree
+        (x j₂ * y i₂ * fij (K := K) i₁ j₁)) ≠
+    binomialEdgeMonomialOrder.toSyn
+      (binomialEdgeMonomialOrder.degree
+        (x j₁ * y i₁ * fij (K := K) i₂ j₂)) := by
+  rw [degree_xy_mul_fij i₂ j₂ i₁ j₁ hi₁j₁,
+      degree_xy_mul_fij i₁ j₁ i₂ j₂ hi₂j₂]
+  intro h
+  have heq := binomialEdgeMonomialOrder.toSyn.injective h
+  have h1 := Finsupp.ext_iff.mp heq (Sum.inl i₁ : BinomialEdgeVars V)
+  simp only [Finsupp.add_apply, Finsupp.single_apply] at h1
+  have : (Sum.inr i₂ : BinomialEdgeVars V) ≠ Sum.inl i₁ := Sum.inr_ne_inl
+  have : (Sum.inr j₁ : BinomialEdgeVars V) ≠ Sum.inl i₁ := Sum.inr_ne_inl
+  have : (Sum.inr i₁ : BinomialEdgeVars V) ≠ Sum.inl i₁ := Sum.inr_ne_inl
+  have : (Sum.inr j₂ : BinomialEdgeVars V) ≠ Sum.inl i₁ := Sum.inr_ne_inl
+  have : ¬((Sum.inl j₁ : BinomialEdgeVars V) = Sum.inl i₁) :=
+    fun h => hi₁j₁.ne' (Sum.inl.inj h)
+  have : ¬((Sum.inl i₂ : BinomialEdgeVars V) = Sum.inl i₁) :=
+    fun h => hi (Sum.inl.inj h).symm
+  simp_all
+
+/-- If `toSyn(deg f) ≠ toSyn(deg g)`, both degree bounds hold for `f - g`. -/
+private lemma degree_bounds_of_sub
+    (f g : MvPolynomial (BinomialEdgeVars V) K)
+    (hne : binomialEdgeMonomialOrder.toSyn
+      (binomialEdgeMonomialOrder.degree f) ≠
+      binomialEdgeMonomialOrder.toSyn
+      (binomialEdgeMonomialOrder.degree g)) :
+    (binomialEdgeMonomialOrder.degree f
+      ≼[binomialEdgeMonomialOrder]
+      binomialEdgeMonomialOrder.degree (f - g)) ∧
+    (binomialEdgeMonomialOrder.degree g
+      ≼[binomialEdgeMonomialOrder]
+      binomialEdgeMonomialOrder.degree (f - g)) := by
+  show binomialEdgeMonomialOrder.toSyn _ ≤ _ ∧
+    binomialEdgeMonomialOrder.toSyn _ ≤ _
+  rcases lt_or_gt_of_ne hne with h | h
+  · have hfg : f - g = -(g - f) := by ring
+    rw [hfg, MonomialOrder.degree_neg,
+      MonomialOrder.degree_sub_of_lt h]
+    exact ⟨le_of_lt h, le_refl _⟩
+  · rw [MonomialOrder.degree_sub_of_lt h]
+    exact ⟨le_refl _, le_of_lt h⟩
+
 /-! ## Theorem 1.1 -/
 
-/--
-**Theorem 1.1** (Herzog et al. 2010): The quadratic generators of `J_G` form a
-Gröbner basis with respect to the lex order iff G is a closed graph.
+set_option maxHeartbeats 800000 in
+-- Buchberger case analysis requires extra heartbeats for ring normalization
+/-- Forward direction of Theorem 1.1: closed graph → Gröbner basis.
 
-Proof outline:
-- (⇒) "generators form GB → G closed": If G is not closed, there exist edges
-  `{i,k}` and `{i,j}` sharing vertex i with i < j, i < k but {j,k} ∉ E(G).
-  Then the S-polynomial of `f_{ij}` and `f_{ik}` does not reduce to 0
-  modulo the generators.
-- (⇐) "G closed → generators form GB": For any two generators `f_{ij}` and
-  `f_{ik}` (resp. `f_{ij}` and `f_{kj}`) sharing a variable, the closed
-  condition guarantees the S-polynomial reduces to 0.
-
-Reference: Herzog et al. (2010), Theorem 1.1.
--/
-theorem theorem_1_1 (G : SimpleGraph V) :
-    binomialEdgeMonomialOrder.IsGroebnerBasis (generatorSet (K := K) G)
-      (binomialEdgeIdeal (K := K) G) ↔
-    IsClosedGraph G := by
-  sorry
-
-/-- Forward direction of Theorem 1.1: closed graph → Gröbner basis. -/
+Applies the Buchberger criterion and performs case analysis on the four possible
+configurations of two generators `f_{i₁,j₁}` and `f_{i₂,j₂}`:
+1. Same pair (trivial)
+2. Shared first endpoint `i₁ = i₂` (uses closedness condition 1)
+3. Shared last endpoint `j₁ = j₂` (uses closedness condition 2)
+4. Coprime (pure algebra, no closedness needed) -/
 theorem closed_implies_groebner (G : SimpleGraph V) (h : IsClosedGraph G) :
     binomialEdgeMonomialOrder.IsGroebnerBasis (generatorSet (K := K) G)
       (binomialEdgeIdeal (K := K) G) := by
-  sorry
+  -- All generators have unit leading coefficients
+  have hGenUnit : ∀ g ∈ generatorSet (K := K) G,
+      IsUnit (binomialEdgeMonomialOrder.leadingCoeff g) := by
+    intro g hg
+    obtain ⟨i, j, _, hij, rfl⟩ := hg
+    exact fij_leadingCoeff_isUnit i j hij
+  -- Apply Buchberger criterion
+  rw [show binomialEdgeIdeal (K := K) G =
+    Ideal.span (generatorSet (K := K) G)
+    from (generatorSet_span G).symm]
+  rw [binomialEdgeMonomialOrder.isGroebnerBasis_iff_sPolynomial_isRemainder
+    hGenUnit]
+  -- For each pair of generators, show S-polynomial reduces to 0
+  intro ⟨g₁, hg₁⟩ ⟨g₂, hg₂⟩
+  obtain ⟨i₁, j₁, hadj₁, hij₁, hg₁_eq⟩ := hg₁
+  obtain ⟨i₂, j₂, hadj₂, hij₂, hg₂_eq⟩ := hg₂
+  -- Normalize to fij notation (fij is a def, not abbrev)
+  have hg₁_fij : g₁ = fij (K := K) i₁ j₁ := hg₁_eq
+  have hg₂_fij : g₂ = fij (K := K) i₂ j₂ := hg₂_eq
+  simp only [hg₁_fij, hg₂_fij]
+  -- Case analysis on shared endpoints
+  by_cases heq_i : i₁ = i₂ <;> by_cases heq_j : j₁ = j₂
+  · -- Case 1: same pair (i₁ = i₂, j₁ = j₂)
+    subst heq_i; subst heq_j
+    rw [sPolynomial_self]
+    exact ⟨⟨0, by simp, fun b => by
+      simp [mul_zero, MonomialOrder.degree_zero]⟩,
+      fun _ hc => by simp at hc⟩
+  · -- Case 2: shared first endpoint (i₁ = i₂, j₁ ≠ j₂)
+    subst heq_i
+    rw [sPolynomial_fij_shared_first i₁ j₁ j₂ hij₁ hij₂ heq_j]
+    -- Closedness gives G.Adj j₁ j₂
+    have hadj_jj : G.Adj j₁ j₂ := h.1 hij₁ hij₂ heq_j hadj₁ hadj₂
+    rcases lt_or_gt_of_ne heq_j with hjlt | hjgt
+    · -- j₁ < j₂: -(y i₁) * fij j₁ j₂, and fij j₁ j₂ ∈ generatorSet
+      have hmem : fij (K := K) j₁ j₂ ∈ generatorSet (K := K) G :=
+        ⟨j₁, j₂, hadj_jj, hjlt, rfl⟩
+      exact isRemainder_single_mul (fij j₁ j₂) (-(y i₁)) _ hmem
+    · -- j₁ > j₂: fij j₁ j₂ = -(fij j₂ j₁)
+      have hmem : fij (K := K) j₂ j₁ ∈ generatorSet (K := K) G :=
+        ⟨j₂, j₁, hadj_jj.symm, hjgt, rfl⟩
+      have : -(y (K := K) i₁) * fij j₁ j₂ = y i₁ * fij j₂ j₁ := by
+        unfold fij; ring
+      rw [this]
+      exact isRemainder_single_mul (fij j₂ j₁) (y i₁) _ hmem
+  · -- Case 3: shared last endpoint (j₁ = j₂, i₁ ≠ i₂)
+    subst heq_j
+    rw [sPolynomial_fij_shared_last i₁ i₂ j₁ hij₁ hij₂ heq_i]
+    -- Closedness gives G.Adj i₁ i₂
+    have hadj_ii : G.Adj i₁ i₂ := h.2 hij₁ hij₂ heq_i hadj₁ hadj₂
+    rcases lt_or_gt_of_ne heq_i with hilt | higt
+    · -- i₁ < i₂: x j₁ * fij i₁ i₂, and fij i₁ i₂ ∈ generatorSet
+      have hmem : fij (K := K) i₁ i₂ ∈ generatorSet (K := K) G :=
+        ⟨i₁, i₂, hadj_ii, hilt, rfl⟩
+      exact isRemainder_single_mul (fij i₁ i₂) (x j₁) _ hmem
+    · -- i₁ > i₂: fij i₁ i₂ = -(fij i₂ i₁)
+      have hmem : fij (K := K) i₂ i₁ ∈ generatorSet (K := K) G :=
+        ⟨i₂, i₁, hadj_ii.symm, higt, rfl⟩
+      have : (x (K := K) j₁) * fij i₁ i₂ = -(x j₁) * fij i₂ i₁ := by
+        unfold fij; ring
+      rw [this]
+      exact isRemainder_single_mul (fij i₂ i₁) (-(x j₁)) _ hmem
+  · -- Case 4: coprime (i₁ ≠ i₂, j₁ ≠ j₂) — pure algebra
+    rw [sPolynomial_fij_coprime i₁ i₂ j₁ j₂ hij₁ hij₂ heq_i heq_j]
+    -- fij i₁ j₁ ≠ fij i₂ j₂ (they differ since i₁ ≠ i₂)
+    have hfij_ne : fij (K := K) i₁ j₁ ≠ fij (K := K) i₂ j₂ := by
+      intro heq
+      have h1 := congr_arg binomialEdgeMonomialOrder.degree heq
+      rw [fij_degree i₁ j₁ hij₁, fij_degree i₂ j₂ hij₂] at h1
+      have h2 := Finsupp.ext_iff.mp h1
+        (Sum.inl i₁ : BinomialEdgeVars V)
+      simp only [Finsupp.add_apply, Finsupp.single_apply,
+        Sum.inr_ne_inl, ite_false] at h2
+      have : ¬((Sum.inl i₂ : BinomialEdgeVars V) = Sum.inl i₁) :=
+        fun h => heq_i (Sum.inl.inj h).symm
+      simp_all
+    have hmem₁ : fij (K := K) i₁ j₁ ∈ generatorSet (K := K) G :=
+      ⟨i₁, j₁, hadj₁, hij₁, rfl⟩
+    have hmem₂ : fij (K := K) i₂ j₂ ∈ generatorSet (K := K) G :=
+      ⟨i₂, j₂, hadj₂, hij₂, rfl⟩
+    -- Degree bounds from coprime_degrees_ne + degree_bounds_of_sub
+    have hne := coprime_degrees_ne (K := K) i₁ i₂ j₁ j₂ hij₁ hij₂ heq_i
+    obtain ⟨hd₁, hd₂⟩ := degree_bounds_of_sub
+      (x j₂ * y i₂ * fij (K := K) i₁ j₁)
+      (x j₁ * y i₁ * fij (K := K) i₂ j₂) hne
+    exact isRemainder_sub_mul (fij i₁ j₁) (fij i₂ j₂)
+      (x j₂ * y i₂) (x j₁ * y i₁) _ hmem₁ hmem₂ hfij_ne hd₁ hd₂
 
 set_option maxHeartbeats 800000 in
 /-- Backward direction of Theorem 1.1: Gröbner basis → closed graph. -/
@@ -667,5 +815,17 @@ theorem groebner_implies_closed (G : SimpleGraph V)
         rcases ha with rfl | rfl
         · exact hnotadj hadj_ab.symm
         · exact absurd hab (not_lt.mpr hik.le)
+
+/--
+**Theorem 1.1** (Herzog et al. 2010): The quadratic generators of `J_G` form a
+Gröbner basis with respect to the lex order iff G is a closed graph.
+
+Reference: Herzog et al. (2010), Theorem 1.1.
+-/
+theorem theorem_1_1 (G : SimpleGraph V) :
+    binomialEdgeMonomialOrder.IsGroebnerBasis (generatorSet (K := K) G)
+      (binomialEdgeIdeal (K := K) G) ↔
+    IsClosedGraph G :=
+  ⟨groebner_implies_closed G, closed_implies_groebner G⟩
 
 end

@@ -104,10 +104,9 @@ Strategy: Apply `isGroebnerBasis_iff_sPolynomial_isRemainder` then case analysis
   - Case M2 > M1: deg(S) = M2 by degree_sub_of_lt; M2 ≼ M2 = deg(S) ✓; M1 ≺ M2 so ≼ ✓
   - Case M1 > M2: symmetric
 - No closedness needed for this case (pure algebra)
-- [~] `isRemainder_coprime_fij` — needs to be written and committed
+- [x] `isRemainder_coprime_fij` — via `isRemainder_sub_mul` + `degree_bounds_of_sub` + `coprime_degrees_ne`
 
-**Overall status**: helper lemmas for Cases 1-3 are proved but not yet written into ClosedGraphs.lean.
-Case 4 coprime lemma still needs to be written.
+**Overall status**: ALL CASES PROVED. All helper lemmas written into ClosedGraphs.lean.
 
 ### 8E. Radical
 - [!] `corollary_2_2` — blocked on Thm 3.2 (radical = intersection of primes) or squarefree initial
@@ -115,9 +114,9 @@ Case 4 coprime lemma still needs to be written.
 
 ---
 
-## Phase 9 — Theorem 1.1 (blocked on 8D)
-- [~] `closed_implies_groebner` — in progress (helper lemmas proved, coprime case needed)
-- [ ] `theorem_1_1` — follows from `closed_implies_groebner` ∧ `groebner_implies_closed`
+## Phase 9 — Theorem 1.1 ✅ COMPLETE
+- [x] `closed_implies_groebner` — PROVED (Buchberger criterion + 4-case S-polynomial analysis)
+- [x] `theorem_1_1` — PROVED (⟨groebner_implies_closed, closed_implies_groebner⟩)
 - [x] `groebner_implies_closed` — PROVED
 
 ---
@@ -129,14 +128,9 @@ Case 4 coprime lemma still needs to be written.
 
 ## Priority Order (what to work on next)
 
-1. **Phase 9: `closed_implies_groebner`** — write helper lemmas into file, prove coprime case
-   - Add `zero_le_syn`, `isRemainder_single_mul`, `sPolynomial_fij_shared_first/last` to ClosedGraphs.lean
-   - Write `isRemainder_coprime_fij` (coprime degree bound via case-split on M1 vs M2)
-   - Assemble `closed_implies_groebner` proof
-2. **Phase 9: `theorem_1_1`** — trivial once `closed_implies_groebner` is done
-3. **Phase 5A: `primeComponent_isPrime`** — key unblocking lemma for rest
-4. **Phase 7: `theorem_3_2` ⊇** — radical ideal argument
-5. **Phase 7: corollaries** — once Thm 3.2 proved
+1. **Phase 5A: `primeComponent_isPrime`** — key unblocking lemma for rest
+2. **Phase 7: `theorem_3_2` ⊇** — radical ideal argument
+3. **Phase 7: corollaries** — once Thm 3.2 proved
 
 ---
 
@@ -165,13 +159,13 @@ Case 4 coprime lemma still needs to be written.
 | AdmissiblePaths.lean | 0 |
 | MonomialOrder.lean | 0 |
 | GroebnerAPI.lean | 0 (Buchberger criterion PROVED) |
-| GroebnerBasis.lean | 4 (theorem_2_1_groebner, _leading, _reduced; cor2_2) |
+| GroebnerBasis.lean | 2 (theorem_2_1_groebner; cor2_2) |
 | PrimeIdeals.lean | 3 (isPrime, lemma_3_1, prop_3_6) |
 | MinimalPrimes.lean | 1 (corollary_3_9, blocked on primeComponent_isPrime) |
 | PrimeDecomposition.lean | 7 (thm3_2 ⊇, minPrimesChar, cor3_3 ×2, cor3_4, cor3_7 ×2) |
-| ClosedGraphs.lean | 2 (thm1_1, closed→GB) |
+| ClosedGraphs.lean | 0 (**Theorem 1.1 FULLY PROVED**) |
 | CohenMacaulay.lean | 4 (def + 3 thms, all deferred) |
-| **Total** | **21** |
+| **Total** | **17** |
 
 ---
 
