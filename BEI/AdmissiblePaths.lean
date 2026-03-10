@@ -479,7 +479,7 @@ private lemma pathMonomial_split_above (G : SimpleGraph V) (i j v₀ : V)
 /--
 Sub-walk properties: the drop and take-reverse at an internal vertex's position satisfy
 the head, last, nodup, and internal-vertex conditions.
-These are all list-manipulation facts; deferred as sorry.
+These are all list-manipulation facts; proofs deferred.
 -/
 private lemma subwalk_props (G : SimpleGraph V) (π : List V) (v₀ i j : V)
     (hij : i < j)

@@ -52,13 +52,13 @@ support size using normExp/FiberEquiv/monomial_swap_mem). P_S(G) prime by RingHo
 - [x] `prop_3_8` (→): T ⊆ S via `prop_3_8_var_not_mem`
 - [x] `prop_3_8_sameComponent_preserved` — proved via eval
 - [x] `prop_3_8` (←): T⊆S + component preservation → P_T ≤ P_S
-- [ ] `corollary_3_9` — now unblocked (primeComponent_isPrime proved); still hard
+- [~] `corollary_3_9` — → proved; ← still sorry (needs theorem_3_2 ⊇)
 
 ---
 
 ## Phase 7 — Prime Decomposition
 
-- [ ] `theorem_3_2` (⊆): **already follows** from `binomialEdgeIdeal_le_primeComponent`
+- [x] `theorem_3_2` (⊆): proved inline via `binomialEdgeIdeal_le_primeComponent`
 - [ ] `theorem_3_2` (⊇): ⋂ P_S(G) ⊆ J_G — hard; needs J_G is radical + Nullstellensatz
 - [ ] `corollary_3_3_lower_bound` — dim ≥ |V| + c(G) via S = ∅ chain (relatively accessible)
 - [ ] `corollary_3_7` — cycle: n=3 ↔ J_G prime
@@ -83,34 +83,86 @@ support size using normExp/FiberEquiv/monomial_swap_mem). P_S(G) prime by RingHo
 
 ### 8D. S-polynomial reductions (Buchberger case analysis for Theorem 1.1)
 Target: `closed_implies_groebner` in `ClosedGraphs.lean` (NOT in GroebnerBasis.lean)
+**ALL CASES PROVED.** All helper lemmas in ClosedGraphs.lean.
 
-Strategy: Apply `isGroebnerBasis_iff_sPolynomial_isRemainder` then case analysis:
+### 8E. `theorem_2_1_groebner` — Buchberger for admissible paths (GroebnerBasis.lean)
 
-**Case 1 — Same pair** (g₁ = g₂): S = 0 → trivial (sPolynomial_self + isRemainder_zero)
+**Overall structure**: Apply `isGroebnerBasis_iff_sPolynomial_isRemainder`, then for each pair
+of basis elements `eₖ = pathMonomialₖ * fij(iₖ,jₖ)`, show S(e₁,e₂) reduces to 0.
 
-**Case 2 — Shared first endpoint** (i₁ = i₂ = i, j₁ ≠ j₂):
-- [x] `sPolynomial_fij_shared_first`: S(fij i j₁, fij i j₂) = -(y i) * fij j₁ j₂  (ring identity)
-- [x] `isRemainder_single_mul`: IsRemainder (q * f) G 0 when f ∈ G
-- Use closedness h.1 to get G.Adj j₁ j₂; sub-cases on j₁ < j₂ vs j₁ > j₂
+**Key factorization** (all cases): By `sPolynomial_monomial_mul` + `pathMonomial_eq_monomial'`:
+`S(e₁, e₂) = monomial D 1 * S(fij₁, fij₂)` where
+`D = (d₁ + deg fij₁) ⊔ (d₂ + deg fij₂) - deg fij₁ ⊔ deg fij₂`
 
-**Case 3 — Shared last endpoint** (j₁ = j₂ = j):
-- [x] `sPolynomial_fij_shared_last`: S(fij i₁ j, fij i₂ j) = x j * fij i₁ i₂  (ring identity)
-- Use closedness h.2 to get G.Adj i₁ i₂; sub-cases on i₁ < i₂ vs i₁ > i₂
+⚠ **WARNING**: Paper's "regular sequence" claim for coprime case is WRONG.
+The general statement "if in<(f),in<(g) form regular sequence then S(uf,vg) reduces to 0"
+is FALSE. Handle all cases via direct case-by-case analysis instead.
 
-**Case 4 — Coprime** (i₁ ≠ i₂ and j₁ ≠ j₂):
-- Key identity: S = x j₂ * y i₂ * fij i₁ j₁ - x j₁ * y i₁ * fij i₂ j₂
-  (same polynomial as from sPolynomial_def, by ring since fij₁ * fij₂ = fij₂ * fij₁)
-- Degree bounds:
-  - Let M2 = deg(fij i₁ j₁) + deg(x j₂ * y i₂), M1 = deg(fij i₂ j₂) + deg(x j₁ * y i₁)
-  - M1 ≠ M2 (proved: at position inl i₁, M2 has 1 but M1 has 0 since i₁ ≠ i₂ and i₁ < j₁)
-  - Case M2 > M1: deg(S) = M2 by degree_sub_of_lt; M2 ≼ M2 = deg(S) ✓; M1 ≺ M2 so ≼ ✓
-  - Case M1 > M2: symmetric
-- No closedness needed for this case (pure algebra)
-- [x] `isRemainder_coprime_fij` — via `isRemainder_sub_mul` + `degree_bounds_of_sub` + `coprime_degrees_ne`
+**Case 0 — Same edge** (i₁=i₂, j₁=j₂): S = 0 by `sPolynomial_self`
+- [x] PROVED (commit ba8d7a0)
 
-**Overall status**: ALL CASES PROVED. All helper lemmas written into ClosedGraphs.lean.
+**Case A — Coprime** (i₁ ≠ i₂ AND j₁ ≠ j₂):
+Leading monomials of fij₁, fij₂ have disjoint variable supports.
+This includes disjoint endpoints, cross-match i₁=j₂, and cross-match j₁=i₂.
 
-### 8E. Radical
+Strategy: Express S(e₁,e₂) = Q₁*e₁ - Q₂*e₂ via factored form, then `isRemainder_sub_mul`.
+
+- [ ] **A1. Make `coprime_degrees_ne` and `degree_bounds_of_sub` accessible**
+  Currently `private` in ClosedGraphs.lean. Either make `protected`/public, or re-prove locally.
+
+- [ ] **A2. Prove `d_le_D_coprime`**: When fij degrees have disjoint supports,
+  `d₁ ≤ D` and `d₂ ≤ D` (pointwise). Key Finsupp calculation using disjointness.
+
+- [ ] **A3. Factor S-polynomial into groebnerElement combination**:
+  `S(e₁,e₂) = monomial(D-d₁) 1 * x_{j₂} * y_{i₂} * e₁ - monomial(D-d₂) 1 * x_{j₁} * y_{i₁} * e₂`
+  Uses `sPolynomial_monomial_mul` + `sPolynomial_fij_coprime` + A2.
+
+- [ ] **A4. Verify degree bounds**:
+  `deg(Q₁*e₁) = D + deg(x_{j₂}*y_{i₂}*fij₁) ≤ D + deg(S(fij₁,fij₂)) = deg(S(e₁,e₂))`
+  Uses `coprime_degrees_ne` + `degree_bounds_of_sub` from A1.
+
+- [ ] **A5. Conclude**: Apply `isRemainder_sub_mul` with the decomposition from A3 and bounds from A4.
+
+**Case B — Shared first endpoint** (i₁ = i₂, j₁ ≠ j₂):
+`S(fij(i,j₁), fij(i,j₂)) = -y_i * fij(j₁,j₂)` by `sPolynomial_fij_shared_first`.
+So `S(e₁,e₂) = -monomial D 1 * y_i * fij(j₁,j₂)`.
+Need to express `fij(j₁,j₂)` as combination of groebnerBasisSet elements.
+WITHOUT closedness, there's no direct edge j₁-j₂ in general.
+
+Strategy: τ-path construction from the paper (Section 2.1, lines 578–695).
+
+- [ ] **B1. τ-path construction**: Given admissible paths π₁: i→j₁ and π₂: i→j₂,
+  construct path τ: j₁→j₂ by reversing tail of π₁ and concatenating with tail of π₂.
+  Find the last shared vertex i_a = i'_b where the paths diverge.
+  τ = [j₁=i_r, i_{r-1}, ..., i_{a+1}, i_a=i'_b, i'_{b+1}, ..., i'_{s-1}, j₂=i'_s]
+
+- [ ] **B2. Turning points t(c)**: Define the sequence 0 = t(0) < t(1) < ... < t(q) = t
+  where j_{t(c)} are the successive minima of τ-vertices that exceed j₁.
+  Prove: j₁ = j_{t(0)} < j_{t(1)} < ... < j_{t(q)} = j₂.
+
+- [ ] **B3. Admissibility of sub-paths**: Show each τ_c (from j_{t(c-1)} to j_{t(c)})
+  is an admissible path in G. Requires checking all 7 conditions of `IsAdmissiblePath`:
+  ordering, head/last, nodup, interior vertex condition, chain adjacency, minimality.
+
+- [ ] **B4. Telescoping identity**: Prove the ring identity
+  `w * fij(j₁,j₂) = Σ_{c=1}^{q} v_{τ_c} * u_{τ_c} * fij(j_{t(c-1)}, j_{t(c)})`
+  where w = y_i * lcm(pathMonomial₁, pathMonomial₂) and v_{τ_c} are explicit monomials.
+  This is a telescoping sum: (x_j * y_ℓ)/(x_{j_c}) terms that cancel pairwise.
+
+- [ ] **B5. Degree chain ordering**: Prove the chain of inequalities
+  `deg(v₁*u_{τ₁}*fij₁) > deg(v₂*u_{τ₂}*fij₂) > ... > deg(v_q*u_{τ_q}*fij_q)`
+  showing each term's degree is strictly decreasing (so the sum is a standard expression).
+
+- [ ] **B6. Conclude IsRemainder**: Combine B4 identity + B5 degree bounds + B3 membership
+  to construct the `IsRemainder` witness. The remainder is 0 since all terms are accounted for.
+
+**Case C — Shared last endpoint** (j₁ = j₂, i₁ ≠ i₂):
+Symmetric to Case B. `S(fij(i₁,j), fij(i₂,j)) = x_j * fij(i₁,i₂)`.
+
+- [ ] **C1–C6**: Mirror of B1–B6 with reversed roles of x and y, first and last endpoints.
+  Can potentially share infrastructure with Case B via a symmetry argument.
+
+### 8F. Radical
 - [!] `corollary_2_2` — blocked on Thm 3.2 (radical = intersection of primes) or squarefree initial
   ideal → radical (not in Mathlib v4.28.0); deferred
 
@@ -130,22 +182,26 @@ Strategy: Apply `isGroebnerBasis_iff_sPolynomial_isRemainder` then case analysis
 
 ## Priority Order (what to work on next)
 
-1. **Phase 6: `corollary_3_9`** — now unblocked; cut-vertex characterization of minimal primes
-2. **Phase 7: `theorem_3_2` ⊇** — radical ideal argument
-3. **Phase 7: corollaries** — once Thm 3.2 proved
+1. **Phase 8E Case A: coprime** — most tractable; infrastructure exists from Thm 1.1
+2. **Phase 8E Cases B+C: shared endpoint** — hardest; τ-path construction
+3. **Phase 6: `corollary_3_9`** — cut-vertex characterization of minimal primes
+4. **Phase 7: `theorem_3_2` ⊇** — radical ideal argument
+5. **Phase 7: corollaries** — once Thm 3.2 proved
 
 ---
 
 ## Why These Sorries Are Hard
 
 ### "Medium" (genuine Lean work, unblocked)
-- `closed_implies_groebner` (9): Coprime case degree bound + finsupp witness construction
+- `theorem_2_1_groebner` Case A — coprime (8E): Pure algebra; infrastructure exists from Thm 1.1
+- `corollary_3_9` (6): Cut-vertex characterization of minimal primes
 - `corollary_3_3_lower_bound` (7): Follows from chain of primes
 
-### "Hard" (genuine mathematical content)
-- `primeComponent_isPrime` (5A): Needs explicit ring map construction in Lean
+### "Hard" (genuine mathematical content + significant Lean plumbing)
+- `theorem_2_1_groebner` Cases B+C — shared endpoint (8E): τ-path construction, admissibility
+  proofs, telescoping identity, degree chains. ~500-800 lines estimated.
 - `theorem_3_2` ⊇ (7): Radical ideal theory
-- `theorem_2_1_groebner/_leading/_reduced` (8D for GroebnerBasis.lean): Full Buchberger for admissible paths
+- `prop_3_6` (5): J_G prime ↔ each component complete
 
 ### "Very Hard / Deferred" (depends on missing Mathlib)
 - `lemma_3_1`: Height formula (needs Gröbner basis + dimension theory)
@@ -161,48 +217,24 @@ Strategy: Apply `isGroebnerBasis_iff_sPolynomial_isRemainder` then case analysis
 | AdmissiblePaths.lean | 0 |
 | MonomialOrder.lean | 0 |
 | GroebnerAPI.lean | 0 (Buchberger criterion PROVED) |
-| GroebnerBasis.lean | 2 (theorem_2_1_groebner; cor2_2) |
+| GroebnerBasis.lean | 2 (theorem_2_1_groebner 1 sorry — Cases A/B/C; corollary_2_2 deferred) |
 | PrimeIdeals.lean | 2 (lemma_3_1, prop_3_6) — **isPrime PROVED** |
-| MinimalPrimes.lean | 1 (corollary_3_9, now unblocked) |
+| MinimalPrimes.lean | 1 (corollary_3_9 ← only; → proved) |
 | PrimeDecomposition.lean | 7 (thm3_2 ⊇, minPrimesChar, cor3_3 ×2, cor3_4, cor3_7 ×2) |
 | ClosedGraphs.lean | 0 (**Theorem 1.1 FULLY PROVED**) |
 | CohenMacaulay.lean | 4 (def + 3 thms, all deferred) |
-| **Total** | **16** |
+| **Total** | **16** (same-edge case of theorem_2_1_groebner now proved in else branch) |
 
 ---
 
 ## Notes
 - `groebner_implies_closed`: PROVED (ClosedGraphs.lean)
+- `closed_implies_groebner`: PROVED (ClosedGraphs.lean) — 4-case Buchberger analysis
 - `isGroebnerBasis_iff_sPolynomial_isRemainder`: FULLY PROVED (GroebnerAPI.lean)
-- `theorem_3_2` (⊆): already proved by `binomialEdgeIdeal_le_primeComponent`
-- `theorem_2_1_leading` needs `f ≠ 0` hypothesis; currently incorrectly stated
+- `primeComponent_isPrime`: PROVED (PrimeIdeals.lean) — ring map φ with ker(φ)=P_S(G)
+- `theorem_3_2` (⊆): proved inline via `binomialEdgeIdeal_le_primeComponent`
+- `theorem_2_1_leading`: NOW PROVED (follows from theorem_2_1_groebner)
 - `idealHeight` uses `Ideal.primeHeight` from Mathlib
-
-## Helper lemmas proved but not yet in file (for closed_implies_groebner)
-```lean
--- BEI/ClosedGraphs.lean — needs to be written:
-private lemma zero_le_syn (d : BinomialEdgeVars V →₀ ℕ) :
-    binomialEdgeMonomialOrder.toSyn 0 ≤ binomialEdgeMonomialOrder.toSyn d := bot_le (after simp)
-
-lemma isRemainder_single_mul (f q : MvPolynomial (BinomialEdgeVars V) K)
-    (G : Set ...) (h_mem : f ∈ G) : IsRemainder (q * f) G 0
-  -- via Finsupp.single b₀ q, linearCombination_single, degree trivially ≼ itself
-
-lemma sPolynomial_fij_shared_first (i j₁ j₂ : V) (hij₁ : i < j₁) (hij₂ : i < j₂) (hj : j₁ ≠ j₂) :
-    sPolynomial (fij i j₁) (fij i j₂) = -(y i) * fij j₁ j₂
-  -- by sPolynomial_def + Finsupp sup/tsub computation + ring
-
-lemma sPolynomial_fij_shared_last (i₁ i₂ j : V) (hi₁j : i₁ < j) (hi₂j : i₂ < j) (hi : i₁ ≠ i₂) :
-    sPolynomial (fij i₁ j) (fij i₂ j) = x j * fij i₁ i₂
-  -- symmetric to above
-```
-
-## Coprime case: key degree bound argument
-Given fij i₁ j₁ and fij i₂ j₂ with i₁ ≠ i₂, j₁ ≠ j₂:
-- S = x j₂ * y i₂ * fij i₁ j₁ - x j₁ * y i₁ * fij i₂ j₂  (ring identity, same as from sPolynomial_def)
-- M2 := deg(fij i₁ j₁) + e_{inl j₂} + e_{inr i₂}, M1 := deg(fij i₂ j₂) + e_{inl j₁} + e_{inr i₁}
-- M1 ≠ M2: at position inl i₁, M2 = 1 but M1 = 0 (since i₁ ≠ i₂ and i₁ ≠ j₁)
-- Case split on toSyn M1 < toSyn M2 vs toSyn M2 < toSyn M1 (via lt_or_gt_of_ne)
-- In each case, use degree_sub_of_lt to compute deg(S) = max(M1, M2)
-- Degree bounds then follow from eq or lt
-- IsRemainder witness: two-element Finsupp (single b₁ (x j₂ * y i₂) + single b₂ (-(x j₁ * y i₁)))
+- ⚠ Paper's regular sequence claim (coprime case of Thm 2.1) is WRONG — use case-by-case instead
+- `coprime_degrees_ne` and `degree_bounds_of_sub` are `private` in ClosedGraphs.lean — need to
+  make accessible for reuse in GroebnerBasis.lean (Case A of theorem_2_1_groebner)
