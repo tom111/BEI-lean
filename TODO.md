@@ -93,35 +93,30 @@ of basis elements `eₖ = pathMonomialₖ * fij(iₖ,jₖ)`, show S(e₁,e₂) r
 **Key factorization** (all cases): By `sPolynomial_monomial_mul` + `pathMonomial_eq_monomial'`:
 `S(e₁, e₂) = monomial D 1 * S(fij₁, fij₂)` where
 `D = (d₁ + deg fij₁) ⊔ (d₂ + deg fij₂) - deg fij₁ ⊔ deg fij₂`
+Then `isRemainder_monomial_mul'` reduces to showing `IsRemainder S(fij₁, fij₂) groebnerBasisSet 0`.
 
 ⚠ **WARNING**: Paper's "regular sequence" claim for coprime case is WRONG.
 The general statement "if in<(f),in<(g) form regular sequence then S(uf,vg) reduces to 0"
 is FALSE. Handle all cases via direct case-by-case analysis instead.
 
+**Proved infrastructure**:
+- [x] `isRemainder_monomial_mul'`: if `IsRemainder f G 0` then `IsRemainder (monomial d c * f) G 0`
+- [x] `sPolynomial_monomial_mul` factoring applied to all cases
+- [x] `sPolynomial_fij_shared_first`, `sPolynomial_fij_shared_last`, `sPolynomial_fij_coprime`
+  imported from ClosedGraphs.lean (lemmas made public)
+- [x] Coprime degree bounds: `coprime_degrees_ne` + `degree_bounds_of_sub` (made public)
+
 **Case 0 — Same edge** (i₁=i₂, j₁=j₂): S = 0 by `sPolynomial_self`
-- [x] PROVED (commit ba8d7a0)
+- [x] PROVED
 
 **Case A — Coprime** (i₁ ≠ i₂ AND j₁ ≠ j₂):
-Leading monomials of fij₁, fij₂ have disjoint variable supports.
-This includes disjoint endpoints, cross-match i₁=j₂, and cross-match j₁=i₂.
+Goal: `IsRemainder (x j₂ * y i₂ * fij i₁ j₁ - x j₁ * y i₁ * fij i₂ j₂) groebnerBasisSet 0`
 
-Strategy: Express S(e₁,e₂) = Q₁*e₁ - Q₂*e₂ via factored form, then `isRemainder_sub_mul`.
+⚠ Key obstacle: `fij i₁ j₁ ∉ groebnerBasisSet G` when `¬G.Adj i₁ j₁` (non-trivial path).
+The `isRemainder_sub_mul` approach from Theorem 1.1 requires fij ∈ basis, which fails here.
+Need τ-path construction (same as Cases B/C) to decompose into groebnerElement combinations.
 
-- [ ] **A1. Make `coprime_degrees_ne` and `degree_bounds_of_sub` accessible**
-  Currently `private` in ClosedGraphs.lean. Either make `protected`/public, or re-prove locally.
-
-- [ ] **A2. Prove `d_le_D_coprime`**: When fij degrees have disjoint supports,
-  `d₁ ≤ D` and `d₂ ≤ D` (pointwise). Key Finsupp calculation using disjointness.
-
-- [ ] **A3. Factor S-polynomial into groebnerElement combination**:
-  `S(e₁,e₂) = monomial(D-d₁) 1 * x_{j₂} * y_{i₂} * e₁ - monomial(D-d₂) 1 * x_{j₁} * y_{i₁} * e₂`
-  Uses `sPolynomial_monomial_mul` + `sPolynomial_fij_coprime` + A2.
-
-- [ ] **A4. Verify degree bounds**:
-  `deg(Q₁*e₁) = D + deg(x_{j₂}*y_{i₂}*fij₁) ≤ D + deg(S(fij₁,fij₂)) = deg(S(e₁,e₂))`
-  Uses `coprime_degrees_ne` + `degree_bounds_of_sub` from A1.
-
-- [ ] **A5. Conclude**: Apply `isRemainder_sub_mul` with the decomposition from A3 and bounds from A4.
+- [ ] **A. Coprime case**: Requires τ-path or alternative decomposition.
 
 **Case B — Shared first endpoint** (i₁ = i₂, j₁ ≠ j₂):
 `S(fij(i,j₁), fij(i,j₂)) = -y_i * fij(j₁,j₂)` by `sPolynomial_fij_shared_first`.
@@ -217,13 +212,13 @@ Symmetric to Case B. `S(fij(i₁,j), fij(i₂,j)) = x_j * fij(i₁,i₂)`.
 | AdmissiblePaths.lean | 0 |
 | MonomialOrder.lean | 0 |
 | GroebnerAPI.lean | 0 (Buchberger criterion PROVED) |
-| GroebnerBasis.lean | 2 (theorem_2_1_groebner 1 sorry — Cases A/B/C; corollary_2_2 deferred) |
+| GroebnerBasis.lean | 4 (theorem_2_1_groebner: 3 sorries for Cases A/B/C; corollary_2_2 deferred) |
 | PrimeIdeals.lean | 2 (lemma_3_1, prop_3_6) — **isPrime PROVED** |
 | MinimalPrimes.lean | 1 (corollary_3_9 ← only; → proved) |
 | PrimeDecomposition.lean | 7 (thm3_2 ⊇, minPrimesChar, cor3_3 ×2, cor3_4, cor3_7 ×2) |
 | ClosedGraphs.lean | 0 (**Theorem 1.1 FULLY PROVED**) |
 | CohenMacaulay.lean | 4 (def + 3 thms, all deferred) |
-| **Total** | **16** (same-edge case of theorem_2_1_groebner now proved in else branch) |
+| **Total** | **18** (Case 0 proved, Cases A/B/C expanded with specific goals) |
 
 ---
 

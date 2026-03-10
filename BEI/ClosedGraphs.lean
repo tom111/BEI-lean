@@ -260,7 +260,7 @@ lemma isRemainder_sub_mul
 
 /-! ### Coprime degree bound helpers -/
 
-private lemma fij_ne_zero (a b : V) (hab : a < b) :
+lemma fij_ne_zero (a b : V) (hab : a < b) :
     fij (K := K) a b ≠ 0 := by
   intro h
   have := fij_leadingCoeff_isUnit (K := K) a b hab
@@ -268,7 +268,7 @@ private lemma fij_ne_zero (a b : V) (hab : a < b) :
   exact not_isUnit_zero this
 
 /-- The degree of `x j * y i * fij a b` splits as sum of degrees. -/
-private lemma degree_xy_mul_fij (i j a b : V) (hab : a < b) :
+lemma degree_xy_mul_fij (i j a b : V) (hab : a < b) :
     binomialEdgeMonomialOrder.degree
       (x j * y i * fij (K := K) a b) =
     Finsupp.single (Sum.inl j : BinomialEdgeVars V) 1 +
@@ -285,7 +285,7 @@ private lemma degree_xy_mul_fij (i j a b : V) (hab : a < b) :
 
 /-- The degrees of the two terms in the coprime S-polynomial are distinct.
 Discriminator: evaluate at `Sum.inl i₁` — one side has 1, the other has 0. -/
-private lemma coprime_degrees_ne (i₁ i₂ j₁ j₂ : V)
+lemma coprime_degrees_ne (i₁ i₂ j₁ j₂ : V)
     (hi₁j₁ : i₁ < j₁) (hi₂j₂ : i₂ < j₂) (hi : i₁ ≠ i₂) :
     binomialEdgeMonomialOrder.toSyn
       (binomialEdgeMonomialOrder.degree
@@ -310,7 +310,7 @@ private lemma coprime_degrees_ne (i₁ i₂ j₁ j₂ : V)
   simp_all
 
 /-- If `toSyn(deg f) ≠ toSyn(deg g)`, both degree bounds hold for `f - g`. -/
-private lemma degree_bounds_of_sub
+lemma degree_bounds_of_sub
     (f g : MvPolynomial (BinomialEdgeVars V) K)
     (hne : binomialEdgeMonomialOrder.toSyn
       (binomialEdgeMonomialOrder.degree f) ≠

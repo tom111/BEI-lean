@@ -1,6 +1,7 @@
 import BEI.AdmissiblePaths
 import BEI.MonomialOrder
 import BEI.GroebnerAPI
+import BEI.ClosedGraphs
 import Mathlib.RingTheory.MvPolynomial.MonomialOrder
 import Mathlib.RingTheory.MvPolynomial.Groebner
 import Mathlib.RingTheory.Ideal.Operations
@@ -120,6 +121,39 @@ private lemma isRemainder_zero_zero'
     binomialEdgeMonomialOrder.IsRemainder (0 : MvPolynomial (BinomialEdgeVars V) K) G 0 :=
   ⟨⟨0, by simp, by simp [degree_zero, le_refl]⟩, by simp⟩
 
+/-- Multiplying an `IsRemainder`-zero witness by a nonzero monomial preserves the property.
+Key helper for factoring S-polynomials of groebnerElements via `sPolynomial_monomial_mul`. -/
+private lemma isRemainder_monomial_mul'
+    (f : MvPolynomial (BinomialEdgeVars V) K)
+    (G : Set (MvPolynomial (BinomialEdgeVars V) K))
+    (d : BinomialEdgeVars V →₀ ℕ) (c : K) (hc : c ≠ 0)
+    (hf : f ≠ 0)
+    (h : binomialEdgeMonomialOrder.IsRemainder f G 0) :
+    binomialEdgeMonomialOrder.IsRemainder (monomial d c * f) G 0 := by
+  obtain ⟨⟨coeff, hsum, hdeg⟩, hrem⟩ := h
+  simp only [add_zero] at hsum
+  have hm_ne : (monomial d c : MvPolynomial (BinomialEdgeVars V) K) ≠ 0 :=
+    monomial_eq_zero.not.mpr hc
+  constructor
+  · classical
+    refine ⟨coeff.mapRange (monomial d c * ·) (by simp), ?_, ?_⟩
+    · simp only [add_zero, Finsupp.linearCombination_apply]
+      rw [hsum, Finsupp.linearCombination_apply,
+          Finsupp.sum_mapRange_index (by simp)]
+      rw [Finsupp.mul_sum]
+      congr 1; ext ⟨b, hb⟩ x; simp [smul_eq_mul, mul_assoc]
+    · intro b
+      simp only [Finsupp.mapRange_apply]
+      by_cases hcb : b.val * coeff b = 0
+      · have : b.val * (monomial d c * coeff b) = monomial d c * (b.val * coeff b) := by ring
+        rw [this, hcb, mul_zero, degree_zero]; exact bot_le
+      · have key : b.val * (monomial d c * coeff b) = monomial d c * (b.val * coeff b) := by ring
+        rw [key, degree_mul hm_ne hcb, degree_mul hm_ne hf,
+            binomialEdgeMonomialOrder.toSyn.map_add,
+            binomialEdgeMonomialOrder.toSyn.map_add]
+        exact add_le_add_right (hdeg b) _
+  · intro c' hc'; simp at hc'
+
 /-! ## Theorem 2.1: Gröbner basis via Buchberger's criterion -/
 
 /--
@@ -165,11 +199,64 @@ theorem theorem_2_1_groebner (G : SimpleGraph V) :
       simp [sPolynomial_self]
     rw [hSP]
     exact isRemainder_zero_zero' _
-  · -- Remaining cases (shared first endpoint, shared last endpoint, coprime):
-    -- These require τ-path constructions from the paper (Section 2.1).
-    -- The key identity in each case is an explicit linear combination of basis elements
-    -- whose degree bound certifies the IsRemainder property.
-    sorry
+  · -- Remaining cases: coprime or shared endpoint
+    push_neg at hij_eq
+    -- Factor: S(e₁, e₂) = monomial D (1*1) * S(fij₁, fij₂) via sPolynomial_monomial_mul
+    obtain ⟨d₁, hd₁⟩ := pathMonomial_eq_monomial' (K := K) i₁ j₁ π₁
+    obtain ⟨d₂, hd₂⟩ := pathMonomial_eq_monomial' (K := K) i₂ j₂ π₂
+    have he₁ : groebnerElement (K := K) i₁ j₁ π₁ = monomial d₁ 1 * fij i₁ j₁ := by
+      simp only [groebnerElement, fij, hd₁]
+    have he₂ : groebnerElement (K := K) i₂ j₂ π₂ = monomial d₂ 1 * fij i₂ j₂ := by
+      simp only [groebnerElement, fij, hd₂]
+    -- The S-polynomial factors through sPolynomial_monomial_mul
+    have hSP_factor : binomialEdgeMonomialOrder.sPolynomial
+        (groebnerElement (K := K) i₁ j₁ π₁) (groebnerElement (K := K) i₂ j₂ π₂) =
+        monomial ((d₁ + binomialEdgeMonomialOrder.degree (fij (K := K) i₁ j₁)) ⊔
+          (d₂ + binomialEdgeMonomialOrder.degree (fij (K := K) i₂ j₂)) -
+          binomialEdgeMonomialOrder.degree (fij (K := K) i₁ j₁) ⊔
+          binomialEdgeMonomialOrder.degree (fij (K := K) i₂ j₂)) (1 * 1) *
+        binomialEdgeMonomialOrder.sPolynomial (fij i₁ j₁) (fij i₂ j₂) := by
+      rw [he₁, he₂]; exact sPolynomial_monomial_mul _ _ d₁ d₂ 1 1
+    set D := (d₁ + binomialEdgeMonomialOrder.degree (fij (K := K) i₁ j₁)) ⊔
+      (d₂ + binomialEdgeMonomialOrder.degree (fij (K := K) i₂ j₂)) -
+      binomialEdgeMonomialOrder.degree (fij (K := K) i₁ j₁) ⊔
+      binomialEdgeMonomialOrder.degree (fij (K := K) i₂ j₂) with hD_def
+    simp only [one_mul] at hSP_factor
+    rw [hSP_factor]
+    -- If S(fij₁, fij₂) = 0, we're done
+    by_cases hS_zero : binomialEdgeMonomialOrder.sPolynomial
+        (fij (K := K) i₁ j₁) (fij (K := K) i₂ j₂) = 0
+    · rw [hS_zero, mul_zero]; exact isRemainder_zero_zero' _
+    · -- S(fij₁, fij₂) ≠ 0; use isRemainder_monomial_mul'
+      apply isRemainder_monomial_mul' _ _ D 1 one_ne_zero hS_zero
+      -- Reduce to: IsRemainder S(fij₁, fij₂) (groebnerBasisSet G) 0
+      -- Case analysis on endpoint sharing
+      have hi₁j₁ := hπ₁.1  -- i₁ < j₁
+      have hi₂j₂ := hπ₂.1  -- i₂ < j₂
+      by_cases hi : i₁ = i₂
+      · -- Shared first endpoint: S(fij(i,j₁), fij(i,j₂)) = -y_i * fij(j₁,j₂)
+        subst hi
+        have hj : j₁ ≠ j₂ := hij_eq rfl
+        rw [sPolynomial_fij_shared_first i₁ j₁ j₂ hi₁j₁ hi₂j₂ hj]
+        -- Need: IsRemainder (-(y i₁) * fij j₁ j₂) groebnerBasisSet 0
+        sorry -- τ-path construction needed when ¬G.Adj j₁ j₂
+      · by_cases hj : j₁ = j₂
+        · -- Shared last endpoint: S(fij(i₁,j), fij(i₂,j)) = x_j * fij(i₁,i₂)
+          subst hj
+          rw [sPolynomial_fij_shared_last i₁ i₂ j₁ hi₁j₁ hi₂j₂ hi]
+          -- Need: IsRemainder (x j₁ * fij i₁ i₂) groebnerBasisSet 0
+          sorry -- τ-path construction needed when ¬G.Adj i₁ i₂
+        · -- Coprime case: i₁ ≠ i₂ and j₁ ≠ j₂
+          rw [sPolynomial_fij_coprime i₁ i₂ j₁ j₂ hi₁j₁ hi₂j₂ hi hj]
+          -- S(fij₁,fij₂) = x j₂ * y i₂ * fij i₁ j₁ - x j₁ * y i₁ * fij i₂ j₂
+          -- Degree bounds from coprime_degrees_ne + degree_bounds_of_sub
+          have hne := coprime_degrees_ne (K := K) i₁ i₂ j₁ j₂ hi₁j₁ hi₂j₂ hi
+          obtain ⟨hbd₁, hbd₂⟩ := degree_bounds_of_sub
+            (x j₂ * y i₂ * fij (K := K) i₁ j₁)
+            (x j₁ * y i₁ * fij (K := K) i₂ j₂) hne
+          -- Need: fij i₁ j₁ ∈ groebnerBasisSet G and fij i₂ j₂ ∈ groebnerBasisSet G
+          -- This holds when G has direct edges i₁-j₁ and i₂-j₂
+          sorry
 
 theorem theorem_2_1_leading (G : SimpleGraph V) (f : MvPolynomial (BinomialEdgeVars V) K)
     (hf : f ∈ binomialEdgeIdeal G) (hf0 : f ≠ 0) :
