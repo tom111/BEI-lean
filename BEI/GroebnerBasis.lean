@@ -79,6 +79,47 @@ theorem groebnerElement_leadingCoeff_isUnit
   rw [groebnerElement_leadingCoeff i j π hπ.1]
   exact isUnit_one
 
+/-! ## S-polynomial helpers for Buchberger's criterion -/
+
+/-- A product of `X a` terms over a list equals a single monomial with coefficient 1. -/
+private lemma prod_X_list_eq_monomial' {σ : Type*} {R : Type*} [CommSemiring R]
+    (l : List σ) :
+    ∃ (d : σ →₀ ℕ), (l.map (fun a => (X a : MvPolynomial σ R))).prod = monomial d 1 := by
+  induction l with
+  | nil => exact ⟨0, by simp⟩
+  | cons a t ih =>
+    obtain ⟨d, hd⟩ := ih
+    refine ⟨Finsupp.single a 1 + d, ?_⟩
+    simp only [List.map_cons, List.prod_cons, hd]
+    change (monomial (Finsupp.single a 1) 1 : MvPolynomial σ R) * monomial d 1 = monomial _ 1
+    rw [monomial_mul]; simp
+
+/-- `pathMonomial i j π` equals a single monomial (coefficient 1). -/
+private lemma pathMonomial_eq_monomial' (i j : V) (π : List V) :
+    ∃ (d : BinomialEdgeVars V →₀ ℕ), pathMonomial (K := K) i j π = monomial d 1 := by
+  obtain ⟨dx, hdx⟩ := prod_X_list_eq_monomial' (R := K)
+    ((internalVertices π).filter (fun v => j < v) |>.map Sum.inl)
+  obtain ⟨dy, hdy⟩ := prod_X_list_eq_monomial' (R := K)
+    ((internalVertices π).filter (fun v => v < i) |>.map Sum.inr)
+  refine ⟨dx + dy, ?_⟩
+  simp only [pathMonomial, x, y]
+  rw [show ((internalVertices π).filter (fun v => j < v)).map
+      (fun v => (X (Sum.inl v) : MvPolynomial (BinomialEdgeVars V) K)) =
+      (((internalVertices π).filter (fun v => j < v)).map Sum.inl).map X by
+        simp [List.map_map],
+    show ((internalVertices π).filter (fun v => v < i)).map
+      (fun v => (X (Sum.inr v) : MvPolynomial (BinomialEdgeVars V) K)) =
+      (((internalVertices π).filter (fun v => v < i)).map Sum.inr).map X by
+        simp [List.map_map]]
+  rw [hdx, hdy, monomial_mul]
+  congr 1; ring
+
+/-- `IsRemainder 0 G 0` holds trivially for any set G. -/
+private lemma isRemainder_zero_zero'
+    (G : Set (MvPolynomial (BinomialEdgeVars V) K)) :
+    binomialEdgeMonomialOrder.IsRemainder (0 : MvPolynomial (BinomialEdgeVars V) K) G 0 :=
+  ⟨⟨0, by simp, by simp [degree_zero, le_refl]⟩, by simp⟩
+
 /-! ## Theorem 2.1: Gröbner basis via Buchberger's criterion -/
 
 /--
@@ -89,12 +130,11 @@ of `J_G` with respect to the lex monomial order.
 it suffices to show that for every pair of elements `e₁, e₂ ∈ groebnerBasisSet G`,
 the S-polynomial `S(e₁, e₂)` reduces to 0 modulo `groebnerBasisSet G`.
 
-**S-polynomial cases**: For `e₁ = u_{π₁} f_{i₁j₁}` and `e₂ = u_{π₂} f_{i₂j₂}`:
-- **Coprime case**: If `{i₁,j₁}` and `{i₂,j₂}` share no variable in their leading monomials,
-  then `S(e₁,e₂)` is a trivial combination of `e₁` and `e₂` that reduces to 0.
-- **Shared first endpoint** (`i₁ = i₂`): Use the admissible path structure.
-- **Shared last endpoint** (`j₁ = j₂`): Symmetric to above.
-- **Cross case** (`i₁ = j₂` or `j₁ = i₂`): Use path concatenation.
+**S-polynomial cases** for `e₁ = u_{π₁} f_{i₁j₁}` and `e₂ = u_{π₂} f_{i₂j₂}`:
+- **Same edge** (`i₁ = i₂, j₁ = j₂`): `S = monomial D 1 * S(fij, fij) = 0`.
+- **Shared first endpoint** (`i₁ = i₂, j₁ ≠ j₂`): τ-path construction (deferred).
+- **Shared last endpoint** (`j₁ = j₂, i₁ ≠ i₂`): symmetric (deferred).
+- **Coprime** (`i₁ ≠ i₂, j₁ ≠ j₂`): direct combination argument (deferred).
 
 Reference: Herzog et al. (2010), Theorem 2.1.
 -/
@@ -112,13 +152,24 @@ theorem theorem_2_1_groebner (G : SimpleGraph V) :
   intro ⟨e₁, he₁⟩ ⟨e₂, he₂⟩
   obtain ⟨i₁, j₁, π₁, hπ₁, rfl⟩ := he₁
   obtain ⟨i₂, j₂, π₂, hπ₂, rfl⟩ := he₂
-  -- TODO: case analysis on how the two generators relate:
-  -- 1. Coprime leading monomials (disjoint variable sets in leading terms)
-  -- 2. Shared first endpoint (i₁ = i₂): use f_{i₁j₁} and f_{i₁j₂}
-  -- 3. Shared last endpoint (j₁ = j₂): symmetric
-  -- 4. Cross cases
-  -- Each case: S-polynomial is a combination of groebnerBasisSet elements
-  sorry
+  -- Case analysis: same edge, shared endpoints, or coprime
+  by_cases hij_eq : i₁ = i₂ ∧ j₁ = j₂
+  · -- Same-edge case: S(u_π₁ * fij, u_π₂ * fij) = monomial D 1 * S(fij, fij) = 0
+    obtain ⟨rfl, rfl⟩ := hij_eq
+    obtain ⟨d₁, hd₁⟩ := pathMonomial_eq_monomial' (K := K) i₁ j₁ π₁
+    obtain ⟨d₂, hd₂⟩ := pathMonomial_eq_monomial' (K := K) i₁ j₁ π₂
+    have hSP : binomialEdgeMonomialOrder.sPolynomial
+        (groebnerElement (K := K) i₁ j₁ π₁) (groebnerElement (K := K) i₁ j₁ π₂) = 0 := by
+      simp only [groebnerElement, hd₁, hd₂]
+      rw [sPolynomial_monomial_mul]
+      simp [sPolynomial_self]
+    rw [hSP]
+    exact isRemainder_zero_zero' _
+  · -- Remaining cases (shared first endpoint, shared last endpoint, coprime):
+    -- These require τ-path constructions from the paper (Section 2.1).
+    -- The key identity in each case is an explicit linear combination of basis elements
+    -- whose degree bound certifies the IsRemainder property.
+    sorry
 
 theorem theorem_2_1_leading (G : SimpleGraph V) (f : MvPolynomial (BinomialEdgeVars V) K)
     (hf : f ∈ binomialEdgeIdeal G) (hf0 : f ≠ 0) :
