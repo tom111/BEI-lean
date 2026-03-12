@@ -260,13 +260,13 @@ private def walkCandidates (G : SimpleGraph V) (a b : V) : Set (List V) :=
         π.Chain' (fun u v => G.Adj u v) }
 
 /-- Given a nodup walk from `a` to `b` (with `a < b`) satisfying the vertex condition,
-there exists an admissible path from `a` to `b` in G. -/
+there exists an admissible path from `a` to `b` in G that is a sublist of the walk. -/
 private theorem exists_admissible_path_of_walk (G : SimpleGraph V)
     (a b : V) (hab : a < b)
     (π : List V) (hHead : π.head? = some a) (hLast : π.getLast? = some b)
     (hND : π.Nodup) (hVtx : ∀ v ∈ π, v = a ∨ v = b ∨ v < a ∨ b < v)
     (hWalk : π.Chain' (fun u v => G.Adj u v)) :
-    ∃ σ : List V, IsAdmissiblePath G a b σ := by
+    ∃ σ : List V, IsAdmissiblePath G a b σ ∧ σ.Sublist π := by
   -- By strong induction on π.length.
   -- Either π satisfies the minimality condition (7) and is admissible,
   -- or there exists a proper sublist satisfying 1-6, which is shorter.
@@ -274,7 +274,7 @@ private theorem exists_admissible_path_of_walk (G : SimpleGraph V)
       π.head? = some a → π.getLast? = some b → π.Nodup →
       (∀ v ∈ π, v = a ∨ v = b ∨ v < a ∨ b < v) →
       π.Chain' (fun u v => G.Adj u v) →
-      ∃ σ, IsAdmissiblePath G a b σ from
+      ∃ σ, IsAdmissiblePath G a b σ ∧ σ.Sublist π from
     this π.length π le_rfl hHead hLast hND hVtx hWalk
   intro n
   induction n with
@@ -289,57 +289,14 @@ private theorem exists_admissible_path_of_walk (G : SimpleGraph V)
         π'.head? = some a → π'.getLast? = some b →
         π'.Chain' (fun u v => G.Adj u v) →
         ¬(∀ v ∈ π', v = a ∨ v = b ∨ v < a ∨ b < v)
-    · exact ⟨π, hab, hHead, hLast, hND, hVtx, hWalk, hMin⟩
+    · exact ⟨π, ⟨hab, hHead, hLast, hND, hVtx, hWalk, hMin⟩, List.Sublist.refl π⟩
     · push_neg at hMin
       obtain ⟨π', hSub, hNe, hHead', hLast', hWalk', hVtx'⟩ := hMin
       have hND' : π'.Nodup := hND.sublist hSub
       have hlen_lt : π'.length < π.length :=
         lt_of_le_of_ne hSub.length_le (fun h => hNe (hSub.length_eq.mp h))
-      exact ih π' (by omega) hHead' hLast' hND' hVtx' hWalk'
-
-/-- **τ-path construction for shared first endpoint (Theorem 2.1, Section 2.1).**
-
-Given admissible paths π₁: i→j₁ and π₂: i→j₂ sharing first endpoint `i` (with j₁ < j₂),
-there exists an admissible path σ from j₁ to j₂ whose pathMonomial exponents satisfy
-`d_σ ≤ d₁ ⊔ d₂ + single(inr i, 1)` pointwise, where d₁, d₂ are the pathMonomial
-exponents of π₁, π₂ respectively.
-
-The walk from j₁ to j₂ goes backward along π₁ to the last common vertex with π₂,
-then forward along π₂. The admissible path σ is obtained from this walk by
-extracting a minimal sublist satisfying the admissibility conditions.
--/
-private theorem exists_admissible_with_pathMonomial_bound_first
-    (G : SimpleGraph V) (i j₁ j₂ : V) (π₁ π₂ : List V)
-    (hπ₁ : IsAdmissiblePath G i j₁ π₁) (hπ₂ : IsAdmissiblePath G i j₂ π₂)
-    (hj₁j₂ : j₁ < j₂)
-    (d₁ d₂ : BinomialEdgeVars V →₀ ℕ)
-    (hd₁ : pathMonomial (K := K) i j₁ π₁ = monomial d₁ 1)
-    (hd₂ : pathMonomial (K := K) i j₂ π₂ = monomial d₂ 1) :
-    ∃ (σ : List V) (d_σ : BinomialEdgeVars V →₀ ℕ),
-      IsAdmissiblePath G j₁ j₂ σ ∧
-      pathMonomial (K := K) j₁ j₂ σ = monomial d_σ 1 ∧
-      d_σ ≤ d₁ ⊔ d₂ +
-        (Finsupp.single (Sum.inr i) 1 : BinomialEdgeVars V →₀ ℕ) := by
-  sorry
-
-/-- **τ-path construction for shared last endpoint (symmetric to first).**
-
-Given admissible paths π₁: i₁→j and π₂: i₂→j sharing last endpoint `j` (with i₁ < i₂),
-there exists an admissible path σ from i₁ to i₂ whose pathMonomial exponents satisfy
-`d_σ ≤ d₁ ⊔ d₂ + single(inl j, 1)` pointwise. -/
-private theorem exists_admissible_with_pathMonomial_bound_last
-    (G : SimpleGraph V) (i₁ i₂ j : V) (π₁ π₂ : List V)
-    (hπ₁ : IsAdmissiblePath G i₁ j π₁) (hπ₂ : IsAdmissiblePath G i₂ j π₂)
-    (hi₁i₂ : i₁ < i₂)
-    (d₁ d₂ : BinomialEdgeVars V →₀ ℕ)
-    (hd₁ : pathMonomial (K := K) i₁ j π₁ = monomial d₁ 1)
-    (hd₂ : pathMonomial (K := K) i₂ j π₂ = monomial d₂ 1) :
-    ∃ (σ : List V) (d_σ : BinomialEdgeVars V →₀ ℕ),
-      IsAdmissiblePath G i₁ i₂ σ ∧
-      pathMonomial (K := K) i₁ i₂ σ = monomial d_σ 1 ∧
-      d_σ ≤ d₁ ⊔ d₂ +
-        (Finsupp.single (Sum.inl j) 1 : BinomialEdgeVars V →₀ ℕ) := by
-  sorry
+      obtain ⟨σ, hσ, hσ_sub⟩ := ih π' (by omega) hHead' hLast' hND' hVtx' hWalk'
+      exact ⟨σ, hσ, hσ_sub.trans hSub⟩
 
 /-! ## Key IsRemainder lemma: monomial * fij reduces to 0 via groebnerElement -/
 
@@ -388,10 +345,46 @@ private lemma isRemainder_neg
     rw [hfact]
     exact isRemainder_monomial_mul' f G 0 (-1) (neg_ne_zero.mpr one_ne_zero) hf h
 
+/-- `IsRemainder (f₁ + f₂) G 0` from `IsRemainder f₁ G 0` and `IsRemainder f₂ G 0`,
+provided both summands have degree ≤ degree of the sum. -/
+private lemma isRemainder_add
+    (f₁ f₂ : MvPolynomial (BinomialEdgeVars V) K)
+    (G : Set (MvPolynomial (BinomialEdgeVars V) K))
+    (h₁ : binomialEdgeMonomialOrder.IsRemainder f₁ G 0)
+    (h₂ : binomialEdgeMonomialOrder.IsRemainder f₂ G 0)
+    (hd₁ : binomialEdgeMonomialOrder.degree f₁
+      ≼[binomialEdgeMonomialOrder]
+      binomialEdgeMonomialOrder.degree (f₁ + f₂))
+    (hd₂ : binomialEdgeMonomialOrder.degree f₂
+      ≼[binomialEdgeMonomialOrder]
+      binomialEdgeMonomialOrder.degree (f₁ + f₂)) :
+    binomialEdgeMonomialOrder.IsRemainder (f₁ + f₂) G 0 := by
+  obtain ⟨⟨g₁, hf₁, hdeg₁⟩, hirr₁⟩ := h₁
+  obtain ⟨⟨g₂, hf₂, hdeg₂⟩, hirr₂⟩ := h₂
+  constructor
+  · refine ⟨g₁ + g₂, ?_, ?_⟩
+    · rw [map_add, hf₁, hf₂]; ring
+    · intro b
+      simp only [Finsupp.add_apply, mul_add]
+      exact le_trans degree_add_le (max_le (le_trans (hdeg₁ b) hd₁) (le_trans (hdeg₂ b) hd₂))
+  · intro c hc; simp at hc
+
 /-- `fij i₁ i₂ = -(fij i₂ i₁)` (antisymmetry). -/
 private lemma fij_antisymm (i₁ i₂ : V) :
     fij (K := K) i₁ i₂ = -(fij (K := K) i₂ i₁) := by
   simp only [fij]; ring
+
+/-- **Telescoping identity for fij**: `y b * fij a c = y c * fij a b + y a * fij b c`.
+This is the fundamental identity for the τ-path decomposition in Theorem 2.1. -/
+private lemma fij_telescope (a b c : V) :
+    y (K := K) b * fij a c = y c * fij a b + y a * fij b c := by
+  simp only [fij, x, y]; ring
+
+/-- **x-telescoping identity for fij**: `x b * fij a c = x a * fij b c + x c * fij a b`.
+Dual of `fij_telescope` (y-telescope). Used for the shared-first endpoint case. -/
+private lemma fij_x_telescope (a b c : V) :
+    x (K := K) b * fij a c = x a * fij b c + x c * fij a b := by
+  simp only [fij, x, y]; ring
 
 /-- Cross-condition bound for the S-polynomial monomial factor D.
 When `f₁ v > f₂ v → d₂ v = 0` and vice versa, the sup of d's is bounded by D. -/
@@ -403,180 +396,47 @@ private lemma finsupp_sup_le_D {ι : Type*} (d₁ d₂ f₁ f₂ : ι →₀ ℕ
   simp only [Finsupp.sup_apply, Finsupp.add_apply, Finsupp.tsub_apply]
   have := h₁ v; have := h₂ v; omega
 
-/-! ## S-polynomial reduction helpers for Buchberger's criterion -/
+/-! ## S-polynomial reduction: inner S-poly of fij pairs -/
 
-/-- Given admissible paths π₁: i→j₁ and π₂: i→j₂ sharing first endpoint i,
-the S-polynomial of the corresponding Gröbner elements reduces to 0.
+/-- **Core sorry for Theorem 2.1**: The S-polynomial of any two `fij` polynomials reduces
+to 0 modulo `groebnerBasisSet G`, provided admissible paths exist for both pairs.
 
-Strategy: the τ-path from min(j₁,j₂) to max(j₁,j₂) (constructed by reversing the
-tail of π₁ and concatenating with the tail of π₂) gives groebnerBasisSet elements
-whose combination equals the S-polynomial with appropriate degree bounds. -/
-private lemma isRemainder_shared_first (G : SimpleGraph V)
-    (i j₁ j₂ : V) (π₁ π₂ : List V)
-    (hπ₁ : IsAdmissiblePath G i j₁ π₁) (hπ₂ : IsAdmissiblePath G i j₂ π₂)
-    (hj : j₁ ≠ j₂) :
+This consolidates what were previously 3 separate sorry points (shared-first τ-path,
+shared-last τ-path, coprime case). The proof requires Rauh's iterative reduction
+approach (arxiv:1210.7960, Theorem 2.3): well-founded induction on lex degree,
+using the "crossing" property to find divisible groebnerBasisSet leading terms.
+
+**Proof sketch** (Rauh): Any nonzero binomial in J_G has a leading monomial with a
+"crossing" (∃ a < b, x_a | M ∧ y_b | M). This crossing yields an admissible path
+whose groebnerElement has LT dividing M. Reducing by this element gives a smaller
+binomial. By well-founded induction on the lex order, the reduction terminates at 0,
+yielding a valid IsRemainder representation with degree bounds. -/
+private lemma isRemainder_sPolynomial_fij_of_admissible (G : SimpleGraph V)
+    (i₁ i₂ j₁ j₂ : V)
+    (hi₁j₁ : i₁ < j₁) (hi₂j₂ : i₂ < j₂)
+    (hconn₁ : ∃ σ, IsAdmissiblePath G i₁ j₁ σ)
+    (hconn₂ : ∃ σ, IsAdmissiblePath G i₂ j₂ σ)
+    (hne : binomialEdgeMonomialOrder.sPolynomial
+      (fij (K := K) i₁ j₁) (fij (K := K) i₂ j₂) ≠ 0) :
     binomialEdgeMonomialOrder.IsRemainder
-      (binomialEdgeMonomialOrder.sPolynomial
-        (groebnerElement (K := K) i j₁ π₁) (groebnerElement (K := K) i j₂ π₂))
+      (binomialEdgeMonomialOrder.sPolynomial (fij (K := K) i₁ j₁) (fij (K := K) i₂ j₂))
       (groebnerBasisSet G) 0 := by
-  -- Factor: S(e₁, e₂) = monomial D 1 * S(fij(i,j₁), fij(i,j₂))
-  obtain ⟨d₁, hd₁⟩ := pathMonomial_eq_monomial' (K := K) i j₁ π₁
-  obtain ⟨d₂, hd₂⟩ := pathMonomial_eq_monomial' (K := K) i j₂ π₂
-  have he₁ : groebnerElement (K := K) i j₁ π₁ = monomial d₁ 1 * fij i j₁ := by
-    simp only [groebnerElement, fij, hd₁]
-  have he₂ : groebnerElement (K := K) i j₂ π₂ = monomial d₂ 1 * fij i j₂ := by
-    simp only [groebnerElement, fij, hd₂]
-  have hSP_factor : binomialEdgeMonomialOrder.sPolynomial
-      (groebnerElement (K := K) i j₁ π₁) (groebnerElement (K := K) i j₂ π₂) =
-      monomial ((d₁ + binomialEdgeMonomialOrder.degree (fij (K := K) i j₁)) ⊔
-        (d₂ + binomialEdgeMonomialOrder.degree (fij (K := K) i j₂)) -
-        binomialEdgeMonomialOrder.degree (fij (K := K) i j₁) ⊔
-        binomialEdgeMonomialOrder.degree (fij (K := K) i j₂)) (1 * 1) *
-      binomialEdgeMonomialOrder.sPolynomial (fij i j₁) (fij i j₂) := by
-    rw [he₁, he₂]; exact sPolynomial_monomial_mul _ _ d₁ d₂ 1 1
-  set D := (d₁ + binomialEdgeMonomialOrder.degree (fij (K := K) i j₁)) ⊔
-    (d₂ + binomialEdgeMonomialOrder.degree (fij (K := K) i j₂)) -
-    binomialEdgeMonomialOrder.degree (fij (K := K) i j₁) ⊔
-    binomialEdgeMonomialOrder.degree (fij (K := K) i j₂) with hD_def
-  simp only [one_mul] at hSP_factor
-  rw [hSP_factor]
-  -- If the inner S-polynomial is 0, we're done
-  by_cases hS_zero : binomialEdgeMonomialOrder.sPolynomial
-      (fij (K := K) i j₁) (fij (K := K) i j₂) = 0
-  · rw [hS_zero, mul_zero]; exact isRemainder_zero_zero' _
-  · -- S(fij₁, fij₂) = -y i * fij j₁ j₂ by sPolynomial_fij_shared_first
-    have hi₁j₁ := hπ₁.1
-    have hi₂j₂ := hπ₂.1
-    rw [sPolynomial_fij_shared_first i j₁ j₂ hi₁j₁ hi₂j₂ hj]
-    -- Goal: IsRemainder (monomial D 1 * (-y i * fij j₁ j₂)) groebnerBasisSet 0
-    -- Factor out the negation
-    rw [show (-y (K := K) i * fij j₁ j₂ : MvPolynomial (BinomialEdgeVars V) K) =
-        -(y i * fij j₁ j₂) from by ring, mul_neg]
-    apply isRemainder_neg
-    -- Goal: IsRemainder (monomial D 1 * (y i * fij j₁ j₂)) groebnerBasisSet 0
-    -- Merge monomial D 1 * y i into a single monomial
-    set si := (Finsupp.single (Sum.inr i : BinomialEdgeVars V) 1 :
-      BinomialEdgeVars V →₀ ℕ) with hsi_def
-    have hyi : y (K := K) i = (monomial si) (1 : K) := rfl
-    rw [hyi, ← mul_assoc, monomial_mul, one_mul]
-    -- Goal: IsRemainder (monomial (D + si) 1 * fij j₁ j₂) groebnerBasisSet 0
-    have hD_bound : d₁ ⊔ d₂ ≤ D := by
-      have hd₂_j₁ : d₂ (Sum.inr j₁) = 0 :=
-        pathMonomial_exponent_inr_of_ge i j₂ π₂ j₁ (not_lt.mpr hi₁j₁.le) d₂ hd₂
-      have hd₁_j₂ : d₁ (Sum.inr j₂) = 0 :=
-        pathMonomial_exponent_inr_of_ge i j₁ π₁ j₂ (not_lt.mpr hi₂j₂.le) d₁ hd₁
-      intro v
-      simp only [hD_def, fij_degree i j₁ hi₁j₁, fij_degree i j₂ hi₂j₂,
-        Finsupp.sup_apply, Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply]
-      split_ifs <;> simp_all <;> omega
-    rcases lt_or_gt_of_ne hj with h_lt | h_gt
-    · -- Case j₁ < j₂: use τ-path directly
-      obtain ⟨σ, d_σ, hσ_adm, hσ_mon, hσ_bound⟩ :=
-        exists_admissible_with_pathMonomial_bound_first G i j₁ j₂ π₁ π₂
-          hπ₁ hπ₂ h_lt d₁ d₂ hd₁ hd₂
-      exact isRemainder_fij_via_groebnerElement G j₁ j₂ σ hσ_adm
-        (monomial (D + si) 1) (D + si) rfl d_σ hσ_mon
-        (le_trans hσ_bound (by gcongr))
-    · -- Case j₂ < j₁: use fij antisymmetry
-      rw [fij_antisymm j₁ j₂, mul_neg]
-      apply isRemainder_neg
-      obtain ⟨σ, d_σ, hσ_adm, hσ_mon, hσ_bound⟩ :=
-        exists_admissible_with_pathMonomial_bound_first G i j₂ j₁ π₂ π₁
-          hπ₂ hπ₁ h_gt d₂ d₁ hd₂ hd₁
-      exact isRemainder_fij_via_groebnerElement G j₂ j₁ σ hσ_adm
-        (monomial (D + si) 1) (D + si) rfl d_σ hσ_mon
-        (le_trans hσ_bound (by rw [sup_comm]; gcongr))
+  sorry
 
-/-- Given admissible paths π₁: i₁→j and π₂: i₂→j sharing last endpoint j,
-the S-polynomial of the corresponding Gröbner elements reduces to 0.
+/-! ## S-polynomial reduction for groebnerElement pairs -/
 
-Symmetric to `isRemainder_shared_first`. -/
-private lemma isRemainder_shared_last (G : SimpleGraph V)
-    (i₁ i₂ j : V) (π₁ π₂ : List V)
-    (hπ₁ : IsAdmissiblePath G i₁ j π₁) (hπ₂ : IsAdmissiblePath G i₂ j π₂)
-    (hi : i₁ ≠ i₂) :
-    binomialEdgeMonomialOrder.IsRemainder
-      (binomialEdgeMonomialOrder.sPolynomial
-        (groebnerElement (K := K) i₁ j π₁) (groebnerElement (K := K) i₂ j π₂))
-      (groebnerBasisSet G) 0 := by
-  -- Factor: S(e₁, e₂) = monomial D 1 * S(fij(i₁,j), fij(i₂,j))
-  obtain ⟨d₁, hd₁⟩ := pathMonomial_eq_monomial' (K := K) i₁ j π₁
-  obtain ⟨d₂, hd₂⟩ := pathMonomial_eq_monomial' (K := K) i₂ j π₂
-  have he₁ : groebnerElement (K := K) i₁ j π₁ = monomial d₁ 1 * fij i₁ j := by
-    simp only [groebnerElement, fij, hd₁]
-  have he₂ : groebnerElement (K := K) i₂ j π₂ = monomial d₂ 1 * fij i₂ j := by
-    simp only [groebnerElement, fij, hd₂]
-  have hSP_factor : binomialEdgeMonomialOrder.sPolynomial
-      (groebnerElement (K := K) i₁ j π₁) (groebnerElement (K := K) i₂ j π₂) =
-      monomial ((d₁ + binomialEdgeMonomialOrder.degree (fij (K := K) i₁ j)) ⊔
-        (d₂ + binomialEdgeMonomialOrder.degree (fij (K := K) i₂ j)) -
-        binomialEdgeMonomialOrder.degree (fij (K := K) i₁ j) ⊔
-        binomialEdgeMonomialOrder.degree (fij (K := K) i₂ j)) (1 * 1) *
-      binomialEdgeMonomialOrder.sPolynomial (fij i₁ j) (fij i₂ j) := by
-    rw [he₁, he₂]; exact sPolynomial_monomial_mul _ _ d₁ d₂ 1 1
-  set D := (d₁ + binomialEdgeMonomialOrder.degree (fij (K := K) i₁ j)) ⊔
-    (d₂ + binomialEdgeMonomialOrder.degree (fij (K := K) i₂ j)) -
-    binomialEdgeMonomialOrder.degree (fij (K := K) i₁ j) ⊔
-    binomialEdgeMonomialOrder.degree (fij (K := K) i₂ j) with hD_def
-  simp only [one_mul] at hSP_factor
-  rw [hSP_factor]
-  -- If the inner S-polynomial is 0, we're done
-  by_cases hS_zero : binomialEdgeMonomialOrder.sPolynomial
-      (fij (K := K) i₁ j) (fij (K := K) i₂ j) = 0
-  · rw [hS_zero, mul_zero]; exact isRemainder_zero_zero' _
-  · -- S(fij₁, fij₂) = x j * fij i₁ i₂ by sPolynomial_fij_shared_last
-    have hi₁j := hπ₁.1
-    have hi₂j := hπ₂.1
-    rw [sPolynomial_fij_shared_last i₁ i₂ j hi₁j hi₂j hi]
-    -- Goal: IsRemainder (monomial D 1 * (x j * fij i₁ i₂)) groebnerBasisSet 0
-    -- Merge monomial D 1 * x j into a single monomial
-    set sj := (Finsupp.single (Sum.inl j : BinomialEdgeVars V) 1 :
-      BinomialEdgeVars V →₀ ℕ) with hsj_def
-    have hxj : x (K := K) j = (monomial sj) (1 : K) := rfl
-    rw [hxj, ← mul_assoc, monomial_mul, one_mul]
-    -- Goal: IsRemainder (monomial (D + sj) 1 * fij i₁ i₂) groebnerBasisSet 0
-    -- The τ-path bound + admissibility constraints give d_σ ≤ D + sj.
-    -- Key fact: d₁ ⊔ d₂ ≤ D because at coordinates where deg(fij i₁ j) ≠ deg(fij i₂ j)
-    -- (namely inl i₁ and inl i₂), the admissibility constraint i₁ < j, i₂ < j
-    -- forces the corresponding pathMonomial exponent to be 0.
-    have hD_bound : d₁ ⊔ d₂ ≤ D := by
-      have hd₂_i₁ : d₂ (Sum.inl i₁) = 0 :=
-        pathMonomial_exponent_inl_of_le i₂ j π₂ i₁ (not_lt.mpr hi₁j.le) d₂ hd₂
-      have hd₁_i₂ : d₁ (Sum.inl i₂) = 0 :=
-        pathMonomial_exponent_inl_of_le i₁ j π₁ i₂ (not_lt.mpr hi₂j.le) d₁ hd₁
-      intro v
-      simp only [hD_def, fij_degree i₁ j hi₁j, fij_degree i₂ j hi₂j,
-        Finsupp.sup_apply, Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply]
-      split_ifs <;> simp_all <;> omega
-    rcases lt_or_gt_of_ne hi with h_lt | h_gt
-    · -- Case i₁ < i₂: use τ-path directly
-      obtain ⟨σ, d_σ, hσ_adm, hσ_mon, hσ_bound⟩ :=
-        exists_admissible_with_pathMonomial_bound_last G i₁ i₂ j π₁ π₂
-          hπ₁ hπ₂ h_lt d₁ d₂ hd₁ hd₂
-      exact isRemainder_fij_via_groebnerElement G i₁ i₂ σ hσ_adm
-        (monomial (D + sj) 1) (D + sj) rfl d_σ hσ_mon
-        (le_trans hσ_bound (by gcongr))
-    · -- Case i₂ < i₁: use fij antisymmetry
-      rw [fij_antisymm i₁ i₂, mul_neg]
-      apply isRemainder_neg
-      obtain ⟨σ, d_σ, hσ_adm, hσ_mon, hσ_bound⟩ :=
-        exists_admissible_with_pathMonomial_bound_last G i₂ i₁ j π₂ π₁
-          hπ₂ hπ₁ h_gt d₂ d₁ hd₂ hd₁
-      exact isRemainder_fij_via_groebnerElement G i₂ i₁ σ hσ_adm
-        (monomial (D + sj) 1) (D + sj) rfl d_σ hσ_mon
-        (le_trans hσ_bound (by rw [sup_comm]; gcongr))
-
-/-- Given admissible paths with coprime leading monomials (i₁ ≠ i₂ and j₁ ≠ j₂),
-the S-polynomial of the corresponding Gröbner elements reduces to 0. -/
-private lemma isRemainder_coprime (G : SimpleGraph V)
+/-- For any two groebnerBasisSet elements with different (i,j) pairs,
+their S-polynomial reduces to 0. Factors S(ge₁, ge₂) = monomial D · S(fij₁, fij₂)
+and reduces to the inner S-polynomial via `isRemainder_monomial_mul'`. -/
+private lemma isRemainder_sPolynomial_of_ne (G : SimpleGraph V)
     (i₁ i₂ j₁ j₂ : V) (π₁ π₂ : List V)
     (hπ₁ : IsAdmissiblePath G i₁ j₁ π₁) (hπ₂ : IsAdmissiblePath G i₂ j₂ π₂)
-    (hi : i₁ ≠ i₂) (hj : j₁ ≠ j₂) :
+    (hne : ¬(i₁ = i₂ ∧ j₁ = j₂)) :
     binomialEdgeMonomialOrder.IsRemainder
       (binomialEdgeMonomialOrder.sPolynomial
         (groebnerElement (K := K) i₁ j₁ π₁) (groebnerElement (K := K) i₂ j₂ π₂))
       (groebnerBasisSet G) 0 := by
-  -- Factor: S(e₁, e₂) = monomial D 1 * S(fij(i₁,j₁), fij(i₂,j₂))
+  -- Factor: S(u₁·fij₁, u₂·fij₂) = monomial D 1 · S(fij₁, fij₂)
   obtain ⟨d₁, hd₁⟩ := pathMonomial_eq_monomial' (K := K) i₁ j₁ π₁
   obtain ⟨d₂, hd₂⟩ := pathMonomial_eq_monomial' (K := K) i₂ j₂ π₂
   have he₁ : groebnerElement (K := K) i₁ j₁ π₁ = monomial d₁ 1 * fij i₁ j₁ := by
@@ -601,13 +461,10 @@ private lemma isRemainder_coprime (G : SimpleGraph V)
   by_cases hS_zero : binomialEdgeMonomialOrder.sPolynomial
       (fij (K := K) i₁ j₁) (fij (K := K) i₂ j₂) = 0
   · rw [hS_zero, mul_zero]; exact isRemainder_zero_zero' _
-  · -- S(fij₁, fij₂) = x j₂ * y i₂ * fij i₁ j₁ - x j₁ * y i₁ * fij i₂ j₂
-    have hi₁j₁ := hπ₁.1
-    have hi₂j₂ := hπ₂.1
-    rw [sPolynomial_fij_coprime i₁ i₂ j₁ j₂ hi₁j₁ hi₂j₂ hi hj]
-    -- Goal: IsRemainder (monomial D 1 * (x j₂ * y i₂ * fij i₁ j₁ - x j₁ * y i₁ * fij i₂ j₂))
-    --         groebnerBasisSet 0
-    sorry
+  · -- Inner S-polynomial is nonzero: lift via monomial scaling
+    exact isRemainder_monomial_mul' _ _ D 1 one_ne_zero hS_zero
+      (isRemainder_sPolynomial_fij_of_admissible G i₁ i₂ j₁ j₂
+        hπ₁.1 hπ₂.1 ⟨π₁, hπ₁⟩ ⟨π₂, hπ₂⟩ hS_zero)
 
 /-! ## Theorem 2.1: Gröbner basis via Buchberger's criterion -/
 
@@ -654,20 +511,8 @@ theorem theorem_2_1_groebner (G : SimpleGraph V) :
       simp [sPolynomial_self]
     rw [hSP]
     exact isRemainder_zero_zero' _
-  · -- Remaining cases: shared endpoint or coprime
-    push_neg at hij_eq
-    -- Route to helper lemmas that work with the full S-polynomial directly
-    -- (avoiding monomial factoring which loses degree room for the IsRemainder bound)
-    by_cases hi : i₁ = i₂
-    · -- Shared first endpoint
-      subst hi
-      exact isRemainder_shared_first G i₁ j₁ j₂ π₁ π₂ hπ₁ hπ₂ (hij_eq rfl)
-    · by_cases hj : j₁ = j₂
-      · -- Shared last endpoint
-        subst hj
-        exact isRemainder_shared_last G i₁ i₂ j₁ π₁ π₂ hπ₁ hπ₂ hi
-      · -- Coprime case
-        exact isRemainder_coprime G i₁ i₂ j₁ j₂ π₁ π₂ hπ₁ hπ₂ hi hj
+  · -- Non-same-edge case: factor S-poly via monomial D, reduce inner S-poly
+    exact isRemainder_sPolynomial_of_ne G i₁ i₂ j₁ j₂ π₁ π₂ hπ₁ hπ₂ hij_eq
 
 theorem theorem_2_1_leading (G : SimpleGraph V) (f : MvPolynomial (BinomialEdgeVars V) K)
     (hf : f ∈ binomialEdgeIdeal G) (hf0 : f ≠ 0) :
