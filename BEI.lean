@@ -4,6 +4,7 @@ import BEI.MonomialOrder
 import BEI.GraphProperties
 import BEI.AdmissiblePaths
 import BEI.ClosedGraphs
+import BEI.HerzogLemmas
 import BEI.GroebnerBasis
 import BEI.CohenMacaulay
 import BEI.PrimeIdeals
