@@ -634,6 +634,28 @@ private lemma weight_collapseWeight_eq_mapDomain (d : BinomialEdgeVars V →₀ 
   simp only [Finsupp.weight_apply, Finsupp.mapDomain]
   congr 1; ext a; simp [collapseWeight]
 
+/-- Pointwise evaluation of `mapDomain collapse`:
+`(mapDomain collapse e)(v) = e(inl v) + e(inr v)`. -/
+private lemma mapDomain_collapse_apply (e : BinomialEdgeVars V →₀ ℕ) (v : V) :
+    (Finsupp.mapDomain (collapse (V := V)) e) v = e (Sum.inl v) + e (Sum.inr v) := by
+  induction e using Finsupp.induction with
+  | zero => simp [Finsupp.mapDomain_zero]
+  | single_add a n e ha hn ih =>
+    rw [Finsupp.mapDomain_add, Finsupp.mapDomain_single]
+    simp only [Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply]
+    rw [ih]; simp only [collapse]
+    rcases a with a | a
+    · by_cases h : a = v
+      · subst h; simp; omega
+      · simp [show ¬(Sum.inl a = Sum.inl v) from fun h' => h (Sum.inl.inj h'),
+              show ¬(Sum.inl a = Sum.inr v) from Sum.inl_ne_inr,
+              show ¬(a = v) from h]
+    · by_cases h : a = v
+      · subst h; simp; omega
+      · simp [show ¬(Sum.inr a = Sum.inl v) from Sum.inr_ne_inl,
+              show ¬(Sum.inr a = Sum.inr v) from fun h' => h (Sum.inr.inj h'),
+              show ¬(a = v) from h]
+
 /-- Same `mapDomain collapse` implies pointwise collapse equality. -/
 private lemma same_collapse_pointwise (d d' : BinomialEdgeVars V →₀ ℕ)
     (h : Finsupp.mapDomain (collapse (V := V)) d = Finsupp.mapDomain (collapse (V := V)) d')
@@ -660,13 +682,8 @@ private lemma same_collapse_pointwise (d d' : BinomialEdgeVars V →₀ ℕ)
       (Finsupp.weight (collapseWeight (V := V)) e) v = e (Sum.inl v) + e (Sum.inr v) by
     linarith [key d, key d']
   intro e
-  -- weight collapseWeight e = mapDomain collapse e (by weight_collapseWeight_eq_mapDomain)
-  -- (mapDomain collapse e)(v) = Σ_{a: collapse a = v} e(a) = e(inl v) + e(inr v)
-  -- Proof by Finsupp.sum computation
-  -- (weight cW e)(v) = (mapDomain collapse e)(v) = e(inl v) + e(inr v)
-  -- This is a Finsupp.sum computation: mapDomain collapse e = Σ_a single(collapse a, e a),
-  -- evaluated at v gives Σ_{a: collapse a = v} e(a) = e(inl v) + e(inr v).
-  sorry
+  rw [weight_collapseWeight_eq_mapDomain]
+  exact mapDomain_collapse_apply e v
 
 /-! ### Combined result: d' with same collapse AND same xydeg -/
 
