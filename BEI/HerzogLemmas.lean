@@ -137,11 +137,11 @@ private lemma binomialEdgeIdeal_no_monomial (G : SimpleGraph V)
 
 /-- The rename homomorphism that collapses x_v and y_v to the same variable X_v.
 This kills every generator x_i y_j - x_j y_i since they become X_i X_j - X_j X_i = 0. -/
-private def collapse : BinomialEdgeVars V → V := Sum.elim id id
+def collapse : BinomialEdgeVars V → V := Sum.elim id id
 
 /-- The collapse map sends each generator to 0:
 rename collapse (x_i y_j - x_j y_i) = 0. -/
-private lemma rename_collapse_generator (i j : V) :
+lemma rename_collapse_generator (i j : V) :
     MvPolynomial.rename (collapse (V := V))
       (x i * y j - x j * y i :
         MvPolynomial (BinomialEdgeVars V) K) = 0 := by
@@ -150,7 +150,7 @@ private lemma rename_collapse_generator (i j : V) :
   ring
 
 /-- The collapse map kills J_G: rename collapse f = 0 for f ∈ J_G. -/
-private lemma rename_collapse_eq_zero (G : SimpleGraph V)
+lemma rename_collapse_eq_zero (G : SimpleGraph V)
     (f : MvPolynomial (BinomialEdgeVars V) K)
     (hf : f ∈ binomialEdgeIdeal G) :
     MvPolynomial.rename (collapse (V := V)) f = 0 := by
@@ -166,7 +166,7 @@ private lemma rename_collapse_eq_zero (G : SimpleGraph V)
 /-- For nonzero f ∈ J_G, there exists d' ≠ LM(f) in support(f) with the same
 column degree. This follows from rename collapse f = 0 and
 coeff(f, LM(f)) ≠ 0. -/
-private lemma exists_other_support_same_colDeg (G : SimpleGraph V)
+lemma exists_other_support_same_colDeg (G : SimpleGraph V)
     (f : MvPolynomial (BinomialEdgeVars V) K)
     (hf_mem : f ∈ binomialEdgeIdeal G) (hf_ne : f ≠ 0) :
     ∃ d' ∈ f.support, d' ≠ binomialEdgeMonomialOrder.degree f ∧

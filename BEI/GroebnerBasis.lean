@@ -2,6 +2,7 @@ import BEI.AdmissiblePaths
 import BEI.MonomialOrder
 import BEI.GroebnerAPI
 import BEI.ClosedGraphs
+import BEI.HerzogLemmas
 import Mathlib.RingTheory.MvPolynomial.MonomialOrder
 import Mathlib.RingTheory.MvPolynomial.Groebner
 import Mathlib.RingTheory.Ideal.Operations
@@ -509,18 +510,74 @@ For any nonzero f ∈ J_G, the leading monomial has a "crossing" (∃ a < b with
 and y_b | LM), because J_G is Z^V-homogeneous and contains no monomials. The crossing
 yields an admissible path a→b whose groebnerElement's LT divides LM(f). -/
 
+/-! ### Sub-lemma 1: Crossing existence -/
+
+/-- **Crossing existence**: For any nonzero `f ∈ J_G`, the leading monomial has a crossing:
+`∃ a < b` with `d(inl a) ≥ 1` and `d(inr b) ≥ 1`.
+
+**Proof sketch**: By `exists_other_support_same_colDeg`, ∃ `d' ≠ d` in `support(f)` with same
+collapse (marginals). Since `d > d'` in lex and all `inl` positions come before `inr` positions,
+the first difference must be at `inl(v₀)` with `d(inl v₀) > d'(inl v₀)` (hence ≥ 1).
+Same total x-degree (J_G is bihomogeneous) forces `∃ v₁ > v₀` with `d(inl v₁) < d'(inl v₁)`,
+hence `d(inr v₁) > d'(inr v₁)` (marginals), hence `d(inr v₁) ≥ 1`. -/
+private lemma exists_crossing_of_mem (G : SimpleGraph V)
+    (f : MvPolynomial (BinomialEdgeVars V) K)
+    (hf_mem : f ∈ binomialEdgeIdeal G) (hf_ne : f ≠ 0) :
+    ∃ a b : V, a < b ∧
+      1 ≤ binomialEdgeMonomialOrder.degree f (Sum.inl a) ∧
+      1 ≤ binomialEdgeMonomialOrder.degree f (Sum.inr b) := by
+  sorry
+
+/-! ### Sub-lemma 2: Walk from crossing -/
+
+/-- **Walk from crossing**: If `f ∈ J_G` has a crossing at `(a, b)` with `a < b`, then
+there exists a walk from `a` to `b` in `G` satisfying the vertex condition for
+`exists_admissible_path_of_walk`. That is: a nodup walk with all vertices `v`
+satisfying `v = a ∨ v = b ∨ v < a ∨ b < v`.
+
+**Proof sketch**: Write `f = Σ h_e * f_e`. The crossing forces variables `x_a` and `y_b`
+to appear in `LM(f)`. Tracing through the representation, the edges connecting `a` and `b`
+form a walk. The vertex condition follows from the admissible path structure of the
+individual edges' contributions. -/
+private lemma exists_walk_from_crossing (G : SimpleGraph V)
+    (f : MvPolynomial (BinomialEdgeVars V) K)
+    (hf_mem : f ∈ binomialEdgeIdeal G) (hf_ne : f ≠ 0)
+    (a b : V) (hab : a < b)
+    (ha : 1 ≤ binomialEdgeMonomialOrder.degree f (Sum.inl a))
+    (hb : 1 ≤ binomialEdgeMonomialOrder.degree f (Sum.inr b)) :
+    ∃ π : List V, π.head? = some a ∧ π.getLast? = some b ∧ π.Nodup ∧
+      (∀ v ∈ π, v = a ∨ v = b ∨ v < a ∨ b < v) ∧
+      π.Chain' (fun u v => G.Adj u v) := by
+  sorry
+
 /-! ### Assembly: Rauh's core divisibility claim -/
 
 /-- **Core claim (Rauh, Theorem 2)**: For any nonzero `f ∈ J_G`, some groebnerElement's
 leading monomial divides `f`'s leading monomial (componentwise ≤ on Finsupp).
 
-**Proof**: TODO — Rauh's approach. See `BEI/HerzogLemmas.lean` for the archived false
-approach. The correct proof needs `HasCrossing` + an admissible path extraction argument. -/
+**Proof**: Combine `exists_crossing_of_mem` → `exists_walk_from_crossing` →
+`exists_admissible_path_of_walk` → `pathMonomial_degree_le_of_supported`. -/
 private lemma exists_groebnerElement_degree_le (G : SimpleGraph V)
     (f : MvPolynomial (BinomialEdgeVars V) K)
     (hf_mem : f ∈ binomialEdgeIdeal G) (hf_ne : f ≠ 0) :
     ∃ g ∈ groebnerBasisSet (K := K) G,
       binomialEdgeMonomialOrder.degree g ≤ binomialEdgeMonomialOrder.degree f := by
+  -- Step 1: Get a crossing (a, b) in LM(f)
+  obtain ⟨a, b, hab, ha, hb⟩ := exists_crossing_of_mem G f hf_mem hf_ne
+  -- Step 2: Get a walk from a to b satisfying the vertex condition
+  obtain ⟨π, hHead, hLast, hND, hVtx, hWalk⟩ :=
+    exists_walk_from_crossing G f hf_mem hf_ne a b hab ha hb
+  -- Step 3: Extract an admissible path from the walk
+  obtain ⟨σ, hσ, hσ_sub⟩ :=
+    exists_admissible_path_of_walk G a b hab π hHead hLast hND hVtx hWalk
+  -- Step 4: groebnerElement(a, b, σ) ∈ groebnerBasisSet with degree ≤ d
+  refine ⟨groebnerElement a b σ, ⟨a, b, σ, hσ, rfl⟩, ?_⟩
+  -- Step 5: degree(ge) ≤ degree(f)
+  -- groebnerElement = pathMonomial * fij, so degree = deg(pathMonomial) + inl(a) + inr(b)
+  -- deg(pathMonomial) contributes x_v for v > b (internal) and y_v for v < a (internal)
+  -- We need: for internal v > b, degree(f)(inl v) ≥ 1
+  --          for internal v < a, degree(f)(inr v) ≥ 1
+  -- This follows from the walk construction + support of f
   sorry
 
 /-- Any element of `J_G` reduces to remainder 0 modulo `groebnerBasisSet`.
