@@ -7,6 +7,8 @@ import Mathlib.RingTheory.MvPolynomial.MonomialOrder
 import Mathlib.RingTheory.MvPolynomial.Groebner
 import Mathlib.RingTheory.Ideal.Operations
 import Mathlib.RingTheory.Ideal.Maps
+import Mathlib.RingTheory.MvPolynomial.WeightedHomogeneous
+import Mathlib.RingTheory.GradedAlgebra.Homogeneous.Ideal
 
 variable {K : Type*} [Field K]
 variable {V : Type*} [LinearOrder V] [DecidableEq V] [Fintype V]
@@ -510,22 +512,324 @@ For any nonzero f ∈ J_G, the leading monomial has a "crossing" (∃ a < b with
 and y_b | LM), because J_G is Z^V-homogeneous and contains no monomials. The crossing
 yields an admissible path a→b whose groebnerElement's LT divides LM(f). -/
 
+/-! ### Bihomogeneity of J_G (Z^V-grading via collapse weight)
+
+To prove the crossing lemma, we need that J_G is graded by the "collapse" weight:
+the weight function `collapseWeight v = Finsupp.single (collapse v) 1` assigns the same
+weight to `x_v` and `y_v`. Each generator `f_{ij} = x_i y_j - x_j y_i` is homogeneous
+under this grading (both monomials have weight `single i 1 + single j 1`).
+
+We instantiate Mathlib's `GradedAlgebra` for this weight, then apply
+`Ideal.homogeneous_span` to conclude that J_G is graded. This means
+the collapse-m component of any `f ∈ J_G` is again in J_G. -/
+
+/-- The collapse weight function: maps each variable to `Finsupp.single v 1` where
+`v` is the underlying vertex (i.e., `inl v ↦ single v 1`, `inr v ↦ single v 1`). -/
+private def collapseWeight : BinomialEdgeVars V → (V →₀ ℕ) :=
+  fun v => Finsupp.single (collapse v) 1
+
+/-- Each generator `f_{ij}` is weighted homogeneous under the collapse weight.
+Both monomials `x_i · y_j` and `x_j · y_i` have collapse weight `single i 1 + single j 1`. -/
+private lemma generator_isWeightedHomogeneous (i j : V) (hij : i < j) :
+    MvPolynomial.IsWeightedHomogeneous (collapseWeight (V := V))
+      (x (K := K) i * y j - x j * y i : MvPolynomial (BinomialEdgeVars V) K)
+      (Finsupp.single i 1 + Finsupp.single j 1) := by
+  -- The weight of single(inl a, 1) + single(inr b, 1) is single(a,1) + single(b,1)
+  have h_weight : ∀ (a b : V),
+      Finsupp.weight (collapseWeight (V := V))
+        (Finsupp.single (Sum.inl a : BinomialEdgeVars V) 1 +
+         Finsupp.single (Sum.inr b : BinomialEdgeVars V) 1) =
+        Finsupp.single a 1 + Finsupp.single b 1 := by
+    intro a b
+    simp only [Finsupp.weight_apply, collapseWeight, collapse]
+    rw [Finsupp.sum_add_index' (fun _ => by simp) (fun _ _ _ => by simp [Nat.add_mul]),
+        Finsupp.sum_single_index (by simp),
+        Finsupp.sum_single_index (by simp)]
+    simp [Sum.elim_inl, Sum.elim_inr]
+  -- Express the generator as monomial - monomial
+  set d₁ := Finsupp.single (Sum.inl i : BinomialEdgeVars V) 1 +
+             Finsupp.single (Sum.inr j : BinomialEdgeVars V) 1
+  set d₂ := Finsupp.single (Sum.inl j : BinomialEdgeVars V) 1 +
+             Finsupp.single (Sum.inr i : BinomialEdgeVars V) 1
+  set w := collapseWeight (V := V)
+  set m := Finsupp.single i 1 + Finsupp.single j 1
+  -- x_i * y_j is homogeneous with weight single i 1 + single j 1
+  have hm_eq : w (Sum.inl i) + w (Sum.inr j) = m := by
+    change Finsupp.single i 1 + Finsupp.single j 1 = m; rfl
+  have hm_eq' : w (Sum.inl j) + w (Sum.inr i) = m := by
+    change Finsupp.single j 1 + Finsupp.single i 1 = m; exact add_comm _ _
+  have hX := MvPolynomial.isWeightedHomogeneous_X (R := K) w
+  have hxi := hX (Sum.inl i)
+  have hxj := hX (Sum.inl j)
+  have hyi := hX (Sum.inr i)
+  have hyj := hX (Sum.inr j)
+  have hxy : MvPolynomial.IsWeightedHomogeneous w
+      (x (K := K) i * y j : MvPolynomial (BinomialEdgeVars V) K) m := by
+    change MvPolynomial.IsWeightedHomogeneous w (MvPolynomial.X _ * MvPolynomial.X _) m
+    rw [← hm_eq]; exact hxi.mul hyj
+  have hyx : MvPolynomial.IsWeightedHomogeneous w
+      (x (K := K) j * y i : MvPolynomial (BinomialEdgeVars V) K) m := by
+    change MvPolynomial.IsWeightedHomogeneous w (MvPolynomial.X _ * MvPolynomial.X _) m
+    rw [← hm_eq']; exact hxj.mul hyi
+  exact show x i * y j - x j * y i ∈ MvPolynomial.weightedHomogeneousSubmodule K w m from
+    Submodule.sub_mem _ hxy hyx
+
+/-- J_G is homogeneous under the collapse weight grading. -/
+private lemma binomialEdgeIdeal_isHomogeneous (G : SimpleGraph V) :
+    letI := MvPolynomial.weightedGradedAlgebra (K) (collapseWeight (V := V))
+    (binomialEdgeIdeal (K := K) G).IsHomogeneous
+      (MvPolynomial.weightedHomogeneousSubmodule K (collapseWeight (V := V))) := by
+  letI := MvPolynomial.weightedGradedAlgebra (K) (collapseWeight (V := V))
+  apply Ideal.homogeneous_span
+  intro g hg
+  obtain ⟨i, j, _, hij, rfl⟩ := hg
+  exact ⟨_, generator_isWeightedHomogeneous i j hij⟩
+
+/-- The collapse-m component of any `f ∈ J_G` is again in `J_G`. -/
+private lemma collapseComponent_mem (G : SimpleGraph V)
+    (f : MvPolynomial (BinomialEdgeVars V) K)
+    (hf : f ∈ binomialEdgeIdeal G) (m : V →₀ ℕ) :
+    MvPolynomial.weightedHomogeneousComponent (collapseWeight (V := V)) m f ∈
+      binomialEdgeIdeal (K := K) G := by
+  letI := MvPolynomial.weightedGradedAlgebra (K) (collapseWeight (V := V))
+  have hH := binomialEdgeIdeal_isHomogeneous (K := K) G
+  -- IsHomogeneous says: ∀ i, ∀ ⦃r⦄, r ∈ I → ↑(decompose 𝒜 r i) ∈ I
+  have h : (↑(DirectSum.decompose
+    (MvPolynomial.weightedHomogeneousSubmodule K (collapseWeight (V := V))) f m) :
+    MvPolynomial (BinomialEdgeVars V) K) ∈ binomialEdgeIdeal (K := K) G := hH m hf
+  -- decompose for weightedGradedAlgebra = weightedHomogeneousComponent
+  convert h using 1
+  exact (MvPolynomial.weightedDecomposition.decompose'_apply (R := K)
+    (w := collapseWeight (V := V)) f m).symm
+
+/-! ### xydeg grading (total x-degree / y-degree) -/
+
+/-- Map distinguishing x-variables from y-variables: `inl _ ↦ 0`, `inr _ ↦ 1`. -/
+private def xydeg : BinomialEdgeVars V → Fin 2
+  | Sum.inl _ => 0
+  | Sum.inr _ => 1
+
+/-- `rename xydeg` kills J_G: `rename xydeg f = 0` for `f ∈ J_G`. -/
+private lemma rename_xydeg_eq_zero (G : SimpleGraph V)
+    (f : MvPolynomial (BinomialEdgeVars V) K)
+    (hf : f ∈ binomialEdgeIdeal G) :
+    MvPolynomial.rename (xydeg (V := V)) f = 0 := by
+  have hle : binomialEdgeIdeal (K := K) G ≤
+      RingHom.ker (MvPolynomial.rename
+        (xydeg (V := V)) : MvPolynomial _ K →ₐ[K] _).toRingHom := by
+    apply Ideal.span_le.mpr
+    intro g hg
+    obtain ⟨i, j, _, _, rfl⟩ := hg
+    show x i * y j - x j * y i ∈ RingHom.ker
+      (MvPolynomial.rename (xydeg (V := V)) : MvPolynomial _ K →ₐ[K] _).toRingHom
+    rw [RingHom.mem_ker]
+    simp only [AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom,
+      xydeg, x, y, map_sub, map_mul, MvPolynomial.rename_X]
+    ring
+  exact RingHom.mem_ker.mp (hle hf)
+
+/-- The collapse weight equals mapDomain collapse. -/
+private lemma weight_collapseWeight_eq_mapDomain (d : BinomialEdgeVars V →₀ ℕ) :
+    Finsupp.weight (collapseWeight (V := V)) d = Finsupp.mapDomain collapse d := by
+  simp only [Finsupp.weight_apply, Finsupp.mapDomain]
+  congr 1; ext a; simp [collapseWeight]
+
+/-- Same `mapDomain collapse` implies pointwise collapse equality. -/
+private lemma same_collapse_pointwise (d d' : BinomialEdgeVars V →₀ ℕ)
+    (h : Finsupp.mapDomain (collapse (V := V)) d = Finsupp.mapDomain (collapse (V := V)) d')
+    (v : V) : d (Sum.inl v) + d (Sum.inr v) = d' (Sum.inl v) + d' (Sum.inr v) := by
+  -- Use the weight formulation: weight collapseWeight = mapDomain collapse
+  rw [← weight_collapseWeight_eq_mapDomain, ← weight_collapseWeight_eq_mapDomain] at h
+  -- h : weight collapseWeight d = weight collapseWeight d'
+  -- At position v: (weight cW d)(v) = d(inl v) + d(inr v)
+  -- Prove this via weight_single_one_apply with Pi.single
+  -- weight (Pi.single v 1) d = d v for any Finsupp d
+  -- We need a version for our collapseWeight.
+  -- Actually: collapseWeight = fun i => Finsupp.single (collapse i) 1
+  -- (weight cW d)(v) = Σ_{i ∈ d.support} d(i) * cW(i)(v)
+  -- = Σ_{i ∈ d.support} d(i) * (single (collapse i) 1)(v)
+  -- = Σ_{i ∈ d.support} d(i) * (if collapse i = v then 1 else 0)
+  -- = Σ_{i ∈ d.support, collapse i = v} d(i)
+  -- The set {i : collapse i = v} = {inl v, inr v}
+  -- So the sum = d(inl v) + d(inr v)
+  -- Since weight is a Finsupp on V, equality at v gives the result.
+  have hv := Finsupp.ext_iff.mp h v
+  -- hv : (weight cW d) v = (weight cW d') v
+  -- Now show (weight cW e) v = e(inl v) + e(inr v) for any e
+  suffices key : ∀ (e : BinomialEdgeVars V →₀ ℕ),
+      (Finsupp.weight (collapseWeight (V := V)) e) v = e (Sum.inl v) + e (Sum.inr v) by
+    linarith [key d, key d']
+  intro e
+  -- weight collapseWeight e = mapDomain collapse e (by weight_collapseWeight_eq_mapDomain)
+  -- (mapDomain collapse e)(v) = Σ_{a: collapse a = v} e(a) = e(inl v) + e(inr v)
+  -- Proof by Finsupp.sum computation
+  -- (weight cW e)(v) = (mapDomain collapse e)(v) = e(inl v) + e(inr v)
+  -- This is a Finsupp.sum computation: mapDomain collapse e = Σ_a single(collapse a, e a),
+  -- evaluated at v gives Σ_{a: collapse a = v} e(a) = e(inl v) + e(inr v).
+  sorry
+
+/-! ### Combined result: d' with same collapse AND same xydeg -/
+
+/-- For nonzero f ∈ J_G, there exists d' ≠ LM(f) in support(f) with the same
+collapse weight AND the same xydeg image. -/
+private lemma exists_other_support_same_colDeg_and_xdeg (G : SimpleGraph V)
+    (f : MvPolynomial (BinomialEdgeVars V) K)
+    (hf_mem : f ∈ binomialEdgeIdeal G) (hf_ne : f ≠ 0) :
+    ∃ d' ∈ f.support, d' ≠ binomialEdgeMonomialOrder.degree f ∧
+      Finsupp.mapDomain (collapse (V := V)) d' =
+        Finsupp.mapDomain (collapse (V := V))
+          (binomialEdgeMonomialOrder.degree f) ∧
+      Finsupp.mapDomain (xydeg (V := V)) d' =
+        Finsupp.mapDomain (xydeg (V := V))
+          (binomialEdgeMonomialOrder.degree f) := by
+  classical
+  set d := binomialEdgeMonomialOrder.degree f
+  set m := Finsupp.weight (collapseWeight (V := V)) d
+  set e := Finsupp.mapDomain (xydeg (V := V)) d
+  -- Extract the collapse-m component
+  set f_m := MvPolynomial.weightedHomogeneousComponent (collapseWeight (V := V)) m f
+  have hfm_mem : f_m ∈ binomialEdgeIdeal (K := K) G :=
+    collapseComponent_mem G f hf_mem m
+  have hd_weight : Finsupp.weight (collapseWeight (V := V)) d = m := rfl
+  have hd_coeff_fm : f_m.coeff d = f.coeff d := by
+    rw [MvPolynomial.coeff_weightedHomogeneousComponent, if_pos hd_weight]
+  have hd_coeff_ne : f.coeff d ≠ 0 :=
+    binomialEdgeMonomialOrder.coeff_degree_ne_zero_iff.mpr hf_ne
+  -- Apply rename_xydeg to f_m
+  have hfm_xydeg : MvPolynomial.rename (xydeg (V := V)) f_m = 0 :=
+    rename_xydeg_eq_zero G f_m hfm_mem
+  -- f_m - monomial d (coeff f_m d) has nonzero coeff at e under rename xydeg
+  set f_m' := f_m - MvPolynomial.monomial d (f_m.coeff d)
+  have hfm'_rename : (MvPolynomial.rename (xydeg (V := V)) f_m').coeff e ≠ 0 := by
+    rw [show f_m' = f_m - MvPolynomial.monomial d (f_m.coeff d) from rfl,
+        map_sub, MvPolynomial.rename_monomial]
+    simp only [MvPolynomial.coeff_sub, MvPolynomial.coeff_monomial]
+    rw [if_pos rfl]
+    have : (MvPolynomial.rename (xydeg (V := V)) f_m).coeff e = 0 := by
+      rw [hfm_xydeg]; simp
+    rw [this, zero_sub, neg_ne_zero, hd_coeff_fm]
+    exact hd_coeff_ne
+  obtain ⟨u, hu_map, hu_coeff⟩ :=
+    MvPolynomial.coeff_rename_ne_zero _ f_m' e hfm'_rename
+  have hu_ne : u ≠ d := by
+    intro h_eq; apply hu_coeff; rw [h_eq]
+    show (f_m - MvPolynomial.monomial d (f_m.coeff d)).coeff d = 0
+    simp [MvPolynomial.coeff_sub, MvPolynomial.coeff_monomial]
+  have hu_support_fm : u ∈ f_m.support := by
+    rw [MvPolynomial.mem_support_iff]
+    have := hu_coeff
+    rw [show f_m' = f_m - MvPolynomial.monomial d (f_m.coeff d) from rfl] at this
+    rw [MvPolynomial.coeff_sub, MvPolynomial.coeff_monomial, if_neg (Ne.symm hu_ne)] at this
+    simpa using this
+  have hu_support : u ∈ f.support := by
+    rw [MvPolynomial.mem_support_iff]
+    have h := MvPolynomial.mem_support_iff.mp hu_support_fm
+    rw [MvPolynomial.coeff_weightedHomogeneousComponent] at h
+    split_ifs at h with h_wt
+    · exact h
+    · exact absurd rfl h
+  have hu_weight : Finsupp.weight (collapseWeight (V := V)) u = m := by
+    have h := MvPolynomial.mem_support_iff.mp hu_support_fm
+    rw [MvPolynomial.coeff_weightedHomogeneousComponent] at h
+    split_ifs at h with h_wt
+    · exact h_wt
+    · exact absurd rfl h
+  have hu_collapse : Finsupp.mapDomain (collapse (V := V)) u =
+      Finsupp.mapDomain (collapse (V := V)) d := by
+    rw [← weight_collapseWeight_eq_mapDomain, ← weight_collapseWeight_eq_mapDomain]
+    exact hu_weight
+  exact ⟨u, hu_support, hu_ne, hu_collapse, hu_map⟩
+
 /-! ### Sub-lemma 1: Crossing existence -/
 
 /-- **Crossing existence**: For any nonzero `f ∈ J_G`, the leading monomial has a crossing:
-`∃ a < b` with `d(inl a) ≥ 1` and `d(inr b) ≥ 1`.
-
-**Proof sketch**: By `exists_other_support_same_colDeg`, ∃ `d' ≠ d` in `support(f)` with same
-collapse (marginals). Since `d > d'` in lex and all `inl` positions come before `inr` positions,
-the first difference must be at `inl(v₀)` with `d(inl v₀) > d'(inl v₀)` (hence ≥ 1).
-Same total x-degree (J_G is bihomogeneous) forces `∃ v₁ > v₀` with `d(inl v₁) < d'(inl v₁)`,
-hence `d(inr v₁) > d'(inr v₁)` (marginals), hence `d(inr v₁) ≥ 1`. -/
+`∃ a < b` with `d(inl a) ≥ 1` and `d(inr b) ≥ 1`. -/
 private lemma exists_crossing_of_mem (G : SimpleGraph V)
     (f : MvPolynomial (BinomialEdgeVars V) K)
     (hf_mem : f ∈ binomialEdgeIdeal G) (hf_ne : f ≠ 0) :
     ∃ a b : V, a < b ∧
       1 ≤ binomialEdgeMonomialOrder.degree f (Sum.inl a) ∧
       1 ≤ binomialEdgeMonomialOrder.degree f (Sum.inr b) := by
+  -- Get d' ≠ d in support(f) with same collapse and same xydeg
+  obtain ⟨d', hd'_supp, hd'_ne, hd'_col, hd'_xydeg⟩ :=
+    exists_other_support_same_colDeg_and_xdeg G f hf_mem hf_ne
+  set d := binomialEdgeMonomialOrder.degree f
+  -- Same collapse pointwise: d(inl v) + d(inr v) = d'(inl v) + d'(inr v) for all v
+  have h_col : ∀ v, d (Sum.inl v) + d (Sum.inr v) = d' (Sum.inl v) + d' (Sum.inr v) :=
+    fun v => same_collapse_pointwise d d' hd'_col.symm v
+  -- Same xydeg: Σ_v d(inl v) = Σ_v d'(inl v) (total x-degree equal)
+  -- (from mapDomain xydeg d = mapDomain xydeg d', evaluated at 0)
+  -- For now, derive this from mapDomain xydeg equality
+  have h_xdeg : Finsupp.mapDomain (xydeg (V := V)) d = Finsupp.mapDomain (xydeg (V := V)) d' :=
+    hd'_xydeg.symm
+  -- d > d' in lex
+  have hd_gt : d' ≺[binomialEdgeMonomialOrder] d :=
+    lt_of_le_of_ne (binomialEdgeMonomialOrder.le_degree hd'_supp) (fun h =>
+      hd'_ne (binomialEdgeMonomialOrder.toSyn.injective (le_antisymm h.le h.ge)))
+  -- Unpack lex: ∃ j₀, all BEV-smaller vars agree, d'(j₀) < d(j₀)
+  obtain ⟨j₀, hj₀_agree, hj₀_lt⟩ : ∃ j₀, (∀ j, j < j₀ → d' j = d j) ∧ d' j₀ < d j₀ := by
+    rwa [show (d' ≺[binomialEdgeMonomialOrder] d) ↔
+      Finsupp.Lex (· < ·) (· < ·) d' d from Iff.rfl, Finsupp.lex_def] at hd_gt
+  -- j₀ must be Sum.inr v₀ (not Sum.inl), because:
+  -- if j₀ = inl v₀, all inr vars agree (inr < inl in BEV),
+  -- so h_col at v₀ gives d(inl v₀) = d'(inl v₀), contradicting first-difference at j₀
+  obtain ⟨v₀, rfl⟩ : ∃ v₀ : V, j₀ = Sum.inr v₀ := by
+    rcases j₀ with v₀ | v₀
+    · -- j₀ = inl v₀: derive contradiction
+      exfalso
+      -- All inr variables are BEV-smaller than inl v₀
+      have h_inr_agree : ∀ v : V, d' (Sum.inr v) = d (Sum.inr v) := by
+        intro v
+        apply hj₀_agree
+        -- inr v < inl v₀ in BinomialEdgeVars ordering
+        constructor
+        · exact trivial  -- binomialEdgeLE (inr v) (inl v₀) = True
+        · exact not_false -- ¬binomialEdgeLE (inl v₀) (inr v) = ¬False
+      -- Same collapse at v₀: d(inl v₀) + d(inr v₀) = d'(inl v₀) + d'(inr v₀)
+      have := h_col v₀
+      -- d(inr v₀) = d'(inr v₀)
+      rw [h_inr_agree v₀] at this
+      -- So d(inl v₀) = d'(inl v₀)
+      have : d (Sum.inl v₀) = d' (Sum.inl v₀) := by omega
+      -- But j₀ = inl v₀ means d'(inl v₀) < d(inl v₀)
+      omega
+    · exact ⟨v₀, rfl⟩
+  -- d(inr v₀) > d'(inr v₀) ≥ 0, so d(inr v₀) ≥ 1
+  have hb : 1 ≤ d (Sum.inr v₀) := by omega
+  -- For v > v₀: inr v < inr v₀ in BEV (reversed: bigger V-index = smaller BEV)
+  -- Helper: ordering on BinomialEdgeVars for inr
+  -- We use the fact that in BinomialEdgeVars, inr v < inr v₀ iff v₀ < v
+  -- (the ordering is reversed within inr)
+  have h_bev_inr : ∀ v, v₀ < v →
+      @LT.lt (BinomialEdgeVars V) _ (Sum.inr v) (Sum.inr v₀) := by
+    intro v hv
+    -- The LT on BinomialEdgeVars V is binomialEdgeLE a b ∧ ¬binomialEdgeLE b a
+    -- For inr v and inr v₀: binomialEdgeLE (inr v) (inr v₀) = (v ≥ v₀)
+    -- and binomialEdgeLE (inr v₀) (inr v) = (v₀ ≥ v)
+    -- We need v ≥ v₀ ∧ ¬(v₀ ≥ v), i.e., v > v₀
+    constructor
+    · -- le: v₀ ≤ v (binomialEdgeLE (inr v) (inr v₀) = v ≥ v₀)
+      exact le_of_lt hv
+    · -- not le: ¬(v ≤ v₀) (¬binomialEdgeLE (inr v₀) (inr v) = ¬(v₀ ≥ v))
+      exact not_le_of_gt hv
+  have h_inr_hi : ∀ v, v₀ < v → d' (Sum.inr v) = d (Sum.inr v) :=
+    fun v hv => hj₀_agree (Sum.inr v) (h_bev_inr v hv)
+  have h_inl_hi : ∀ v, v₀ < v → d' (Sum.inl v) = d (Sum.inl v) := by
+    intro v hv
+    have := h_col v
+    rw [h_inr_hi v hv] at this
+    omega
+  -- At v₀: d(inr v₀) > d'(inr v₀), so by h_col: d'(inl v₀) > d(inl v₀)
+  have h_inl_v₀ : d (Sum.inl v₀) < d' (Sum.inl v₀) := by
+    have := h_col v₀; omega
+  -- Same total x-degree (from xydeg): Σ_v d(inl v) = Σ_v d'(inl v)
+  -- This means: Σ_{v ≤ v₀} d(inl v) + Σ_{v > v₀} d(inl v) = same for d'
+  -- Since d(inl v) = d'(inl v) for v > v₀ and d(inl v₀) < d'(inl v₀):
+  -- Σ_{v < v₀} d(inl v) > Σ_{v < v₀} d'(inl v)
+  -- Hence ∃ a < v₀ with d(inl a) > d'(inl a) ≥ 0, giving d(inl a) ≥ 1
+  -- The total x-degree equality comes from mapDomain xydeg at position 0.
+  -- We need: (mapDomain xydeg d)(0) = Σ_v d(inl v) (since xydeg(inl v) = 0)
+  -- For now, sorry the total x-degree extraction and the final pigeonhole step.
   sorry
 
 /-! ### Sub-lemma 2: Walk from crossing -/
