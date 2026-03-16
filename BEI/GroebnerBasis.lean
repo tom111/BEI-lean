@@ -656,6 +656,32 @@ private lemma mapDomain_collapse_apply (e : BinomialEdgeVars V →₀ ℕ) (v : 
               show ¬(Sum.inr a = Sum.inr v) from fun h' => h (Sum.inr.inj h'),
               show ¬(a = v) from h]
 
+/-- Pointwise evaluation of `mapDomain xydeg` at 0:
+`(mapDomain xydeg e)(0) = Σ_v e(inl v)` (total x-degree). -/
+private lemma mapDomain_xydeg_zero (e : BinomialEdgeVars V →₀ ℕ) :
+    (Finsupp.mapDomain (xydeg (V := V)) e) 0 =
+      Finset.univ.sum (fun v : V => e (Sum.inl v)) := by
+  induction e using Finsupp.induction with
+  | zero => simp [Finsupp.mapDomain_zero]
+  | single_add a n e ha hn ih =>
+    rw [Finsupp.mapDomain_add, Finsupp.mapDomain_single]
+    simp only [Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply]
+    rw [ih, Finset.sum_add_distrib]
+    congr 1
+    rcases a with a | a
+    · simp only [xydeg, ite_true]
+      have : ∀ x : V, (if (Sum.inl a : BinomialEdgeVars V) = Sum.inl x then n else 0) =
+          if a = x then n else 0 := by
+        intro x; split_ifs with h1 h2 h2
+        · rfl
+        · exact absurd (Sum.inl.inj h1) h2
+        · exact absurd (congrArg Sum.inl h2) h1
+        · rfl
+      simp_rw [this]; simp [Finset.mem_univ]
+    · simp only [xydeg, show (1 : Fin 2) ≠ 0 from by omega, ite_false]
+      simp [show ∀ x : V, (Sum.inr a : BinomialEdgeVars V) ≠ Sum.inl x from
+        fun _ => Sum.inr_ne_inl]
+
 /-- Same `mapDomain collapse` implies pointwise collapse equality. -/
 private lemma same_collapse_pointwise (d d' : BinomialEdgeVars V →₀ ℕ)
     (h : Finsupp.mapDomain (collapse (V := V)) d = Finsupp.mapDomain (collapse (V := V)) d')
@@ -841,13 +867,61 @@ private lemma exists_crossing_of_mem (G : SimpleGraph V)
     have := h_col v₀; omega
   -- Same total x-degree (from xydeg): Σ_v d(inl v) = Σ_v d'(inl v)
   -- This means: Σ_{v ≤ v₀} d(inl v) + Σ_{v > v₀} d(inl v) = same for d'
-  -- Since d(inl v) = d'(inl v) for v > v₀ and d(inl v₀) < d'(inl v₀):
-  -- Σ_{v < v₀} d(inl v) > Σ_{v < v₀} d'(inl v)
-  -- Hence ∃ a < v₀ with d(inl a) > d'(inl a) ≥ 0, giving d(inl a) ≥ 1
-  -- The total x-degree equality comes from mapDomain xydeg at position 0.
-  -- We need: (mapDomain xydeg d)(0) = Σ_v d(inl v) (since xydeg(inl v) = 0)
-  -- For now, sorry the total x-degree extraction and the final pigeonhole step.
-  sorry
+  -- Total x-degree equality from h_xdeg
+  have h_total_xdeg : Finset.univ.sum (fun v : V => d (Sum.inl v)) =
+      Finset.univ.sum (fun v : V => d' (Sum.inl v)) := by
+    have h1 := mapDomain_xydeg_zero d
+    have h2 := mapDomain_xydeg_zero d'
+    rw [h_xdeg] at h1; linarith
+  -- Split sums: below v₀, at v₀, above v₀
+  -- Above v₀: d(inl v) = d'(inl v) for v > v₀ (from h_inl_hi)
+  -- At v₀: d(inl v₀) < d'(inl v₀) (from h_inl_v₀)
+  -- Below v₀: must compensate → Σ_{v<v₀} d(inl v) > Σ_{v<v₀} d'(inl v) ≥ 0
+  -- So ∃ a < v₀ with d(inl a) ≥ 1
+  by_contra h_no_crossing
+  push_neg at h_no_crossing
+  -- h_no_crossing : ∀ a b, a < b → d(inl a) = 0 ∨ d(inr b) = 0
+  -- We need: ∀ a < v₀, d(inl a) = 0 (using h_no_crossing with b = v₀)
+  have h_below : ∀ a, a < v₀ → d (Sum.inl a) = 0 := by
+    intro a ha
+    by_contra ha_pos
+    push_neg at ha_pos
+    have := h_no_crossing a v₀ ha (by omega)
+    omega
+  -- Now derive contradiction from total x-degree equality.
+  -- Σ_v d(inl v) = Σ_{v<v₀} d(inl v) + d(inl v₀) + Σ_{v>v₀} d(inl v)
+  -- = 0 + d(inl v₀) + Σ_{v>v₀} d(inl v)  [using h_below]
+  -- Σ_v d'(inl v) = Σ_{v<v₀} d'(inl v) + d'(inl v₀) + Σ_{v>v₀} d'(inl v)
+  -- = Σ_{v<v₀} d'(inl v) + d'(inl v₀) + Σ_{v>v₀} d(inl v)  [using h_inl_hi]
+  -- Equal: 0 + d(inl v₀) = Σ_{v<v₀} d'(inl v) + d'(inl v₀)
+  -- Since d(inl v₀) < d'(inl v₀): 0 < Σ_{v<v₀} d'(inl v) + d'(inl v₀) - d(inl v₀) = 0 + Σ_{v<v₀} d'(inl v)
+  -- Wait: d(inl v₀) + Σ_{v>v₀} d(inl v) = Σ_{v<v₀} d'(inl v) + d'(inl v₀) + Σ_{v>v₀} d(inl v)
+  -- So d(inl v₀) = Σ_{v<v₀} d'(inl v) + d'(inl v₀)
+  -- But d(inl v₀) < d'(inl v₀) ≤ Σ_{v<v₀} d'(inl v) + d'(inl v₀). Not a contradiction!
+  -- The contradiction is: Σ_{v<v₀} d'(inl v) ≤ 0 (because d(inl v₀) < d'(inl v₀)):
+  -- d(inl v₀) = Σ_{v<v₀} d'(inl v) + d'(inl v₀) → Σ_{v<v₀} d'(inl v) = d(inl v₀) - d'(inl v₀) < 0
+  -- But Σ d'(inl v) ≥ 0. CONTRADICTION!
+  -- Split Finset.univ into {v < v₀}, {v₀}, {v > v₀}
+  -- Split Σ_v d(inl v) using Finset.add_sum_erase
+  have hv₀_mem : v₀ ∈ (Finset.univ : Finset V) := Finset.mem_univ v₀
+  rw [← Finset.add_sum_erase _ _ hv₀_mem] at h_total_xdeg
+  rw [← Finset.add_sum_erase _ _ hv₀_mem] at h_total_xdeg
+  -- h_total_xdeg : d(inl v₀) + Σ_{v≠v₀} d(inl v) = d'(inl v₀) + Σ_{v≠v₀} d'(inl v)
+  -- For v ≠ v₀ in the d-sum: v < v₀ gives 0, v > v₀ gives d'(inl v)
+  have h_erase_d : (Finset.univ.erase v₀).sum (fun v => d (Sum.inl v)) ≤
+      (Finset.univ.erase v₀).sum (fun v => d' (Sum.inl v)) := by
+    apply Finset.sum_le_sum
+    intro v hv
+    simp only [Finset.mem_erase] at hv
+    rcases lt_or_gt_of_ne hv.1 with hlt | hgt
+    · rw [h_below v hlt]; exact Nat.zero_le _
+    · exact le_of_eq (h_inl_hi v hgt).symm
+  -- From h_total_xdeg and h_erase_d and h_inl_v₀:
+  -- d(inl v₀) + Σ_erase d = d'(inl v₀) + Σ_erase d'
+  -- Σ_erase d ≤ Σ_erase d'
+  -- d(inl v₀) < d'(inl v₀)
+  -- So d(inl v₀) + Σ_erase d < d'(inl v₀) + Σ_erase d'. Contradicts equality.
+  omega
 
 /-! ### Sub-lemma 2: Walk from crossing -/
 
