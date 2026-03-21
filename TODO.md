@@ -85,77 +85,32 @@ support size using normExp/FiberEquiv/monomial_swap_mem). P_S(G) prime by RingHo
 Target: `closed_implies_groebner` in `ClosedGraphs.lean` (NOT in GroebnerBasis.lean)
 **ALL CASES PROVED.** All helper lemmas in ClosedGraphs.lean.
 
-### 8E. `theorem_2_1_groebner` — Buchberger for admissible paths (GroebnerBasis.lean)
+### 8E. `theorem_2_1_groebner` — Gröbner basis for admissible paths (GroebnerBasis.lean)
 
-**Overall structure**: Apply `isGroebnerBasis_iff_sPolynomial_isRemainder`, then for each pair
-of basis elements `eₖ = pathMonomialₖ * fij(iₖ,jₖ)`, show S(e₁,e₂) reduces to 0.
+⭐ **RESTRUCTURED (2nd time): Single sorry `exists_edge_crossing_aux`.**
 
-**Key factorization** (all cases): By `sPolynomial_monomial_mul` + `pathMonomial_eq_monomial'`:
-`S(e₁, e₂) = monomial D 1 * S(fij₁, fij₂)` where
-`D = (d₁ + deg fij₁) ⊔ (d₂ + deg fij₂) - deg fij₁ ⊔ deg fij₂`
-Then `isRemainder_monomial_mul'` reduces to showing `IsRemainder S(fij₁, fij₂) groebnerBasisSet 0`.
+**Key insight (discovered during formalization)**: `walk_from_crossing` as previously stated
+is **FALSE**: for f = x₁x₂y₃² - x₁x₃y₂y₃ ∈ J_{P₃}, LM has crossing at (1,3) but any
+walk from 1 to 3 in P₃ goes through vertex 2 ∈ (1,3), violating the hVtx condition.
 
-⚠ **WARNING**: Paper's "regular sequence" claim for coprime case is WRONG.
-The general statement "if in<(f),in<(g) form regular sequence then S(uf,vg) reduces to 0"
-is FALSE. Handle all cases via direct case-by-case analysis instead.
+**Current approach**: Prove `exists_edge_crossing_aux`:
+for any nonzero f ∈ J_G, ∃ ADJACENT i < j with d(inl i) ≥ 1 and d(inr j) ≥ 1.
+Then use trivial admissible path [i,j] → groebnerElement degree = inl(i)+inr(j) ≤ LM(f).
+`exists_groebnerElement_degree_le` follows trivially; Buchberger+`isRemainder_of_mem_ideal`
+give `theorem_2_1_groebner`.
 
-**Proved infrastructure**:
-- [x] `isRemainder_monomial_mul'`: if `IsRemainder f G 0` then `IsRemainder (monomial d c * f) G 0`
-- [x] `sPolynomial_monomial_mul` factoring applied to all cases
-- [x] `sPolynomial_fij_shared_first`, `sPolynomial_fij_shared_last`, `sPolynomial_fij_coprime`
-  imported from ClosedGraphs.lean (lemmas made public)
-- [x] Coprime degree bounds: `coprime_degrees_ne` + `degree_bounds_of_sub` (made public)
+**Mathematical proof of `exists_edge_crossing_aux`**:
+Write f = Σ q_e * g_e. coeff(f, LM(f)) ≠ 0. Each edge e={i,j} (i<j) contributes:
+  A_e = coeff(q_e, d-inl(i)-inr(j))  [from x_i*y_j term → EDGE CROSSING if nonzero]
+  B_e = coeff(q_e, d-inl(j)-inr(i))  [from -x_j*y_i term]
+If all A_e=0: coeff(f,d) = -ΣB_e ≠ 0. But B_e≠0 for edge e={i,j} forces
+LM(q_e*g_e) = LM(q_e)+inl(i)+inr(j) >_lex d (since inl(i)>inl(j), inr(j)>inr(i) in lex).
+For LM(f)=d, these >d terms must cancel between edges, recurse... Eventually find A_e ≠ 0.
 
-**Case 0 — Same edge** (i₁=i₂, j₁=j₂): S = 0 by `sPolynomial_self`
-- [x] PROVED
-
-**Case A — Coprime** (i₁ ≠ i₂ AND j₁ ≠ j₂):
-Goal: `IsRemainder (x j₂ * y i₂ * fij i₁ j₁ - x j₁ * y i₁ * fij i₂ j₂) groebnerBasisSet 0`
-
-⚠ Key obstacle: `fij i₁ j₁ ∉ groebnerBasisSet G` when `¬G.Adj i₁ j₁` (non-trivial path).
-The `isRemainder_sub_mul` approach from Theorem 1.1 requires fij ∈ basis, which fails here.
-Need τ-path construction (same as Cases B/C) to decompose into groebnerElement combinations.
-
-- [ ] **A. Coprime case**: Requires τ-path or alternative decomposition.
-
-**Case B — Shared first endpoint** (i₁ = i₂, j₁ ≠ j₂):
-`S(fij(i,j₁), fij(i,j₂)) = -y_i * fij(j₁,j₂)` by `sPolynomial_fij_shared_first`.
-So `S(e₁,e₂) = -monomial D 1 * y_i * fij(j₁,j₂)`.
-Need to express `fij(j₁,j₂)` as combination of groebnerBasisSet elements.
-WITHOUT closedness, there's no direct edge j₁-j₂ in general.
-
-Strategy: τ-path construction from the paper (Section 2.1, lines 578–695).
-
-- [ ] **B1. τ-path construction**: Given admissible paths π₁: i→j₁ and π₂: i→j₂,
-  construct path τ: j₁→j₂ by reversing tail of π₁ and concatenating with tail of π₂.
-  Find the last shared vertex i_a = i'_b where the paths diverge.
-  τ = [j₁=i_r, i_{r-1}, ..., i_{a+1}, i_a=i'_b, i'_{b+1}, ..., i'_{s-1}, j₂=i'_s]
-
-- [ ] **B2. Turning points t(c)**: Define the sequence 0 = t(0) < t(1) < ... < t(q) = t
-  where j_{t(c)} are the successive minima of τ-vertices that exceed j₁.
-  Prove: j₁ = j_{t(0)} < j_{t(1)} < ... < j_{t(q)} = j₂.
-
-- [ ] **B3. Admissibility of sub-paths**: Show each τ_c (from j_{t(c-1)} to j_{t(c)})
-  is an admissible path in G. Requires checking all 7 conditions of `IsAdmissiblePath`:
-  ordering, head/last, nodup, interior vertex condition, chain adjacency, minimality.
-
-- [ ] **B4. Telescoping identity**: Prove the ring identity
-  `w * fij(j₁,j₂) = Σ_{c=1}^{q} v_{τ_c} * u_{τ_c} * fij(j_{t(c-1)}, j_{t(c)})`
-  where w = y_i * lcm(pathMonomial₁, pathMonomial₂) and v_{τ_c} are explicit monomials.
-  This is a telescoping sum: (x_j * y_ℓ)/(x_{j_c}) terms that cancel pairwise.
-
-- [ ] **B5. Degree chain ordering**: Prove the chain of inequalities
-  `deg(v₁*u_{τ₁}*fij₁) > deg(v₂*u_{τ₂}*fij₂) > ... > deg(v_q*u_{τ_q}*fij_q)`
-  showing each term's degree is strictly decreasing (so the sum is a standard expression).
-
-- [ ] **B6. Conclude IsRemainder**: Combine B4 identity + B5 degree bounds + B3 membership
-  to construct the `IsRemainder` witness. The remainder is 0 since all terms are accounted for.
-
-**Case C — Shared last endpoint** (j₁ = j₂, i₁ ≠ i₂):
-Symmetric to Case B. `S(fij(i₁,j), fij(i₂,j)) = x_j * fij(i₁,i₂)`.
-
-- [ ] **C1–C6**: Mirror of B1–B6 with reversed roles of x and y, first and last endpoints.
-  Can potentially share infrastructure with Case B via a symmetry argument.
+**Sub-tasks:**
+- [x] **R1. No-monomial lemma**: `binomialEdgeIdeal_no_monomial` — PROVED
+- [x] **Assembly**: `exists_groebnerElement_degree_le` — compiled, uses `exists_edge_crossing_aux`
+- [ ] **R2-R3. Edge crossing**: `exists_edge_crossing_aux` — one sorry remaining
 
 ### 8F. Radical
 - [!] `corollary_2_2` — blocked on Thm 3.2 (radical = intersection of primes) or squarefree initial
@@ -177,24 +132,25 @@ Symmetric to Case B. `S(fij(i₁,j), fij(i₂,j)) = x_j * fij(i₁,i₂)`.
 
 ## Priority Order (what to work on next)
 
-1. **Phase 8E Case A: coprime** — most tractable; infrastructure exists from Thm 1.1
-2. **Phase 8E Cases B+C: shared endpoint** — hardest; τ-path construction
-3. **Phase 6: `corollary_3_9`** — cut-vertex characterization of minimal primes
-4. **Phase 7: `theorem_3_2` ⊇** — radical ideal argument
-5. **Phase 7: corollaries** — once Thm 3.2 proved
+1. **Phase 8E: `theorem_2_1_groebner`** — Follow Rauh's approach (see §8E R0–R4 above).
+   Start by reading Rauh arxiv:1210.7960 §2, mapping out steps, then implementing.
+   Do NOT delete existing sorry'd code; set it aside and build fresh alongside it.
+2. **Phase 6: `corollary_3_9`** — cut-vertex characterization of minimal primes
+3. **Phase 7: `theorem_3_2` ⊇** — radical ideal argument
+4. **Phase 7: corollaries** — once Thm 3.2 proved
 
 ---
 
 ## Why These Sorries Are Hard
 
 ### "Medium" (genuine Lean work, unblocked)
-- `theorem_2_1_groebner` Case A — coprime (8E): Pure algebra; infrastructure exists from Thm 1.1
+- `theorem_2_1_groebner` (8E): Via Rauh's approach — unknown difficulty until mapped out
 - `corollary_3_9` (6): Cut-vertex characterization of minimal primes
 - `corollary_3_3_lower_bound` (7): Follows from chain of primes
 
 ### "Hard" (genuine mathematical content + significant Lean plumbing)
-- `theorem_2_1_groebner` Cases B+C — shared endpoint (8E): τ-path construction, admissibility
-  proofs, telescoping identity, degree chains. ~500-800 lines estimated.
+- `theorem_2_1_groebner` (8E): Via Herzog et al. S-pair approach — τ-path construction is very hard;
+  ABANDONED in favor of Rauh. Previous attempts left in file for reference (do not delete yet).
 - `theorem_3_2` ⊇ (7): Radical ideal theory
 - `prop_3_6` (5): J_G prime ↔ each component complete
 
@@ -212,13 +168,13 @@ Symmetric to Case B. `S(fij(i₁,j), fij(i₂,j)) = x_j * fij(i₁,i₂)`.
 | AdmissiblePaths.lean | 0 |
 | MonomialOrder.lean | 0 |
 | GroebnerAPI.lean | 0 (Buchberger criterion PROVED) |
-| GroebnerBasis.lean | 4 (theorem_2_1_groebner: 3 sorries for Cases A/B/C; corollary_2_2 deferred) |
+| GroebnerBasis.lean | 2 (exists_edge_crossing_aux, corollary_2_2) |
 | PrimeIdeals.lean | 2 (lemma_3_1, prop_3_6) — **isPrime PROVED** |
 | MinimalPrimes.lean | 1 (corollary_3_9 ← only; → proved) |
 | PrimeDecomposition.lean | 7 (thm3_2 ⊇, minPrimesChar, cor3_3 ×2, cor3_4, cor3_7 ×2) |
 | ClosedGraphs.lean | 0 (**Theorem 1.1 FULLY PROVED**) |
 | CohenMacaulay.lean | 4 (def + 3 thms, all deferred) |
-| **Total** | **18** (Case 0 proved, Cases A/B/C expanded with specific goals) |
+| **Total** | **17** (walk_from_crossing false → replaced by exists_edge_crossing_aux) |
 
 ---
 
@@ -230,6 +186,6 @@ Symmetric to Case B. `S(fij(i₁,j), fij(i₂,j)) = x_j * fij(i₁,i₂)`.
 - `theorem_3_2` (⊆): proved inline via `binomialEdgeIdeal_le_primeComponent`
 - `theorem_2_1_leading`: NOW PROVED (follows from theorem_2_1_groebner)
 - `idealHeight` uses `Ideal.primeHeight` from Mathlib
-- ⚠ Paper's regular sequence claim (coprime case of Thm 2.1) is WRONG — use case-by-case instead
-- `coprime_degrees_ne` and `degree_bounds_of_sub` are `private` in ClosedGraphs.lean — need to
-  make accessible for reuse in GroebnerBasis.lean (Case A of theorem_2_1_groebner)
+- ⚠ Herzog et al. S-pair proof of Thm 2.1 is INCOMPLETE in BEI.tex; coprime "regular sequence" claim is WRONG
+- ⭐ Prefer Rauh's approach (arxiv:1210.7960) for Theorem 2.1 — inductive, cleaner
+- Previous S-pair attempt code in GroebnerBasis.lean (~lines 300–650): do NOT delete, but set aside

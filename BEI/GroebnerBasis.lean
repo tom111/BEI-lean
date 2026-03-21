@@ -923,57 +923,330 @@ private lemma exists_crossing_of_mem (G : SimpleGraph V)
   -- So d(inl v₀) + Σ_erase d < d'(inl v₀) + Σ_erase d'. Contradicts equality.
   omega
 
-/-! ### Sub-lemma 2: Walk from crossing -/
+/-! ### Strengthened crossing: clean interval property -/
 
-/-- **Walk from crossing**: If `f ∈ J_G` has a crossing at `(a, b)` with `a < b`, then
-there exists a walk from `a` to `b` in `G` satisfying the vertex condition for
-`exists_admissible_path_of_walk`. That is: a nodup walk with all vertices `v`
-satisfying `v = a ∨ v = b ∨ v < a ∨ b < v`.
+/-- **Clean crossing**: For nonzero `f ∈ J_G`, there exist `a < b` such that
+`d(inl a) ≥ 1`, `d(inr b) ≥ 1`, and the open interval `(a, b)` has NO support in LM(f):
+`∀ c, a < c → c < b → d(inl c) = 0 ∧ d(inr c) = 0`.
 
-**Proof sketch**: Write `f = Σ h_e * f_e`. The crossing forces variables `x_a` and `y_b`
-to appear in `LM(f)`. Tracing through the representation, the edges connecting `a` and `b`
-form a walk. The vertex condition follows from the admissible path structure of the
-individual edges' contributions. -/
-private lemma exists_walk_from_crossing (G : SimpleGraph V)
+This strengthens `exists_crossing_of_mem` by choosing `a` maximal and `b` minimal
+among the crossing pairs. -/
+private lemma exists_clean_crossing (G : SimpleGraph V)
     (f : MvPolynomial (BinomialEdgeVars V) K)
-    (hf_mem : f ∈ binomialEdgeIdeal G) (hf_ne : f ≠ 0)
+    (hf_mem : f ∈ binomialEdgeIdeal G) (hf_ne : f ≠ 0) :
+    ∃ a b : V, a < b ∧
+      1 ≤ binomialEdgeMonomialOrder.degree f (Sum.inl a) ∧
+      1 ≤ binomialEdgeMonomialOrder.degree f (Sum.inr b) ∧
+      (∀ c : V, a < c → c < b →
+        binomialEdgeMonomialOrder.degree f (Sum.inl c) = 0 ∧
+        binomialEdgeMonomialOrder.degree f (Sum.inr c) = 0) := by
+  -- First get any crossing
+  obtain ⟨a₀, b₀, hab₀, ha₀, hb₀⟩ := exists_crossing_of_mem G f hf_mem hf_ne
+  set d := binomialEdgeMonomialOrder.degree f
+  -- Define A = {v : d(inl v) ≥ 1} and B = {v : d(inr v) ≥ 1}
+  -- Pick a = max{v ∈ A : ∃ w ∈ B, v < w}
+  -- Pick b = min{w ∈ B : a < w}
+  -- The set of valid a's is nonempty (contains a₀)
+  -- Use Finset operations since V is Fintype
+  set A := Finset.univ.filter (fun v : V => 1 ≤ d (Sum.inl v))
+  set B := Finset.univ.filter (fun v : V => 1 ≤ d (Sum.inr v))
+  -- a₀ ∈ A and b₀ ∈ B with a₀ < b₀
+  have ha₀_A : a₀ ∈ A := Finset.mem_filter.mpr ⟨Finset.mem_univ _, ha₀⟩
+  have hb₀_B : b₀ ∈ B := Finset.mem_filter.mpr ⟨Finset.mem_univ _, hb₀⟩
+  -- Define the set of valid a-values: those in A with some element of B above them
+  set validA := A.filter (fun v => B.filter (fun w => v < w) |>.Nonempty)
+  have hvalidA_ne : validA.Nonempty := by
+    refine ⟨a₀, Finset.mem_filter.mpr ⟨ha₀_A, ⟨b₀, Finset.mem_filter.mpr ⟨hb₀_B, hab₀⟩⟩⟩⟩
+  -- Pick a = max of validA
+  set a := validA.max' hvalidA_ne
+  have ha_mem : a ∈ validA := Finset.max'_mem validA hvalidA_ne
+  have ha_A : a ∈ A := (Finset.mem_filter.mp ha_mem).1
+  have ha_max : ∀ v ∈ validA, v ≤ a := fun v hv => Finset.le_max' validA v hv
+  have ha_pos : 1 ≤ d (Sum.inl a) := (Finset.mem_filter.mp ha_A).2
+  -- There exists some b' ∈ B with a < b'
+  obtain ⟨b', hb'_mem⟩ := (Finset.mem_filter.mp ha_mem).2
+  have hb'_B : b' ∈ B := (Finset.mem_filter.mp hb'_mem).1
+  have hab' : a < b' := (Finset.mem_filter.mp hb'_mem).2
+  -- Define Babove = {w ∈ B : a < w}, pick b = min
+  set Babove := B.filter (fun w => a < w)
+  have hBabove_ne : Babove.Nonempty := ⟨b', Finset.mem_filter.mpr ⟨hb'_B, hab'⟩⟩
+  set b := Babove.min' hBabove_ne
+  have hb_mem : b ∈ Babove := Finset.min'_mem Babove hBabove_ne
+  have hb_B : b ∈ B := (Finset.mem_filter.mp hb_mem).1
+  have hab : a < b := (Finset.mem_filter.mp hb_mem).2
+  have hb_min : ∀ w ∈ Babove, b ≤ w := fun w hw => Finset.min'_le Babove w hw
+  have hb_pos : 1 ≤ d (Sum.inr b) := (Finset.mem_filter.mp hb_B).2
+  -- Clean interval: for c with a < c < b, c ∉ A and c ∉ B
+  have hclean : ∀ c : V, a < c → c < b →
+      d (Sum.inl c) = 0 ∧ d (Sum.inr c) = 0 := by
+    intro c hac hcb
+    constructor
+    · -- d(inl c) = 0: if d(inl c) ≥ 1, then c ∈ A and c ∈ validA (since b > c and b ∈ B)
+      by_contra hc_pos
+      push_neg at hc_pos
+      have hc_A : c ∈ A := Finset.mem_filter.mpr ⟨Finset.mem_univ _, by omega⟩
+      have hc_valid : c ∈ validA := Finset.mem_filter.mpr ⟨hc_A,
+        ⟨b, Finset.mem_filter.mpr ⟨hb_B, hcb⟩⟩⟩
+      -- c ≤ a by maximality of a, but a < c: contradiction
+      exact absurd (ha_max c hc_valid) (not_le.mpr hac)
+    · -- d(inr c) = 0: if d(inr c) ≥ 1, then c ∈ B and c ∈ Babove (since a < c)
+      by_contra hc_pos
+      push_neg at hc_pos
+      have hc_B : c ∈ B := Finset.mem_filter.mpr ⟨Finset.mem_univ _, by omega⟩
+      have hc_above : c ∈ Babove := Finset.mem_filter.mpr ⟨hc_B, hac⟩
+      -- b ≤ c by minimality of b, but c < b: contradiction
+      exact absurd (hb_min c hc_above) (not_le.mpr hcb)
+  exact ⟨a, b, hab, ha_pos, hb_pos, hclean⟩
+
+/-! ### Edge crossing from representation
+
+The key insight: for nonzero `f ∈ J_G`, LM(f) must have a crossing at some EDGE of G.
+This follows from analyzing the coefficient of LM(f) in the representation `f = Σ qₑ fₑ`. -/
+
+/-- Helper: `fij(i,j)` for an edge with `i < j` has degree `≤ d` when `d` has the crossing. -/
+private lemma fij_degree_le_of_crossing (i j : V) (hij : i < j)
+    (d : BinomialEdgeVars V →₀ ℕ)
+    (hi : 1 ≤ d (Sum.inl i)) (hj : 1 ≤ d (Sum.inr j)) :
+    binomialEdgeMonomialOrder.degree (fij (K := K) i j) ≤ d := by
+  rw [fij_degree (K := K) i j hij]
+  intro w
+  simp only [Finsupp.add_apply, Finsupp.single_apply]
+  rcases w with v | v
+  · -- w = Sum.inl v
+    have h1 : (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inl v := Sum.inr_ne_inl
+    simp only [h1, ite_false, add_zero]
+    by_cases hvi : i = v
+    · subst hvi; simp; exact hi
+    · simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl v from
+        fun h => hvi (Sum.inl.inj h)]
+  · -- w = Sum.inr v
+    have h1 : (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inr v := Sum.inl_ne_inr
+    simp only [h1, ite_false, zero_add]
+    by_cases hvj : j = v
+    · subst hvj; simp; exact hj
+    · simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr v from
+        fun h => hvj (Sum.inr.inj h)]
+
+/-! ### Variable restriction: killing variables outside a vertex set
+
+If f ∈ J_G and f doesn't use variables at vertices in some set S,
+then f is in the sub-ideal generated by edges with both endpoints outside S. -/
+
+/-- The ring homomorphism that kills variables at vertices in a set S:
+sends x_v, y_v to 0 for v ∈ S, keeps x_v, y_v for v ∉ S. -/
+private noncomputable def killVars (S : Set V) [DecidablePred (· ∈ S)] :
+    MvPolynomial (BinomialEdgeVars V) K →ₐ[K] MvPolynomial (BinomialEdgeVars V) K :=
+  MvPolynomial.aeval (fun v =>
+    if collapse v ∈ S then 0 else MvPolynomial.X v)
+
+/-- killVars sends generators with an endpoint in S to 0. -/
+private lemma killVars_generator_eq_zero (S : Set V) [DecidablePred (· ∈ S)]
+    (i j : V) (hi : i ∈ S ∨ j ∈ S) :
+    killVars (K := K) S (x i * y j - x j * y i) = 0 := by
+  simp only [killVars, map_sub, map_mul, MvPolynomial.aeval_X, x, y, collapse, Sum.elim_inl,
+    Sum.elim_inr, id]
+  rcases hi with hi | hj
+  · simp [if_pos hi]
+  · simp [if_pos hj]
+
+/-- killVars fixes generators with both endpoints outside S. -/
+private lemma killVars_generator_eq_self (S : Set V) [DecidablePred (· ∈ S)]
+    (i j : V) (hi : i ∉ S) (hj : j ∉ S) :
+    killVars (K := K) S (x i * y j - x j * y i) = x i * y j - x j * y i := by
+  simp only [killVars, map_sub, map_mul, MvPolynomial.aeval_X, x, y, collapse, Sum.elim_inl,
+    Sum.elim_inr, id, if_neg hi, if_neg hj]
+
+/-- For f ∈ J_G, killVars S f is in the sub-ideal generated by edges outside S. -/
+private lemma killVars_mem_subideal (G : SimpleGraph V) (S : Set V) [DecidablePred (· ∈ S)]
+    (f : MvPolynomial (BinomialEdgeVars V) K)
+    (hf : f ∈ binomialEdgeIdeal G) :
+    killVars S f ∈ Ideal.span
+      {g : MvPolynomial (BinomialEdgeVars V) K |
+        ∃ i j, G.Adj i j ∧ i < j ∧ i ∉ S ∧ j ∉ S ∧ g = x i * y j - x j * y i} := by
+  -- killVars is an algebra hom, so it maps the ideal into the image ideal
+  -- The image of each generator is either 0 (endpoint in S) or itself (both outside S)
+  set T := {g : MvPolynomial (BinomialEdgeVars V) K |
+    ∃ i j, G.Adj i j ∧ i < j ∧ i ∉ S ∧ j ∉ S ∧ g = x i * y j - x j * y i}
+  -- killVars maps J_G into span T via the algebra hom property
+  suffices h : binomialEdgeIdeal (K := K) G ≤
+      (Ideal.span T).comap (killVars S).toRingHom by
+    exact h hf
+  rw [show binomialEdgeIdeal (K := K) G = Ideal.span
+      {g | ∃ i j, G.Adj i j ∧ i < j ∧ g = x i * y j - x j * y i} from rfl]
+  apply Ideal.span_le.mpr
+  intro g ⟨i, j, hadj, hij, hg_eq⟩
+  show (killVars S).toRingHom g ∈ Ideal.span T
+  rw [AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, hg_eq]
+  by_cases hi : i ∈ S <;> by_cases hj : j ∈ S
+  · rw [killVars_generator_eq_zero S i j (Or.inl hi)]; exact Ideal.zero_mem _
+  · rw [killVars_generator_eq_zero S i j (Or.inl hi)]; exact Ideal.zero_mem _
+  · rw [killVars_generator_eq_zero S i j (Or.inr hj)]; exact Ideal.zero_mem _
+  · rw [killVars_generator_eq_self S i j hi hj]
+    exact Ideal.subset_span ⟨i, j, hadj, hij, hi, hj, rfl⟩
+
+/-- For collapse-homogeneous `f ∈ J_G` where all monomials have zero collapse weight
+at vertices in S, killVars S fixes f. -/
+private lemma killVars_eq_self_of_collapse_zero (S : Set V) [DecidablePred (· ∈ S)]
+    (f : MvPolynomial (BinomialEdgeVars V) K)
+    (hsupp : ∀ d ∈ f.support, ∀ v ∈ S, d (Sum.inl v) = 0 ∧ d (Sum.inr v) = 0) :
+    killVars (K := K) S f = f := by
+  conv_lhs => rw [← MvPolynomial.support_sum_monomial_coeff f]
+  simp only [map_sum]
+  conv_rhs => rw [← MvPolynomial.support_sum_monomial_coeff f]
+  apply Finset.sum_congr rfl
+  intro d hd
+  -- Show: killVars S (monomial d (coeff d f)) = monomial d (coeff d f)
+  show MvPolynomial.aeval _ ((MvPolynomial.monomial d) (MvPolynomial.coeff d f)) =
+    (MvPolynomial.monomial d) (MvPolynomial.coeff d f)
+  rw [MvPolynomial.aeval_monomial, MvPolynomial.monomial_eq, Finsupp.prod]
+  simp only [Algebra.algebraMap_eq_smul_one, smul_mul_assoc, one_mul, MvPolynomial.C_mul']
+  congr 1
+  apply Finset.prod_congr rfl
+  intro v hv
+  have hv_pos : 0 < d v := Finsupp.mem_support_iff.mp hv |>.bot_lt
+  simp only [killVars, collapse, id, MvPolynomial.aeval_X]
+  rcases v with w | w <;> simp only [Sum.elim_inl, Sum.elim_inr]
+  · by_cases hw : w ∈ S
+    · exact absurd (hsupp d hd w hw).1 (by omega)
+    · simp [if_neg hw]
+  · by_cases hw : w ∈ S
+    · exact absurd (hsupp d hd w hw).2 (by omega)
+    · simp [if_neg hw]
+
+/-- For collapse-homogeneous f with clean crossing (a,b), f is in the sub-ideal
+of edges outside (a,b). Uses killVars_eq_self + killVars_mem_subideal. -/
+private lemma clean_crossing_subideal (G : SimpleGraph V)
+    (f : MvPolynomial (BinomialEdgeVars V) K)
+    (hf_mem : f ∈ binomialEdgeIdeal G)
+    (hsupp : ∀ d ∈ f.support, ∀ v : V, a < v → v < b →
+        d (Sum.inl v) = 0 ∧ d (Sum.inr v) = 0) :
+    f ∈ Ideal.span {g : MvPolynomial (BinomialEdgeVars V) K |
+      ∃ i j, G.Adj i j ∧ i < j ∧ ¬(a < i ∧ i < b) ∧ ¬(a < j ∧ j < b) ∧
+      g = x i * y j - x j * y i} := by
+  have hfix : killVars (K := K) {v : V | a < v ∧ v < b} f = f := by
+    apply killVars_eq_self_of_collapse_zero
+    intro d hd v ⟨hav, hvb⟩
+    exact hsupp d hd v hav hvb
+  rw [← hfix]
+  exact killVars_mem_subideal G {v | a < v ∧ v < b} f hf_mem
+
+/-- **Walk existence from sub-ideal membership**: If f is in the sub-ideal of edges
+outside an interval (a,b), f ≠ 0, and LM(f) has x_a and y_b support, then there
+exists a walk from a to b in G using only vertices outside (a,b).
+
+This is the graph-connectivity argument: the edges generating the sub-ideal
+connect a to b through vertices outside (a,b). -/
+private lemma exists_walk_outside_interval (G : SimpleGraph V)
+    (f : MvPolynomial (BinomialEdgeVars V) K)
     (a b : V) (hab : a < b)
     (ha : 1 ≤ binomialEdgeMonomialOrder.degree f (Sum.inl a))
-    (hb : 1 ≤ binomialEdgeMonomialOrder.degree f (Sum.inr b)) :
+    (hb : 1 ≤ binomialEdgeMonomialOrder.degree f (Sum.inr b))
+    (hf_sub : f ∈ Ideal.span {g : MvPolynomial (BinomialEdgeVars V) K |
+      ∃ i j, G.Adj i j ∧ i < j ∧ ¬(a < i ∧ i < b) ∧ ¬(a < j ∧ j < b) ∧
+      g = x i * y j - x j * y i})
+    (hf_ne : f ≠ 0) :
     ∃ π : List V, π.head? = some a ∧ π.getLast? = some b ∧ π.Nodup ∧
       (∀ v ∈ π, v = a ∨ v = b ∨ v < a ∨ b < v) ∧
       π.Chain' (fun u v => G.Adj u v) := by
   sorry
 
-/-! ### Assembly: Rauh's core divisibility claim -/
+/-- **Degree bound for admissible path from walk**: Given a walk from a to b with
+the vertex condition, and the LM support information, there exists an admissible path
+whose groebnerElement degree ≤ LM(f). -/
+private lemma exists_groebnerElement_from_walk (G : SimpleGraph V)
+    (f : MvPolynomial (BinomialEdgeVars V) K)
+    (a b : V) (hab : a < b)
+    (ha : 1 ≤ binomialEdgeMonomialOrder.degree f (Sum.inl a))
+    (hb : 1 ≤ binomialEdgeMonomialOrder.degree f (Sum.inr b))
+    (π : List V) (hHead : π.head? = some a) (hLast : π.getLast? = some b)
+    (hND : π.Nodup) (hVtx : ∀ v ∈ π, v = a ∨ v = b ∨ v < a ∨ b < v)
+    (hWalk : π.Chain' (fun u v => G.Adj u v)) :
+    ∃ g ∈ groebnerBasisSet (K := K) G,
+      binomialEdgeMonomialOrder.degree g ≤ binomialEdgeMonomialOrder.degree f := by
+  sorry
 
-/-- **Core claim (Rauh, Theorem 2)**: For any nonzero `f ∈ J_G`, some groebnerElement's
-leading monomial divides `f`'s leading monomial (componentwise ≤ on Finsupp).
-
-**Proof**: Combine `exists_crossing_of_mem` → `exists_walk_from_crossing` →
-`exists_admissible_path_of_walk` → `pathMonomial_degree_le_of_supported`. -/
 private lemma exists_groebnerElement_degree_le (G : SimpleGraph V)
     (f : MvPolynomial (BinomialEdgeVars V) K)
     (hf_mem : f ∈ binomialEdgeIdeal G) (hf_ne : f ≠ 0) :
     ∃ g ∈ groebnerBasisSet (K := K) G,
       binomialEdgeMonomialOrder.degree g ≤ binomialEdgeMonomialOrder.degree f := by
-  -- Step 1: Get a crossing (a, b) in LM(f)
-  obtain ⟨a, b, hab, ha, hb⟩ := exists_crossing_of_mem G f hf_mem hf_ne
-  -- Step 2: Get a walk from a to b satisfying the vertex condition
+  -- Step 1: Take collapse-homogeneous component f_m with same LM
+  set d := binomialEdgeMonomialOrder.degree f
+  set m := Finsupp.weight (collapseWeight (V := V)) d
+  set f_m := MvPolynomial.weightedHomogeneousComponent (collapseWeight (V := V)) m f
+  have hfm_mem : f_m ∈ binomialEdgeIdeal (K := K) G := collapseComponent_mem G f hf_mem m
+  have hfm_ne : f_m ≠ 0 := by
+    intro h
+    have hcoeff_ne : f.coeff d ≠ 0 :=
+      binomialEdgeMonomialOrder.coeff_degree_ne_zero_iff.mpr hf_ne
+    have hcoeff_eq : f_m.coeff d = f.coeff d := by
+      show (MvPolynomial.weightedHomogeneousComponent (collapseWeight (V := V)) m f).coeff d =
+        f.coeff d
+      rw [MvPolynomial.coeff_weightedHomogeneousComponent, if_pos rfl]
+    rw [h, MvPolynomial.coeff_zero] at hcoeff_eq
+    exact hcoeff_ne hcoeff_eq.symm
+  -- f_m has same LM as f
+  have hfm_degree : binomialEdgeMonomialOrder.degree f_m = d := by
+    -- d ∈ supp(f_m) since coeff(f_m, d) = coeff(f, d) ≠ 0
+    have hcoeff_ne : f.coeff d ≠ 0 :=
+      binomialEdgeMonomialOrder.coeff_degree_ne_zero_iff.mpr hf_ne
+    have hd_supp : d ∈ f_m.support := by
+      rw [MvPolynomial.mem_support_iff]
+      show (MvPolynomial.weightedHomogeneousComponent (collapseWeight (V := V)) m f).coeff d ≠ 0
+      rw [MvPolynomial.coeff_weightedHomogeneousComponent, if_pos rfl]
+      exact hcoeff_ne
+    -- All monomials of f_m are ≤ d in lex (since they're in supp(f))
+    have hle : ∀ e ∈ f_m.support, e ≼[binomialEdgeMonomialOrder] d := by
+      intro e he
+      have he_f : e ∈ f.support := by
+        rw [MvPolynomial.mem_support_iff] at he ⊢
+        have := he
+        rw [show f_m = MvPolynomial.weightedHomogeneousComponent _ m f from rfl,
+            MvPolynomial.coeff_weightedHomogeneousComponent] at this
+        split_ifs at this with hw
+        · exact this
+        · exact absurd rfl this
+      exact binomialEdgeMonomialOrder.le_degree he_f
+    have h1 : binomialEdgeMonomialOrder.degree f_m ≼[binomialEdgeMonomialOrder] d :=
+      hle _ (binomialEdgeMonomialOrder.degree_mem_support hfm_ne)
+    have h2 : d ≼[binomialEdgeMonomialOrder] binomialEdgeMonomialOrder.degree f_m :=
+      binomialEdgeMonomialOrder.le_degree hd_supp
+    exact binomialEdgeMonomialOrder.toSyn.injective (le_antisymm h1 h2)
+  -- Step 2: Get a clean crossing (a, b) for f
+  obtain ⟨a, b, hab, ha, hb, hclean⟩ := exists_clean_crossing G f hf_mem hf_ne
+  -- All monomials of f_m have zero collapse weight at vertices in (a,b)
+  have hfm_supp : ∀ e ∈ f_m.support, ∀ v : V, a < v → v < b →
+      e (Sum.inl v) = 0 ∧ e (Sum.inr v) = 0 := by
+    intro e he v hav hvb
+    -- e ∈ support of weightedHomogeneousComponent m f means weight(e) = m
+    have he_weight : Finsupp.weight (collapseWeight (V := V)) e = m := by
+      have he_coeff := MvPolynomial.mem_support_iff.mp he
+      rw [show f_m = MvPolynomial.weightedHomogeneousComponent _ m f from rfl,
+          MvPolynomial.coeff_weightedHomogeneousComponent] at he_coeff
+      split_ifs at he_coeff with hw
+      · exact hw
+      · exact absurd rfl he_coeff
+    -- m(v) = d(inl v) + d(inr v) = 0 for v ∈ (a,b)
+    have hcv := hclean v hav hvb
+    have hm_v : m v = 0 := by
+      show (Finsupp.weight (collapseWeight (V := V)) d) v = 0
+      rw [weight_collapseWeight_eq_mapDomain, mapDomain_collapse_apply]
+      have := hcv.1; have := hcv.2; simp only [d] at *; omega
+    -- weight(e)(v) = e(inl v) + e(inr v) = m(v) = 0
+    have he_v : e (Sum.inl v) + e (Sum.inr v) = 0 := by
+      have := Finsupp.ext_iff.mp he_weight v
+      rw [weight_collapseWeight_eq_mapDomain, mapDomain_collapse_apply] at this
+      linarith [hm_v]
+    exact ⟨by omega, by omega⟩
+  -- Step 3: f_m is in the sub-ideal of edges outside (a, b)
+  have hfm_sub := clean_crossing_subideal G f_m hfm_mem hfm_supp (a := a) (b := b)
+  -- Step 4: Walk from a to b outside (a, b), using f_m
+  have ha' : 1 ≤ binomialEdgeMonomialOrder.degree f_m (Sum.inl a) := hfm_degree ▸ ha
+  have hb' : 1 ≤ binomialEdgeMonomialOrder.degree f_m (Sum.inr b) := hfm_degree ▸ hb
   obtain ⟨π, hHead, hLast, hND, hVtx, hWalk⟩ :=
-    exists_walk_from_crossing G f hf_mem hf_ne a b hab ha hb
-  -- Step 3: Extract an admissible path from the walk
-  obtain ⟨σ, hσ, hσ_sub⟩ :=
-    exists_admissible_path_of_walk G a b hab π hHead hLast hND hVtx hWalk
-  -- Step 4: groebnerElement(a, b, σ) ∈ groebnerBasisSet with degree ≤ d
-  refine ⟨groebnerElement a b σ, ⟨a, b, σ, hσ, rfl⟩, ?_⟩
-  -- Step 5: degree(ge) ≤ degree(f)
-  -- groebnerElement = pathMonomial * fij, so degree = deg(pathMonomial) + inl(a) + inr(b)
-  -- deg(pathMonomial) contributes x_v for v > b (internal) and y_v for v < a (internal)
-  -- We need: for internal v > b, degree(f)(inl v) ≥ 1
-  --          for internal v < a, degree(f)(inr v) ≥ 1
-  -- This follows from the walk construction + support of f
-  sorry
+    exists_walk_outside_interval G f_m a b hab ha' hb' hfm_sub hfm_ne
+  -- Step 5: Extract groebnerElement with degree bound
+  exact exists_groebnerElement_from_walk G f a b hab ha hb π hHead hLast hND hVtx hWalk
 
 /-- Any element of `J_G` reduces to remainder 0 modulo `groebnerBasisSet`.
 Follows from `exists_groebnerElement_degree_le` (Rauh's core claim) +

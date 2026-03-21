@@ -25,13 +25,13 @@ open MvPolynomial MonomialOrder
 /-! ## fij identities -/
 
 /-- `fij i₁ i₂ = -(fij i₂ i₁)` (antisymmetry). -/
-private lemma fij_antisymm (i₁ i₂ : V) :
+lemma fij_antisymm (i₁ i₂ : V) :
     fij (K := K) i₁ i₂ = -(fij (K := K) i₂ i₁) := by
   simp only [fij]; ring
 
 /-- **Telescoping identity for fij**: `y b * fij a c = y c * fij a b + y a * fij b c`.
 This is the fundamental identity for the τ-path decomposition in Theorem 2.1. -/
-private lemma fij_telescope (a b c : V) :
+lemma fij_telescope (a b c : V) :
     y (K := K) b * fij a c = y c * fij a b + y a * fij b c := by
   simp only [fij, x, y]; ring
 
