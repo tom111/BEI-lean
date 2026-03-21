@@ -64,7 +64,7 @@ such that `pathMonomial a b σ` divides `q` (as monomials), then
 
 This works because `q * fij a b = (q / pathMonomial) * groebnerElement a b σ`
 and `groebnerElement a b σ ∈ groebnerBasisSet`, so `isRemainder_single_mul` applies. -/
-private lemma isRemainder_fij_via_groebnerElement (G : SimpleGraph V)
+lemma isRemainder_fij_via_groebnerElement (G : SimpleGraph V)
     (a b : V) (σ : List V) (hσ : IsAdmissiblePath G a b σ)
     (q : MvPolynomial (BinomialEdgeVars V) K)
     (d_q : BinomialEdgeVars V →₀ ℕ) (hq : q = monomial d_q 1)
@@ -89,7 +89,7 @@ private lemma isRemainder_fij_via_groebnerElement (G : SimpleGraph V)
 
 /-- `IsRemainder (f₁ + f₂) G 0` from `IsRemainder f₁ G 0` and `IsRemainder f₂ G 0`,
 provided both summands have degree ≤ degree of the sum. -/
-private lemma isRemainder_add
+lemma isRemainder_add
     (f₁ f₂ : MvPolynomial (BinomialEdgeVars V) K)
     (G : Set (MvPolynomial (BinomialEdgeVars V) K))
     (h₁ : binomialEdgeMonomialOrder.IsRemainder f₁ G 0)

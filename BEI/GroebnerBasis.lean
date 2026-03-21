@@ -272,6 +272,25 @@ private theorem exists_admissible_path_of_walk (G : SimpleGraph V)
 
 
 
+/-- The pathMonomial is a monomial with coefficient 1. -/
+private lemma pathMonomial_is_monomial (i j : V) (π : List V) :
+    ∃ d : BinomialEdgeVars V →₀ ℕ, pathMonomial (K := K) i j π = monomial d 1 := by
+  obtain ⟨dx, hdx⟩ := prod_X_list_eq_monomial' (R := K)
+    ((internalVertices π).filter (fun v => j < v) |>.map Sum.inl)
+  obtain ⟨dy, hdy⟩ := prod_X_list_eq_monomial' (R := K)
+    ((internalVertices π).filter (fun v => v < i) |>.map Sum.inr)
+  exact ⟨dx + dy, by
+    simp only [pathMonomial, x, y]
+    rw [show ((internalVertices π).filter (fun v => j < v)).map
+        (fun v => (X (Sum.inl v) : MvPolynomial (BinomialEdgeVars V) K)) =
+        (((internalVertices π).filter (fun v => j < v)).map Sum.inl).map X by
+          simp [List.map_map],
+      show ((internalVertices π).filter (fun v => v < i)).map
+        (fun v => (X (Sum.inr v) : MvPolynomial (BinomialEdgeVars V) K)) =
+        (((internalVertices π).filter (fun v => v < i)).map Sum.inr).map X by
+          simp [List.map_map]]
+    rw [hdx, hdy, monomial_mul]; congr 1; ring⟩
+
 /-! ## Theorem 2.1: Gröbner basis (Herzog direct S-polynomial approach)
 
 The proof follows Herzog et al. (2010), Theorem 2.1, Second Step:
@@ -299,7 +318,55 @@ Reference: Herzog et al. (2010), Theorem 2.1.
 theorem theorem_2_1 (G : SimpleGraph V) :
     binomialEdgeMonomialOrder.IsGroebnerBasis
       (groebnerBasisSet (K := K) G) (binomialEdgeIdeal (K := K) G) := by
-  sorry
+  -- All groebnerElements have unit leading coefficients
+  have hUnit : ∀ g ∈ groebnerBasisSet (K := K) G,
+      IsUnit (binomialEdgeMonomialOrder.leadingCoeff g) := by
+    intro g hg; obtain ⟨i, j, π, hπ, rfl⟩ := hg
+    exact groebnerElement_leadingCoeff_isUnit i j π hπ
+  -- Apply Buchberger criterion
+  rw [show binomialEdgeIdeal (K := K) G = Ideal.span (groebnerBasisSet (K := K) G) from
+    (groebnerBasisSet_span G).symm]
+  rw [isGroebnerBasis_iff_sPolynomial_isRemainder (hG := hUnit)]
+  -- For each pair of basis elements, show S-polynomial reduces to 0
+  intro ⟨g₁, hg₁⟩ ⟨g₂, hg₂⟩
+  obtain ⟨i, j, π, hπ, rfl⟩ := hg₁
+  obtain ⟨k, l, σ, hσ, rfl⟩ := hg₂
+  -- Case analysis on shared endpoints
+  by_cases heq_i : i = k <;> by_cases heq_j : j = l
+  · -- Case 1: i = k, j = l (same endpoints)
+    -- S(u_π · f_{ij}, u_σ · f_{ij}) = 0 (monomial multiples of same polynomial)
+    subst heq_i; subst heq_j
+    change binomialEdgeMonomialOrder.IsRemainder
+      (binomialEdgeMonomialOrder.sPolynomial
+        (pathMonomial (K := K) i j π * fij i j)
+        (pathMonomial (K := K) i j σ * fij i j))
+      (groebnerBasisSet G) 0
+    obtain ⟨dπ, hdπ⟩ := pathMonomial_is_monomial (K := K) i j π
+    obtain ⟨dσ, hdσ⟩ := pathMonomial_is_monomial (K := K) i j σ
+    rw [hdπ, hdσ, sPolynomial_monomial_mul, sPolynomial_self, mul_zero]
+    exact isRemainder_zero_zero' _
+  · -- Case 4: i = k, j ≠ l (shared first endpoint) — the hard case
+    -- S-poly decomposes along the τ-path (concatenation of π and σ)
+    subst heq_i
+    sorry
+  · -- Case 5: j = l, i ≠ k (shared last endpoint) — symmetric to case 4
+    subst heq_j
+    sorry
+  · -- Cases 2 & 3: disjoint or cross-matched endpoints — coprime leading terms
+    -- Factor: S(ge1, ge2) = monomial * S(fij i j, fij k l)
+    change binomialEdgeMonomialOrder.IsRemainder
+      (binomialEdgeMonomialOrder.sPolynomial
+        (pathMonomial (K := K) i j π * fij i j)
+        (pathMonomial (K := K) k l σ * fij k l))
+      (groebnerBasisSet G) 0
+    obtain ⟨dπ, hdπ⟩ := pathMonomial_is_monomial (K := K) i j π
+    obtain ⟨dσ, hdσ⟩ := pathMonomial_is_monomial (K := K) k l σ
+    rw [hdπ, hdσ, sPolynomial_monomial_mul]
+    have hij : i < j := hπ.1
+    have hkl : k < l := hσ.1
+    rw [sPolynomial_fij_coprime i k j l hij hkl heq_i heq_j]
+    -- Goal: IsRemainder (monomial D (1*1) * (x l * y k * fij i j - x j * y i * fij k l)) G 0
+    sorry
 
 
 /-! ## Degree computation helpers -/
