@@ -11,11 +11,14 @@ variable {K : Type*} [Field K]
 variable {V : Type*} [LinearOrder V] [DecidableEq V] [Fintype V]
 
 /-!
-# Herzog S-pair lemmas (archived)
+# Algebraic lemmas for Theorem 2.1
 
-Proved lemmas from the Herzog et al. S-pair approach to Theorem 2.1.
-These are not currently used in the main proof (which follows Rauh's approach)
-but are kept for reference in case they are useful later.
+Identities and helper lemmas used in the proof of Theorem 2.1 (Herzog et al. 2010).
+Key contents:
+- `fij_antisymm`, `fij_telescope`, `fij_x_telescope`: algebraic identities for f_{ij}
+- `isRemainder_fij_via_groebnerElement`, `isRemainder_add`: IsRemainder helpers
+- `collapse`, `rename_collapse_eq_zero`: the collapse map V ⊕ V → V
+- `binomialEdgeIdeal_no_monomial`: J_G contains no monomials
 -/
 
 noncomputable section
