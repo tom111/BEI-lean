@@ -401,12 +401,337 @@ private lemma chain'_reverse' (G : SimpleGraph V) (π : List V)
 
 /-- Internal vertices of a reversed list have the same membership as the original.
 Both are "all elements except first and last", which are swapped by reversal. -/
+private lemma internalVertices_reverse (l : List V) :
+    internalVertices l.reverse = (internalVertices l).reverse := by
+  simp only [internalVertices, List.tail_reverse, List.dropLast_reverse, List.tail_dropLast]
+
 private lemma mem_internalVertices_reverse {l : List V} {v : V}
     (h : v ∈ internalVertices l.reverse) : v ∈ internalVertices l := by
-  sorry
+  rw [internalVertices_reverse] at h
+  exact List.mem_reverse.mp h
 
-/-- Given two nodup walks sharing first vertex `a` (one to `b`, one to `c`), there exists a
-nodup walk from `b` to `c` whose internal vertices come from the two walks or `a`. -/
+/-! ### Helpers for walk construction -/
+
+private lemma idxOf_lt {l : List V} {v : V} (hv : v ∈ l) : l.idxOf v < l.length :=
+  List.findIdx_lt_length_of_exists ⟨v, hv, by simp [BEq.beq]⟩
+
+private lemma head?_drop_idxOf {l : List V} {v : V} (hv : v ∈ l) :
+    (l.drop (l.idxOf v)).head? = some v := by
+  rw [List.head?_eq_getElem?, List.getElem?_drop]
+  simp [List.getElem?_eq_getElem (idxOf_lt hv), List.getElem_idxOf (idxOf_lt hv)]
+
+private lemma getLast?_drop_idxOf {l : List V} {v : V} (hv : v ∈ l) :
+    (l.drop (l.idxOf v)).getLast? = l.getLast? := by
+  have hne : l.drop (l.idxOf v) ≠ [] := by
+    simp [List.drop_eq_nil_iff]; exact idxOf_lt hv
+  rw [List.getLast?_eq_some_getLast hne,
+      List.getLast?_eq_some_getLast (List.ne_nil_of_mem hv)]
+  exact congrArg _ (List.getLast_drop hne)
+
+private lemma isChain_drop {r : V → V → Prop} {l : List V} (h : l.IsChain r) (i : ℕ) :
+    (l.drop i).IsChain r := by
+  induction i generalizing l with
+  | zero => simpa
+  | succ n ih =>
+    cases l with
+    | nil => simp
+    | cons a rest =>
+      simp only [List.drop_succ_cons]
+      cases h with
+      | singleton _ => exact ih .nil
+      | cons_cons _ h2 => exact ih h2
+
+private lemma isChain_append {r : V → V → Prop} {l₁ l₂ : List V}
+    (h₁ : l₁.IsChain r) (h₂ : l₂.IsChain r)
+    (h : ∀ x, x ∈ l₁.getLast? → ∀ y, y ∈ l₂.head? → r x y) :
+    (l₁ ++ l₂).IsChain r := by
+  induction l₁ with
+  | nil => simpa
+  | cons a rest ih =>
+    simp only [List.cons_append]
+    cases rest with
+    | nil =>
+      simp at h
+      cases l₂ with
+      | nil => exact .singleton a
+      | cons b rest₂ => exact .cons_cons (h b (by simp)) h₂
+    | cons b rest' =>
+      have h₁' : (b :: rest').IsChain r := by cases h₁ with | cons_cons _ h => exact h
+      have hab : r a b := by cases h₁ with | cons_cons h _ => exact h
+      exact .cons_cons hab (ih h₁' (by
+        intro x hx y hy; apply h x _ y hy
+        simp only [List.getLast?_cons_cons]; exact hx))
+
+private lemma isChain_tail {r : V → V → Prop} {l : List V}
+    (h : l.IsChain r) : l.tail.IsChain r := by
+  cases h with
+  | nil => exact .nil
+  | singleton _ => exact .nil
+  | cons_cons _ h2 => exact h2
+
+private lemma mem_of_mem_internalVertices {l : List V} {v : V}
+    (h : v ∈ internalVertices l) : v ∈ l :=
+  (List.tail_sublist l).mem ((List.dropLast_sublist _).mem h)
+
+private lemma getLast_not_mem_dropLast (l : List V) (hnd : l.Nodup) (hne : l ≠ []) :
+    l.getLast hne ∉ l.dropLast := by
+  rw [← List.dropLast_append_getLast hne] at hnd
+  rw [List.nodup_append] at hnd
+  intro h; exact absurd rfl (hnd.2.2 _ h _ (List.Mem.head []))
+
+private lemma internal_ne_head {l : List V} (hnd : l.Nodup)
+    {v : V} (hv : v ∈ internalVertices l) (hne : l ≠ []) : v ≠ l.head hne := by
+  simp only [internalVertices] at hv
+  cases l with
+  | nil => exact absurd rfl hne
+  | cons a rest =>
+    simp only [List.tail_cons, List.head_cons] at hv ⊢
+    intro heq; subst heq
+    rw [List.nodup_cons] at hnd
+    exact hnd.1 (List.dropLast_subset rest hv)
+
+private lemma internal_ne_getLast {l : List V} (hnd : l.Nodup)
+    {v : V} (hv : v ∈ internalVertices l) (hne : l ≠ []) : v ≠ l.getLast hne := by
+  simp only [internalVertices] at hv
+  cases l with
+  | nil => exact absurd rfl hne
+  | cons a rest =>
+    simp only [List.tail_cons] at hv
+    cases rest with
+    | nil => simp at hv
+    | cons b rest' =>
+      simp only [List.getLast_cons (List.cons_ne_nil b rest')]
+      have hnd_rest : (b :: rest').Nodup := by rw [List.nodup_cons] at hnd; exact hnd.2
+      exact fun heq => by subst heq
+                          exact getLast_not_mem_dropLast _ hnd_rest _ hv
+
+-- Head/last from head?/getLast? as plain equalities
+private lemma head_of_head? {l : List V} {a : V} (h : l.head? = some a) :
+    l.head (by intro h'; simp [h'] at h) = a := by
+  cases l with | nil => simp at h | cons x _ => simp at h; exact h
+
+private lemma getLast_of_getLast? {l : List V} {a : V} (h : l.getLast? = some a) :
+    l.getLast (by intro h'; simp [h'] at h) = a := by
+  have hne : l ≠ [] := by intro h'; simp [h'] at h
+  rw [List.getLast?_eq_some_getLast hne] at h; exact Option.some.inj h
+
+-- v ∈ l, v ≠ head, v ≠ getLast → v ∈ internalVertices l
+private lemma mem_internalVertices_of_ne {l : List V} {v : V}
+    (hnd : l.Nodup) (hv : v ∈ l) (hne : l ≠ [])
+    (hnh : v ≠ l.head hne) (hnl : v ≠ l.getLast hne) :
+    v ∈ internalVertices l := by
+  simp only [internalVertices]
+  cases l with
+  | nil => exact absurd rfl hne
+  | cons x rest =>
+    simp only [List.head_cons] at hnh
+    simp only [List.tail_cons]
+    have hv_rest : v ∈ rest := (List.mem_cons.mp hv).resolve_left hnh
+    cases rest with
+    | nil => exact absurd hv_rest (List.not_mem_nil)
+    | cons y rest' =>
+      have := List.getLast_cons (List.cons_ne_nil y rest') (a := x)
+      rw [this] at hnl
+      exact List.mem_dropLast_of_mem_of_ne_getLast hv_rest hnl
+
+/-! ### The walk construction -/
+
+private lemma walk_from_shared_first_aux (G : SimpleGraph V) :
+    ∀ (n : ℕ) (a b c : V) (π σ : List V),
+    π.length + σ.length ≤ n →
+    π.head? = some a → π.getLast? = some b →
+    π.Nodup → π.Chain' (fun u v => G.Adj u v) →
+    σ.head? = some a → σ.getLast? = some c →
+    σ.Nodup → σ.Chain' (fun u v => G.Adj u v) →
+    b ≠ c →
+    ∃ τ : List V, τ.head? = some b ∧ τ.getLast? = some c ∧ τ.Nodup ∧
+    τ.Chain' (fun u v => G.Adj u v) ∧
+    (∀ v ∈ internalVertices τ,
+      v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = a) := by
+  intro n
+  induction n with
+  | zero =>
+    intro a b c π σ hlen hπh
+    have : π ≠ [] := by intro h; simp [h] at hπh
+    have : 0 < π.length := by cases π with | nil => exact absurd rfl this | cons _ _ => simp
+    omega
+  | succ n ih =>
+    intro a b c π σ hlen hπh hπl hπnd hπw hσh hσl hσnd hσw hbc
+    have hπ_ne : π ≠ [] := by intro h; simp [h] at hπh
+    have hσ_ne : σ ≠ [] := by intro h; simp [h] at hσh
+    by_cases hshare : ∃ v ∈ σ.tail, v ∈ π
+    · -- Recursive case: ∃ v ∈ σ.tail ∩ π with v ≠ a
+      obtain ⟨v, hv_σt, hv_π⟩ := hshare
+      have hv_σ : v ∈ σ := List.mem_of_mem_tail hv_σt
+      have hva : v ≠ a := by
+        intro heq; subst heq
+        cases σ with
+        | nil => simp at hσh
+        | cons x rest =>
+          simp at hσh; subst hσh
+          rw [List.nodup_cons] at hσnd; exact absurd hv_σt hσnd.1
+      -- idxOf v > 0 in σ since v ≠ head σ = a
+      have hidx_pos : 0 < σ.idxOf v := by
+        cases σ with
+        | nil => exact absurd rfl hσ_ne
+        | cons x rest =>
+          have hxa : x = a := by simp at hσh; exact hσh
+          show 0 < List.findIdx (fun w => w == v) (x :: rest)
+          simp only [List.findIdx_cons]
+          have hxv : ¬(x = v) := by rw [hxa]; exact Ne.symm hva
+          simp only [BEq.beq, beq_iff_eq, hxv, ite_false]
+          exact Nat.succ_pos _
+      -- Apply IH with drops
+      obtain ⟨τ, hτh, hτl, hτnd, hτw, hτcov⟩ := ih v b c
+        (π.drop (π.idxOf v)) (σ.drop (σ.idxOf v))
+        (by simp only [List.length_drop]
+            have := idxOf_lt hv_π; have := idxOf_lt hv_σ; omega)
+        (head?_drop_idxOf hv_π) (by rw [getLast?_drop_idxOf hv_π, hπl])
+        (hπnd.sublist (List.drop_sublist _ _)) (isChain_drop hπw _)
+        (head?_drop_idxOf hv_σ) (by rw [getLast?_drop_idxOf hv_σ, hσl])
+        (hσnd.sublist (List.drop_sublist _ _)) (isChain_drop hσw _) hbc
+      -- Translate coverage
+      refine ⟨τ, hτh, hτl, hτnd, hτw, fun w hw => ?_⟩
+      rcases hτcov w hw with h | h | h
+      · -- w ∈ internalVertices (π.drop ..)
+        have hw_π : w ∈ π := (List.drop_sublist _ _).mem (mem_of_mem_internalVertices h)
+        by_cases hwa : w = a; · exact Or.inr (Or.inr hwa)
+        have hπ'_ne : π.drop (π.idxOf v) ≠ [] := by
+          simp [List.drop_eq_nil_iff]; exact idxOf_lt hv_π
+        have hw_ne_b : w ≠ b := by
+          intro heq; rw [heq] at h
+          have := internal_ne_getLast (hπnd.sublist (List.drop_sublist _ _)) h hπ'_ne
+          rw [getLast_of_getLast? (by rw [getLast?_drop_idxOf hv_π, hπl])] at this
+          exact this rfl
+        left; exact mem_internalVertices_of_ne hπnd hw_π hπ_ne
+          (by rw [head_of_head? hπh]; exact hwa)
+          (by rw [getLast_of_getLast? hπl]; exact hw_ne_b)
+      · -- w ∈ internalVertices (σ.drop ..)
+        have hw_σ : w ∈ σ := (List.drop_sublist _ _).mem (mem_of_mem_internalVertices h)
+        by_cases hwa : w = a; · exact Or.inr (Or.inr hwa)
+        have hσ'_ne : σ.drop (σ.idxOf v) ≠ [] := by
+          simp [List.drop_eq_nil_iff]; exact idxOf_lt hv_σ
+        have hw_ne_c : w ≠ c := by
+          intro heq; rw [heq] at h
+          have := internal_ne_getLast (hσnd.sublist (List.drop_sublist _ _)) h hσ'_ne
+          rw [getLast_of_getLast? (by rw [getLast?_drop_idxOf hv_σ, hσl])] at this
+          exact this rfl
+        right; left; exact mem_internalVertices_of_ne hσnd hw_σ hσ_ne
+          (by rw [head_of_head? hσh]; exact hwa)
+          (by rw [getLast_of_getLast? hσl]; exact hw_ne_c)
+      · -- w = v
+        rw [h]
+        by_cases hvb : v = b
+        · -- v = b → v internal in σ
+          right; left; exact mem_internalVertices_of_ne hσnd hv_σ hσ_ne
+            (by rw [head_of_head? hσh]; exact hva)
+            (by rw [getLast_of_getLast? hσl]; exact fun heq => hbc (hvb ▸ heq))
+        · -- v ≠ b → v internal in π
+          left; exact mem_internalVertices_of_ne hπnd hv_π hπ_ne
+            (by rw [head_of_head? hπh]; exact hva)
+            (by rw [getLast_of_getLast? hπl]; exact hvb)
+    · -- Base case: σ.tail ∩ π = ∅
+      push_neg at hshare
+      by_cases hσt : σ.tail = []
+      · -- σ = [a], c = a, τ = π.reverse
+        have hac : c = a := by
+          cases σ with
+          | nil => simp at hσh
+          | cons x rest =>
+            simp at hσh hσt; subst hσh; subst hσt; simp at hσl; exact hσl.symm
+        subst hac
+        exact ⟨π.reverse,
+          by rw [List.head?_reverse]; exact hπl,
+          by rw [List.getLast?_reverse]; exact hπh,
+          List.nodup_reverse.mpr hπnd,
+          chain'_reverse' G π hπw,
+          fun w hw => Or.inl (mem_internalVertices_reverse hw)⟩
+      · -- σ.tail nonempty, τ = π.reverse ++ σ.tail
+        have hτ_nd : (π.reverse ++ σ.tail).Nodup := by
+          apply List.Nodup.append (List.nodup_reverse.mpr hπnd) (hσnd.sublist (List.tail_sublist _))
+          intro w hw1 hw2; exact absurd (List.mem_reverse.mp hw1) (hshare w hw2)
+        have hτ_ne : π.reverse ++ σ.tail ≠ [] := by simp [hπ_ne]
+        refine ⟨π.reverse ++ σ.tail, ?_, ?_, hτ_nd, ?_, ?_⟩
+        · -- head
+          rw [List.head?_append]
+          simp [List.head?_reverse, hπl]
+        · -- last
+          rw [List.getLast?_append_of_ne_nil _ hσt]
+          cases σ with
+          | nil => simp at hσh
+          | cons x rest =>
+            simp at hσt ⊢
+            cases rest with
+            | nil => exact absurd rfl hσt
+            | cons y rest' => simp only [List.getLast?_cons_cons] at hσl ⊢; exact hσl
+        · -- chain: π.reverse chain, σ.tail chain, connected at a
+          apply isChain_append (chain'_reverse' G π hπw) (isChain_tail hσw)
+          intro x hx y hy
+          -- The isChain_append connection: need G.Adj x y
+          -- where x ∈ (π.reverse).getLast? and y ∈ σ.tail.head?
+          -- π.reverse.getLast? = π.head? = some a, so x = a
+          -- σ.tail.head? for σ = s :: t :: _ is some t
+          -- G.Adj s t from σ chain, and s = a, so G.Adj a t
+          have hx_eq : x = a := by
+            have : (π.reverse).getLast? = some a := by
+              rw [List.getLast?_reverse]; exact hπh
+            rw [this, Option.mem_def, Option.some.injEq] at hx; exact hx.symm
+          rw [hx_eq]
+          cases σ with
+          | nil => simp at hσh
+          | cons s rest =>
+            cases rest with
+            | nil => simp at hσt
+            | cons t rest' =>
+              have hy_eq : y = t := by
+                simp only [List.tail_cons, List.head?_cons,
+                  Option.mem_def, Option.some.injEq] at hy; exact hy.symm
+              rw [hy_eq]
+              have hs_eq : s = a := by simp at hσh; exact hσh
+              rw [hs_eq] at hσw
+              cases hσw with | cons_cons hadj _ => exact hadj
+        · -- coverage
+          intro w hw
+          have hw_mem := mem_of_mem_internalVertices hw
+          rw [List.mem_append] at hw_mem
+          rcases hw_mem with hw_πr | hw_σt'
+          · -- w ∈ π.reverse → w ∈ π
+            rw [List.mem_reverse] at hw_πr
+            by_cases hwa : w = a; · exact Or.inr (Or.inr hwa)
+            have hw_ne_b : w ≠ b := by
+              intro heq; rw [heq] at hw
+              have hhead_eq : (π.reverse ++ σ.tail).head hτ_ne = b := by
+                have : (π.reverse ++ σ.tail).head? = some b := by
+                  rw [List.head?_append]; simp [List.head?_reverse, hπl]
+                exact head_of_head? this
+              exact absurd hhead_eq.symm (internal_ne_head hτ_nd hw hτ_ne)
+            left; exact mem_internalVertices_of_ne hπnd hw_πr hπ_ne
+              (by rw [head_of_head? hπh]; exact hwa)
+              (by rw [getLast_of_getLast? hπl]; exact hw_ne_b)
+          · -- w ∈ σ.tail → w ∈ σ
+            have hw_σ : w ∈ σ := (List.tail_sublist σ).mem hw_σt'
+            by_cases hwa : w = a; · exact Or.inr (Or.inr hwa)
+            have hw_ne_c : w ≠ c := by
+              intro heq; rw [heq] at hw
+              have hτ_last_eq : (π.reverse ++ σ.tail).getLast hτ_ne = c := by
+                rw [List.getLast_append_of_ne_nil _ hσt]
+                -- σ.tail.getLast hσt = c
+                -- σ.tail.getLast? = σ.getLast? (for len ≥ 2)
+                have : σ.tail.getLast? = some c := by
+                  cases σ with
+                  | nil => simp at hσh
+                  | cons x rest =>
+                    simp at hσt; cases rest with
+                    | nil => exact absurd rfl hσt
+                    | cons y rest' =>
+                      simp only [List.tail_cons, List.getLast?_cons_cons] at hσl ⊢
+                      exact hσl
+                exact getLast_of_getLast? this
+              exact absurd hτ_last_eq.symm (internal_ne_getLast hτ_nd hw hτ_ne)
+            right; left; exact mem_internalVertices_of_ne hσnd hw_σ hσ_ne
+              (by rw [head_of_head? hσh]; exact hwa)
+              (by rw [getLast_of_getLast? hσl]; exact hw_ne_c)
+
 private lemma walk_from_shared_first (G : SimpleGraph V)
     (a b c : V) (π σ : List V)
     (hπ_head : π.head? = some a) (hπ_last : π.getLast? = some b)
@@ -417,8 +742,9 @@ private lemma walk_from_shared_first (G : SimpleGraph V)
     ∃ τ : List V, τ.head? = some b ∧ τ.getLast? = some c ∧ τ.Nodup ∧
     τ.Chain' (fun u v => G.Adj u v) ∧
     (∀ v ∈ internalVertices τ,
-      v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = a) := by
-  sorry
+      v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = a) :=
+  walk_from_shared_first_aux G _ a b c π σ le_rfl
+    hπ_head hπ_last hπ_nd hπ_walk hσ_head hσ_last hσ_nd hσ_walk hbc
 
 /-! ## Theorem 2.1: Gröbner basis (Herzog direct S-polynomial approach)
 
