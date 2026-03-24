@@ -457,25 +457,106 @@ theorem theorem_2_1 (G : SimpleGraph V) :
           sorry
         rw [heq]; exact isRemainder_neg' _ _ h
       -- Goal: IsRemainder (monomial E 1 * fij j l) groebnerBasisSet 0
-      -- Construct walk from j to l via reversed π and σ through branch point
-      -- Walk: [j, ..., branch, ..., l] where branch is last shared vertex of π and σ
-      -- All internal vertices come from π (v < i or v > j) or σ (v < i or v > l) or are i itself
-      -- Coverage: E ≥ D ≥ sup(dπ, dσ) covers π/σ internals; E(inr i) ≥ 1 covers i
-      -- Bad vertices (j < v ≤ l from π): D(inl v) ≥ dπ(inl v) = 1 covers them
-      sorry -- TODO: walk construction + apply isRemainder_fij_of_covered_walk
+      -- Construct walk from j to l through shared vertex i
+      -- The walk uses reversed segment of π (from j back to branch point)
+      -- and forward segment of σ (from branch point to l)
+      obtain ⟨τ, hτ_head, hτ_last, hτ_nd, hτ_walk, hτ_verts⟩ :
+          ∃ τ : List V, τ.head? = some j ∧ τ.getLast? = some l ∧ τ.Nodup ∧
+          τ.Chain' (fun u v => G.Adj u v) ∧
+          (∀ v ∈ internalVertices τ,
+            v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = i) := by
+        sorry -- Walk construction via branch point of π and σ
+      -- Coverage: E covers all internal vertices of the walk
+      have hCov : ∀ v ∈ internalVertices τ,
+          (v < j → E (Sum.inr v) ≥ 1) ∧
+          (l < v → E (Sum.inl v) ≥ 1) ∧
+          (j < v → v < l → E (Sum.inl v) ≥ 1) := by
+        sorry -- Follows from: E ≥ D ≥ sup(dπ, dσ), E(inr i) ≥ 1, internal verts from π/σ/i
+      exact isRemainder_fij_of_covered_walk G τ.length j l τ E le_rfl hjl
+        hτ_head hτ_last hτ_nd hτ_walk hCov
     · -- l < j: symmetric, need admissible path from l to j
       suffices h : binomialEdgeMonomialOrder.IsRemainder
           (monomial E 1 * fij (K := K) l j) (groebnerBasisSet G) 0 by
         have heq : (monomial D) ((1 : K) * 1) * (-(y (K := K) i) * fij j l) =
             monomial E 1 * fij (K := K) l j := by
-          sorry
+          sorry -- algebra: monomial D 1 * y i * fij l j = monomial E 1 * fij l j
         rw [heq]; exact h
       -- Goal: IsRemainder (monomial E 1 * fij l j) groebnerBasisSet 0
-      -- Symmetric to j < l case with roles swapped
-      sorry -- TODO: walk construction + apply isRemainder_fij_of_covered_walk
+      -- Symmetric: walk from l to j through shared vertex i
+      obtain ⟨τ, hτ_head, hτ_last, hτ_nd, hτ_walk, hτ_verts⟩ :
+          ∃ τ : List V, τ.head? = some l ∧ τ.getLast? = some j ∧ τ.Nodup ∧
+          τ.Chain' (fun u v => G.Adj u v) ∧
+          (∀ v ∈ internalVertices τ,
+            v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = i) := by
+        sorry -- Walk construction (symmetric to j < l case)
+      have hCov : ∀ v ∈ internalVertices τ,
+          (v < l → E (Sum.inr v) ≥ 1) ∧
+          (j < v → E (Sum.inl v) ≥ 1) ∧
+          (l < v → v < j → E (Sum.inl v) ≥ 1) := by
+        sorry -- Coverage verification (symmetric)
+      exact isRemainder_fij_of_covered_walk G τ.length l j τ E le_rfl hlj
+        hτ_head hτ_last hτ_nd hτ_walk hCov
   · -- Case 5: j = l, i ≠ k (shared last endpoint) — symmetric to case 4
     subst heq_j
-    sorry
+    -- Factor S-polynomial using sPolynomial_fij_shared_last
+    change binomialEdgeMonomialOrder.IsRemainder
+      (binomialEdgeMonomialOrder.sPolynomial
+        (pathMonomial (K := K) i j π * fij i j)
+        (pathMonomial (K := K) k j σ * fij k j))
+      (groebnerBasisSet G) 0
+    obtain ⟨dπ, hdπ⟩ := pathMonomial_is_monomial (K := K) i j π
+    obtain ⟨dσ, hdσ⟩ := pathMonomial_is_monomial (K := K) k j σ
+    rw [hdπ, hdσ, sPolynomial_monomial_mul]
+    have hij : i < j := hπ.1
+    have hkj : k < j := hσ.1
+    rw [sPolynomial_fij_shared_last i k j hij hkj heq_i]
+    -- Goal: IsRemainder (monomial D (1*1) * (x j * fij i k)) groebnerBasisSet 0
+    set D := (dπ + binomialEdgeMonomialOrder.degree (fij (K := K) i j)) ⊔
+             (dσ + binomialEdgeMonomialOrder.degree (fij (K := K) k j)) -
+             binomialEdgeMonomialOrder.degree (fij (K := K) i j) ⊔
+             binomialEdgeMonomialOrder.degree (fij (K := K) k j) with hD_def
+    set E := D + (Finsupp.single (Sum.inl j) 1 : BinomialEdgeVars V →₀ ℕ) with hE_def
+    rcases lt_or_gt_of_ne heq_i with hik | hki
+    · -- i < k: reduce to IsRemainder (monomial E 1 * fij i k) groebnerBasisSet 0
+      suffices h : binomialEdgeMonomialOrder.IsRemainder
+          (monomial E 1 * fij (K := K) i k) (groebnerBasisSet G) 0 by
+        have heq : (monomial D) ((1 : K) * 1) * (x (K := K) j * fij i k) =
+            monomial E 1 * fij (K := K) i k := by
+          sorry -- algebra: monomial D 1 * x j * fij i k = monomial E 1 * fij i k
+        rw [heq]; exact h
+      obtain ⟨τ, hτ_head, hτ_last, hτ_nd, hτ_walk, hτ_verts⟩ :
+          ∃ τ : List V, τ.head? = some i ∧ τ.getLast? = some k ∧ τ.Nodup ∧
+          τ.Chain' (fun u v => G.Adj u v) ∧
+          (∀ v ∈ internalVertices τ,
+            v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = j) := by
+        sorry -- Walk construction from i to k through shared vertex j
+      have hCov : ∀ v ∈ internalVertices τ,
+          (v < i → E (Sum.inr v) ≥ 1) ∧
+          (k < v → E (Sum.inl v) ≥ 1) ∧
+          (i < v → v < k → E (Sum.inl v) ≥ 1) := by
+        sorry -- Coverage: E ≥ D ≥ sup(dπ, dσ), E(inl j) ≥ 1
+      exact isRemainder_fij_of_covered_walk G τ.length i k τ E le_rfl hik
+        hτ_head hτ_last hτ_nd hτ_walk hCov
+    · -- k < i: reduce to IsRemainder (monomial E 1 * fij k i) groebnerBasisSet 0
+      suffices h : binomialEdgeMonomialOrder.IsRemainder
+          (monomial E 1 * fij (K := K) k i) (groebnerBasisSet G) 0 by
+        have heq : (monomial D) ((1 : K) * 1) * (x (K := K) j * fij i k) =
+            -(monomial E 1 * fij (K := K) k i) := by
+          sorry -- algebra: fij i k = -(fij k i), then simplify
+        rw [heq]; exact isRemainder_neg' _ _ h
+      obtain ⟨τ, hτ_head, hτ_last, hτ_nd, hτ_walk, hτ_verts⟩ :
+          ∃ τ : List V, τ.head? = some k ∧ τ.getLast? = some i ∧ τ.Nodup ∧
+          τ.Chain' (fun u v => G.Adj u v) ∧
+          (∀ v ∈ internalVertices τ,
+            v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = j) := by
+        sorry -- Walk construction (symmetric)
+      have hCov : ∀ v ∈ internalVertices τ,
+          (v < k → E (Sum.inr v) ≥ 1) ∧
+          (i < v → E (Sum.inl v) ≥ 1) ∧
+          (k < v → v < i → E (Sum.inl v) ≥ 1) := by
+        sorry -- Coverage verification (symmetric)
+      exact isRemainder_fij_of_covered_walk G τ.length k i τ E le_rfl hki
+        hτ_head hτ_last hτ_nd hτ_walk hCov
   · -- Cases 2 & 3: disjoint or cross-matched endpoints — coprime leading terms
     -- Factor: S(ge1, ge2) = monomial * S(fij i j, fij k l)
     change binomialEdgeMonomialOrder.IsRemainder
