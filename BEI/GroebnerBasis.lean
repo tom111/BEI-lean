@@ -451,10 +451,11 @@ theorem theorem_2_1 (G : SimpleGraph V) :
           (monomial E 1 * fij (K := K) j l) (groebnerBasisSet G) 0 by
         have heq : (monomial D) ((1 : K) * 1) * (-(y (K := K) i) * fij j l) =
             -(monomial E 1 * fij (K := K) j l) := by
-          -- monomial D (1*1) * (-(y i) * fij j l)
-          -- = -(monomial D 1 * y i * fij j l)
-          -- = -(monomial (D + single(inr i) 1) 1 * fij j l) = -(monomial E 1 * fij j l)
-          sorry
+          unfold BinomialEdgeVars at E D ⊢
+          simp only [hE_def, one_mul, y, neg_mul, mul_neg]
+          congr 1; rw [← mul_assoc]; congr 1
+          change monomial D (1 : K) * monomial (Finsupp.single (Sum.inr i) 1) 1 = _
+          rw [monomial_mul, one_mul]
         rw [heq]; exact isRemainder_neg' _ _ h
       -- Goal: IsRemainder (monomial E 1 * fij j l) groebnerBasisSet 0
       -- Construct walk from j to l through shared vertex i
@@ -479,7 +480,12 @@ theorem theorem_2_1 (G : SimpleGraph V) :
           (monomial E 1 * fij (K := K) l j) (groebnerBasisSet G) 0 by
         have heq : (monomial D) ((1 : K) * 1) * (-(y (K := K) i) * fij j l) =
             monomial E 1 * fij (K := K) l j := by
-          sorry -- algebra: monomial D 1 * y i * fij l j = monomial E 1 * fij l j
+          unfold BinomialEdgeVars at E D ⊢
+          simp only [hE_def, one_mul, y, neg_mul, mul_neg, fij_antisymm j l,
+                     neg_neg, ← mul_assoc]
+          congr 1
+          change monomial D (1 : K) * monomial (Finsupp.single (Sum.inr i) 1) 1 = _
+          rw [monomial_mul, one_mul]
         rw [heq]; exact h
       -- Goal: IsRemainder (monomial E 1 * fij l j) groebnerBasisSet 0
       -- Symmetric: walk from l to j through shared vertex i
@@ -522,7 +528,10 @@ theorem theorem_2_1 (G : SimpleGraph V) :
           (monomial E 1 * fij (K := K) i k) (groebnerBasisSet G) 0 by
         have heq : (monomial D) ((1 : K) * 1) * (x (K := K) j * fij i k) =
             monomial E 1 * fij (K := K) i k := by
-          sorry -- algebra: monomial D 1 * x j * fij i k = monomial E 1 * fij i k
+          unfold BinomialEdgeVars at E D ⊢
+          simp only [hE_def, one_mul, x, ← mul_assoc]; congr 1
+          change monomial D (1 : K) * monomial (Finsupp.single (Sum.inl j) 1) 1 = _
+          rw [monomial_mul, one_mul]
         rw [heq]; exact h
       obtain ⟨τ, hτ_head, hτ_last, hτ_nd, hτ_walk, hτ_verts⟩ :
           ∃ τ : List V, τ.head? = some i ∧ τ.getLast? = some k ∧ τ.Nodup ∧
@@ -542,7 +551,12 @@ theorem theorem_2_1 (G : SimpleGraph V) :
           (monomial E 1 * fij (K := K) k i) (groebnerBasisSet G) 0 by
         have heq : (monomial D) ((1 : K) * 1) * (x (K := K) j * fij i k) =
             -(monomial E 1 * fij (K := K) k i) := by
-          sorry -- algebra: fij i k = -(fij k i), then simplify
+          unfold BinomialEdgeVars at E D ⊢
+          simp only [hE_def, one_mul, x, neg_mul, mul_neg, fij_antisymm i k,
+                     neg_neg, ← mul_assoc]
+          congr 2
+          change monomial D (1 : K) * monomial (Finsupp.single (Sum.inl j) 1) 1 = _
+          rw [monomial_mul, one_mul]
         rw [heq]; exact isRemainder_neg' _ _ h
       obtain ⟨τ, hτ_head, hτ_last, hτ_nd, hτ_walk, hτ_verts⟩ :
           ∃ τ : List V, τ.head? = some k ∧ τ.getLast? = some i ∧ τ.Nodup ∧
