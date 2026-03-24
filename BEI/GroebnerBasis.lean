@@ -304,6 +304,68 @@ private lemma pathMonomial_is_monomial (i j : V) (π : List V) :
           simp [List.map_map]]
     rw [hdx, hdy, monomial_mul]; congr 1; ring⟩
 
+/-! ## General IsRemainder lemma for fij via walk decomposition -/
+
+/-- **Core lemma**: If there is a nodup walk `τ` from `a` to `b` in `G`, and the monomial
+`q = monomial d_q 1` "covers" every internal vertex of `τ` (i.e., `d_q` has `y_v` for `v < a`,
+`x_v` for `v > b`, and `x_v` for "bad" vertices `a < v < b`), then `q * f_{ab}` has
+`IsRemainder 0` modulo the Gröbner basis set.
+
+This generalizes `isRemainder_fij_via_groebnerElement` to walks that may have internal
+vertices in the range `(a, b)` (which would violate the admissible path vertex condition).
+Such vertices are handled by the `fij_x_telescope` identity. -/
+private theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
+    ∀ (n : ℕ) (a b : V) (τ : List V) (d_q : BinomialEdgeVars V →₀ ℕ),
+    τ.length ≤ n →
+    a < b →
+    τ.head? = some a →
+    τ.getLast? = some b →
+    τ.Nodup →
+    τ.Chain' (fun u v => G.Adj u v) →
+    (∀ v ∈ internalVertices τ,
+       (v < a → d_q (Sum.inr v) ≥ 1) ∧
+       (b < v → d_q (Sum.inl v) ≥ 1) ∧
+       (a < v → v < b → d_q (Sum.inl v) ≥ 1)) →
+    binomialEdgeMonomialOrder.IsRemainder
+      (monomial d_q 1 * fij (K := K) a b) (groebnerBasisSet G) 0 := by
+  intro n
+  induction n with
+  | zero =>
+    intro a b τ _ hlen _ hHead _ _ _ _
+    have : τ = [] := List.eq_nil_of_length_eq_zero (Nat.le_zero.mp hlen)
+    simp [this] at hHead
+  | succ n ih =>
+    intro a b τ d_q hlen hab hHead hLast hND hWalk hCov
+    by_cases hBad : ∃ v ∈ internalVertices τ, a < v ∧ v < b
+    · -- Bad vertex case: telescope split at v₀
+      sorry
+    · -- No bad vertices: extract admissible path directly
+      push_neg at hBad
+      have hne_τ : τ ≠ [] := fun h => by simp [h] at hHead
+      -- Helper: v ∈ τ, v ≠ head, v ≠ last → v ∈ internalVertices τ
+      have mem_internal : ∀ v ∈ τ, v ≠ a → v ≠ b → v ∈ internalVertices τ := by
+        sorry -- list lemma: if v ∈ τ, v ≠ head, v ≠ last, then v ∈ τ.tail.dropLast
+      have hVtx : ∀ v ∈ τ, v = a ∨ v = b ∨ v < a ∨ b < v := by
+        intro v hv
+        rcases eq_or_ne v a with rfl | hva
+        · exact Or.inl rfl
+        · rcases eq_or_ne v b with rfl | hvb
+          · exact Or.inr (Or.inl rfl)
+          · -- v is internal, use hBad to conclude v < a or v > b
+            have hv_int := mem_internal v hv hva hvb
+            rcases lt_or_ge v a with hlt | hge
+            · exact Or.inr (Or.inr (Or.inl hlt))
+            · have hva' : a < v := lt_of_le_of_ne hge (Ne.symm hva)
+              have hbv := hBad v hv_int hva'
+              exact Or.inr (Or.inr (Or.inr (lt_of_le_of_ne hbv (Ne.symm hvb))))
+      obtain ⟨σ, hσ, hσ_sub⟩ := exists_admissible_path_of_walk G a b hab τ
+        hHead hLast hND hVtx hWalk
+      obtain ⟨d_σ, hd_σ⟩ := pathMonomial_is_monomial (K := K) a b σ
+      have hdiv : d_σ ≤ d_q := by
+        sorry -- pathMonomial(σ) divides monomial d_q via coverage + σ ⊆ τ
+      exact isRemainder_fij_via_groebnerElement G a b σ hσ
+        (monomial d_q 1) d_q rfl d_σ hd_σ hdiv
+
 /-! ## Theorem 2.1: Gröbner basis (Herzog direct S-polynomial approach)
 
 The proof follows Herzog et al. (2010), Theorem 2.1, Second Step:
@@ -395,19 +457,22 @@ theorem theorem_2_1 (G : SimpleGraph V) :
           sorry
         rw [heq]; exact isRemainder_neg' _ _ h
       -- Goal: IsRemainder (monomial E 1 * fij j l) groebnerBasisSet 0
-      -- where E = D + single(Sum.inr i) 1
-      sorry
-    · -- l < j: reduce to IsRemainder (monomial E 1 * fij l j) groebnerBasisSet 0
+      -- Construct walk from j to l via reversed π and σ through branch point
+      -- Walk: [j, ..., branch, ..., l] where branch is last shared vertex of π and σ
+      -- All internal vertices come from π (v < i or v > j) or σ (v < i or v > l) or are i itself
+      -- Coverage: E ≥ D ≥ sup(dπ, dσ) covers π/σ internals; E(inr i) ≥ 1 covers i
+      -- Bad vertices (j < v ≤ l from π): D(inl v) ≥ dπ(inl v) = 1 covers them
+      sorry -- TODO: walk construction + apply isRemainder_fij_of_covered_walk
+    · -- l < j: symmetric, need admissible path from l to j
       suffices h : binomialEdgeMonomialOrder.IsRemainder
           (monomial E 1 * fij (K := K) l j) (groebnerBasisSet G) 0 by
         have heq : (monomial D) ((1 : K) * 1) * (-(y (K := K) i) * fij j l) =
             monomial E 1 * fij (K := K) l j := by
-          -- = monomial D 1 * y i * fij l j (using fij_antisymm + sign cancel)
-          -- = monomial E 1 * fij l j
           sorry
         rw [heq]; exact h
       -- Goal: IsRemainder (monomial E 1 * fij l j) groebnerBasisSet 0
-      sorry
+      -- Symmetric to j < l case with roles swapped
+      sorry -- TODO: walk construction + apply isRemainder_fij_of_covered_walk
   · -- Case 5: j = l, i ≠ k (shared last endpoint) — symmetric to case 4
     subst heq_j
     sorry
