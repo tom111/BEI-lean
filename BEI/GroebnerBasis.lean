@@ -389,6 +389,31 @@ private theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
       exact isRemainder_fij_via_groebnerElement G a b σ hσ
         (monomial d_q 1) d_q rfl d_σ hd_σ hdiv
 
+/-! ## Walk construction from shared-endpoint admissible paths -/
+
+/-- Reversed walk preserves adjacency (graph is undirected). -/
+private lemma chain'_reverse' (G : SimpleGraph V) (π : List V)
+    (hW : π.Chain' (fun a b => G.Adj a b)) :
+    π.reverse.Chain' (fun a b => G.Adj a b) := by
+  change List.IsChain (fun a b => G.Adj a b) π.reverse
+  rw [List.isChain_reverse]
+  exact List.IsChain.imp (fun _ _ h => G.symm h) (hW : List.IsChain _ π)
+
+/-- Given two nodup walks sharing first vertex `a` (one to `b`, one to `c`), there exists a
+nodup walk from `b` to `c` whose internal vertices come from the two walks or `a`. -/
+private lemma walk_from_shared_first (G : SimpleGraph V)
+    (a b c : V) (π σ : List V)
+    (hπ_head : π.head? = some a) (hπ_last : π.getLast? = some b)
+    (hπ_nd : π.Nodup) (hπ_walk : π.Chain' (fun u v => G.Adj u v))
+    (hσ_head : σ.head? = some a) (hσ_last : σ.getLast? = some c)
+    (hσ_nd : σ.Nodup) (hσ_walk : σ.Chain' (fun u v => G.Adj u v))
+    (hbc : b ≠ c) :
+    ∃ τ : List V, τ.head? = some b ∧ τ.getLast? = some c ∧ τ.Nodup ∧
+    τ.Chain' (fun u v => G.Adj u v) ∧
+    (∀ v ∈ internalVertices τ,
+      v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = a) := by
+  sorry
+
 /-! ## Theorem 2.1: Gröbner basis (Herzog direct S-polynomial approach)
 
 The proof follows Herzog et al. (2010), Theorem 2.1, Second Step:
@@ -489,7 +514,9 @@ theorem theorem_2_1 (G : SimpleGraph V) :
           τ.Chain' (fun u v => G.Adj u v) ∧
           (∀ v ∈ internalVertices τ,
             v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = i) := by
-        sorry -- Walk construction via branch point of π and σ
+        exact walk_from_shared_first G i j l π σ
+          hπ.2.1 hπ.2.2.1 hπ.2.2.2.1 hπ.2.2.2.2.2.1
+          hσ.2.1 hσ.2.2.1 hσ.2.2.2.1 hσ.2.2.2.2.2.1 (ne_of_lt hjl)
       -- Coverage: E covers all internal vertices of the walk
       have hCov : ∀ v ∈ internalVertices τ,
           (v < j → E (Sum.inr v) ≥ 1) ∧
@@ -517,7 +544,14 @@ theorem theorem_2_1 (G : SimpleGraph V) :
           τ.Chain' (fun u v => G.Adj u v) ∧
           (∀ v ∈ internalVertices τ,
             v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = i) := by
-        sorry -- Walk construction (symmetric to j < l case)
+        obtain ⟨τ', h1, h2, h3, h4, h5⟩ := walk_from_shared_first G i l j σ π
+          hσ.2.1 hσ.2.2.1 hσ.2.2.2.1 hσ.2.2.2.2.2.1
+          hπ.2.1 hπ.2.2.1 hπ.2.2.2.1 hπ.2.2.2.2.2.1 (ne_of_lt hlj)
+        exact ⟨τ', h1, h2, h3, h4, fun v hv => by
+          rcases h5 v hv with h | h | h
+          · exact Or.inr (Or.inl h)
+          · exact Or.inl h
+          · exact Or.inr (Or.inr h)⟩
       have hCov : ∀ v ∈ internalVertices τ,
           (v < l → E (Sum.inr v) ≥ 1) ∧
           (j < v → E (Sum.inl v) ≥ 1) ∧
@@ -561,7 +595,24 @@ theorem theorem_2_1 (G : SimpleGraph V) :
           τ.Chain' (fun u v => G.Adj u v) ∧
           (∀ v ∈ internalVertices τ,
             v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = j) := by
-        sorry -- Walk construction from i to k through shared vertex j
+        -- Reverse paths: π.reverse goes j→i, σ.reverse goes j→k
+        -- Use walk_from_shared_first with shared vertex j
+        obtain ⟨τ', hτ'_head, hτ'_last, hτ'_nd, hτ'_walk, hτ'_verts⟩ :=
+          walk_from_shared_first G j i k π.reverse σ.reverse
+            (List.head?_reverse ▸ hπ.2.2.1)
+            (List.getLast?_reverse ▸ hπ.2.1)
+            (List.nodup_reverse.mpr hπ.2.2.2.1)
+            (chain'_reverse' G π hπ.2.2.2.2.2.1)
+            (List.head?_reverse ▸ hσ.2.2.1)
+            (List.getLast?_reverse ▸ hσ.2.1)
+            (List.nodup_reverse.mpr hσ.2.2.2.1)
+            (chain'_reverse' G σ hσ.2.2.2.2.2.1)
+            (ne_of_lt hik)
+        exact ⟨τ', hτ'_head, hτ'_last, hτ'_nd, hτ'_walk, fun v hv => by
+          rcases hτ'_verts v hv with h | h | h
+          · exact Or.inl (sorry) -- v ∈ internalVertices π.reverse → v ∈ internalVertices π
+          · exact Or.inr (Or.inl sorry) -- similar for σ
+          · exact Or.inr (Or.inr h)⟩
       have hCov : ∀ v ∈ internalVertices τ,
           (v < i → E (Sum.inr v) ≥ 1) ∧
           (k < v → E (Sum.inl v) ≥ 1) ∧
@@ -586,7 +637,23 @@ theorem theorem_2_1 (G : SimpleGraph V) :
           τ.Chain' (fun u v => G.Adj u v) ∧
           (∀ v ∈ internalVertices τ,
             v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = j) := by
-        sorry -- Walk construction (symmetric)
+        -- Reverse paths: π.reverse goes j→i, σ.reverse goes j→k
+        obtain ⟨τ', hτ'_head, hτ'_last, hτ'_nd, hτ'_walk, hτ'_verts⟩ :=
+          walk_from_shared_first G j k i σ.reverse π.reverse
+            (List.head?_reverse ▸ hσ.2.2.1)
+            (List.getLast?_reverse ▸ hσ.2.1)
+            (List.nodup_reverse.mpr hσ.2.2.2.1)
+            (chain'_reverse' G σ hσ.2.2.2.2.2.1)
+            (List.head?_reverse ▸ hπ.2.2.1)
+            (List.getLast?_reverse ▸ hπ.2.1)
+            (List.nodup_reverse.mpr hπ.2.2.2.1)
+            (chain'_reverse' G π hπ.2.2.2.2.2.1)
+            (ne_of_lt hki)
+        exact ⟨τ', hτ'_head, hτ'_last, hτ'_nd, hτ'_walk, fun v hv => by
+          rcases hτ'_verts v hv with h | h | h
+          · exact Or.inr (Or.inl sorry) -- v ∈ internalVertices σ.reverse → v ∈ internalVertices σ
+          · exact Or.inl sorry -- v ∈ internalVertices π.reverse → v ∈ internalVertices π
+          · exact Or.inr (Or.inr h)⟩
       have hCov : ∀ v ∈ internalVertices τ,
           (v < k → E (Sum.inr v) ≥ 1) ∧
           (i < v → E (Sum.inl v) ≥ 1) ∧
