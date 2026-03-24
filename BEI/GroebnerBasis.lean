@@ -643,6 +643,26 @@ private theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
       exact isRemainder_fij_via_groebnerElement G a b σ hσ
         (monomial d_q 1) d_q rfl d_σ hd_σ hdiv
 
+/-- **Dual variant (y-telescope)**: same as `isRemainder_fij_of_covered_walk` but the
+coverage for "bad" vertices `a < v < b` uses `Sum.inr v` (y-variable) instead of
+`Sum.inl v` (x-variable). The proof uses `fij_telescope` instead of `fij_x_telescope`.
+Needed for the shared-last-endpoint case (Case 5 of Theorem 2.1). -/
+private theorem isRemainder_fij_of_covered_walk_y (G : SimpleGraph V) :
+    ∀ (n : ℕ) (a b : V) (τ : List V) (d_q : BinomialEdgeVars V →₀ ℕ),
+    τ.length ≤ n →
+    a < b →
+    τ.head? = some a →
+    τ.getLast? = some b →
+    τ.Nodup →
+    τ.Chain' (fun u v => G.Adj u v) →
+    (∀ v ∈ internalVertices τ,
+       (v < a → d_q (Sum.inr v) ≥ 1) ∧
+       (b < v → d_q (Sum.inl v) ≥ 1) ∧
+       (a < v → v < b → d_q (Sum.inr v) ≥ 1)) →
+    binomialEdgeMonomialOrder.IsRemainder
+      (monomial d_q 1 * fij (K := K) a b) (groebnerBasisSet G) 0 := by
+  sorry
+
 /-! ## Walk construction from shared-endpoint admissible paths -/
 
 /-- Reversed walk preserves adjacency (graph is undirected). -/
@@ -1329,15 +1349,13 @@ theorem theorem_2_1 (G : SimpleGraph V) :
           · exact Or.inl (mem_internalVertices_reverse h)
           · exact Or.inr (Or.inl (mem_internalVertices_reverse h))
           · exact Or.inr (Or.inr h)⟩
+      -- Use y-variant: bad vertices (i < v < k) from σ's internals have y_v, not x_v
       have hCov : ∀ v ∈ internalVertices τ,
           (v < i → E (Sum.inr v) ≥ 1) ∧
           (k < v → E (Sum.inl v) ≥ 1) ∧
-          (i < v → v < k → E (Sum.inl v) ≥ 1) := by
-        sorry -- Coverage gap: for v ∈ int(σ) with i < v < k, E(inl v) = 0
-               -- (the walk may have "bad" vertices from σ between i and k
-               --  where the path monomial contributes only y_v, not x_v)
-               -- Needs different proof strategy for shared-last-endpoint case
-      exact isRemainder_fij_of_covered_walk G τ.length i k τ E le_rfl hik
+          (i < v → v < k → E (Sum.inr v) ≥ 1) := by
+        sorry -- Coverage for y-variant: similar to Case 4 but using dσ(Sum.inr v)
+      exact isRemainder_fij_of_covered_walk_y G τ.length i k τ E le_rfl hik
         hτ_head hτ_last hτ_nd hτ_walk hCov
     · -- k < i: reduce to IsRemainder (monomial E 1 * fij k i) groebnerBasisSet 0
       suffices h : binomialEdgeMonomialOrder.IsRemainder
@@ -1373,12 +1391,13 @@ theorem theorem_2_1 (G : SimpleGraph V) :
           · exact Or.inr (Or.inl (mem_internalVertices_reverse h))
           · exact Or.inl (mem_internalVertices_reverse h)
           · exact Or.inr (Or.inr h)⟩
+      -- Use y-variant: bad vertices from π's internals have y_v
       have hCov : ∀ v ∈ internalVertices τ,
           (v < k → E (Sum.inr v) ≥ 1) ∧
           (i < v → E (Sum.inl v) ≥ 1) ∧
-          (k < v → v < i → E (Sum.inl v) ≥ 1) := by
-        sorry -- Coverage verification (symmetric)
-      exact isRemainder_fij_of_covered_walk G τ.length k i τ E le_rfl hki
+          (k < v → v < i → E (Sum.inr v) ≥ 1) := by
+        sorry -- Coverage for y-variant (symmetric to i < k case)
+      exact isRemainder_fij_of_covered_walk_y G τ.length k i τ E le_rfl hki
         hτ_head hτ_last hτ_nd hτ_walk hCov
   · -- Cases 2 & 3: disjoint or cross-matched endpoints — coprime leading terms
     -- Factor: S(ge1, ge2) = monomial * S(fij i j, fij k l)
