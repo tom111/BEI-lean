@@ -1098,7 +1098,7 @@ theorem theorem_2_1 (G : SimpleGraph V) :
           (v < j → E (Sum.inr v) ≥ 1) ∧
           (l < v → E (Sum.inl v) ≥ 1) ∧
           (j < v → v < l → E (Sum.inl v) ≥ 1) := by
-        sorry -- Follows from: E ≥ D ≥ sup(dπ, dσ), E(inr i) ≥ 1, internal verts from π/σ/i
+        sorry -- Coverage: E ≥ D ≥ sup(dπ, dσ) at relevant vars, E(inr i) ≥ 1
       exact isRemainder_fij_of_covered_walk G τ.length j l τ E le_rfl hjl
         hτ_head hτ_last hτ_nd hτ_walk hCov
     · -- l < j: symmetric, need admissible path from l to j
