@@ -40,7 +40,7 @@ lemma fij_telescope (a b c : V) :
 
 /-- **x-telescoping identity for fij**: `x b * fij a c = x a * fij b c + x c * fij a b`.
 Dual of `fij_telescope` (y-telescope). Used for the shared-first endpoint case. -/
-private lemma fij_x_telescope (a b c : V) :
+lemma fij_x_telescope (a b c : V) :
     x (K := K) b * fij a c = x a * fij b c + x c * fij a b := by
   simp only [fij, x, y]; ring
 

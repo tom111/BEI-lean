@@ -223,6 +223,19 @@ private lemma isRemainder_monomial_mul'
         exact add_le_add_right (hdeg b) _
   · intro c' hc'; simp at hc'
 
+/-- `IsRemainder (-f) G 0` follows from `IsRemainder f G 0`. -/
+private lemma isRemainder_neg'
+    (f : MvPolynomial (BinomialEdgeVars V) K)
+    (G : Set (MvPolynomial (BinomialEdgeVars V) K))
+    (h : binomialEdgeMonomialOrder.IsRemainder f G 0) :
+    binomialEdgeMonomialOrder.IsRemainder (-f) G 0 := by
+  by_cases hf : f = 0
+  · rw [hf, neg_zero]; exact isRemainder_zero_zero' G
+  · have heq : -f = monomial (0 : BinomialEdgeVars V →₀ ℕ) (-1 : K) * f := by
+      simp [monomial_zero']
+    rw [heq]
+    exact isRemainder_monomial_mul' f G 0 (-1) (by norm_num) hf h
+
 /-! ## Admissible path existence from walks -/
 
 /-- The set of "candidate walks" from `a` to `b` in G with the vertex condition. -/
@@ -348,7 +361,53 @@ theorem theorem_2_1 (G : SimpleGraph V) :
   · -- Case 4: i = k, j ≠ l (shared first endpoint) — the hard case
     -- S-poly decomposes along the τ-path (concatenation of π and σ)
     subst heq_i
-    sorry
+    -- Factor S-polynomial
+    change binomialEdgeMonomialOrder.IsRemainder
+      (binomialEdgeMonomialOrder.sPolynomial
+        (pathMonomial (K := K) i j π * fij i j)
+        (pathMonomial (K := K) i l σ * fij i l))
+      (groebnerBasisSet G) 0
+    obtain ⟨dπ, hdπ⟩ := pathMonomial_is_monomial (K := K) i j π
+    obtain ⟨dσ, hdσ⟩ := pathMonomial_is_monomial (K := K) i l σ
+    rw [hdπ, hdσ, sPolynomial_monomial_mul]
+    have hij : i < j := hπ.1
+    have hil : i < l := hσ.1
+    rw [sPolynomial_fij_shared_first i j l hij hil heq_j]
+    -- Goal: IsRemainder (monomial D (1*1) * (-(y i) * fij j l)) groebnerBasisSet 0
+    set D := (dπ + binomialEdgeMonomialOrder.degree (fij (K := K) i j)) ⊔
+             (dσ + binomialEdgeMonomialOrder.degree (fij (K := K) i l)) -
+             binomialEdgeMonomialOrder.degree (fij (K := K) i j) ⊔
+             binomialEdgeMonomialOrder.degree (fij (K := K) i l) with hD_def
+    -- The full expression is -(monomial (D + single(inr i)) 1 * fij a b) for a < b
+    -- D ≥ dπ and D ≥ dσ at all "internal" variables
+    set E := D + (Finsupp.single (Sum.inr i) 1 : BinomialEdgeVars V →₀ ℕ) with hE_def
+    -- Both subcases reduce to: IsRemainder (monomial E 1 * fij a b) groebnerBasisSet 0
+    -- where a = min(j,l), b = max(j,l)
+    rcases lt_or_gt_of_ne heq_j with hjl | hlj
+    · -- j < l: reduce to IsRemainder (monomial E 1 * fij j l) groebnerBasisSet 0
+      suffices h : binomialEdgeMonomialOrder.IsRemainder
+          (monomial E 1 * fij (K := K) j l) (groebnerBasisSet G) 0 by
+        have heq : (monomial D) ((1 : K) * 1) * (-(y (K := K) i) * fij j l) =
+            -(monomial E 1 * fij (K := K) j l) := by
+          -- monomial D (1*1) * (-(y i) * fij j l)
+          -- = -(monomial D 1 * y i * fij j l)
+          -- = -(monomial (D + single(inr i) 1) 1 * fij j l) = -(monomial E 1 * fij j l)
+          sorry
+        rw [heq]; exact isRemainder_neg' _ _ h
+      -- Goal: IsRemainder (monomial E 1 * fij j l) groebnerBasisSet 0
+      -- where E = D + single(Sum.inr i) 1
+      sorry
+    · -- l < j: reduce to IsRemainder (monomial E 1 * fij l j) groebnerBasisSet 0
+      suffices h : binomialEdgeMonomialOrder.IsRemainder
+          (monomial E 1 * fij (K := K) l j) (groebnerBasisSet G) 0 by
+        have heq : (monomial D) ((1 : K) * 1) * (-(y (K := K) i) * fij j l) =
+            monomial E 1 * fij (K := K) l j := by
+          -- = monomial D 1 * y i * fij l j (using fij_antisymm + sign cancel)
+          -- = monomial E 1 * fij l j
+          sorry
+        rw [heq]; exact h
+      -- Goal: IsRemainder (monomial E 1 * fij l j) groebnerBasisSet 0
+      sorry
   · -- Case 5: j = l, i ≠ k (shared last endpoint) — symmetric to case 4
     subst heq_j
     sorry
