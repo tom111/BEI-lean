@@ -337,14 +337,37 @@ private theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
   | succ n ih =>
     intro a b τ d_q hlen hab hHead hLast hND hWalk hCov
     by_cases hBad : ∃ v ∈ internalVertices τ, a < v ∧ v < b
-    · -- Bad vertex case: telescope split at v₀
+    · -- Bad vertex case: telescope split at v₀ ∈ (a, b)
+      obtain ⟨v₀, hv₀_int, hav₀, hv₀b⟩ := hBad
+      -- x_{v₀} divides monomial d_q (from coverage, third clause)
+      have hcov_v₀ := (hCov v₀ hv₀_int).2.2 hav₀ hv₀b
+      -- Use x-telescope: x_{v₀} * fij a b = x_a * fij v₀ b + x_b * fij a v₀
+      -- So: monomial d_q 1 * fij a b
+      --   = monomial (d_q - single(inl v₀)) 1 * x_{v₀} * fij a b
+      --   = monomial (d_q - single(inl v₀)) 1 * (x_a * fij v₀ b + x_b * fij a v₀)
+      --   = monomial d₁ 1 * fij v₀ b + monomial d₂ 1 * fij a v₀
+      -- where d₁ = d_q - single(inl v₀) + single(inl a)
+      --       d₂ = d_q - single(inl v₀) + single(inl b)
+      -- Apply IH to each sub-walk, combine with isRemainder_add
       sorry
     · -- No bad vertices: extract admissible path directly
       push_neg at hBad
       have hne_τ : τ ≠ [] := fun h => by simp [h] at hHead
       -- Helper: v ∈ τ, v ≠ head, v ≠ last → v ∈ internalVertices τ
       have mem_internal : ∀ v ∈ τ, v ≠ a → v ≠ b → v ∈ internalVertices τ := by
-        sorry -- list lemma: if v ∈ τ, v ≠ head, v ≠ last, then v ∈ τ.tail.dropLast
+        intro v hv hva hvb
+        simp only [internalVertices]
+        match τ, hHead, hLast, hND, hv, hne_τ with
+        | a' :: rest, hH, hL, hN, hv', _ =>
+          simp only [List.head?_cons, Option.some.injEq] at hH; subst hH
+          simp only [List.tail_cons]
+          have hv_rest : v ∈ rest := (List.mem_cons.mp hv').resolve_left hva
+          have hrest_ne : rest ≠ [] := List.ne_nil_of_mem hv_rest
+          refine List.mem_dropLast_of_mem_of_ne_getLast hv_rest (fun heq => hvb ?_)
+          have hlast_eq := List.getLast_cons hrest_ne (a := a')
+          have hb : (a' :: rest).getLast (List.cons_ne_nil a' rest) = b :=
+            Option.some.inj ((List.getLast?_eq_some_getLast (List.cons_ne_nil a' rest)).symm.trans hL)
+          rw [heq, ← hlast_eq, hb]
       have hVtx : ∀ v ∈ τ, v = a ∨ v = b ∨ v < a ∨ b < v := by
         intro v hv
         rcases eq_or_ne v a with rfl | hva
