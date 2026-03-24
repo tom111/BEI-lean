@@ -399,6 +399,12 @@ private lemma chain'_reverse' (G : SimpleGraph V) (π : List V)
   rw [List.isChain_reverse]
   exact List.IsChain.imp (fun _ _ h => G.symm h) (hW : List.IsChain _ π)
 
+/-- Internal vertices of a reversed list have the same membership as the original.
+Both are "all elements except first and last", which are swapped by reversal. -/
+private lemma mem_internalVertices_reverse {l : List V} {v : V}
+    (h : v ∈ internalVertices l.reverse) : v ∈ internalVertices l := by
+  sorry
+
 /-- Given two nodup walks sharing first vertex `a` (one to `b`, one to `c`), there exists a
 nodup walk from `b` to `c` whose internal vertices come from the two walks or `a`. -/
 private lemma walk_from_shared_first (G : SimpleGraph V)
@@ -610,8 +616,8 @@ theorem theorem_2_1 (G : SimpleGraph V) :
             (ne_of_lt hik)
         exact ⟨τ', hτ'_head, hτ'_last, hτ'_nd, hτ'_walk, fun v hv => by
           rcases hτ'_verts v hv with h | h | h
-          · exact Or.inl (sorry) -- v ∈ internalVertices π.reverse → v ∈ internalVertices π
-          · exact Or.inr (Or.inl sorry) -- similar for σ
+          · exact Or.inl (mem_internalVertices_reverse h)
+          · exact Or.inr (Or.inl (mem_internalVertices_reverse h))
           · exact Or.inr (Or.inr h)⟩
       have hCov : ∀ v ∈ internalVertices τ,
           (v < i → E (Sum.inr v) ≥ 1) ∧
@@ -651,8 +657,8 @@ theorem theorem_2_1 (G : SimpleGraph V) :
             (ne_of_lt hki)
         exact ⟨τ', hτ'_head, hτ'_last, hτ'_nd, hτ'_walk, fun v hv => by
           rcases hτ'_verts v hv with h | h | h
-          · exact Or.inr (Or.inl sorry) -- v ∈ internalVertices σ.reverse → v ∈ internalVertices σ
-          · exact Or.inl sorry -- v ∈ internalVertices π.reverse → v ∈ internalVertices π
+          · exact Or.inr (Or.inl (mem_internalVertices_reverse h))
+          · exact Or.inl (mem_internalVertices_reverse h)
           · exact Or.inr (Or.inr h)⟩
       have hCov : ∀ v ∈ internalVertices τ,
           (v < k → E (Sum.inr v) ≥ 1) ∧
