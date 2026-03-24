@@ -108,6 +108,182 @@ private lemma prod_X_list_exponent_zero {σ : Type*} {R : Type*} [CommSemiring R
     rw [← heq, Finsupp.add_apply, Finsupp.single_apply, if_neg (Ne.symm ht.1), zero_add]
     exact ih ht.2 d' hd'
 
+/-- If `∏ X(l_k) = monomial d 1`, `t ∈ l`, and `l.Nodup`, then `d t = 1`. -/
+private lemma prod_X_list_exponent_one {σ : Type*} {R : Type*} [CommSemiring R] [Nontrivial R]
+    (l : List σ) (t : σ) (ht : t ∈ l) (hnd : l.Nodup)
+    (d : σ →₀ ℕ) (hd : (l.map (fun a => (X a : MvPolynomial σ R))).prod = monomial d 1) :
+    d t = 1 := by
+  classical
+  induction l generalizing d with
+  | nil => simp at ht
+  | cons a l ih =>
+    obtain ⟨d', hd'⟩ := prod_X_list_eq_monomial' (R := R) l
+    simp only [List.map_cons, List.prod_cons, hd'] at hd
+    change monomial (Finsupp.single a 1) 1 * monomial d' 1 = monomial d 1 at hd
+    rw [monomial_mul, one_mul] at hd
+    have heq := monomial_left_injective (one_ne_zero (α := R)) hd
+    rw [← heq, Finsupp.add_apply, Finsupp.single_apply]
+    rcases List.mem_cons.mp ht with rfl | ht'
+    · rw [if_pos rfl]
+      have : d' t = 0 := by
+        apply prod_X_list_exponent_zero l t _ d' hd'
+        exact (List.nodup_cons.mp hnd).1
+      omega
+    · have hnd' := List.Nodup.of_cons hnd
+      have hat : a ≠ t := fun h => (List.nodup_cons.mp hnd).1 (h ▸ ht')
+      rw [if_neg hat, zero_add]
+      exact ih ht' hnd' d' hd'
+
+/-- The pathMonomial exponent at `Sum.inl v` is 0 when `v ∉ internalVertices π` or `¬(j < v)`. -/
+private lemma pathMonomial_exponent_inl_zero
+    (i j : V) (π : List V) (v : V)
+    (hv : v ∉ (internalVertices π).filter (fun w => j < w))
+    (d : BinomialEdgeVars V →₀ ℕ)
+    (hd : pathMonomial (K := K) i j π = monomial d 1) :
+    d (Sum.inl v) = 0 := by
+  obtain ⟨dx, hdx⟩ := prod_X_list_eq_monomial' (R := K)
+    ((internalVertices π).filter (fun w => j < w) |>.map Sum.inl)
+  obtain ⟨dy, hdy⟩ := prod_X_list_eq_monomial' (R := K)
+    ((internalVertices π).filter (fun w => w < i) |>.map Sum.inr)
+  have hpm : pathMonomial (K := K) i j π = monomial (dx + dy) 1 := by
+    simp only [pathMonomial, x, y]
+    rw [show ((internalVertices π).filter (fun w => j < w)).map
+        (fun w => (X (Sum.inl w) : MvPolynomial (BinomialEdgeVars V) K)) =
+        (((internalVertices π).filter (fun w => j < w)).map Sum.inl).map X by
+          simp [List.map_map],
+      show ((internalVertices π).filter (fun w => w < i)).map
+        (fun w => (X (Sum.inr w) : MvPolynomial (BinomialEdgeVars V) K)) =
+        (((internalVertices π).filter (fun w => w < i)).map Sum.inr).map X by
+          simp [List.map_map]]
+    rw [hdx, hdy, monomial_mul]; congr 1; ring
+  have heq : d = dx + dy :=
+    monomial_left_injective (one_ne_zero (α := K)) (hd.symm.trans hpm)
+  rw [heq, Finsupp.add_apply]
+  have hdx_zero : dx (Sum.inl v) = 0 := by
+    apply prod_X_list_exponent_zero _ _ _ _ hdx
+    intro hmem
+    apply hv
+    simp only [List.mem_map] at hmem
+    obtain ⟨w, hw, hweq⟩ := hmem
+    rw [← Sum.inl.inj hweq]
+    exact hw
+  have hdy_zero : dy (Sum.inl v) = 0 := by
+    apply prod_X_list_exponent_zero _ _ _ _ hdy
+    simp only [List.mem_map, not_exists, not_and]; intro w _ hweq; exact absurd hweq (by simp)
+  omega
+
+/-- The pathMonomial exponent at `Sum.inr v` is 0 when `v ∉ internalVertices π` or `¬(v < i)`. -/
+private lemma pathMonomial_exponent_inr_zero
+    (i j : V) (π : List V) (v : V)
+    (hv : v ∉ (internalVertices π).filter (fun w => w < i))
+    (d : BinomialEdgeVars V →₀ ℕ)
+    (hd : pathMonomial (K := K) i j π = monomial d 1) :
+    d (Sum.inr v) = 0 := by
+  obtain ⟨dx, hdx⟩ := prod_X_list_eq_monomial' (R := K)
+    ((internalVertices π).filter (fun w => j < w) |>.map Sum.inl)
+  obtain ⟨dy, hdy⟩ := prod_X_list_eq_monomial' (R := K)
+    ((internalVertices π).filter (fun w => w < i) |>.map Sum.inr)
+  have hpm : pathMonomial (K := K) i j π = monomial (dx + dy) 1 := by
+    simp only [pathMonomial, x, y]
+    rw [show ((internalVertices π).filter (fun w => j < w)).map
+        (fun w => (X (Sum.inl w) : MvPolynomial (BinomialEdgeVars V) K)) =
+        (((internalVertices π).filter (fun w => j < w)).map Sum.inl).map X by
+          simp [List.map_map],
+      show ((internalVertices π).filter (fun w => w < i)).map
+        (fun w => (X (Sum.inr w) : MvPolynomial (BinomialEdgeVars V) K)) =
+        (((internalVertices π).filter (fun w => w < i)).map Sum.inr).map X by
+          simp [List.map_map]]
+    rw [hdx, hdy, monomial_mul]; congr 1; ring
+  have heq : d = dx + dy :=
+    monomial_left_injective (one_ne_zero (α := K)) (hd.symm.trans hpm)
+  rw [heq, Finsupp.add_apply]
+  have hdx_zero : dx (Sum.inr v) = 0 := by
+    apply prod_X_list_exponent_zero _ _ _ _ hdx
+    simp only [List.mem_map, not_exists, not_and]; intro w _ hweq; exact absurd hweq (by simp)
+  have hdy_zero : dy (Sum.inr v) = 0 := by
+    apply prod_X_list_exponent_zero _ _ _ _ hdy
+    intro hmem
+    apply hv
+    simp only [List.mem_map] at hmem
+    obtain ⟨w, hw, hweq⟩ := hmem
+    rw [← Sum.inr.inj hweq]
+    exact hw
+  omega
+
+/-- The pathMonomial exponent at `Sum.inl v` is 1 when `v ∈ internalVertices π` and `j < v`. -/
+private lemma pathMonomial_exponent_inl_one
+    (i j : V) (π : List V) (v : V)
+    (hv_int : v ∈ internalVertices π) (hjv : j < v)
+    (hnd : (internalVertices π).Nodup)
+    (d : BinomialEdgeVars V →₀ ℕ)
+    (hd : pathMonomial (K := K) i j π = monomial d 1) :
+    d (Sum.inl v) = 1 := by
+  obtain ⟨dx, hdx⟩ := prod_X_list_eq_monomial' (R := K)
+    ((internalVertices π).filter (fun w => j < w) |>.map Sum.inl)
+  obtain ⟨dy, hdy⟩ := prod_X_list_eq_monomial' (R := K)
+    ((internalVertices π).filter (fun w => w < i) |>.map Sum.inr)
+  have hpm : pathMonomial (K := K) i j π = monomial (dx + dy) 1 := by
+    simp only [pathMonomial, x, y]
+    rw [show ((internalVertices π).filter (fun w => j < w)).map
+        (fun w => (X (Sum.inl w) : MvPolynomial (BinomialEdgeVars V) K)) =
+        (((internalVertices π).filter (fun w => j < w)).map Sum.inl).map X by
+          simp [List.map_map],
+      show ((internalVertices π).filter (fun w => w < i)).map
+        (fun w => (X (Sum.inr w) : MvPolynomial (BinomialEdgeVars V) K)) =
+        (((internalVertices π).filter (fun w => w < i)).map Sum.inr).map X by
+          simp [List.map_map]]
+    rw [hdx, hdy, monomial_mul]; congr 1; ring
+  have heq : d = dx + dy :=
+    monomial_left_injective (one_ne_zero (α := K)) (hd.symm.trans hpm)
+  rw [heq, Finsupp.add_apply]
+  -- dy(inl v) = 0
+  have hdy_zero : dy (Sum.inl v) = 0 := by
+    apply prod_X_list_exponent_zero _ _ _ _ hdy
+    simp only [List.mem_map, not_exists, not_and]; intro w _ hweq; exact absurd hweq (by simp)
+  -- dx(inl v) = 1: Sum.inl v ∈ the x-list
+  have hdx_one : dx (Sum.inl v) = 1 := by
+    apply prod_X_list_exponent_one _ _ _ _ _ hdx
+    · exact List.mem_map.mpr ⟨v, List.mem_filter.mpr ⟨hv_int, decide_eq_true hjv⟩, rfl⟩
+    · exact (hnd.filter _).map Sum.inl_injective
+  omega
+
+/-- The pathMonomial exponent at `Sum.inr v` is 1 when `v ∈ internalVertices π` and `v < i`. -/
+private lemma pathMonomial_exponent_inr_one
+    (i j : V) (π : List V) (v : V)
+    (hv_int : v ∈ internalVertices π) (hvi : v < i)
+    (hnd : (internalVertices π).Nodup)
+    (d : BinomialEdgeVars V →₀ ℕ)
+    (hd : pathMonomial (K := K) i j π = monomial d 1) :
+    d (Sum.inr v) = 1 := by
+  obtain ⟨dx, hdx⟩ := prod_X_list_eq_monomial' (R := K)
+    ((internalVertices π).filter (fun w => j < w) |>.map Sum.inl)
+  obtain ⟨dy, hdy⟩ := prod_X_list_eq_monomial' (R := K)
+    ((internalVertices π).filter (fun w => w < i) |>.map Sum.inr)
+  have hpm : pathMonomial (K := K) i j π = monomial (dx + dy) 1 := by
+    simp only [pathMonomial, x, y]
+    rw [show ((internalVertices π).filter (fun w => j < w)).map
+        (fun w => (X (Sum.inl w) : MvPolynomial (BinomialEdgeVars V) K)) =
+        (((internalVertices π).filter (fun w => j < w)).map Sum.inl).map X by
+          simp [List.map_map],
+      show ((internalVertices π).filter (fun w => w < i)).map
+        (fun w => (X (Sum.inr w) : MvPolynomial (BinomialEdgeVars V) K)) =
+        (((internalVertices π).filter (fun w => w < i)).map Sum.inr).map X by
+          simp [List.map_map]]
+    rw [hdx, hdy, monomial_mul]; congr 1; ring
+  have heq : d = dx + dy :=
+    monomial_left_injective (one_ne_zero (α := K)) (hd.symm.trans hpm)
+  rw [heq, Finsupp.add_apply]
+  -- dx(inr v) = 0
+  have hdx_zero : dx (Sum.inr v) = 0 := by
+    apply prod_X_list_exponent_zero _ _ _ _ hdx
+    simp only [List.mem_map, not_exists, not_and]; intro w _ hweq; exact absurd hweq (by simp)
+  -- dy(inr v) = 1: Sum.inr v ∈ the y-list
+  have hdy_one : dy (Sum.inr v) = 1 := by
+    apply prod_X_list_exponent_one _ _ _ _ _ hdy
+    · exact List.mem_map.mpr ⟨v, List.mem_filter.mpr ⟨hv_int, decide_eq_true hvi⟩, rfl⟩
+    · exact (hnd.filter _).map Sum.inr_injective
+  omega
+
 /-- The pathMonomial exponent at `Sum.inl v` is 0 when `v ≤ j`. -/
 private lemma pathMonomial_exponent_inl_of_le
     (i j : V) (π : List V) (v : V) (hv : ¬(j < v))
@@ -384,8 +560,76 @@ private theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
       obtain ⟨σ, hσ, hσ_sub⟩ := exists_admissible_path_of_walk G a b hab τ
         hHead hLast hND hVtx hWalk
       obtain ⟨d_σ, hd_σ⟩ := pathMonomial_is_monomial (K := K) a b σ
+      have hσ_nd : σ.Nodup := hσ.2.2.2.1
+      have hσ_int_nd : (internalVertices σ).Nodup :=
+        (hσ_nd.sublist (List.tail_sublist σ)).sublist (List.dropLast_sublist _)
+      have hσ_vtx := hσ.2.2.2.2.1  -- ∀ v ∈ σ, v = a ∨ v = b ∨ v < a ∨ b < v
+      -- Internal vertices of σ are internal to τ (same endpoints, sublist)
+      have hσ_head := hσ.2.1
+      have hσ_last := hσ.2.2.1
+      have hσ_ne : σ ≠ [] := by intro h; simp [h] at hσ_head
+      have hint_σ_τ : ∀ v ∈ internalVertices σ, v ∈ internalVertices τ := by
+        intro v hv_int_σ
+        have hv_σ : v ∈ σ := (List.tail_sublist σ).mem ((List.dropLast_sublist _).mem hv_int_σ)
+        have hv_τ : v ∈ τ := hσ_sub.mem hv_σ
+        -- Use the admissibility vertex condition to show v ≠ a and v ≠ b
+        have hva : v ≠ a := by
+          intro heq
+          -- v = a: a ∈ internalVertices σ contradicts nodup (a is head of σ)
+          -- internalVertices σ ⊆ σ.tail, and a is the head.
+          -- If a ∈ tail, then a appears twice, contradicting nodup.
+          have hv_tail : v ∈ σ.tail := (List.dropLast_sublist _).mem hv_int_σ
+          rw [heq] at hv_tail
+          have : σ.head? = some a := hσ_head
+          match σ, this, hσ_nd with
+          | x :: rest, hh, hnd =>
+            simp only [List.head?_cons, Option.some.injEq] at hh
+            rw [hh] at hnd; exact (List.nodup_cons.mp hnd).1 hv_tail
+        have hvb : v ≠ b := by
+          intro heq
+          -- v = b: b ∈ internalVertices σ contradicts σ.Nodup (b is the last element)
+          -- internalVertices σ = σ.tail.dropLast, so b ∈ σ.tail.dropLast
+          -- But b = σ.getLast, and nodup prevents this.
+          rw [heq] at hv_int_σ
+          match σ, hσ_head, hσ_last, hσ_nd with
+          | x :: rest, hh, hl, hnd =>
+            simp only [internalVertices, List.tail_cons] at hv_int_σ
+            match rest, hv_int_σ with
+            | y :: rest', hv_dp =>
+              have hnd_rest := (List.nodup_cons.mp hnd).2
+              -- getLast (y :: rest') = b
+              have hb_last : (y :: rest').getLast (List.cons_ne_nil y rest') = b := by
+                simp only [List.getLast?_cons_cons] at hl
+                rw [List.getLast?_eq_some_getLast (List.cons_ne_nil y rest')] at hl
+                exact Option.some.inj hl
+              -- b ∈ dropLast contradicts nodup since b = getLast
+              have : (y :: rest').dropLast ++ [(y :: rest').getLast (List.cons_ne_nil y rest')] =
+                  y :: rest' := List.dropLast_append_getLast (List.cons_ne_nil y rest')
+              rw [← this] at hnd_rest
+              have hb_in_dp := hb_last ▸ hv_dp
+              exact (List.nodup_append.mp hnd_rest).2.2 _ hb_in_dp _ (List.Mem.head _) rfl
+        exact mem_internal v hv_τ hva hvb
       have hdiv : d_σ ≤ d_q := by
-        sorry -- pathMonomial(σ) divides monomial d_q via coverage + σ ⊆ τ
+        intro w
+        rcases w with ⟨v⟩ | ⟨v⟩
+        · -- w = Sum.inl v
+          by_cases hv_filt : v ∈ (internalVertices σ).filter (fun w => b < w)
+          · -- v is internal to σ and b < v: d_σ(inl v) = 1
+            have hv_int_σ : v ∈ internalVertices σ := (List.mem_filter.mp hv_filt).1
+            have hjv : b < v := of_decide_eq_true (List.mem_filter.mp hv_filt).2
+            rw [pathMonomial_exponent_inl_one (K := K) a b σ v hv_int_σ hjv hσ_int_nd d_σ hd_σ]
+            exact (hCov v (hint_σ_τ v hv_int_σ)).2.1 hjv
+          · -- v not in filtered list: d_σ(inl v) = 0
+            rw [pathMonomial_exponent_inl_zero (K := K) a b σ v hv_filt d_σ hd_σ]
+            exact Nat.zero_le _
+        · -- w = Sum.inr v
+          by_cases hv_filt : v ∈ (internalVertices σ).filter (fun w => w < a)
+          · have hv_int_σ : v ∈ internalVertices σ := (List.mem_filter.mp hv_filt).1
+            have hvi : v < a := of_decide_eq_true (List.mem_filter.mp hv_filt).2
+            rw [pathMonomial_exponent_inr_one (K := K) a b σ v hv_int_σ hvi hσ_int_nd d_σ hd_σ]
+            exact (hCov v (hint_σ_τ v hv_int_σ)).1 hvi
+          · rw [pathMonomial_exponent_inr_zero (K := K) a b σ v hv_filt d_σ hd_σ]
+            exact Nat.zero_le _
       exact isRemainder_fij_via_groebnerElement G a b σ hσ
         (monomial d_q 1) d_q rfl d_σ hd_σ hdiv
 
