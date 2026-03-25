@@ -2165,6 +2165,10 @@ theorem theorem_2_1 (G : SimpleGraph V) :
     have hkl : k < l := hσ.1
     rw [sPolynomial_fij_coprime i k j l hij hkl heq_i heq_j]
     -- Goal: IsRemainder (monomial D (1*1) * (x l * y k * fij i j - x j * y i * fij k l)) G 0
+    -- Use the coprime swap identity to rewrite using pairs (i,k) and (j,l)
+    -- This avoids the divisibility failure that occurs when k ∈ internalVertices π
+    rw [fij_coprime_swap]
+    -- Goal: IsRemainder (monomial D (1*1) * (x l * y j * fij i k - x k * y i * fij j l)) G 0
     sorry
 
 

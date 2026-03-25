@@ -44,6 +44,14 @@ lemma fij_x_telescope (a b c : V) :
     x (K := K) b * fij a c = x a * fij b c + x c * fij a b := by
   simp only [fij, x, y]; ring
 
+/-- **Coprime swap identity**: the coprime S-polynomial `x_l y_k * fij i j - x_j y_i * fij k l`
+can be rewritten using the "swapped" pairs `(i,k)` and `(j,l)` instead of `(i,j)` and `(k,l)`.
+This is the key algebraic identity for the coprime case of Theorem 2.1. -/
+lemma fij_coprime_swap (i j k l : V) :
+    x (K := K) l * y k * fij i j - x j * y i * fij k l =
+    x l * y j * fij i k - x k * y i * fij j l := by
+  simp only [fij, x, y]; ring
+
 /-! ## S-polynomial monomial bound -/
 
 /-- Cross-condition bound for the S-polynomial monomial factor D.
