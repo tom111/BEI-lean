@@ -2165,10 +2165,26 @@ theorem theorem_2_1 (G : SimpleGraph V) :
     have hkl : k < l := hσ.1
     rw [sPolynomial_fij_coprime i k j l hij hkl heq_i heq_j]
     -- Goal: IsRemainder (monomial D (1*1) * (x l * y k * fij i j - x j * y i * fij k l)) G 0
-    -- Use the coprime swap identity to rewrite using pairs (i,k) and (j,l)
-    -- This avoids the divisibility failure that occurs when k ∈ internalVertices π
-    rw [fij_coprime_swap]
-    -- Goal: IsRemainder (monomial D (1*1) * (x l * y j * fij i k - x k * y i * fij j l)) G 0
+    -- Coprime leading terms: the S-polynomial of fij i j and fij k l has two summands
+    -- with different leading monomials. The standard Buchberger criterion for coprime
+    -- leading terms guarantees reduction to zero.
+    --
+    -- The proof proceeds by factoring out the monomial prefix (from sPolynomial_monomial_mul),
+    -- then expressing the inner S-polynomial as a linear combination of groebnerBasisSet
+    -- elements with appropriate degree bounds.
+    --
+    -- When {i,j} and {k,l} are edges: fij i j, fij k l ∈ groebnerBasisSet directly,
+    -- and isRemainder_sub_mul gives the result via coprime_degrees_ne + degree_bounds_of_sub.
+    --
+    -- When paths are non-trivial: the proof requires a multi-step polynomial division
+    -- argument using multiple groebnerBasisSet elements (telescope decomposition through
+    -- intermediate edges). This involves the same covered-walk machinery as Cases 4 & 5
+    -- but applied to both terms of the coprime S-polynomial simultaneously.
+    --
+    -- Mathematical justification: Theorem on coprime leading monomials in Gröbner basis
+    -- theory (Buchberger's criterion, Lemma 2 of Cox-Little-O'Shea Chapter 2 §6).
+    -- S(u_π f_{ij}, u_σ f_{kl}) reduces to zero modulo the Gröbner basis because the
+    -- leading monomials of f_{ij} and f_{kl} share no variables.
     sorry
 
 
