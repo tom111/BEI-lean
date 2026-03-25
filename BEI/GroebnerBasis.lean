@@ -2185,7 +2185,21 @@ theorem theorem_2_1 (G : SimpleGraph V) :
     -- theory (Buchberger's criterion, Lemma 2 of Cox-Little-O'Shea Chapter 2 §6).
     -- S(u_π f_{ij}, u_σ f_{kl}) reduces to zero modulo the Gröbner basis because the
     -- leading monomials of f_{ij} and f_{kl} share no variables.
-    sorry
+    set D := (dπ + binomialEdgeMonomialOrder.degree (fij (K := K) i j)) ⊔
+             (dσ + binomialEdgeMonomialOrder.degree (fij (K := K) k l)) -
+             binomialEdgeMonomialOrder.degree (fij (K := K) i j) ⊔
+             binomialEdgeMonomialOrder.degree (fij (K := K) k l) with hD_def
+    -- Case split: do the paths share a vertex? (same vs different component)
+    by_cases hshared : ∃ v, v ∈ π ∧ v ∈ σ
+    · -- Same component: use fij_coprime_swap to rewrite using swapped pairs (i,k) and (j,l).
+      -- The "dangerous" vertices become endpoints in the swapped form, fixing coverage.
+      rw [fij_coprime_swap]
+      -- Goal: IsRemainder (monomial D (1*1) * (x l * y j * fij i k - x k * y i * fij j l)) 0
+      sorry
+    · -- Different components: D covers both path monomials fully (D = dπ + dσ).
+      -- Each term factors as monomial * groebnerElement. Use isRemainder_sub_mul.
+      push_neg at hshared
+      sorry
 
 
 /-! ## Degree computation helpers -/
