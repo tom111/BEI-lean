@@ -111,6 +111,53 @@ lemma isRemainder_add
       exact le_trans degree_add_le (max_le (le_trans (hdeg₁ b) hd₁) (le_trans (hdeg₂ b) hd₂))
   · intro c hc; simp at hc
 
+/-! ## Degree bounds for sums -/
+
+/-- `BinomialEdgeVars V` inequality helpers for `Sum.inl`/`Sum.inr` discrimination. -/
+lemma bev_inl_ne_inl {a b : V} (h : a ≠ b) :
+    (Sum.inl a : BinomialEdgeVars V) ≠ Sum.inl b :=
+  show (Sum.inl a : V ⊕ V) ≠ Sum.inl b from fun heq => h (Sum.inl.inj heq)
+
+lemma bev_inr_ne_inr {a b : V} (h : a ≠ b) :
+    (Sum.inr a : BinomialEdgeVars V) ≠ Sum.inr b :=
+  show (Sum.inr a : V ⊕ V) ≠ Sum.inr b from fun heq => h (Sum.inr.inj heq)
+
+lemma bev_inr_ne_inl {a b : V} :
+    (Sum.inr a : BinomialEdgeVars V) ≠ Sum.inl b :=
+  show (Sum.inr a : V ⊕ V) ≠ Sum.inl b from Sum.inr_ne_inl
+
+lemma bev_inl_ne_inr {a b : V} :
+    (Sum.inl a : BinomialEdgeVars V) ≠ Sum.inr b :=
+  show (Sum.inl a : V ⊕ V) ≠ Sum.inr b from Sum.inl_ne_inr
+
+/-- If the degrees of `f` and `g` are different, both `degree f` and `degree g`
+are `≼` the degree of `f + g`. This is the key degree bound for `isRemainder_add`. -/
+lemma degree_bounds_of_ne
+    (f g : MvPolynomial (BinomialEdgeVars V) K)
+    (hne : binomialEdgeMonomialOrder.degree f ≠
+           binomialEdgeMonomialOrder.degree g) :
+    (binomialEdgeMonomialOrder.degree f
+      ≼[binomialEdgeMonomialOrder]
+      binomialEdgeMonomialOrder.degree (f + g)) ∧
+    (binomialEdgeMonomialOrder.degree g
+      ≼[binomialEdgeMonomialOrder]
+      binomialEdgeMonomialOrder.degree (f + g)) := by
+  have hne_syn := binomialEdgeMonomialOrder.toSyn.injective.ne hne
+  show binomialEdgeMonomialOrder.toSyn _ ≤ _ ∧ _
+  rcases lt_or_gt_of_ne hne_syn with h | h
+  · constructor
+    · calc _ ≤ binomialEdgeMonomialOrder.toSyn (binomialEdgeMonomialOrder.degree g) :=
+            le_of_lt h
+        _ = _ := congrArg _ ((show g + f = f + g from add_comm g f) ▸
+            (degree_add_of_lt h)).symm
+    · exact le_of_eq (congrArg _ ((show g + f = f + g from add_comm g f) ▸
+        (degree_add_of_lt h)).symm)
+  · constructor
+    · exact le_of_eq (congrArg _ (degree_add_of_lt h).symm)
+    · calc _ ≤ binomialEdgeMonomialOrder.toSyn (binomialEdgeMonomialOrder.degree f) :=
+            le_of_lt h
+        _ = _ := congrArg _ (degree_add_of_lt h).symm
+
 /-! ## No-monomial lemma and collapse map -/
 
 /-- Elements of `J_G` evaluate to 0 at the all-ones point (x_v = y_v = 1).
