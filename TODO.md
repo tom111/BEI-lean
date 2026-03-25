@@ -89,18 +89,19 @@ Target: `closed_implies_groebner` in `ClosedGraphs.lean` (NOT in GroebnerBasis.l
 
 **Approach: Herzog et al. (2010) direct S-polynomial proof (Second Step).**
 
-For any f_π1, f_π2 in G, show S(f_π1, f_π2) reduces to 0 mod G via Buchberger.
-- Coprime initial terms: trivial (regular sequence argument)
-- Shared endpoint i=k: S-poly = y_i · f_{jl} (or similar), decompose along τ-path
-- Shared endpoint j=l: symmetric
+Buchberger case analysis with 4 S-polynomial cases:
+- [x] Case 1 (i=k, j=l): trivial — same polynomial
+- [x] Case 4 (i=k, j≠l): shared first endpoint — walk construction + x/y-telescope
+- [x] Case 5 (j=l, i≠k): shared last endpoint — y-telescope variant
+- [ ] Coprime (i≠k, j≠l): needs telescope decomposition of both fij terms into edge-level generators
 
-The τ-path construction: concatenate π1 and π2 at their common vertex, extract
-subsequence of "jump points" j_{t(0)} < j_{t(1)} < ... < j_{t(q)}, each sub-path
-τ_c is admissible, and the telescoping sum gives a standard expression with remainder 0.
+Key infrastructure built (2026-03-25):
+- `isRemainder_fij_of_covered_walk` + `_y` variant (inductive telescope lemmas)
+- `walk_from_shared_first` (branch-point walk construction, ~200 lines)
+- Coverage building blocks, degree bounds, pathMonomial exponent analysis
+- `degree_bounds_of_ne` in HerzogLemmas.lean
 
-Previous Rauh approach archived in `RauhApproach.lean`.
-
-- [ ] `theorem_2_1` — 1 sorry remaining
+- [~] `theorem_2_1` — 1 sorry remaining (coprime case only)
 
 ### 8F. Radical
 - [!] `corollary_2_2` — blocked on Thm 3.2 (radical = intersection of primes) or squarefree initial
@@ -122,22 +123,22 @@ Previous Rauh approach archived in `RauhApproach.lean`.
 
 ## Priority Order (what to work on next)
 
-1. **Phase 8E: `theorem_2_1`** — Herzog direct S-polynomial proof (interactive with user)
+1. **Phase 8E: `theorem_2_1` coprime case** — telescope decomposition of both fij's into edge-level generators
 2. **Phase 6: `corollary_3_9`** — cut-vertex characterization of minimal primes
 3. **Phase 7: `theorem_3_2` ⊇** — radical ideal argument
 4. **Phase 7: corollaries** — once Thm 3.2 proved
 
 ---
 
-## Sorry Count by File (2026-03-21)
-| File | Sorries |
-|------|---------|
-| GroebnerBasis.lean | 2 (theorem_2_1, corollary_2_2) |
-| PrimeIdeals.lean | 2 (lemma_3_1, prop_3_6) |
-| MinimalPrimes.lean | 1 (corollary_3_9 <- only) |
-| PrimeDecomposition.lean | 7 |
-| CohenMacaulay.lean | 4 (all deferred) |
-| **Total** | **16** |
+## Sorry Count by File (2026-03-25)
+| File | Sorries | Notes |
+|------|---------|-------|
+| GroebnerBasis.lean | 2 | theorem_2_1 coprime case, corollary_2_2 (deferred) |
+| PrimeIdeals.lean | 2 | lemma_3_1, prop_3_6 |
+| MinimalPrimes.lean | 1 | corollary_3_9 ← only |
+| PrimeDecomposition.lean | 7 | |
+| CohenMacaulay.lean | 4 | all deferred |
+| **Total** | **16** | |
 
 ---
 
