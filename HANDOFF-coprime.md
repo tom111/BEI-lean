@@ -1,125 +1,174 @@
-# Handoff: Theorem 2.1 Coprime Case
+# Handoff: Theorem 2.1 — Coprime Case Completion
 
-## Status (2026-03-26)
+## Status
 
-`theorem_2_1` in `BEI/GroebnerBasis.lean` has **2 sorries remaining** (plus 1 deferred corollary_2_2).
+**File:** `BEI/GroebnerBasis.lean`
+**Commit:** `2ee1cfd` — compiles cleanly, 0 errors
+**Theorem 2.1 sorries:** 5 in same-component case (lines 2410, 2417, 2488, 2492, 2573)
+**Other:** 1 pre-existing sorry in Corollary 2.2 (line 3454, out of scope)
 
-Both sorries are in the **coprime case** (i≠k, j≠l) of the Buchberger criterion, at lines ~2197 and ~2200. The case is split by `by_cases hshared : ∃ v, v ∈ π ∧ v ∈ σ`.
+The **different-components case** (Sorry 2) is **fully proved** (~lines 2347-2560).
 
-Everything else in Theorem 2.1 (Cases 1, 4, 5) is fully proved.
+## What was accomplished
 
-## The Coprime Case Goal
+1. **Different-components case:** Complete proof using cross-condition divisibility, `isRemainder_fij_via_groebnerElement` for each term, combined via `isRemainder_add`.
 
-After `sPolynomial_monomial_mul` + `sPolynomial_fij_coprime`:
+2. **Same-component case structure:**
+   - `fij_coprime_swap` applied to rewrite the S-polynomial
+   - Walk construction via `walk_from_shared_first` with drops of reversed paths through shared vertex v
+   - Q₁ = D + single(inl l) + single(inr j), Q₂ = D + single(inl k) + single(inr i)
+   - Case split `i < k` vs `k < i` (line 2404/2573)
+   - Sub-case split `j < l` vs `l < j` (lines 2411/2486)
+   - Algebraic equality, degree inequality, `isRemainder_add` combination: all proved for the `i < k, j < l` sub-case (lines 2419-2484)
+   - Symmetric sub-cases structured via `fij_antisymm`
+
+3. **Infrastructure added:**
+   - `isRemainder_fij_via_two_walks` (line ~1317): splits walk at intermediate vertex, x-coverage for first half, y-coverage for second half
+   - Various coverage helper lemmas
+
+## The core remaining problem
+
+All 5 sorries reduce to proving:
+
 ```
-IsRemainder (monomial D (1*1) * (x l * y k * fij i j - x j * y i * fij k l)) groebnerBasisSet 0
-```
-where D = (dπ + deg(fij i j)) ⊔ (dσ + deg(fij k l)) - deg(fij i j) ⊔ deg(fij k l).
-
-## Key Identity (already proved, in HerzogLemmas.lean)
-
-```
-fij_coprime_swap : x l * y k * fij i j - x j * y i * fij k l
-                 = x l * y j * fij i k - x k * y i * fij j l
-```
-This swaps pairs (i,j),(k,l) → (i,k),(j,l). Proved by `simp [fij, x, y]; ring`.
-
-## Sorry 1: Same Component (line ~2197)
-
-**Context**: `hshared : ∃ v, v ∈ π ∧ v ∈ σ` — paths share a vertex.
-
-After `rw [fij_coprime_swap]`, the goal becomes:
-```
-IsRemainder (monomial D (1*1) * (x l * y j * fij i k - x k * y i * fij j l)) groebnerBasisSet 0
+IsRemainder (monomial Q 1 * fij a b) (groebnerBasisSet G) 0
 ```
 
-**Why the swap helps**: The original form has a coverage failure when k ∈ internalVertices π (above j): D(Sum.inl k) = 0 but dπ(Sum.inl k) = 1. In the swapped form, k is an ENDPOINT of fij i k (not internal), so no coverage is needed for it. The coefficient `x_k` in the second term provides `single(Sum.inl k)` which covers k as a "bad" vertex in the walk from j to l.
+given a walk from `a` to `b` whose internal vertices come from two admissible paths π and σ that share a vertex. The walk has **mixed x/y coverage**: π-vertices need `d_q(inl w) ≥ 1` and σ-vertices need `d_q(inr w) ≥ 1`.
 
-**Proof plan**:
-1. DON'T factor out monomial D — it's needed for coverage.
-2. Express as sum of two terms: `monomial(D + single(inl l) + single(inr j)) * fij i k` minus `monomial(D + single(inl k) + single(inr i)) * fij j l`.
-3. For each term, apply `isRemainder_fij_of_covered_walk` (or `_y` variant):
-   - Walk from min(i,k) to max(i,k): construct from subpaths of π and σ through the shared vertex v.
-   - Walk from min(j,l) to max(j,l): similarly.
-   - Coverage: D covers internal vertices from π and σ (via sPolyD_ge_of_zero). The extra `single(inr j)` covers j if it's internal to the i→k walk. The extra `single(inl k)` covers k if it's internal to the j→l walk.
-4. Combine with `isRemainder_add` (handling subtraction via `isRemainder_neg'`).
-5. Degree bounds: the two terms have different leading monomials. Need to prove this — it's analogous to `coprime_degrees_ne` but for the swapped pairs. Since x_i y_k and x_j y_l share no variables (i≠j, k≠l, and Sum.inl ≠ Sum.inr), the degrees differ.
+### Why existing lemmas don't work
 
-**Walk construction**: Use `walk_from_shared_first` (already proved, ~200 lines). Given shared vertex v ∈ π ∩ σ:
-- Subpath of π from i to v: walk from i to v.
-- Subpath of σ from k to v: walk from k to v.
-- `walk_from_shared_first G v i k (subpath_π) (subpath_σ) ...` gives walk from i to k.
-- Similarly for j to l.
+| Lemma | Problem |
+|-------|---------|
+| `isRemainder_fij_of_covered_walk` (x-variant) | Needs `d_q(inl w) ≥ 1` for ALL bad vertices. σ-vertices between endpoints only have `d_q(inr w) ≥ 1`. |
+| `isRemainder_fij_of_covered_walk_y` (y-variant) | Needs `d_q(inr w) ≥ 1` for ALL bad vertices. π-vertices between endpoints only have `d_q(inl w) ≥ 1`. |
+| `isRemainder_fij_via_two_walks` | Uses x for first half, y for second. But π and σ vertices are interleaved in the walk — no clean split separates them. |
+| `isRemainder_fij_via_groebnerElement` | Needs `d_α ≤ d_q` for a specific admissible path α. The pathMonomial uses fixed inl/inr at each position, but available coverage is `∨`. |
 
-**Estimated effort**: ~80-120 lines. The walk construction via shared vertex is the trickiest part.
+### What IS true (the mathematical argument)
 
-## Sorry 2: Different Components (line ~2200)
+For each internal vertex w of the walk between a and b:
+- If w comes from π: `dπ(inl w) = 1`, both fij degrees at inl w are 0, so `sPolyD_ge_of_zero` gives `D(inl w) ≥ 1`, hence `Q(inl w) ≥ 1`.
+- If w comes from σ: `dσ(inr w) = 1`, both fij degrees at inr w are 0, so `D(inr w) ≥ 1`, hence `Q(inr w) ≥ 1`.
+- If w = j (between i and k when j < k): `Q₁(inr j) = D(inr j) + 1 ≥ 1` from the explicit `single(inr j)` term.
+- If w = k (between j and l when j < k): `Q₂(inl k) = D(inl k) + 1 ≥ 1` from the explicit `single(inl k)` term.
+- If w = v (shared vertex): covered by π or σ membership.
 
-**Context**: `hshared : ∀ v, v ∈ π → v ∉ σ` — no shared vertex.
+So every vertex has `d_q(inl w) ≥ 1 ∨ d_q(inr w) ≥ 1`, but which side of the ∨ varies by vertex.
 
-**Why it's simpler**: When π and σ have disjoint vertex sets:
-- dσ(w) = 0 for w involving π's vertices, and vice versa
-- deg(fij k l)(w) = 0 for w involving π's vertices, and vice versa
-- Therefore D(w) = dπ(w) for π-variables and D(w) = dσ(w) for σ-variables
-- So D = dπ + dσ componentwise
+## Recommended approach: `isRemainder_fij_of_mixed_walk`
 
-**Proof plan**:
-1. Show D ≥ dπ componentwise (need: dσ(w) = 0 and deg_kl(w) = 0 for π-variables).
-2. Factor: `monomial D * x l * y k * fij i j = monomial(D - dπ) * x l * y k * groebnerElement_π`.
-   Since `groebnerElement_π = monomial dπ * fij i j = pathMonomial_π * fij i j ∈ groebnerBasisSet`,
-   this is a monomial multiple of a groebnerBasisSet element. `isRemainder_single_mul` applies.
-3. Similarly for the second term using groebnerElement_σ.
-4. Combine with `isRemainder_sub_mul`:
-   - f₁ = groebnerElement_π ∈ groebnerBasisSet ✓
-   - f₂ = groebnerElement_σ ∈ groebnerBasisSet ✓
-   - f₁ ≠ f₂ (different components → different leading monomials) ✓
-   - Degree bounds from `coprime_degrees_ne` + `degree_bounds_of_sub` ✓
+Write a new lemma with statement:
 
-**Key lemma needed**: D - dπ = dσ (componentwise, when paths are disjoint). This requires showing dπ and dσ have disjoint support, which follows from hshared + the pathMonomial structure (pathMonomial variables correspond to path vertices).
+```lean
+private theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
+    ∀ (n : ℕ) (a b : V) (τ : List V) (d_q : BinomialEdgeVars V →₀ ℕ),
+    τ.length ≤ n → a < b →
+    τ.head? = some a → τ.getLast? = some b →
+    τ.Nodup → τ.Chain' (fun u v => G.Adj u v) →
+    (∀ w ∈ internalVertices τ, d_q (Sum.inl w) ≥ 1 ∨ d_q (Sum.inr w) ≥ 1) →
+    binomialEdgeMonomialOrder.IsRemainder
+      (monomial d_q 1 * fij (K := K) a b) (groebnerBasisSet G) 0
+```
 
-**Estimated effort**: ~50-80 lines. Mainly Finsupp arithmetic.
+### Proof strategy: first-vertex induction
 
-## Critical Files
+Induct on `n` (walk length bound). Process the **first internal vertex** v₁ (the second element of the walk):
 
-- `BEI/GroebnerBasis.lean` — the sorry locations (~2197, ~2200)
-- `BEI/HerzogLemmas.lean` — `fij_coprime_swap`, `isRemainder_add`, `degree_bounds_of_ne`, `isRemainder_fij_via_groebnerElement`
-- `BEI/ClosedGraphs.lean` — `isRemainder_sub_mul`, `coprime_degrees_ne`, `degree_bounds_of_sub`, `isRemainder_single_mul`
-- `BEI/AdmissiblePaths.lean` — `groebnerElement_mem`, `generator_in_groebnerBasisSet`
+1. **Base case** (walk = [a, b]): a adj b (from chain). Use `isRemainder_fij_via_groebnerElement` with trivial admissible path [a, b] (pathMonomial = 1, divisibility trivial).
 
-## Key Available Infrastructure
+2. **Inductive step** (walk = [a, v₁, rest..., b]):
+   - From chain: a adj v₁.
+   - From coverage ∨: `d_q(inl v₁) ≥ 1 ∨ d_q(inr v₁) ≥ 1`.
+   - Choose telescope based on coverage:
 
-| Lemma | File | What it does |
-|-------|------|-------------|
-| `isRemainder_single_mul` | ClosedGraphs | q * f has IsRemainder 0 when f ∈ G |
-| `isRemainder_sub_mul` | ClosedGraphs | q₁*f₁ - q₂*f₂ has IsRemainder 0 with degree bounds |
-| `isRemainder_monomial_mul'` | GroebnerBasis | monomial * f preserves IsRemainder 0 |
-| `isRemainder_neg'` | GroebnerBasis | -f preserves IsRemainder 0 |
-| `isRemainder_add` | HerzogLemmas | f₁ + f₂ has IsRemainder 0 with degree bounds |
-| `isRemainder_fij_of_covered_walk` | GroebnerBasis | monomial * fij has IsRemainder 0 via walk |
-| `isRemainder_fij_of_covered_walk_y` | GroebnerBasis | y-telescope variant |
-| `walk_from_shared_first` | GroebnerBasis | construct walk from shared-endpoint paths |
-| `coprime_degrees_ne` | ClosedGraphs | coprime fij terms have different degrees |
-| `degree_bounds_of_sub` | ClosedGraphs | degree bounds when toSyn-degrees differ |
-| `degree_bounds_of_ne` | HerzogLemmas | degree bounds for addition |
-| `sPolyD_ge_of_zero` | GroebnerBasis | D ≥ dπ and D ≥ dσ when degree terms vanish |
-| `pathMonomial_exponent_inl_one/_inr_one` | GroebnerBasis | pathMonomial exponent = 1 at internal vertices |
-| `pathMonomial_is_monomial` | GroebnerBasis | pathMonomial = monomial d 1 |
-| `fij_coprime_swap` | HerzogLemmas | the coprime swap identity |
+   **If `d_q(inl v₁) ≥ 1` (x-telescope):**
+   ```
+   x(v₁) * fij(a, b) = x(a) * fij(v₁, b) + x(b) * fij(a, v₁)
+   ```
+   - `fij(a, v₁)`: single edge (a adj v₁). IsRemainder via trivial admissible path.
+   - `fij(v₁, b)`: shorter walk [v₁, rest..., b]. Coverage transfers because d₁ = d_q − single(inl v₁) + single(inl a) agrees with d_q on all internal vertices of the shorter walk (v₁ and a are NOT internal vertices of [v₁, rest..., b]).
+   - Handle v₁ > b case separately (walk reversal, `fij_antisymm`).
+   - Combine via `isRemainder_add` + `degree_bounds_of_ne`.
 
-## Technical Notes
+   **If `d_q(inr v₁) ≥ 1` (y-telescope):**
+   ```
+   y(v₁) * fij(a, b) = y(b) * fij(a, v₁) + y(a) * fij(v₁, b)
+   ```
+   - Same structure with inr instead of inl.
 
-- `unfold BinomialEdgeVars at ... ⊢` is essential for monomial arithmetic (Finsupp type class synthesis).
-- `congr` + `monomial_mul` + `one_mul` for combining monomials.
-- `set_option maxHeartbeats 800000` is set for `theorem_2_1`.
-- The `by_cases hshared` split is on `∃ v, v ∈ π ∧ v ∈ σ` which is `Decidable` since V is Fintype and List membership is decidable.
+### Why this works (coverage transfer)
 
-## Recommended Order
+After x-telescope at v₁, the monomial for the recursive piece is d₁ = d_q − single(inl v₁) + single(inl a).
 
-1. **Sorry 2 (different components)** — simpler, ~50-80 lines, pure Finsupp arithmetic
-2. **Sorry 1 (same component)** — harder, ~80-120 lines, needs walk construction through shared vertex
+For any internal vertex w of the shorter walk [v₁, rest..., b]:
+- w ≠ v₁ (v₁ is the head, not internal)
+- w ≠ a (a is not in the shorter walk; nodup from original walk)
+- So d₁(inl w) = d_q(inl w) and d₁(inr w) = d_q(inr w)
+- Coverage transfers: d₁(inl w) ≥ 1 ∨ d₁(inr w) ≥ 1. ✓
 
-## What NOT To Do
+### Implementation notes
 
-- Don't try `isRemainder_fij_via_groebnerElement` for the coprime case without the swap — the divisibility D(Sum.inl k) ≥ dπ(Sum.inl k) fails when k ∈ internalVertices π.
-- Don't try `isRemainder_sub_mul` with the groebnerElements directly on the S-polynomial form (degree bounds fail because leading terms cancel at degree = lcm).
-- Don't try to prove a general `isRemainder_arbitrary_mul_fij` (can't divide out pathMonomial from IsRemainder).
+- The proof follows the same structure as `isRemainder_fij_of_covered_walk` (lines ~600-780) but with per-vertex telescope choice.
+- The `fij_x_telescope` and `fij_telescope` (y-version) identities are in HerzogLemmas.lean.
+- For the degree bounds in `isRemainder_add`, follow the pattern at lines 828-857.
+- `unfold BinomialEdgeVars` is needed for Finsupp arithmetic.
+- Handle a < v₁ < b (bad vertex), v₁ < a (below), v₁ > b (above) as separate sub-cases.
+- Estimated size: ~200 lines (similar to existing covered walk proof).
+
+### Alternative: avoid the mixed-walk lemma entirely
+
+If writing the mixed-walk lemma proves too difficult, an alternative approach:
+
+1. Case-split on `le_or_lt k j` (whether j is between i and k):
+   - `k ≤ j`: ALL walk bad-vertices are from σ (π-vertices satisfy w > j ≥ k, outside (i,k)). Use y-variant directly.
+   - `j < k`: Use `isRemainder_fij_via_two_walks` with split at j. Walk i→j = π (no bad vertices, vacuous coverage). Walk j→k needs SEPARATE construction via `walk_from_shared_first G v j k (π.drop(π.idxOf v)) (σ.reverse.drop(σ.reverse.idxOf v)) ...`. This walk's bad vertices (j < w < k) are all from σ → y-coverage works.
+
+   **Caveat:** The walk j→k might include π-vertices > j between j and k. But I verified that π-vertices in the π.drop(idxOf v) sub-path satisfy w < i or w > j (admissible condition). Those with w > j and j < w < k ARE problematic for y-coverage if they're not in σ. This approach only works if such vertices don't appear in the walk from j to k — which is NOT guaranteed.
+
+2. Similarly case-split for fij(j,l).
+
+The mixed-walk lemma is the cleanest solution.
+
+## Using the mixed-walk lemma to fill the sorries
+
+Once `isRemainder_fij_of_mixed_walk` compiles, fill each sorry with:
+
+```lean
+exact isRemainder_fij_of_mixed_walk G τ.length a b τ Q d_q le_rfl hab
+  hτ_h hτ_l hτ_nd hτ_w (by
+    intro w hw_int
+    -- Trace w through walk construction to π or σ membership
+    -- Use sPolyD_ge_of_zero + pathMonomial exponent lemmas
+    -- Handle w = j or w = k via the explicit extra single terms in Q
+    sorry)
+```
+
+The coverage proof at each call site requires:
+1. From `hτ_ik_v`: w ∈ internalVertices(π.reverse.drop) ∨ w ∈ internalVertices(σ.reverse.drop) ∨ w = v
+2. For each case, show `Q(inl w) ≥ 1 ∨ Q(inr w) ≥ 1`:
+   - From π: w ∈ π, w satisfies admissible condition → dπ exponent ≥ 1 at appropriate position → sPolyD_ge → D ≥ 1 → Q ≥ 1
+   - From σ: similar
+   - w = v: v ∈ π ∩ σ, same analysis
+3. For w = j (in fij(i,k) case): Q₁(inr j) = D(inr j) + 1 ≥ 1 from explicit term
+4. For w = k (in fij(j,l) case): Q₂(inl k) = D(inl k) + 1 ≥ 1 from explicit term
+
+## Stashed work
+
+`git stash list` shows broken attempt at mixed-walk lemma with first-vertex induction. It has the right STRUCTURE but 16+ compilation errors in degree-bounds proofs (wrong argument order for `fij_degree`, Finsupp arithmetic needing `unfold BinomialEdgeVars`). May be salvageable with mechanical fixes, but the stash also modified the theorem_2_1 proof structure in ways that introduced additional errors.
+
+## File map (relevant sections)
+
+| Lines | Content |
+|-------|---------|
+| 600-780 | `isRemainder_fij_of_covered_walk` (x-variant) — TEMPLATE for mixed-walk |
+| 780-960 | `isRemainder_fij_of_covered_walk_y` (y-variant) |
+| 1317-1415 | `isRemainder_fij_via_two_walks` |
+| 1460-1680 | `walk_from_shared_first` infrastructure |
+| 2200-2340 | `theorem_2_1` — different-components case (DONE) |
+| 2340-2580 | `theorem_2_1` — same-component case (5 sorries) |
+| 2410 | Sorry: `IsRemainder (Q₁ * fij i k) G 0` (i<k, j<l) |
+| 2417 | Sorry: `IsRemainder (Q₂ * fij j l) G 0` (i<k, j<l) |
+| 2488 | Sorry: `IsRemainder (Q₁ * fij i k) G 0` (i<k, l<j) |
+| 2492 | Sorry: `IsRemainder (Q₂ * fij l j) G 0` (i<k, l<j) |
+| 2573 | Sorry: full k<i case |
