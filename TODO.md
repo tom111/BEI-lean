@@ -8,148 +8,119 @@
 
 ---
 
-## Phase 1 — Fix Compilation Blocker
-- [x] `MonomialOrder.lean:50` — Replace `Sum.instFinite` with `inferInstance`
+## Paper ↔ Formalization Map
 
-## Phase 2 — MonomialOrder Leading Term Proofs
-- [x] `BinomialEdgeVars` changed to opaque `def` to eliminate instance diamond
-- [x] `binomialEdgeMonomialOrder` — defined via `MonomialOrder.lex`
-- [x] `fij_degree`, `fij_leadingCoeff`, `fij_leadingCoeff_isUnit`
-
-## Phase 3 — Graph Theory Properties
-- [x] `prop_1_4` — closed ↔ all shortest walks directed
-- [x] `cor_1_3` — closed + bipartite → path graph (noTriangle + degree bound + acyclicity)
-
----
-
-## Phase 4 — Admissible Paths Membership
-- [x] All compilation errors fixed (Groups 1-5, type mismatch, chain'_reverse)
-- [x] `groebnerElement_mem` — proved
-
----
-
-## Phase 5 — Prime Ideal Properties
-
-### 5A. `primeComponent_isPrime` — **PROVED** ✅
-Actual strategy used: construct φ : K[x,y] → K[x,y] directly (not a quotient target).
-φ sends x_i,y_i ↦ 0 for i∈S; x_j ↦ X(inl j), y_j ↦ X(inl j)*X(inr(rep j)) for j∉S.
-ker(φ) = P_S(G) via primeComponent_le_ker + ker_primeComponentMap_le (strong induction on
-support size using normExp/FiberEquiv/monomial_swap_mem). P_S(G) prime by RingHom.ker_isPrime.
-
-- [x] **5A-i** `primeComponentMap G S` defined via `MvPolynomial.aeval`
-- [x] **5A-ii** `primeComponent_le_ker`: generators map to 0
-- [x] **5A-iii** Target K[x,y] is integral domain (no need for product ring)
-- [x] **5A-iv** `primeComponent_isPrime`: PROVED
-
-- [ ] `lemma_3_1` — height formula (very hard; needs chain of prime ideals)
-- [ ] `prop_3_6` — J_G prime ↔ each component complete
+| Paper result | File | Status |
+|---|---|---|
+| **§1 Thm 1.1** (closed ↔ quadratic GB) | ClosedGraphs.lean | ✅ proved |
+| **§1 Prop 1.2** (closed → chordal + claw-free) | GraphProperties.lean | ✅ proved |
+| **§1 Cor 1.3** (closed + bipartite → line) | GraphProperties.lean | ✅ proved |
+| **§1 Prop 1.4** (closed ↔ shortest paths directed) | GraphProperties.lean | ✅ proved |
+| **§1 Prop 1.5** (closure existence) | GraphProperties.lean | ✅ proved |
+| **§1 Prop 1.6** (CM sufficient condition) | CohenMacaulay.lean | ❌ deferred (needs `IsCohenMacaulay`) |
+| **§2 Thm 2.1** (reduced GB = admissible paths) | GroebnerBasis.lean | ✅ proved |
+| **§2 Cor 2.2** (J_G radical) | GroebnerBasis.lean | ❌ blocked (see below) |
+| **§3 Lem 3.1** (height P_S = \|S\| + n − c(S)) | PrimeIdeals.lean | ❌ sorry |
+| **§3 Thm 3.2** (J_G = ⋂ P_S) | PrimeDecomposition.lean | ⊆ proved, ⊇ sorry |
+| **§3 Cor 3.3** (dim S/J_G formula) | PrimeDecomposition.lean | ❌ sorry (needs Thm 3.2) |
+| **§3 Cor 3.4** (CM → dim = n+c) | PrimeDecomposition.lean | ❌ sorry (needs Thm 3.2) |
+| **§3 Prop 3.6** (J_G prime ↔ components complete) | PrimeIdeals.lean | ❌ sorry |
+| **§3 Cor 3.7** (cycle: n=3 ↔ prime ↔ CM) | PrimeDecomposition.lean | ❌ sorry (needs Thm 3.2) |
+| **§3 Prop 3.8** (P_T ⊆ P_S characterization) | MinimalPrimes.lean | ✅ proved |
+| **§3 Cor 3.9** (minimal primes = cut-points) | MinimalPrimes.lean | → proved, ← sorry |
+| **§4** (CI-ideal applications) | — | ❌ not formalized (not planned) |
 
 ---
 
-## Phase 6 — Minimal Primes
+## Completed Phases
 
-- [x] `prop_3_8_var_not_mem` — proved via eval argument
-- [x] `prop_3_8` (→): T ⊆ S via `prop_3_8_var_not_mem`
-- [x] `prop_3_8_sameComponent_preserved` — proved via eval
-- [x] `prop_3_8` (←): T⊆S + component preservation → P_T ≤ P_S
-- [~] `corollary_3_9` — → proved; ← still sorry (needs theorem_3_2 ⊇)
+### Phase 1–4: Foundations ✅
+- MonomialOrder, GraphProperties, AdmissiblePaths, GroebnerAPI all proved.
 
----
+### Phase 8: Gröbner Basis ✅ (except Cor 2.2)
+- Theorem 1.1 (closed ↔ quadratic GB): **proved**
+- Theorem 2.1 (reduced GB): **proved** (Buchberger criterion, 4-case S-polynomial analysis, mixed-walk lemma)
+- Theorem 2.1 reduced: **proved**
+- Squarefree leading monomials: **proved**
 
-## Phase 7 — Prime Decomposition
+### Phase 5A: Prime Component ✅
+- `primeComponent_isPrime`: **proved**
 
-- [x] `theorem_3_2` (⊆): proved inline via `binomialEdgeIdeal_le_primeComponent`
-- [ ] `theorem_3_2` (⊇): ⋂ P_S(G) ⊆ J_G — hard; needs J_G is radical + Nullstellensatz
-- [ ] `corollary_3_3_lower_bound` — dim ≥ |V| + c(G) via S = ∅ chain (relatively accessible)
-- [ ] `corollary_3_7` — cycle: n=3 ↔ J_G prime
-- [ ] `minimalPrimes_characterization`, `corollary_3_3`, `corollary_3_4` — depend on thm_3_2
-
----
-
-## Phase 8 — Gröbner Basis
-
-### 8A. Squarefreeness
-- [x] `groebnerElement_leadingMonomial_squarefree`
-
-### 8B. Gröbner basis API (BEI/GroebnerAPI.lean)
-- [x] `MonomialOrder.IsRemainder`
-- [x] `MonomialOrder.IsGroebnerBasis`
-- [x] `MonomialOrder.exists_isRemainder`
-- [x] `isGroebnerBasis_iff_sPolynomial_isRemainder` — **Buchberger criterion FULLY PROVED**
-  (WFI + sPolynomial_decomposition' + IsRemainder representation update; ~400 lines)
-
-### 8C. Leading coefficient lemma
-- [x] `groebnerElement_leadingCoeff`
-
-### 8D. S-polynomial reductions (Buchberger case analysis for Theorem 1.1)
-Target: `closed_implies_groebner` in `ClosedGraphs.lean` (NOT in GroebnerBasis.lean)
-**ALL CASES PROVED.** All helper lemmas in ClosedGraphs.lean.
-
-### 8E. `theorem_2_1` — Gröbner basis for admissible paths (GroebnerBasis.lean)
-
-**Approach: Herzog et al. (2010) direct S-polynomial proof (Second Step).**
-
-Buchberger case analysis with 4 S-polynomial cases:
-- [x] Case 1 (i=k, j=l): trivial — same polynomial
-- [x] Case 4 (i=k, j≠l): shared first endpoint — walk construction + x/y-telescope
-- [x] Case 5 (j=l, i≠k): shared last endpoint — y-telescope variant
-- [x] Coprime (i≠k, j≠l): mixed-coverage walk lemma + S-polynomial degree analysis
-
-Key infrastructure built:
-- `isRemainder_fij_of_covered_walk` + `_y` variant (inductive telescope lemmas)
-- `isRemainder_fij_of_mixed_walk` (1081-line generalization for mixed x/y coverage)
-- `walk_from_shared_first` (branch-point walk construction, ~200 lines)
-- Coverage building blocks, degree bounds, pathMonomial exponent analysis
-- `degree_bounds_of_ne` in HerzogLemmas.lean
-
-- [x] `theorem_2_1` — **FULLY PROVED** (2026-03-27)
-
-### 8F. Radical
-- [!] `corollary_2_2` — blocked on Thm 3.2 (radical = intersection of primes) or squarefree initial
-  ideal → radical (not in Mathlib v4.28.0); deferred
+### Phase 6: Minimal Primes (partial)
+- Prop 3.8 (P_T ⊆ P_S characterization): **proved**
+- Cor 3.9 (→): **proved**
 
 ---
 
-## Phase 9 — Theorem 1.1 ✅ COMPLETE
-- [x] `closed_implies_groebner` — PROVED (Buchberger criterion + 4-case S-polynomial analysis)
-- [x] `theorem_1_1` — PROVED (⟨groebner_implies_closed, closed_implies_groebner⟩)
-- [x] `groebner_implies_closed` — PROVED
+## Remaining Work (prioritized)
+
+### Priority 1: Corollary 2.2 — J_G is radical
+**Paper argument:** Thm 2.1 gives a reduced squarefree GB ⇒ in_<(J_G) is squarefree ⇒ J_G radical.
+**Blocker:** The implication "squarefree initial ideal ⇒ radical" requires either:
+  (a) The Gröbner deformation argument (Lemma 4.4.9 of Bruns-Herzog) — needs graded Noetherian lifting not in Mathlib
+  (b) Use Thm 3.2 (J_G = ⋂ primes) to get radical directly — but Thm 3.2 ⊇ uses Cor 2.2 (circular!)
+**Possible approach:** Prove the squarefree-initial-implies-radical lemma directly as a standalone result. The key ingredient is: if in_<(I) is squarefree, then S/I has a flat deformation to S/in_<(I) which is reduced. This is standard but nontrivial commutative algebra.
+**File:** GroebnerBasis.lean, line ~5286
+
+### Priority 2: Theorem 3.2 ⊇ — ⋂ P_S(G) ⊆ J_G
+**Paper argument:** Uses induction on n. Key step: show each minimal prime of J_G is of the form P_S(G).
+  - Show x_i ∈ P iff y_i ∈ P (for minimal prime P)
+  - Reduce to components, then show P = (variables) + (complete graph ideals)
+  - The "f_{ij} ∈ P" step uses x-telescope: x_{i₁} f_{ij} = x_j f_{i,i₁} + x_i f_{i₁,j}, then since x_{i₁} ∉ P and P prime, f_{ij} ∈ P.
+**Dependency:** Cor 2.2 (J_G radical) — but can be broken by proving radical independently.
+**File:** PrimeDecomposition.lean
+
+### Priority 3: Corollary 3.9 ← — minimal primes characterization (reverse)
+**Paper argument:** If c(S\{i}) < c(S) for all i ∈ S, and P_T ⊆ P_S for some proper T ⊂ S, then choosing i ∈ S\T and analyzing connected components of G_{[n]\(S\{i})} gives a contradiction via Prop 3.8.
+**Dependency:** Prop 3.8 (done). Thm 3.2 indirectly (to know all minimal primes are P_S).
+**File:** MinimalPrimes.lean
+
+### Priority 4: Lemma 3.1 — height(P_S) = |S| + (n − c(S))
+**Paper argument:** Direct computation: height = 2|S| + Σ(n_j − 1) = |S| + n − c(S).
+**Blocker:** Needs `Ideal.height` or Krull dimension in Mathlib. `krullDim` exists but computing height of specific ideals requires showing chains of primes.
+**File:** PrimeIdeals.lean
+
+### Priority 5: Prop 3.6 — J_G prime ↔ components complete
+**Paper argument:** If J_G prime, then P_∅ = (J_{G̃₁}, ..., J_{G̃ᵣ}) is the unique minimal prime, so J_G = P_∅, giving G_i = G̃_i.
+**Dependency:** Thm 3.2.
+**File:** PrimeIdeals.lean
+
+### Priority 6: Remaining corollaries (3.3, 3.4, 3.7)
+All depend on Thm 3.2. Straightforward once 3.2 is done.
 
 ---
 
-## Phase 10 — Cohen-Macaulay (deferred; not in Mathlib)
-- [!] All deferred until `IsCohenMacaulay` is in Mathlib
+## Deferred (not in scope)
+
+- **§1 Prop 1.6** (CM sufficient condition) — needs `IsCohenMacaulay` in Mathlib
+- **§4** (CI-ideal applications) — statistical interpretation, not planned for formalization
+- **CohenMacaulay.lean** — 4 sorries, all deferred
 
 ---
 
-## Priority Order (what to work on next)
-
-1. **Phase 6: `corollary_3_9`** — cut-vertex characterization of minimal primes
-3. **Phase 7: `theorem_3_2` ⊇** — radical ideal argument
-4. **Phase 7: corollaries** — once Thm 3.2 proved
-
----
-
-## Sorry Count by File (2026-03-27)
+## Sorry Count by File (2026-03-29)
 | File | Sorries | Notes |
 |------|---------|-------|
-| GroebnerBasis.lean | 1 | corollary_2_2 (deferred) |
-| PrimeIdeals.lean | 2 | lemma_3_1, prop_3_6 |
-| MinimalPrimes.lean | 1 | corollary_3_9 ← only |
-| PrimeDecomposition.lean | 7 | |
+| GroebnerBasis.lean | 1 | Cor 2.2 (blocked) |
+| PrimeIdeals.lean | 2 | Lem 3.1, Prop 3.6 |
+| MinimalPrimes.lean | 1 | Cor 3.9 ← only |
+| PrimeDecomposition.lean | 7 | Thm 3.2 ⊇ + corollaries |
 | CohenMacaulay.lean | 4 | all deferred |
 | RauhApproach.lean | 2 | archived |
-| **Total** | **17** | (theorem_2_1 complete!) |
+| **Total** | **17** | |
 
 ---
 
 ## Notes
-- `groebnerBasisSet_span`: PROVED (GroebnerBasis.lean) — Ideal.span groebnerBasisSet = J_G
-- `theorem_1_1`: PROVED (ClosedGraphs.lean) — closed <-> quadratic GB
-- `isGroebnerBasis_iff_sPolynomial_isRemainder`: PROVED (GroebnerAPI.lean)
-- `primeComponent_isPrime`: PROVED (PrimeIdeals.lean)
-- `theorem_2_1`: PROVED (GroebnerBasis.lean) — reduced Gröbner basis for admissible paths
-- `theorem_3_2` (⊆): proved inline via `binomialEdgeIdeal_le_primeComponent`
-- `RauhApproach.lean`: archived alternative approach (bihomogeneity, crossing, killVars)
-- `corollary_2_2`: deferred (squarefree initial -> radical not in Mathlib v4.28.0)
+- `groebnerBasisSet_span`: PROVED — Ideal.span groebnerBasisSet = J_G
+- `theorem_1_1`: PROVED — closed ↔ quadratic GB
+- `theorem_2_1`: PROVED — reduced GB for admissible paths
+- `theorem_2_1_reduced`: PROVED — GB is reduced
+- `groebnerElement_leadingMonomial_squarefree`: PROVED
+- `isGroebnerBasis_iff_sPolynomial_isRemainder`: PROVED (Buchberger criterion)
+- `primeComponent_isPrime`: PROVED
+- `prop_3_8`: PROVED (P_T ⊆ P_S characterization)
+- `theorem_3_2` (⊆): proved via `binomialEdgeIdeal_le_primeComponent`
+- `corollary_2_2`: blocked on squarefree-initial → radical (not in Mathlib)
 - Cohen-Macaulay: deferred (IsCohenMacaulay not in Mathlib)
+- Section 4 (CI-ideals): not planned for formalization
