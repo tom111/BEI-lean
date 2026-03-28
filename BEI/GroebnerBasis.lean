@@ -3490,14 +3490,208 @@ theorem theorem_2_1 (G : SimpleGraph V) :
         -- nor _y handles this directly. A mixed-coverage walk helper is needed.
         have h₁ : binomialEdgeMonomialOrder.IsRemainder
             (monomial Q₁ 1 * fij (K := K) i k) (groebnerBasisSet G) 0 := by
-          sorry -- needs isRemainder_fij_of_mixed_walk or isRemainder_fij_via_two_walks with sub-paths
+          have hπ_int_nd : (internalVertices π).Nodup :=
+            (hπ.2.2.2.1.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
+          have hσ_int_nd : (internalVertices σ).Nodup :=
+            (hσ.2.2.2.1.sublist (List.tail_sublist σ)).sublist (List.dropLast_sublist _)
+          exact isRemainder_fij_of_mixed_walk G τ_ik.length i k τ_ik Q₁ le_rfl hik
+            hτ_ik_h hτ_ik_l hτ_ik_nd hτ_ik_w (fun w hw => by
+            have hw_ne_i := not_head_of_internal' τ_ik i hτ_ik_h hτ_ik_nd w hw
+            have hw_ne_k := not_last_of_internal' τ_ik i k hτ_ik_h hτ_ik_l hτ_ik_nd w hw
+            have hQ₁_ge_D : ∀ s, Q₁ s ≥ D s := fun s => by
+              simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply]; split_ifs <;> omega
+            -- Check if w is one of the "easy" values covered by Q₁'s extra terms
+            by_cases hw_eq_j : w = j
+            · right; subst hw_eq_j
+              simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply,
+                Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+            · by_cases hw_eq_l : w = l
+              · left; subst hw_eq_l
+                simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply,
+                  Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+              · -- w ≠ i, j, k, l: both fij degrees are 0 at w's position, use sPolyD
+                have hfij_inr0 : binomialEdgeMonomialOrder.degree
+                    (fij (K := K) i j) (Sum.inr w) = 0 := by
+                  rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                  simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr w from
+                    fun h => hw_eq_j (Sum.inr_injective h).symm]
+                have hfkl_inr0 : binomialEdgeMonomialOrder.degree
+                    (fij (K := K) k l) (Sum.inr w) = 0 := by
+                  rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                  simp [show (Sum.inr l : BinomialEdgeVars V) ≠ Sum.inr w from
+                    fun h => hw_eq_l (Sum.inr_injective h).symm]
+                have hfij_inl0 : binomialEdgeMonomialOrder.degree
+                    (fij (K := K) i j) (Sum.inl w) = 0 := by
+                  rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                  simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl w from
+                    fun h => hw_ne_i (Sum.inl_injective h).symm]
+                have hfkl_inl0 : binomialEdgeMonomialOrder.degree
+                    (fij (K := K) k l) (Sum.inl w) = 0 := by
+                  rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                  simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl w from
+                    fun h => hw_ne_k (Sum.inl_injective h).symm]
+                -- Get w's origin and prove coverage via pathMonomial exponents
+                rcases hτ_ik_v w hw with hw_πR | hw_σR | hw_eq_v
+                · have hw_π : w ∈ π := List.mem_reverse.mp
+                    ((List.drop_sublist _ _).mem
+                      ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_πR)))
+                  have hw_int_π : w ∈ internalVertices π :=
+                    mem_internalVertices_of_ne hπ.2.2.2.1 hw_π (List.ne_nil_of_mem hw_π)
+                      (by rwa [head_of_head? hπ.2.1])
+                      (by rwa [getLast_of_getLast? hπ.2.2.1])
+                  rcases hπ.2.2.2.2.1 w hw_π with hw_eq | hw_eq | hwi | hjw
+                  · exact absurd hw_eq hw_ne_i
+                  · exact absurd hw_eq hw_eq_j
+                  · right
+                    have := pathMonomial_exponent_inr_one (K := K) i j π w hw_int_π
+                      hwi hπ_int_nd dπ hdπ
+                    exact le_trans (by omega) (le_trans
+                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₁_ge_D _))
+                  · left
+                    have := pathMonomial_exponent_inl_one (K := K) i j π w hw_int_π
+                      hjw hπ_int_nd dπ hdπ
+                    exact le_trans (by omega) (le_trans
+                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₁_ge_D _))
+                · have hw_σ : w ∈ σ := List.mem_reverse.mp
+                    ((List.drop_sublist _ _).mem
+                      ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_σR)))
+                  have hw_int_σ : w ∈ internalVertices σ :=
+                    mem_internalVertices_of_ne hσ.2.2.2.1 hw_σ (List.ne_nil_of_mem hw_σ)
+                      (by rwa [head_of_head? hσ.2.1])
+                      (by rwa [getLast_of_getLast? hσ.2.2.1])
+                  rcases hσ.2.2.2.2.1 w hw_σ with hw_eq | hw_eq | hwk | hlw
+                  · exact absurd hw_eq hw_ne_k
+                  · exact absurd hw_eq hw_eq_l
+                  · right
+                    have := pathMonomial_exponent_inr_one (K := K) k l σ w hw_int_σ
+                      hwk hσ_int_nd dσ hdσ
+                    exact le_trans (by omega) (le_trans
+                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2 (hQ₁_ge_D _))
+                  · left
+                    have := pathMonomial_exponent_inl_one (K := K) k l σ w hw_int_σ
+                      hlw hσ_int_nd dσ hdσ
+                    exact le_trans (by omega) (le_trans
+                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2 (hQ₁_ge_D _))
+                · subst hw_eq_v
+                  have hv_int_π : w ∈ internalVertices π :=
+                    mem_internalVertices_of_ne hπ.2.2.2.1 hv_π (List.ne_nil_of_mem hv_π)
+                      (by rwa [head_of_head? hπ.2.1])
+                      (by rwa [getLast_of_getLast? hπ.2.2.1])
+                  rcases hπ.2.2.2.2.1 w hv_π with hw_eq | hw_eq | hwi | hjw
+                  · exact absurd hw_eq hw_ne_i
+                  · exact absurd hw_eq hw_eq_j
+                  · right
+                    have := pathMonomial_exponent_inr_one (K := K) i j π w hv_int_π
+                      hwi hπ_int_nd dπ hdπ
+                    exact le_trans (by omega) (le_trans
+                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₁_ge_D _))
+                  · left
+                    have := pathMonomial_exponent_inl_one (K := K) i j π w hv_int_π
+                      hjw hπ_int_nd dπ hdπ
+                    exact le_trans (by omega) (le_trans
+                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₁_ge_D _)))
         -- Now handle fij(j, l)
         rcases lt_or_gt_of_ne heq_j with hjl | hlj
         · -- j < l
-          -- Similarly, τ_jl has mixed coverage for fij(j,l)
           have h₂ : binomialEdgeMonomialOrder.IsRemainder
               (monomial Q₂ 1 * fij (K := K) j l) (groebnerBasisSet G) 0 := by
-            sorry -- needs mixed-coverage walk helper
+            have hπ_int_nd : (internalVertices π).Nodup :=
+              (hπ.2.2.2.1.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
+            have hσ_int_nd : (internalVertices σ).Nodup :=
+              (hσ.2.2.2.1.sublist (List.tail_sublist σ)).sublist (List.dropLast_sublist _)
+            exact isRemainder_fij_of_mixed_walk G τ_jl.length j l τ_jl Q₂ le_rfl hjl
+              hτ_jl_h hτ_jl_l hτ_jl_nd hτ_jl_w (fun w hw => by
+              have hw_ne_j := not_head_of_internal' τ_jl j hτ_jl_h hτ_jl_nd w hw
+              have hw_ne_l := not_last_of_internal' τ_jl j l hτ_jl_h hτ_jl_l hτ_jl_nd w hw
+              have hQ₂_ge_D : ∀ s, Q₂ s ≥ D s := fun s => by
+                simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply]; split_ifs <;> omega
+              by_cases hw_eq_k : w = k
+              · left; subst hw_eq_k
+                simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply,
+                  Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+              · by_cases hw_eq_i : w = i
+                · right; subst hw_eq_i
+                  simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply,
+                    Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+                · have hfij_inr0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) i j) (Sum.inr w) = 0 := by
+                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr w from
+                      fun h => hw_ne_j (Sum.inr_injective h).symm]
+                  have hfkl_inr0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) k l) (Sum.inr w) = 0 := by
+                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inr l : BinomialEdgeVars V) ≠ Sum.inr w from
+                      fun h => hw_ne_l (Sum.inr_injective h).symm]
+                  have hfij_inl0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) i j) (Sum.inl w) = 0 := by
+                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl w from
+                      fun h => hw_eq_i (Sum.inl_injective h).symm]
+                  have hfkl_inl0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) k l) (Sum.inl w) = 0 := by
+                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl w from
+                      fun h => hw_eq_k (Sum.inl_injective h).symm]
+                  rcases hτ_jl_v w hw with hw_πD | hw_σD | hw_eq_v
+                  · have hw_π : w ∈ π :=
+                      (List.drop_sublist _ _).mem
+                        ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_πD))
+                    have hw_int_π : w ∈ internalVertices π :=
+                      mem_internalVertices_of_ne hπ.2.2.2.1 hw_π (List.ne_nil_of_mem hw_π)
+                        (by rwa [head_of_head? hπ.2.1])
+                        (by rwa [getLast_of_getLast? hπ.2.2.1])
+                    rcases hπ.2.2.2.2.1 w hw_π with hw_eq | hw_eq | hwi | hjw
+                    · exact absurd hw_eq hw_eq_i
+                    · exact absurd hw_eq hw_ne_j
+                    · right
+                      have := pathMonomial_exponent_inr_one (K := K) i j π w hw_int_π
+                        hwi hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₂_ge_D _))
+                    · left
+                      have := pathMonomial_exponent_inl_one (K := K) i j π w hw_int_π
+                        hjw hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₂_ge_D _))
+                  · have hw_σ : w ∈ σ :=
+                      (List.drop_sublist _ _).mem
+                        ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_σD))
+                    have hw_int_σ : w ∈ internalVertices σ :=
+                      mem_internalVertices_of_ne hσ.2.2.2.1 hw_σ (List.ne_nil_of_mem hw_σ)
+                        (by rwa [head_of_head? hσ.2.1])
+                        (by rwa [getLast_of_getLast? hσ.2.2.1])
+                    rcases hσ.2.2.2.2.1 w hw_σ with hw_eq | hw_eq | hwk | hlw
+                    · exact absurd hw_eq hw_eq_k
+                    · exact absurd hw_eq hw_ne_l
+                    · right
+                      have := pathMonomial_exponent_inr_one (K := K) k l σ w hw_int_σ
+                        hwk hσ_int_nd dσ hdσ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2 (hQ₂_ge_D _))
+                    · left
+                      have := pathMonomial_exponent_inl_one (K := K) k l σ w hw_int_σ
+                        hlw hσ_int_nd dσ hdσ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2 (hQ₂_ge_D _))
+                  · subst hw_eq_v
+                    have hv_int_π : w ∈ internalVertices π :=
+                      mem_internalVertices_of_ne hπ.2.2.2.1 hv_π (List.ne_nil_of_mem hv_π)
+                        (by rwa [head_of_head? hπ.2.1])
+                        (by rwa [getLast_of_getLast? hπ.2.2.1])
+                    rcases hπ.2.2.2.2.1 w hv_π with hw_eq | hw_eq | hwi | hjw
+                    · exact absurd hw_eq hw_eq_i
+                    · exact absurd hw_eq hw_ne_j
+                    · right
+                      have := pathMonomial_exponent_inr_one (K := K) i j π w hv_int_π
+                        hwi hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₂_ge_D _))
+                    · left
+                      have := pathMonomial_exponent_inl_one (K := K) i j π w hv_int_π
+                        hjw hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₂_ge_D _)))
           have h₂' : binomialEdgeMonomialOrder.IsRemainder
               (-(monomial Q₂ 1 * fij (K := K) j l)) (groebnerBasisSet G) 0 :=
             isRemainder_neg' _ _ h₂
@@ -3568,11 +3762,213 @@ theorem theorem_2_1 (G : SimpleGraph V) :
           -- h₁ for fij(i,k) with i < k: same as j < l case (4 sorries above)
           have h₁ : binomialEdgeMonomialOrder.IsRemainder
               (monomial Q₁ 1 * fij (K := K) i k) (groebnerBasisSet G) 0 := by
-            sorry -- same as j < l case: vertex condition + divisibility for fij(i,k)
+            have hπ_int_nd : (internalVertices π).Nodup :=
+              (hπ.2.2.2.1.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
+            have hσ_int_nd : (internalVertices σ).Nodup :=
+              (hσ.2.2.2.1.sublist (List.tail_sublist σ)).sublist (List.dropLast_sublist _)
+            exact isRemainder_fij_of_mixed_walk G τ_ik.length i k τ_ik Q₁ le_rfl hik
+              hτ_ik_h hτ_ik_l hτ_ik_nd hτ_ik_w (fun w hw => by
+              have hw_ne_i := not_head_of_internal' τ_ik i hτ_ik_h hτ_ik_nd w hw
+              have hw_ne_k := not_last_of_internal' τ_ik i k hτ_ik_h hτ_ik_l hτ_ik_nd w hw
+              have hQ₁_ge_D : ∀ s, Q₁ s ≥ D s := fun s => by
+                simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply]; split_ifs <;> omega
+              by_cases hw_eq_j : w = j
+              · right; subst hw_eq_j
+                simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply,
+                  Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+              · by_cases hw_eq_l : w = l
+                · left; subst hw_eq_l
+                  simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply,
+                    Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+                · have hfij_inr0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) i j) (Sum.inr w) = 0 := by
+                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr w from
+                      fun h => hw_eq_j (Sum.inr_injective h).symm]
+                  have hfkl_inr0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) k l) (Sum.inr w) = 0 := by
+                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inr l : BinomialEdgeVars V) ≠ Sum.inr w from
+                      fun h => hw_eq_l (Sum.inr_injective h).symm]
+                  have hfij_inl0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) i j) (Sum.inl w) = 0 := by
+                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl w from
+                      fun h => hw_ne_i (Sum.inl_injective h).symm]
+                  have hfkl_inl0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) k l) (Sum.inl w) = 0 := by
+                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl w from
+                      fun h => hw_ne_k (Sum.inl_injective h).symm]
+                  rcases hτ_ik_v w hw with hw_πR | hw_σR | hw_eq_v
+                  · have hw_π : w ∈ π := List.mem_reverse.mp
+                      ((List.drop_sublist _ _).mem
+                        ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_πR)))
+                    have hw_int_π : w ∈ internalVertices π :=
+                      mem_internalVertices_of_ne hπ.2.2.2.1 hw_π (List.ne_nil_of_mem hw_π)
+                        (by rwa [head_of_head? hπ.2.1])
+                        (by rwa [getLast_of_getLast? hπ.2.2.1])
+                    rcases hπ.2.2.2.2.1 w hw_π with hw_eq | hw_eq | hwi | hjw
+                    · exact absurd hw_eq hw_ne_i
+                    · exact absurd hw_eq hw_eq_j
+                    · right
+                      have := pathMonomial_exponent_inr_one (K := K) i j π w hw_int_π
+                        hwi hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₁_ge_D _))
+                    · left
+                      have := pathMonomial_exponent_inl_one (K := K) i j π w hw_int_π
+                        hjw hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₁_ge_D _))
+                  · have hw_σ : w ∈ σ := List.mem_reverse.mp
+                      ((List.drop_sublist _ _).mem
+                        ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_σR)))
+                    have hw_int_σ : w ∈ internalVertices σ :=
+                      mem_internalVertices_of_ne hσ.2.2.2.1 hw_σ (List.ne_nil_of_mem hw_σ)
+                        (by rwa [head_of_head? hσ.2.1])
+                        (by rwa [getLast_of_getLast? hσ.2.2.1])
+                    rcases hσ.2.2.2.2.1 w hw_σ with hw_eq | hw_eq | hwk | hlw
+                    · exact absurd hw_eq hw_ne_k
+                    · exact absurd hw_eq hw_eq_l
+                    · right
+                      have := pathMonomial_exponent_inr_one (K := K) k l σ w hw_int_σ
+                        hwk hσ_int_nd dσ hdσ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2 (hQ₁_ge_D _))
+                    · left
+                      have := pathMonomial_exponent_inl_one (K := K) k l σ w hw_int_σ
+                        hlw hσ_int_nd dσ hdσ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2 (hQ₁_ge_D _))
+                  · subst hw_eq_v
+                    have hv_int_π : w ∈ internalVertices π :=
+                      mem_internalVertices_of_ne hπ.2.2.2.1 hv_π (List.ne_nil_of_mem hv_π)
+                        (by rwa [head_of_head? hπ.2.1])
+                        (by rwa [getLast_of_getLast? hπ.2.2.1])
+                    rcases hπ.2.2.2.2.1 w hv_π with hw_eq | hw_eq | hwi | hjw
+                    · exact absurd hw_eq hw_ne_i
+                    · exact absurd hw_eq hw_eq_j
+                    · right
+                      have := pathMonomial_exponent_inr_one (K := K) i j π w hv_int_π
+                        hwi hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₁_ge_D _))
+                    · left
+                      have := pathMonomial_exponent_inl_one (K := K) i j π w hv_int_π
+                        hjw hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₁_ge_D _)))
           -- h₂ for fij(l,j) with l < j
           have h₂ : binomialEdgeMonomialOrder.IsRemainder
               (monomial Q₂ 1 * fij (K := K) l j) (groebnerBasisSet G) 0 := by
-            sorry -- vertex condition + divisibility for fij(l,j) via reversed τ_jl
+            have hπ_int_nd : (internalVertices π).Nodup :=
+              (hπ.2.2.2.1.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
+            have hσ_int_nd : (internalVertices σ).Nodup :=
+              (hσ.2.2.2.1.sublist (List.tail_sublist σ)).sublist (List.dropLast_sublist _)
+            exact isRemainder_fij_of_mixed_walk G τ_jl.reverse.length l j τ_jl.reverse Q₂ le_rfl hlj
+              (by rw [List.head?_reverse]; exact hτ_jl_l)
+              (by rw [List.getLast?_reverse]; exact hτ_jl_h)
+              (List.nodup_reverse.mpr hτ_jl_nd)
+              (chain'_reverse' G τ_jl hτ_jl_w)
+              (fun w hw => by
+              have hw_orig := mem_internalVertices_reverse hw
+              have hw_ne_l := not_head_of_internal' τ_jl.reverse l
+                (by rw [List.head?_reverse]; exact hτ_jl_l)
+                (List.nodup_reverse.mpr hτ_jl_nd) w hw
+              have hw_ne_j := not_last_of_internal' τ_jl.reverse l j
+                (by rw [List.head?_reverse]; exact hτ_jl_l)
+                (by rw [List.getLast?_reverse]; exact hτ_jl_h)
+                (List.nodup_reverse.mpr hτ_jl_nd) w hw
+              have hQ₂_ge_D : ∀ s, Q₂ s ≥ D s := fun s => by
+                simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply]; split_ifs <;> omega
+              by_cases hw_eq_k : w = k
+              · left; subst hw_eq_k
+                simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply,
+                  Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+              · by_cases hw_eq_i : w = i
+                · right; subst hw_eq_i
+                  simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply,
+                    Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+                · have hfij_inr0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) i j) (Sum.inr w) = 0 := by
+                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr w from
+                      fun h => hw_ne_j (Sum.inr_injective h).symm]
+                  have hfkl_inr0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) k l) (Sum.inr w) = 0 := by
+                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inr l : BinomialEdgeVars V) ≠ Sum.inr w from
+                      fun h => hw_ne_l (Sum.inr_injective h).symm]
+                  have hfij_inl0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) i j) (Sum.inl w) = 0 := by
+                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl w from
+                      fun h => hw_eq_i (Sum.inl_injective h).symm]
+                  have hfkl_inl0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) k l) (Sum.inl w) = 0 := by
+                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl w from
+                      fun h => hw_eq_k (Sum.inl_injective h).symm]
+                  rcases hτ_jl_v w hw_orig with hw_πD | hw_σD | hw_eq_v
+                  · have hw_π : w ∈ π :=
+                      (List.drop_sublist _ _).mem
+                        ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_πD))
+                    have hw_int_π : w ∈ internalVertices π :=
+                      mem_internalVertices_of_ne hπ.2.2.2.1 hw_π (List.ne_nil_of_mem hw_π)
+                        (by rwa [head_of_head? hπ.2.1])
+                        (by rwa [getLast_of_getLast? hπ.2.2.1])
+                    rcases hπ.2.2.2.2.1 w hw_π with hw_eq | hw_eq | hwi | hjw
+                    · exact absurd hw_eq hw_eq_i
+                    · exact absurd hw_eq hw_ne_j
+                    · right
+                      have := pathMonomial_exponent_inr_one (K := K) i j π w hw_int_π
+                        hwi hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₂_ge_D _))
+                    · left
+                      have := pathMonomial_exponent_inl_one (K := K) i j π w hw_int_π
+                        hjw hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₂_ge_D _))
+                  · have hw_σ : w ∈ σ :=
+                      (List.drop_sublist _ _).mem
+                        ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_σD))
+                    have hw_int_σ : w ∈ internalVertices σ :=
+                      mem_internalVertices_of_ne hσ.2.2.2.1 hw_σ (List.ne_nil_of_mem hw_σ)
+                        (by rwa [head_of_head? hσ.2.1])
+                        (by rwa [getLast_of_getLast? hσ.2.2.1])
+                    rcases hσ.2.2.2.2.1 w hw_σ with hw_eq | hw_eq | hwk | hlw
+                    · exact absurd hw_eq hw_eq_k
+                    · exact absurd hw_eq hw_ne_l
+                    · right
+                      have := pathMonomial_exponent_inr_one (K := K) k l σ w hw_int_σ
+                        hwk hσ_int_nd dσ hdσ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2 (hQ₂_ge_D _))
+                    · left
+                      have := pathMonomial_exponent_inl_one (K := K) k l σ w hw_int_σ
+                        hlw hσ_int_nd dσ hdσ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2 (hQ₂_ge_D _))
+                  · subst hw_eq_v
+                    have hv_int_π : w ∈ internalVertices π :=
+                      mem_internalVertices_of_ne hπ.2.2.2.1 hv_π (List.ne_nil_of_mem hv_π)
+                        (by rwa [head_of_head? hπ.2.1])
+                        (by rwa [getLast_of_getLast? hπ.2.2.1])
+                    rcases hπ.2.2.2.2.1 w hv_π with hw_eq | hw_eq | hwi | hjw
+                    · exact absurd hw_eq hw_eq_i
+                    · exact absurd hw_eq hw_ne_j
+                    · right
+                      have := pathMonomial_exponent_inr_one (K := K) i j π w hv_int_π
+                        hwi hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₂_ge_D _))
+                    · left
+                      have := pathMonomial_exponent_inl_one (K := K) i j π w hv_int_π
+                        hjw hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₂_ge_D _)))
           -- Algebraic equalities
           have hQ₁_eq : monomial D (1 : K) * x l * y j = monomial Q₁ 1 := by
             simp only [x, y, X]; rw [monomial_mul, one_mul, monomial_mul, one_mul]
@@ -3653,7 +4049,588 @@ theorem theorem_2_1 (G : SimpleGraph V) :
         -- This has the same structure as the i < k case with (k,i) and (l,j) playing the roles
         -- of (i,k) and (j,l). Since k < i, fij(k,i) has k < i.
         -- The proof follows the same pattern as the i < k case above.
-        sorry -- same-structure proof with swapped roles: k < i, and l vs j ordering
+        -- Prove h₁: IsRemainder (monomial Q₁ 1 * fij k i) G 0
+        -- Walk from k to i via τ_ik.reverse (k < i)
+        have h₁ : binomialEdgeMonomialOrder.IsRemainder
+            (monomial Q₁ 1 * fij (K := K) k i) (groebnerBasisSet G) 0 := by
+          have hπ_int_nd : (internalVertices π).Nodup :=
+            (hπ.2.2.2.1.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
+          have hσ_int_nd : (internalVertices σ).Nodup :=
+            (hσ.2.2.2.1.sublist (List.tail_sublist σ)).sublist (List.dropLast_sublist _)
+          exact isRemainder_fij_of_mixed_walk G τ_ik.reverse.length k i τ_ik.reverse Q₁ le_rfl hki
+            (by rw [List.head?_reverse]; exact hτ_ik_l)
+            (by rw [List.getLast?_reverse]; exact hτ_ik_h)
+            (List.nodup_reverse.mpr hτ_ik_nd)
+            (chain'_reverse' G τ_ik hτ_ik_w)
+            (fun w hw => by
+            have hw_orig := mem_internalVertices_reverse hw
+            have hw_ne_k := not_head_of_internal' τ_ik.reverse k
+              (by rw [List.head?_reverse]; exact hτ_ik_l)
+              (List.nodup_reverse.mpr hτ_ik_nd) w hw
+            have hw_ne_i := not_last_of_internal' τ_ik.reverse k i
+              (by rw [List.head?_reverse]; exact hτ_ik_l)
+              (by rw [List.getLast?_reverse]; exact hτ_ik_h)
+              (List.nodup_reverse.mpr hτ_ik_nd) w hw
+            have hQ₁_ge_D : ∀ s, Q₁ s ≥ D s := fun s => by
+              simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply]; split_ifs <;> omega
+            by_cases hw_eq_j : w = j
+            · right; subst hw_eq_j
+              simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply,
+                Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+            · by_cases hw_eq_l : w = l
+              · left; subst hw_eq_l
+                simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply,
+                  Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+              · have hfij_inr0 : binomialEdgeMonomialOrder.degree
+                    (fij (K := K) i j) (Sum.inr w) = 0 := by
+                  rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                  simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr w from
+                    fun h => hw_eq_j (Sum.inr_injective h).symm]
+                have hfkl_inr0 : binomialEdgeMonomialOrder.degree
+                    (fij (K := K) k l) (Sum.inr w) = 0 := by
+                  rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                  simp [show (Sum.inr l : BinomialEdgeVars V) ≠ Sum.inr w from
+                    fun h => hw_eq_l (Sum.inr_injective h).symm]
+                have hfij_inl0 : binomialEdgeMonomialOrder.degree
+                    (fij (K := K) i j) (Sum.inl w) = 0 := by
+                  rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                  simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl w from
+                    fun h => hw_ne_i (Sum.inl_injective h).symm]
+                have hfkl_inl0 : binomialEdgeMonomialOrder.degree
+                    (fij (K := K) k l) (Sum.inl w) = 0 := by
+                  rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                  simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl w from
+                    fun h => hw_ne_k (Sum.inl_injective h).symm]
+                rcases hτ_ik_v w hw_orig with hw_πR | hw_σR | hw_eq_v
+                · have hw_π : w ∈ π := List.mem_reverse.mp
+                    ((List.drop_sublist _ _).mem
+                      ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_πR)))
+                  have hw_int_π : w ∈ internalVertices π :=
+                    mem_internalVertices_of_ne hπ.2.2.2.1 hw_π (List.ne_nil_of_mem hw_π)
+                      (by rwa [head_of_head? hπ.2.1])
+                      (by rwa [getLast_of_getLast? hπ.2.2.1])
+                  rcases hπ.2.2.2.2.1 w hw_π with hw_eq | hw_eq | hwi | hjw
+                  · exact absurd hw_eq hw_ne_i
+                  · exact absurd hw_eq hw_eq_j
+                  · right
+                    have := pathMonomial_exponent_inr_one (K := K) i j π w hw_int_π
+                      hwi hπ_int_nd dπ hdπ
+                    exact le_trans (by omega) (le_trans
+                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₁_ge_D _))
+                  · left
+                    have := pathMonomial_exponent_inl_one (K := K) i j π w hw_int_π
+                      hjw hπ_int_nd dπ hdπ
+                    exact le_trans (by omega) (le_trans
+                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₁_ge_D _))
+                · have hw_σ : w ∈ σ := List.mem_reverse.mp
+                    ((List.drop_sublist _ _).mem
+                      ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_σR)))
+                  have hw_int_σ : w ∈ internalVertices σ :=
+                    mem_internalVertices_of_ne hσ.2.2.2.1 hw_σ (List.ne_nil_of_mem hw_σ)
+                      (by rwa [head_of_head? hσ.2.1])
+                      (by rwa [getLast_of_getLast? hσ.2.2.1])
+                  rcases hσ.2.2.2.2.1 w hw_σ with hw_eq | hw_eq | hwk | hlw
+                  · exact absurd hw_eq hw_ne_k
+                  · exact absurd hw_eq hw_eq_l
+                  · right
+                    have := pathMonomial_exponent_inr_one (K := K) k l σ w hw_int_σ
+                      hwk hσ_int_nd dσ hdσ
+                    exact le_trans (by omega) (le_trans
+                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2 (hQ₁_ge_D _))
+                  · left
+                    have := pathMonomial_exponent_inl_one (K := K) k l σ w hw_int_σ
+                      hlw hσ_int_nd dσ hdσ
+                    exact le_trans (by omega) (le_trans
+                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2 (hQ₁_ge_D _))
+                · subst hw_eq_v
+                  have hv_int_π : w ∈ internalVertices π :=
+                    mem_internalVertices_of_ne hπ.2.2.2.1 hv_π (List.ne_nil_of_mem hv_π)
+                      (by rwa [head_of_head? hπ.2.1])
+                      (by rwa [getLast_of_getLast? hπ.2.2.1])
+                  rcases hπ.2.2.2.2.1 w hv_π with hw_eq | hw_eq | hwi | hjw
+                  · exact absurd hw_eq hw_ne_i
+                  · exact absurd hw_eq hw_eq_j
+                  · right
+                    have := pathMonomial_exponent_inr_one (K := K) i j π w hv_int_π
+                      hwi hπ_int_nd dπ hdπ
+                    exact le_trans (by omega) (le_trans
+                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₁_ge_D _))
+                  · left
+                    have := pathMonomial_exponent_inl_one (K := K) i j π w hv_int_π
+                      hjw hπ_int_nd dπ hdπ
+                    exact le_trans (by omega) (le_trans
+                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₁_ge_D _)))
+        -- Now handle fij(l, j) or fij(j, l)
+        rcases lt_or_gt_of_ne heq_j with hjl | hlj
+        · -- j < l: fij(l, j) = -(fij(j, l)), subtraction becomes addition
+          have h₂ : binomialEdgeMonomialOrder.IsRemainder
+              (monomial Q₂ 1 * fij (K := K) j l) (groebnerBasisSet G) 0 := by
+            have hπ_int_nd : (internalVertices π).Nodup :=
+              (hπ.2.2.2.1.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
+            have hσ_int_nd : (internalVertices σ).Nodup :=
+              (hσ.2.2.2.1.sublist (List.tail_sublist σ)).sublist (List.dropLast_sublist _)
+            exact isRemainder_fij_of_mixed_walk G τ_jl.length j l τ_jl Q₂ le_rfl hjl
+              hτ_jl_h hτ_jl_l hτ_jl_nd hτ_jl_w (fun w hw => by
+              have hw_ne_j := not_head_of_internal' τ_jl j hτ_jl_h hτ_jl_nd w hw
+              have hw_ne_l := not_last_of_internal' τ_jl j l hτ_jl_h hτ_jl_l hτ_jl_nd w hw
+              have hQ₂_ge_D : ∀ s, Q₂ s ≥ D s := fun s => by
+                simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply]; split_ifs <;> omega
+              by_cases hw_eq_k : w = k
+              · left; subst hw_eq_k
+                simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply,
+                  Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+              · by_cases hw_eq_i : w = i
+                · right; subst hw_eq_i
+                  simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply,
+                    Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+                · have hfij_inr0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) i j) (Sum.inr w) = 0 := by
+                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr w from
+                      fun h => hw_ne_j (Sum.inr_injective h).symm]
+                  have hfkl_inr0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) k l) (Sum.inr w) = 0 := by
+                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inr l : BinomialEdgeVars V) ≠ Sum.inr w from
+                      fun h => hw_ne_l (Sum.inr_injective h).symm]
+                  have hfij_inl0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) i j) (Sum.inl w) = 0 := by
+                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl w from
+                      fun h => hw_eq_i (Sum.inl_injective h).symm]
+                  have hfkl_inl0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) k l) (Sum.inl w) = 0 := by
+                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl w from
+                      fun h => hw_eq_k (Sum.inl_injective h).symm]
+                  rcases hτ_jl_v w hw with hw_πD | hw_σD | hw_eq_v
+                  · have hw_π : w ∈ π :=
+                      (List.drop_sublist _ _).mem
+                        ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_πD))
+                    have hw_int_π : w ∈ internalVertices π :=
+                      mem_internalVertices_of_ne hπ.2.2.2.1 hw_π (List.ne_nil_of_mem hw_π)
+                        (by rwa [head_of_head? hπ.2.1])
+                        (by rwa [getLast_of_getLast? hπ.2.2.1])
+                    rcases hπ.2.2.2.2.1 w hw_π with hw_eq | hw_eq | hwi | hjw
+                    · exact absurd hw_eq hw_eq_i
+                    · exact absurd hw_eq hw_ne_j
+                    · right
+                      have := pathMonomial_exponent_inr_one (K := K) i j π w hw_int_π
+                        hwi hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₂_ge_D _))
+                    · left
+                      have := pathMonomial_exponent_inl_one (K := K) i j π w hw_int_π
+                        hjw hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₂_ge_D _))
+                  · have hw_σ : w ∈ σ :=
+                      (List.drop_sublist _ _).mem
+                        ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_σD))
+                    have hw_int_σ : w ∈ internalVertices σ :=
+                      mem_internalVertices_of_ne hσ.2.2.2.1 hw_σ (List.ne_nil_of_mem hw_σ)
+                        (by rwa [head_of_head? hσ.2.1])
+                        (by rwa [getLast_of_getLast? hσ.2.2.1])
+                    rcases hσ.2.2.2.2.1 w hw_σ with hw_eq | hw_eq | hwk | hlw
+                    · exact absurd hw_eq hw_eq_k
+                    · exact absurd hw_eq hw_ne_l
+                    · right
+                      have := pathMonomial_exponent_inr_one (K := K) k l σ w hw_int_σ
+                        hwk hσ_int_nd dσ hdσ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2 (hQ₂_ge_D _))
+                    · left
+                      have := pathMonomial_exponent_inl_one (K := K) k l σ w hw_int_σ
+                        hlw hσ_int_nd dσ hdσ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2 (hQ₂_ge_D _))
+                  · subst hw_eq_v
+                    have hv_int_π : w ∈ internalVertices π :=
+                      mem_internalVertices_of_ne hπ.2.2.2.1 hv_π (List.ne_nil_of_mem hv_π)
+                        (by rwa [head_of_head? hπ.2.1])
+                        (by rwa [getLast_of_getLast? hπ.2.2.1])
+                    rcases hπ.2.2.2.2.1 w hv_π with hw_eq | hw_eq | hwi | hjw
+                    · exact absurd hw_eq hw_eq_i
+                    · exact absurd hw_eq hw_ne_j
+                    · right
+                      have := pathMonomial_exponent_inr_one (K := K) i j π w hv_int_π
+                        hwi hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₂_ge_D _))
+                    · left
+                      have := pathMonomial_exponent_inl_one (K := K) i j π w hv_int_π
+                        hjw hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₂_ge_D _)))
+          -- Algebraic equalities
+          have hQ₁_eq : monomial D (1 : K) * x l * y j = monomial Q₁ 1 := by
+            simp only [x, y, X]; rw [monomial_mul, one_mul, monomial_mul, one_mul]
+          have hQ₂_eq : monomial D (1 : K) * x k * y i = monomial Q₂ 1 := by
+            simp only [x, y, X]; rw [monomial_mul, one_mul, monomial_mul, one_mul]
+          -- fij(l, j) = -(fij(j, l)), so subtraction becomes addition
+          -- x l * y j * fij k i - x k * y i * fij l j
+          -- = Q₁ * fij k i - Q₂ * (-(fij j l)) = Q₁ * fij k i + Q₂ * fij j l
+          suffices heq : (monomial D) ((1 : K) * 1) *
+              (x (K := K) l * y j * fij k i - x k * y i * fij l j) =
+              monomial Q₁ 1 * fij (K := K) k i + monomial Q₂ 1 * fij (K := K) j l by
+            rw [heq]
+            have hdeg_ne : binomialEdgeMonomialOrder.degree (monomial Q₁ 1 * fij (K := K) k i) ≠
+                binomialEdgeMonomialOrder.degree (monomial Q₂ 1 * fij (K := K) j l) := by
+              classical
+              have hdeg₁ : binomialEdgeMonomialOrder.degree (monomial Q₁ (1 : K) * fij k i) =
+                  Q₁ + (Finsupp.single (Sum.inl k : BinomialEdgeVars V) 1 +
+                        Finsupp.single (Sum.inr i : BinomialEdgeVars V) 1) := by
+                rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero)
+                  (fij_ne_zero (K := K) k i hki),
+                  degree_monomial, if_neg one_ne_zero, fij_degree k i hki]
+              have hdeg₂ : binomialEdgeMonomialOrder.degree (monomial Q₂ (1 : K) * fij j l) =
+                  Q₂ + (Finsupp.single (Sum.inl j : BinomialEdgeVars V) 1 +
+                        Finsupp.single (Sum.inr l : BinomialEdgeVars V) 1) := by
+                rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero)
+                  (fij_ne_zero (K := K) j l hjl),
+                  degree_monomial, if_neg one_ne_zero, fij_degree j l hjl]
+              rw [hdeg₁, hdeg₂]; intro heq'
+              -- Evaluate at Sum.inl l to derive contradiction
+              have h_eval := Finsupp.ext_iff.mp heq' (Sum.inl l : BinomialEdgeVars V)
+              have ev₁ : (Q₁ + (Finsupp.single (Sum.inl k : BinomialEdgeVars V) 1 +
+                  Finsupp.single (Sum.inr i : BinomialEdgeVars V) 1 : BinomialEdgeVars V →₀ ℕ))
+                  (Sum.inl l) = Q₁ (Sum.inl l) := by
+                unfold BinomialEdgeVars at Q₁ hQ₁_def ⊢
+                simp only [Finsupp.add_apply, Finsupp.single_apply,
+                  show ¬((Sum.inl k : V ⊕ V) = Sum.inl l) from
+                    fun h => ne_of_lt hkl (Sum.inl.inj h),
+                  Sum.inr_ne_inl, ite_false, add_zero]
+              have ev₂ : (Q₂ + (Finsupp.single (Sum.inl j : BinomialEdgeVars V) 1 +
+                  Finsupp.single (Sum.inr l : BinomialEdgeVars V) 1 : BinomialEdgeVars V →₀ ℕ))
+                  (Sum.inl l) = Q₂ (Sum.inl l) := by
+                unfold BinomialEdgeVars at Q₂ hQ₂_def ⊢
+                simp only [Finsupp.add_apply, Finsupp.single_apply,
+                  show ¬((Sum.inl j : V ⊕ V) = Sum.inl l) from
+                    fun h => heq_j (Sum.inl.inj h),
+                  Sum.inr_ne_inl, ite_false, add_zero]
+              rw [ev₁, ev₂] at h_eval
+              have hQ₁_val : Q₁ (Sum.inl l) = D (Sum.inl l) + 1 := by
+                unfold BinomialEdgeVars at Q₁ hQ₁_def ⊢
+                simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply,
+                  show ((Sum.inl l : V ⊕ V) = Sum.inl l) from rfl,
+                  Sum.inr_ne_inl, ite_true, ite_false]; omega
+              have hQ₂_val : Q₂ (Sum.inl l) = D (Sum.inl l) := by
+                unfold BinomialEdgeVars at Q₂ hQ₂_def ⊢
+                simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply,
+                  show ¬((Sum.inl k : V ⊕ V) = Sum.inl l) from
+                    fun h => ne_of_lt hkl (Sum.inl.inj h),
+                  Sum.inr_ne_inl, ite_false, add_zero]
+              omega
+            obtain ⟨hd₁, hd₂⟩ := degree_bounds_of_ne _ _ hdeg_ne
+            exact isRemainder_add _ _ _ h₁ h₂ hd₁ hd₂
+          -- Prove the algebraic equality: fij l j = -(fij j l)
+          have hflj : fij (K := K) l j = -(fij (K := K) j l) := fij_antisymm l j
+          rw [show (monomial D) ((1 : K) * 1) * (x l * y j * fij k i - x k * y i * fij l j)
+              = monomial D 1 * x l * y j * fij k i -
+                monomial D 1 * x k * y i * fij l j from by ring,
+            hflj, show monomial D (1 : K) * x k * y i * -(fij (K := K) j l) =
+              -(monomial D 1 * x k * y i * fij j l) from by ring,
+            sub_neg_eq_add,
+            show monomial D (1 : K) * x l * y j * fij k i =
+              (monomial D 1 * x l * y j) * fij k i from by ring,
+            show monomial D (1 : K) * x k * y i * fij j l =
+              (monomial D 1 * x k * y i) * fij j l from by ring,
+            hQ₁_eq, hQ₂_eq]
+        · -- l < j: use ring identity to rewrite with different quotient monomials
+          -- x l * y j * fij k i - x k * y i * fij l j = x j * y l * fij k i - x i * y k * fij l j
+          -- Define R₁ = D + single(inl j) + single(inr l), R₂ = D + single(inl i) + single(inr k)
+          set R₁ := D + (Finsupp.single (Sum.inl j) 1 : BinomialEdgeVars V →₀ ℕ) +
+                         (Finsupp.single (Sum.inr l) 1 : BinomialEdgeVars V →₀ ℕ) with hR₁_def
+          set R₂ := D + (Finsupp.single (Sum.inl i) 1 : BinomialEdgeVars V →₀ ℕ) +
+                         (Finsupp.single (Sum.inr k) 1 : BinomialEdgeVars V →₀ ℕ) with hR₂_def
+          have h₁R : binomialEdgeMonomialOrder.IsRemainder
+              (monomial R₁ 1 * fij (K := K) k i) (groebnerBasisSet G) 0 := by
+            have hπ_int_nd : (internalVertices π).Nodup :=
+              (hπ.2.2.2.1.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
+            have hσ_int_nd : (internalVertices σ).Nodup :=
+              (hσ.2.2.2.1.sublist (List.tail_sublist σ)).sublist (List.dropLast_sublist _)
+            exact isRemainder_fij_of_mixed_walk G τ_ik.reverse.length k i τ_ik.reverse R₁ le_rfl hki
+              (by rw [List.head?_reverse]; exact hτ_ik_l)
+              (by rw [List.getLast?_reverse]; exact hτ_ik_h)
+              (List.nodup_reverse.mpr hτ_ik_nd)
+              (chain'_reverse' G τ_ik hτ_ik_w)
+              (fun w hw => by
+              have hw_orig := mem_internalVertices_reverse hw
+              have hw_ne_k := not_head_of_internal' τ_ik.reverse k
+                (by rw [List.head?_reverse]; exact hτ_ik_l)
+                (List.nodup_reverse.mpr hτ_ik_nd) w hw
+              have hw_ne_i := not_last_of_internal' τ_ik.reverse k i
+                (by rw [List.head?_reverse]; exact hτ_ik_l)
+                (by rw [List.getLast?_reverse]; exact hτ_ik_h)
+                (List.nodup_reverse.mpr hτ_ik_nd) w hw
+              have hR₁_ge_D : ∀ s, R₁ s ≥ D s := fun s => by
+                simp only [hR₁_def, Finsupp.add_apply, Finsupp.single_apply]; split_ifs <;> omega
+              by_cases hw_eq_j : w = j
+              · left; subst hw_eq_j
+                simp only [hR₁_def, Finsupp.add_apply, Finsupp.single_apply,
+                  Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+              · by_cases hw_eq_l : w = l
+                · right; subst hw_eq_l
+                  simp only [hR₁_def, Finsupp.add_apply, Finsupp.single_apply,
+                    Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+                · have hfij_inr0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) i j) (Sum.inr w) = 0 := by
+                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr w from
+                      fun h => hw_eq_j (Sum.inr_injective h).symm]
+                  have hfkl_inr0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) k l) (Sum.inr w) = 0 := by
+                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inr l : BinomialEdgeVars V) ≠ Sum.inr w from
+                      fun h => hw_eq_l (Sum.inr_injective h).symm]
+                  have hfij_inl0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) i j) (Sum.inl w) = 0 := by
+                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl w from
+                      fun h => hw_ne_i (Sum.inl_injective h).symm]
+                  have hfkl_inl0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) k l) (Sum.inl w) = 0 := by
+                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl w from
+                      fun h => hw_ne_k (Sum.inl_injective h).symm]
+                  rcases hτ_ik_v w hw_orig with hw_πR | hw_σR | hw_eq_v
+                  · have hw_π : w ∈ π := List.mem_reverse.mp
+                      ((List.drop_sublist _ _).mem
+                        ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_πR)))
+                    have hw_int_π : w ∈ internalVertices π :=
+                      mem_internalVertices_of_ne hπ.2.2.2.1 hw_π (List.ne_nil_of_mem hw_π)
+                        (by rwa [head_of_head? hπ.2.1])
+                        (by rwa [getLast_of_getLast? hπ.2.2.1])
+                    rcases hπ.2.2.2.2.1 w hw_π with hw_eq | hw_eq | hwi | hjw
+                    · exact absurd hw_eq hw_ne_i
+                    · exact absurd hw_eq hw_eq_j
+                    · right
+                      have := pathMonomial_exponent_inr_one (K := K) i j π w hw_int_π
+                        hwi hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hR₁_ge_D _))
+                    · left
+                      have := pathMonomial_exponent_inl_one (K := K) i j π w hw_int_π
+                        hjw hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hR₁_ge_D _))
+                  · have hw_σ : w ∈ σ := List.mem_reverse.mp
+                      ((List.drop_sublist _ _).mem
+                        ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_σR)))
+                    have hw_int_σ : w ∈ internalVertices σ :=
+                      mem_internalVertices_of_ne hσ.2.2.2.1 hw_σ (List.ne_nil_of_mem hw_σ)
+                        (by rwa [head_of_head? hσ.2.1])
+                        (by rwa [getLast_of_getLast? hσ.2.2.1])
+                    rcases hσ.2.2.2.2.1 w hw_σ with hw_eq | hw_eq | hwk | hlw
+                    · exact absurd hw_eq hw_ne_k
+                    · exact absurd hw_eq hw_eq_l
+                    · right
+                      have := pathMonomial_exponent_inr_one (K := K) k l σ w hw_int_σ
+                        hwk hσ_int_nd dσ hdσ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2 (hR₁_ge_D _))
+                    · left
+                      have := pathMonomial_exponent_inl_one (K := K) k l σ w hw_int_σ
+                        hlw hσ_int_nd dσ hdσ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2 (hR₁_ge_D _))
+                  · subst hw_eq_v
+                    have hv_int_π : w ∈ internalVertices π :=
+                      mem_internalVertices_of_ne hπ.2.2.2.1 hv_π (List.ne_nil_of_mem hv_π)
+                        (by rwa [head_of_head? hπ.2.1])
+                        (by rwa [getLast_of_getLast? hπ.2.2.1])
+                    rcases hπ.2.2.2.2.1 w hv_π with hw_eq | hw_eq | hwi | hjw
+                    · exact absurd hw_eq hw_ne_i
+                    · exact absurd hw_eq hw_eq_j
+                    · right
+                      have := pathMonomial_exponent_inr_one (K := K) i j π w hv_int_π
+                        hwi hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hR₁_ge_D _))
+                    · left
+                      have := pathMonomial_exponent_inl_one (K := K) i j π w hv_int_π
+                        hjw hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hR₁_ge_D _)))
+          have h₂R : binomialEdgeMonomialOrder.IsRemainder
+              (monomial R₂ 1 * fij (K := K) l j) (groebnerBasisSet G) 0 := by
+            have hπ_int_nd : (internalVertices π).Nodup :=
+              (hπ.2.2.2.1.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
+            have hσ_int_nd : (internalVertices σ).Nodup :=
+              (hσ.2.2.2.1.sublist (List.tail_sublist σ)).sublist (List.dropLast_sublist _)
+            exact isRemainder_fij_of_mixed_walk G τ_jl.reverse.length l j τ_jl.reverse R₂ le_rfl hlj
+              (by rw [List.head?_reverse]; exact hτ_jl_l)
+              (by rw [List.getLast?_reverse]; exact hτ_jl_h)
+              (List.nodup_reverse.mpr hτ_jl_nd)
+              (chain'_reverse' G τ_jl hτ_jl_w)
+              (fun w hw => by
+              have hw_orig := mem_internalVertices_reverse hw
+              have hw_ne_l := not_head_of_internal' τ_jl.reverse l
+                (by rw [List.head?_reverse]; exact hτ_jl_l)
+                (List.nodup_reverse.mpr hτ_jl_nd) w hw
+              have hw_ne_j := not_last_of_internal' τ_jl.reverse l j
+                (by rw [List.head?_reverse]; exact hτ_jl_l)
+                (by rw [List.getLast?_reverse]; exact hτ_jl_h)
+                (List.nodup_reverse.mpr hτ_jl_nd) w hw
+              have hR₂_ge_D : ∀ s, R₂ s ≥ D s := fun s => by
+                simp only [hR₂_def, Finsupp.add_apply, Finsupp.single_apply]; split_ifs <;> omega
+              by_cases hw_eq_i : w = i
+              · left; subst hw_eq_i
+                simp only [hR₂_def, Finsupp.add_apply, Finsupp.single_apply,
+                  Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+              · by_cases hw_eq_k : w = k
+                · right; subst hw_eq_k
+                  simp only [hR₂_def, Finsupp.add_apply, Finsupp.single_apply,
+                    Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+                · have hfij_inr0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) i j) (Sum.inr w) = 0 := by
+                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr w from
+                      fun h => hw_ne_j (Sum.inr_injective h).symm]
+                  have hfkl_inr0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) k l) (Sum.inr w) = 0 := by
+                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inr l : BinomialEdgeVars V) ≠ Sum.inr w from
+                      fun h => hw_ne_l (Sum.inr_injective h).symm]
+                  have hfij_inl0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) i j) (Sum.inl w) = 0 := by
+                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl w from
+                      fun h => hw_eq_i (Sum.inl_injective h).symm]
+                  have hfkl_inl0 : binomialEdgeMonomialOrder.degree
+                      (fij (K := K) k l) (Sum.inl w) = 0 := by
+                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+                    simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl w from
+                      fun h => hw_eq_k (Sum.inl_injective h).symm]
+                  rcases hτ_jl_v w hw_orig with hw_πD | hw_σD | hw_eq_v
+                  · have hw_π : w ∈ π :=
+                      (List.drop_sublist _ _).mem
+                        ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_πD))
+                    have hw_int_π : w ∈ internalVertices π :=
+                      mem_internalVertices_of_ne hπ.2.2.2.1 hw_π (List.ne_nil_of_mem hw_π)
+                        (by rwa [head_of_head? hπ.2.1])
+                        (by rwa [getLast_of_getLast? hπ.2.2.1])
+                    rcases hπ.2.2.2.2.1 w hw_π with hw_eq | hw_eq | hwi | hjw
+                    · exact absurd hw_eq hw_eq_i
+                    · exact absurd hw_eq hw_ne_j
+                    · right
+                      have := pathMonomial_exponent_inr_one (K := K) i j π w hw_int_π
+                        hwi hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hR₂_ge_D _))
+                    · left
+                      have := pathMonomial_exponent_inl_one (K := K) i j π w hw_int_π
+                        hjw hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hR₂_ge_D _))
+                  · have hw_σ : w ∈ σ :=
+                      (List.drop_sublist _ _).mem
+                        ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_σD))
+                    have hw_int_σ : w ∈ internalVertices σ :=
+                      mem_internalVertices_of_ne hσ.2.2.2.1 hw_σ (List.ne_nil_of_mem hw_σ)
+                        (by rwa [head_of_head? hσ.2.1])
+                        (by rwa [getLast_of_getLast? hσ.2.2.1])
+                    rcases hσ.2.2.2.2.1 w hw_σ with hw_eq | hw_eq | hwk | hlw
+                    · exact absurd hw_eq hw_eq_k
+                    · exact absurd hw_eq hw_ne_l
+                    · right
+                      have := pathMonomial_exponent_inr_one (K := K) k l σ w hw_int_σ
+                        hwk hσ_int_nd dσ hdσ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2 (hR₂_ge_D _))
+                    · left
+                      have := pathMonomial_exponent_inl_one (K := K) k l σ w hw_int_σ
+                        hlw hσ_int_nd dσ hdσ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2 (hR₂_ge_D _))
+                  · subst hw_eq_v
+                    have hv_int_π : w ∈ internalVertices π :=
+                      mem_internalVertices_of_ne hπ.2.2.2.1 hv_π (List.ne_nil_of_mem hv_π)
+                        (by rwa [head_of_head? hπ.2.1])
+                        (by rwa [getLast_of_getLast? hπ.2.2.1])
+                    rcases hπ.2.2.2.2.1 w hv_π with hw_eq | hw_eq | hwi | hjw
+                    · exact absurd hw_eq hw_eq_i
+                    · exact absurd hw_eq hw_ne_j
+                    · right
+                      have := pathMonomial_exponent_inr_one (K := K) i j π w hv_int_π
+                        hwi hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hR₂_ge_D _))
+                    · left
+                      have := pathMonomial_exponent_inl_one (K := K) i j π w hv_int_π
+                        hjw hπ_int_nd dπ hdπ
+                      exact le_trans (by omega) (le_trans
+                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hR₂_ge_D _)))
+          have h₂R' : binomialEdgeMonomialOrder.IsRemainder
+              (-(monomial R₂ 1 * fij (K := K) l j)) (groebnerBasisSet G) 0 :=
+            isRemainder_neg' _ _ h₂R
+          -- Algebraic equalities (using ring identity to rewrite)
+          have hR₁_eq : monomial D (1 : K) * x j * y l = monomial R₁ 1 := by
+            simp only [x, y, X]; rw [monomial_mul, one_mul, monomial_mul, one_mul]
+          have hR₂_eq : monomial D (1 : K) * x i * y k = monomial R₂ 1 := by
+            simp only [x, y, X]; rw [monomial_mul, one_mul, monomial_mul, one_mul]
+          -- Rewrite and combine
+          suffices heq : (monomial D) ((1 : K) * 1) *
+              (x (K := K) l * y j * fij k i - x k * y i * fij l j) =
+              monomial R₁ 1 * fij (K := K) k i + (-(monomial R₂ 1 * fij (K := K) l j)) by
+            rw [heq]
+            have hdeg_ne : binomialEdgeMonomialOrder.degree (monomial R₁ 1 * fij (K := K) k i) ≠
+                binomialEdgeMonomialOrder.degree (-(monomial R₂ 1 * fij (K := K) l j)) := by
+              rw [MonomialOrder.degree_neg]; intro heq'
+              classical
+              have hdeg₁ : binomialEdgeMonomialOrder.degree (monomial R₁ (1 : K) * fij k i) =
+                  R₁ + (Finsupp.single (Sum.inl k : BinomialEdgeVars V) 1 +
+                        Finsupp.single (Sum.inr i : BinomialEdgeVars V) 1) := by
+                rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero)
+                  (fij_ne_zero (K := K) k i hki),
+                  degree_monomial, if_neg one_ne_zero, fij_degree k i hki]
+              have hdeg₂ : binomialEdgeMonomialOrder.degree (monomial R₂ (1 : K) * fij l j) =
+                  R₂ + (Finsupp.single (Sum.inl l : BinomialEdgeVars V) 1 +
+                        Finsupp.single (Sum.inr j : BinomialEdgeVars V) 1) := by
+                rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero)
+                  (fij_ne_zero (K := K) l j hlj),
+                  degree_monomial, if_neg one_ne_zero, fij_degree l j hlj]
+              -- Evaluate at Sum.inl k to derive contradiction
+              rw [hdeg₁, hdeg₂] at heq'
+              have h_eval := Finsupp.ext_iff.mp heq' (Sum.inl k : BinomialEdgeVars V)
+              have ev₁ : (R₁ + (Finsupp.single (Sum.inl k : BinomialEdgeVars V) 1 +
+                  Finsupp.single (Sum.inr i : BinomialEdgeVars V) 1 : BinomialEdgeVars V →₀ ℕ))
+                  (Sum.inl k) = R₁ (Sum.inl k) + 1 := by
+                simp only [Finsupp.add_apply, Finsupp.single_apply]; rfl
+              have ev₂ : (R₂ + (Finsupp.single (Sum.inl l : BinomialEdgeVars V) 1 +
+                  Finsupp.single (Sum.inr j : BinomialEdgeVars V) 1 : BinomialEdgeVars V →₀ ℕ))
+                  (Sum.inl k) = R₂ (Sum.inl k) := by
+                unfold BinomialEdgeVars at R₂ hR₂_def ⊢
+                simp only [Finsupp.add_apply, Finsupp.single_apply,
+                  show ¬((Sum.inl l : V ⊕ V) = Sum.inl k) from
+                    fun h => ne_of_gt hkl (Sum.inl.inj h),
+                  Sum.inr_ne_inl, ite_false, add_zero]
+              rw [ev₁, ev₂] at h_eval
+              have hR₁_val : R₁ (Sum.inl k) = D (Sum.inl k) := by
+                unfold BinomialEdgeVars at R₁ hR₁_def ⊢
+                simp only [hR₁_def, Finsupp.add_apply, Finsupp.single_apply,
+                  show ¬((Sum.inl j : V ⊕ V) = Sum.inl k) from
+                    fun h => ne_of_gt (lt_trans hki hij) (Sum.inl.inj h),
+                  Sum.inr_ne_inl, ite_false, add_zero]
+              have hR₂_val : R₂ (Sum.inl k) = D (Sum.inl k) := by
+                unfold BinomialEdgeVars at R₂ hR₂_def ⊢
+                simp only [hR₂_def, Finsupp.add_apply, Finsupp.single_apply,
+                  show ¬((Sum.inl i : V ⊕ V) = Sum.inl k) from
+                    fun h => heq_i (Sum.inl.inj h),
+                  Sum.inr_ne_inl, ite_false, add_zero]
+              omega
+            obtain ⟨hd₁, hd₂⟩ := degree_bounds_of_ne _ _ hdeg_ne
+            exact isRemainder_add _ _ _ h₁R h₂R' hd₁ hd₂
+          -- Prove the algebraic equality via ring identity
+          rw [show (monomial D) ((1 : K) * 1) * (x l * y j * fij (K := K) k i - x k * y i * fij l j)
+              = monomial D 1 * x j * y l * fij k i -
+                monomial D 1 * x i * y k * fij l j from by simp only [fij]; ring,
+            sub_eq_add_neg,
+            show monomial D (1 : K) * x j * y l * fij k i =
+              (monomial D 1 * x j * y l) * fij k i from by ring,
+            show monomial D (1 : K) * x i * y k * fij l j =
+              (monomial D 1 * x i * y k) * fij l j from by ring,
+            hR₁_eq, hR₂_eq]
     · -- Different components case: D ≥ dπ and D ≥ dσ since paths share no vertices,
       -- so each term factors as monomial * groebnerElement, combined with degree bounds.
       push_neg at hshared
