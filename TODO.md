@@ -93,15 +93,16 @@ Buchberger case analysis with 4 S-polynomial cases:
 - [x] Case 1 (i=k, j=l): trivial — same polynomial
 - [x] Case 4 (i=k, j≠l): shared first endpoint — walk construction + x/y-telescope
 - [x] Case 5 (j=l, i≠k): shared last endpoint — y-telescope variant
-- [ ] Coprime (i≠k, j≠l): needs telescope decomposition of both fij terms into edge-level generators
+- [x] Coprime (i≠k, j≠l): mixed-coverage walk lemma + S-polynomial degree analysis
 
-Key infrastructure built (2026-03-25):
+Key infrastructure built:
 - `isRemainder_fij_of_covered_walk` + `_y` variant (inductive telescope lemmas)
+- `isRemainder_fij_of_mixed_walk` (1081-line generalization for mixed x/y coverage)
 - `walk_from_shared_first` (branch-point walk construction, ~200 lines)
 - Coverage building blocks, degree bounds, pathMonomial exponent analysis
 - `degree_bounds_of_ne` in HerzogLemmas.lean
 
-- [~] `theorem_2_1` — 1 sorry remaining (coprime case only)
+- [x] `theorem_2_1` — **FULLY PROVED** (2026-03-27)
 
 ### 8F. Radical
 - [!] `corollary_2_2` — blocked on Thm 3.2 (radical = intersection of primes) or squarefree initial
@@ -123,22 +124,22 @@ Key infrastructure built (2026-03-25):
 
 ## Priority Order (what to work on next)
 
-1. **Phase 8E: `theorem_2_1` coprime case** — telescope decomposition of both fij's into edge-level generators
-2. **Phase 6: `corollary_3_9`** — cut-vertex characterization of minimal primes
+1. **Phase 6: `corollary_3_9`** — cut-vertex characterization of minimal primes
 3. **Phase 7: `theorem_3_2` ⊇** — radical ideal argument
 4. **Phase 7: corollaries** — once Thm 3.2 proved
 
 ---
 
-## Sorry Count by File (2026-03-25)
+## Sorry Count by File (2026-03-27)
 | File | Sorries | Notes |
 |------|---------|-------|
-| GroebnerBasis.lean | 2 | theorem_2_1 coprime case, corollary_2_2 (deferred) |
+| GroebnerBasis.lean | 1 | corollary_2_2 (deferred) |
 | PrimeIdeals.lean | 2 | lemma_3_1, prop_3_6 |
 | MinimalPrimes.lean | 1 | corollary_3_9 ← only |
 | PrimeDecomposition.lean | 7 | |
 | CohenMacaulay.lean | 4 | all deferred |
-| **Total** | **16** | |
+| RauhApproach.lean | 2 | archived |
+| **Total** | **17** | (theorem_2_1 complete!) |
 
 ---
 
@@ -147,6 +148,7 @@ Key infrastructure built (2026-03-25):
 - `theorem_1_1`: PROVED (ClosedGraphs.lean) — closed <-> quadratic GB
 - `isGroebnerBasis_iff_sPolynomial_isRemainder`: PROVED (GroebnerAPI.lean)
 - `primeComponent_isPrime`: PROVED (PrimeIdeals.lean)
+- `theorem_2_1`: PROVED (GroebnerBasis.lean) — reduced Gröbner basis for admissible paths
 - `theorem_3_2` (⊆): proved inline via `binomialEdgeIdeal_le_primeComponent`
 - `RauhApproach.lean`: archived alternative approach (bihomogeneity, crossing, killVars)
 - `corollary_2_2`: deferred (squarefree initial -> radical not in Mathlib v4.28.0)
