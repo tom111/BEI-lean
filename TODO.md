@@ -21,7 +21,7 @@
 | **§2 Thm 2.1** (reduced GB = admissible paths) | GroebnerBasis.lean | ✅ proved |
 | **§2 Cor 2.2** (J_G radical) | Radical.lean | ✅ proved |
 | **§3 Lem 3.1** (height P_S = \|S\| + n − c(S)) | PrimeIdeals.lean | ❌ sorry |
-| **§3 Thm 3.2** (J_G = ⋂ P_S) | PrimeDecomposition.lean | ✅ proved (mod Cor 2.2) |
+| **§3 Thm 3.2** (J_G = ⋂ P_S) | PrimeDecomposition.lean | ✅ proved |
 | **§3 Cor 3.3** (dim S/J_G formula) | PrimeDecomposition.lean | ❌ sorry (needs 3.2) |
 | **§3 Cor 3.4** (CM → dim = n+c) | PrimeDecomposition.lean | ❌ sorry (needs 3.2) |
 | **§3 Prop 3.6** (J_G prime ↔ components complete) | PrimeIdeals.lean | ❌ sorry |
@@ -52,64 +52,48 @@
 
 ## Remaining Work (prioritized)
 
-### Priority 1: Theorem 3.2 ⊇ — ⋂ P_S(G) ⊆ J_G
-**The key unlocking result.** Almost everything else depends on this.
-**Paper argument (induction on n):**
-1. Show every minimal prime P of J_G has P = P_S(G) for some S.
-2. Key step: x_i ∈ P ⟺ y_i ∈ P (uses connected graph + prime argument).
-3. Then: P contains no variables → show f_{ij} ∈ P for all edges of complete
-   components (x-telescope: x_{i₁} f_{ij} = x_j f_{i,i₁} + x_i f_{i₁,j}, prime argument).
-4. Since J_G radical and every minimal prime is P_S, we get J_G = ⋂ P_S.
-**Note:** Step 4 needs J_G radical (Cor 2.2). BUT the paper's proof of Thm 3.2 actually
-establishes the minimal prime structure FIRST, from which radicality follows. So the
-correct order is: Thm 3.2 (characterize minimal primes) → J_G = ⋂ primes → J_G radical.
-This breaks the apparent circularity.
-**File:** PrimeDecomposition.lean
-**Dependencies:** `primeComponent_isPrime` (done), `binomialEdgeIdeal_le_primeComponent` (done)
-
-### Priority 2: Corollary 2.2 — J_G is radical
-**Paper argument:** Squarefree initial ideal ⇒ radical (Gröbner deformation).
-**Alternative:** Derive as consequence of Thm 3.2 (J_G = ⋂ primes ⇒ radical).
-**Mathlib:** `Ideal.IsRadical` exists. If using Thm 3.2 route, need: intersection of
-primes is radical (should be in Mathlib or easy to prove).
-**File:** GroebnerBasis.lean
+### ~~Priority 1: Theorem 3.2 ⊇~~ ✅ DONE
+### ~~Priority 2: Corollary 2.2~~ ✅ DONE
 
 ### Priority 3: Corollary 3.9 ← — minimal primes = cut-points (reverse)
+**NOW UNBLOCKED** by theorem_3_2 + minimalPrimes_characterization.
 **Paper argument:** Contradiction via Prop 3.8 and component counting.
-**Dependencies:** Prop 3.8 (done). Thm 3.2 (to know minimal primes are all P_S).
-**File:** MinimalPrimes.lean
+If c(S\{i}) < c(S) for all i ∈ S, then P_S is minimal. If P_T ⊆ P_S for
+proper T ⊂ S, choose i ∈ S\T. By c(S\{i}) < c(S), vertex i connects ≥2
+components. The components of G[V\T] merging through i violate Prop 3.8.
+**File:** MinimalPrimes.lean (~80-120 lines)
 
-### Priority 4: Lemma 3.1 — height(P_S) = |S| + (n − c(S))
+### Priority 4: Proposition 3.6 — J_G prime ↔ components complete
+**Uses:** theorem_3_2. Forward: all complete → J_G = P_∅ is prime.
+Backward: J_G prime → unique minimal prime → P_∅ = J_G → all components complete.
+**File:** PrimeIdeals.lean (~60-100 lines)
+
+### Priority 5: Corollary 3.7 — cycle: n=3 ↔ prime
+**Uses:** Prop 3.6. Cycle prime ↔ complete ↔ n ≤ 3. Since n ≥ 3: n = 3.
+**File:** PrimeDecomposition.lean (~40-60 lines)
+
+### Priority 6: Lemma 3.1 — height(P_S) = |S| + (n − c(S))
 **Paper argument:** height = 2|S| + Σ(n_j − 1) = |S| + n − c(S).
-**Mathlib:** `Ideal.height` exists. Need to compute height of (variables) + (2-minors of
-generic matrices) ideals. Height of 2-minors of 2×n matrix = n−1 (standard, may need proof).
-**File:** PrimeIdeals.lean
+**Mathlib:** `Ideal.height` exists. Need to compute:
+(a) height({x_i, y_i}) = 2|S| (chain of primes)
+(b) height(J_{K_n}) = n−1 (2-minors of 2×n matrix — main obstacle)
+(c) Heights add for ideals in disjoint variable sets
+**File:** PrimeIdeals.lean (~200-300 lines, HARD)
 
-### Priority 5: Corollaries 3.3, 3.4, 3.7, Prop 3.6
-All follow from Thm 3.2 + Lem 3.1 by straightforward arguments.
-- **Cor 3.3:** dim S/J_G = max{(n−|S|) + c(S)}
-- **Cor 3.4:** CM ⇒ dim = n + c
-- **Cor 3.7:** Cycle: n=3 ↔ prime ↔ unmixed ↔ CM
-- **Prop 3.6:** J_G prime ↔ each component complete
-**Files:** PrimeDecomposition.lean, PrimeIdeals.lean
+### Priority 7: Corollaries 3.3, 3.3 lower bound
+dim S/J_G = max{(n−|S|) + c(S)}, and dim ≥ n + c(G).
+**Dependencies:** Lem 3.1 + Thm 3.2.
+**File:** PrimeDecomposition.lean (~100 lines)
 
-### Priority 6: Proposition 1.6 — CM sufficient condition for closed graphs
-**Paper argument:** Show S/in_<(J_G) is CM via bipartite edge ideal characterization
-(Herzog-Hibi). Then CM lifts from initial ideal to original.
-**Blockers:** (a) `IsCohenMacaulay` not in Mathlib (b) bipartite CM characterization
-(c) CM lifts through flat deformation.
-**Approach:** Define `IsCohenMacaulay` locally (as `depth = dim` or via regular sequences),
-prove the bipartite characterization, then the lifting. This is substantial standalone work.
-**File:** CohenMacaulay.lean
+### Priority 8: Cohen-Macaulay results (DEFERRED)
+All 6 CM-related sorries (Cor 3.4, Cor 3.7 CM, IsCohenMacaulay def,
+Prop 1.6, complete_is_CM, path_is_CM) are blocked on `IsCohenMacaulay`
+not existing in Mathlib v4.28.0. Deferred until Mathlib adds CM support.
+**Files:** CohenMacaulay.lean, PrimeDecomposition.lean
 
-### Priority 7: Section 4 — CI-ideal applications
-**Paper content:** Connect binomial edge ideals to conditional independence statements.
-Show CI-ideals of "robustness specifications" with binary output are radical, and
-their primary decomposition has statistical interpretation.
-**Approach:** Define the polynomial ring for probability distributions, the CI-ideal
-construction, and show the correspondence with binomial edge ideals. Then apply
-Thm 3.2 and Cor 2.2.
-**File:** new `BEI/CIIdeals.lean`
+### Priority 9: Section 4 — CI-ideal applications (NOT STARTED)
+Define probability ring, CI-ideal construction, show correspondence with BEI.
+Apply Thm 3.2 + Cor 2.2. New file `BEI/CIIdeals.lean` (~300-500 lines).
 
 ---
 
@@ -136,7 +120,7 @@ Thm 3.2 and Cor 2.2.
 - `isGroebnerBasis_iff_sPolynomial_isRemainder`: PROVED (Buchberger criterion)
 - `primeComponent_isPrime`: PROVED
 - `prop_3_8`: PROVED (P_T ⊆ P_S characterization)
-- `theorem_3_2`: PROVED — J_G = ⋂ P_S (depends on corollary_2_2 sorry)
+- `theorem_3_2`: PROVED — J_G = ⋂ P_S (fully sorry-free)
 - `minimalPrimes_characterization`: PROVED — minimal primes = minimal P_S's
 - `iInf_primeComponent_eq_radical`: PROVED — ⋂ P_S = radical(J_G) (no sorry dependency)
 - `corollary_2_2`: PROVED — J_G is radical (squarefree Gröbner basis → radical)
