@@ -27,7 +27,7 @@
 | **§3 Prop 3.6** (J_G prime ↔ components complete) | PrimeIdeals.lean | ❌ sorry |
 | **§3 Cor 3.7** (cycle: n=3 ↔ prime ↔ CM) | PrimeDecomposition.lean | ❌ sorry (needs 3.2) |
 | **§3 Prop 3.8** (P_T ⊆ P_S characterization) | MinimalPrimes.lean | ✅ proved |
-| **§3 Cor 3.9** (minimal primes = cut-points) | MinimalPrimes.lean | → proved, ← sorry |
+| **§3 Cor 3.9** (minimal primes = cut-points) | MinimalPrimes.lean | ✅ proved |
 | **§4** (CI-ideal connection to robustness) | — | ❌ not yet started |
 
 ---
@@ -103,11 +103,11 @@ Apply Thm 3.2 + Cor 2.2. New file `BEI/CIIdeals.lean` (~300-500 lines).
 | GroebnerBasis.lean | 0 | Cor 2.2 moved to Radical.lean, PROVED |
 | Radical.lean | 0 | Cor 2.2 fully proved (squarefree GB → radical) |
 | PrimeIdeals.lean | 2 | Lem 3.1, Prop 3.6 |
-| MinimalPrimes.lean | 1 | Cor 3.9 ← only |
+| MinimalPrimes.lean | 0 | Cor 3.9 FULLY PROVED |
 | PrimeDecomposition.lean | 5 | corollaries only (Thm 3.2 + minimalPrimes PROVED) |
 | CohenMacaulay.lean | 4 | Prop 1.6 + CM definition |
 | RauhApproach.lean | 2 | archived alternative approach |
-| **Total** | **14** | |
+| **Total** | **13** | |
 
 ---
 
