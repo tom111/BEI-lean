@@ -19,9 +19,9 @@
 | **§1 Prop 1.5** (closure existence) | GraphProperties.lean | ✅ proved |
 | **§1 Prop 1.6** (CM sufficient condition for closed graphs) | CohenMacaulay.lean | ❌ blocked on `IsCohenMacaulay` |
 | **§2 Thm 2.1** (reduced GB = admissible paths) | GroebnerBasis.lean | ✅ proved |
-| **§2 Cor 2.2** (J_G radical) | GroebnerBasis.lean | ❌ sorry (see Priority 1) |
+| **§2 Cor 2.2** (J_G radical) | Radical.lean | ✅ proved |
 | **§3 Lem 3.1** (height P_S = \|S\| + n − c(S)) | PrimeIdeals.lean | ❌ sorry |
-| **§3 Thm 3.2** (J_G = ⋂ P_S) | PrimeDecomposition.lean | ⊆ proved, ⊇ sorry |
+| **§3 Thm 3.2** (J_G = ⋂ P_S) | PrimeDecomposition.lean | ✅ proved (mod Cor 2.2) |
 | **§3 Cor 3.3** (dim S/J_G formula) | PrimeDecomposition.lean | ❌ sorry (needs 3.2) |
 | **§3 Cor 3.4** (CM → dim = n+c) | PrimeDecomposition.lean | ❌ sorry (needs 3.2) |
 | **§3 Prop 3.6** (J_G prime ↔ components complete) | PrimeIdeals.lean | ❌ sorry |
@@ -116,13 +116,14 @@ Thm 3.2 and Cor 2.2.
 ## Sorry Count by File (2026-03-29)
 | File | Sorries | Notes |
 |------|---------|-------|
-| GroebnerBasis.lean | 1 | Cor 2.2 |
+| GroebnerBasis.lean | 0 | Cor 2.2 moved to Radical.lean, PROVED |
+| Radical.lean | 0 | Cor 2.2 fully proved (squarefree GB → radical) |
 | PrimeIdeals.lean | 2 | Lem 3.1, Prop 3.6 |
 | MinimalPrimes.lean | 1 | Cor 3.9 ← only |
-| PrimeDecomposition.lean | 7 | Thm 3.2 ⊇ + corollaries |
+| PrimeDecomposition.lean | 5 | corollaries only (Thm 3.2 + minimalPrimes PROVED) |
 | CohenMacaulay.lean | 4 | Prop 1.6 + CM definition |
 | RauhApproach.lean | 2 | archived alternative approach |
-| **Total** | **17** | |
+| **Total** | **14** | |
 
 ---
 
@@ -135,7 +136,11 @@ Thm 3.2 and Cor 2.2.
 - `isGroebnerBasis_iff_sPolynomial_isRemainder`: PROVED (Buchberger criterion)
 - `primeComponent_isPrime`: PROVED
 - `prop_3_8`: PROVED (P_T ⊆ P_S characterization)
-- `theorem_3_2` (⊆): proved via `binomialEdgeIdeal_le_primeComponent`
+- `theorem_3_2`: PROVED — J_G = ⋂ P_S (depends on corollary_2_2 sorry)
+- `minimalPrimes_characterization`: PROVED — minimal primes = minimal P_S's
+- `iInf_primeComponent_eq_radical`: PROVED — ⋂ P_S = radical(J_G) (no sorry dependency)
+- `corollary_2_2`: PROVED — J_G is radical (squarefree Gröbner basis → radical)
+- `isRadical_of_squarefree_isGroebnerBasis`: PROVED — general radicality theorem
 - `Ideal.height` IS in Mathlib v4.28.0 (previously assumed missing)
 - `IsCohenMacaulay` is NOT in Mathlib v4.28.0 (confirmed)
 - Initial ideal construction is NOT in Mathlib v4.28.0

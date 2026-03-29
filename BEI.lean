@@ -7,6 +7,7 @@ import BEI.ClosedGraphs
 import BEI.HerzogLemmas
 import BEI.CoveredWalks
 import BEI.GroebnerBasis
+import BEI.Radical
 import BEI.CohenMacaulay
 import BEI.PrimeIdeals
 import BEI.PrimeDecomposition

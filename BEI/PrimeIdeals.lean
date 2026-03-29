@@ -1241,4 +1241,32 @@ theorem prop_3_6 (G : SimpleGraph V) :
     ∀ u w : V, G.Reachable u w → G.Adj u w ∨ u = w := by
   sorry
 
+/-! ## Variable non-membership lemmas for P_S(G) -/
+
+/-- `x_v ∉ P_S(G)` when `v ∉ S`. This follows because `primeComponentMap` sends
+`X(inl v)` to `X(inl v) ≠ 0`, so `X(inl v) ∉ ker(primeComponentMap) = P_S`. -/
+theorem X_inl_not_mem_primeComponent (G : SimpleGraph V) (S : Finset V)
+    {v : V} (hv : v ∉ S) :
+    (X (Sum.inl v) : MvPolynomial (BinomialEdgeVars V) K) ∉ primeComponent G S := by
+  intro h
+  have hle := primeComponent_le_ker (K := K) G S
+  have hker : (primeComponentMap (K := K) G S).toRingHom (X (Sum.inl v)) = 0 :=
+    RingHom.mem_ker.mp (hle h)
+  simp only [AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom,
+    primeComponentMap, aeval_X, hv, ite_false] at hker
+  exact X_ne_zero _ hker
+
+/-- `y_v ∉ P_S(G)` when `v ∉ S`. This follows because `primeComponentMap` sends
+`X(inr v)` to `X(inl v) * X(inr (compRep G S v)) ≠ 0`. -/
+theorem X_inr_not_mem_primeComponent (G : SimpleGraph V) (S : Finset V)
+    {v : V} (hv : v ∉ S) :
+    (X (Sum.inr v) : MvPolynomial (BinomialEdgeVars V) K) ∉ primeComponent G S := by
+  intro h
+  have hle := primeComponent_le_ker (K := K) G S
+  have hker : (primeComponentMap (K := K) G S).toRingHom (X (Sum.inr v)) = 0 :=
+    RingHom.mem_ker.mp (hle h)
+  simp only [AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom,
+    primeComponentMap, aeval_X, hv, ite_false] at hker
+  exact mul_ne_zero (X_ne_zero _) (X_ne_zero _) hker
+
 end

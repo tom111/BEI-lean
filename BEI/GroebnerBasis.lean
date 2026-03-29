@@ -2672,18 +2672,7 @@ private lemma prod_X_image_squarefree {σ R : Type*} [CommSemiring R] [NoZeroDiv
 
 /-! ## Corollary 2.2: J_G is radical -/
 
-/--
-**Corollary 2.2** (Herzog et al. 2010): `J_G` is a radical ideal.
-
-**Proof**: By Theorem 2.1 the initial ideal `in_<(J_G)` is squarefree
-(each leading monomial `u_π · x_i · y_j` has distinct variables). A general
-result states that if `in_<(I)` is squarefree then `I` is radical.
-
-Reference: Herzog et al. (2010), Corollary 2.2.
--/
-theorem corollary_2_2 (G : SimpleGraph V) :
-    (binomialEdgeIdeal (K := K) G).IsRadical := by
-  sorry
+-- Corollary 2.2 is proved in BEI/Radical.lean via the squarefree Gröbner basis argument.
 
 /--
 The leading monomials of the Gröbner basis elements are squarefree:
