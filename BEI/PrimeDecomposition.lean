@@ -90,7 +90,7 @@ private lemma bij_mem_prime_of_reflTransGen (G : SimpleGraph V)
 where `S = {v : x_v ∈ P ∧ y_v ∈ P}`.
 
 This is the key inclusion needed for the minimal prime characterization. -/
-private lemma primeComponent_le_prime (G : SimpleGraph V)
+lemma primeComponent_le_prime (G : SimpleGraph V)
     (P : Ideal (MvPolynomial (BinomialEdgeVars V) K))
     (hPr : P.IsPrime) (hJG : binomialEdgeIdeal G ≤ P)
     (S : Finset V)

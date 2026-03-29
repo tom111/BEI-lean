@@ -1,4 +1,5 @@
 import BEI.PrimeIdeals
+import BEI.PrimeDecomposition
 import Mathlib.RingTheory.Ideal.MinimalPrime.Basic
 import Mathlib.RingTheory.Ideal.MinimalPrime.Noetherian
 import Mathlib.RingTheory.Polynomial.Basic
@@ -256,6 +257,80 @@ private lemma induced_walk_to_reflTransGen {G : SimpleGraph V} {S : Finset V}
   | @cons p q r hadj _ ih =>
     exact Relation.ReflTransGen.head ⟨SimpleGraph.induce_adj.mp hadj, p.2, q.2⟩ ih
 
+/-- Monotonicity of `SameComponent`: if `T ⊆ S`, then any path avoiding `S` also avoids `T`,
+so `SameComponent G S u v → SameComponent G T u v`. -/
+private lemma SameComponent_mono (G : SimpleGraph V) {S T : Finset V} (hTS : T ≤ S)
+    {u v : V} (hsc : SameComponent G S u v) : SameComponent G T u v := by
+  refine ⟨fun huT => hsc.1 (hTS huT), fun hvT => hsc.2.1 (hTS hvT), ?_⟩
+  exact Relation.ReflTransGen.lift id
+    (fun a b ⟨hadj, haS, hbS⟩ => ⟨hadj, fun haT => haS (hTS haT), fun hbT => hbS (hTS hbT)⟩)
+    hsc.2.2
+
+/-- Convert `SameComponent G S u v` to `Reachable` in the induced subgraph `G[V \ S]`. -/
+private lemma sameComponent_to_reachable (G : SimpleGraph V) (S : Finset V)
+    (u v : V) (huS : u ∉ S) (hvS : v ∉ S) (hsc : SameComponent G S u v) :
+    (G.induce {w : V | w ∉ S}).Reachable ⟨u, huS⟩ ⟨v, hvS⟩ := by
+  obtain ⟨_, _, hpath⟩ := hsc
+  -- Generalize the target vertex to handle intermediate vertices in the induction
+  suffices ∀ (w : V),
+      Relation.ReflTransGen (fun x y => G.Adj x y ∧ x ∉ S ∧ y ∉ S) u w →
+      ∀ (hwS : w ∉ S), (G.induce {w : V | w ∉ S}).Reachable ⟨u, huS⟩ ⟨w, hwS⟩ from
+    this v hpath hvS
+  intro w hrtg
+  induction hrtg with
+  | refl => intro _; exact ⟨SimpleGraph.Walk.nil⟩
+  | @tail b c _ hbc ih =>
+    intro hcS
+    obtain ⟨walk_ub⟩ := ih hbc.2.1
+    let b' : {w : V | w ∉ S} := ⟨b, hbc.2.1⟩
+    let c' : {w : V | w ∉ S} := ⟨c, hcS⟩
+    have hadj : (G.induce {w : V | w ∉ S}).Adj b' c' :=
+      SimpleGraph.induce_adj.mpr hbc.1
+    exact ⟨walk_ub.append (SimpleGraph.Walk.cons hadj SimpleGraph.Walk.nil)⟩
+
+/-- If `i` is a cut-vertex relative to `S`, then two components of `G[V \ S]` merge when `i` is
+removed from `S`. Formally: there exist `a, b ∉ S` connected in `G[V \ (S \ {i})]` but not in
+`G[V \ S]`. -/
+private lemma exists_merged_of_cutVertex (G : SimpleGraph V) (S : Finset V) (i : V)
+    (hcut : IsCutVertexRelative G S i) :
+    ∃ a b : V, a ∉ S ∧ b ∉ S ∧
+      SameComponent G (S.erase i) a b ∧ ¬SameComponent G S a b := by
+  classical
+  unfold IsCutVertexRelative componentCount at hcut
+  obtain ⟨_, hlt⟩ := hcut
+  haveI : Fintype (G.induce {v : V | v ∉ S.erase i}).ConnectedComponent := Fintype.ofFinite _
+  haveI : Fintype (G.induce {v : V | v ∉ S}).ConnectedComponent := Fintype.ofFinite _
+  rw [Nat.card_eq_fintype_card, Nat.card_eq_fintype_card] at hlt
+  -- The inclusion V \ S ⊆ V \ (S \ {i}) induces a map on connected components
+  have hincl : ({w : V | w ∉ S} : Set V) ⊆ {w : V | w ∉ S.erase i} :=
+    fun w hw h => hw (Finset.erase_subset i S h)
+  let ι := SimpleGraph.induceHomOfLE G hincl
+  let f := SimpleGraph.ConnectedComponent.map ι.toHom
+  -- By pigeonhole (more components in domain than codomain), f is not injective
+  obtain ⟨c1, c2, hne, hfeq⟩ := Fintype.exists_ne_map_eq_of_card_lt f hlt
+  -- Extract representatives from the connected components
+  revert hne hfeq
+  induction c1 using SimpleGraph.ConnectedComponent.ind with | h a =>
+  induction c2 using SimpleGraph.ConnectedComponent.ind with | h b =>
+  intro hne hfeq
+  refine ⟨a.val, b.val, a.prop, b.prop, ?_, ?_⟩
+  · -- SameComponent G (S.erase i) a b: f maps them to the same component
+    refine ⟨fun h => a.prop (Finset.erase_subset i S h),
+            fun h => b.prop (Finset.erase_subset i S h), ?_⟩
+    -- f(c1) = f(c2) means a and b are in the same component of G[V \ (S \ {i})]
+    have hreach : (G.induce {w : V | w ∉ S.erase i}).Reachable (ι.toHom a) (ι.toHom b) := by
+      rw [← SimpleGraph.ConnectedComponent.eq]
+      exact hfeq
+    obtain ⟨walk⟩ := hreach
+    exact induced_walk_to_reflTransGen
+      (⟨a.val, fun h => a.prop (Finset.erase_subset i S h)⟩)
+      (⟨b.val, fun h => b.prop (Finset.erase_subset i S h)⟩) walk
+  · -- ¬SameComponent G S a b: they are in different components of G[V \ S]
+    intro hsc
+    apply hne
+    rw [SimpleGraph.ConnectedComponent.eq]
+    exact sameComponent_to_reachable G S a.val b.val a.prop b.prop hsc
+
 /-- Helper: if `a → i → c` with `a, c ∉ S` and `i` is not a cut vertex relative to `S`,
 then `a` and `c` are connected in `G[V ∖ S]`. Proved by showing the component-count map
 `G[V∖S].CC → G[V∖(S∖{i})].CC` is surjective but not injective, contradicting the
@@ -372,8 +447,12 @@ private lemma primeComponent_erase_le_of_notCutVertex
 `P_{S ∖ {i}}` is a prime ideal with `J_G ≤ P_{S ∖ {i}} ≤ P_S` but
 `P_S ≰ P_{S ∖ {i}}` (by `prop_3_8`, since `S ⊄ S ∖ {i}`). This contradicts minimality of `P_S`.
 
-**Proof of (←):** Requires that all minimal primes of `J_G` arise as `P_T(G)` for some `T`
-(Theorem 3.2 / Nullstellensatz argument); currently deferred.
+**Proof of (←):** If `S = ∅`, then the only `P_T ≤ P_∅` has `T = ∅` (by `prop_3_8`).
+If all vertices of `S` are cut-vertices, suppose `P_T ≤ P_S` with `T ⊆ S`. For any `i ∈ S \ T`,
+the cut-vertex condition provides `a, b ∉ S` connected in `G[V \ (S \ {i})]` but not in `G[V \ S]`.
+Since `T ⊆ S \ {i}`, monotonicity gives connectivity in `G[V \ T]`, and the refinement from
+`P_T ≤ P_S` lifts this to `G[V \ S]` -- contradiction. Hence `S ⊆ T`, so `T = S`,
+and `P_S` is minimal among `{P_T}`. We conclude via `minimalPrimes_characterization`.
 
 Reference: Herzog et al. (2010), Corollary 3.9.
 -/
@@ -407,9 +486,41 @@ theorem corollary_3_9 (G : SimpleGraph V) (S : Finset V)
       exact absurd (hle.1 hiS) (Finset.notMem_erase i S)
     exact hnotPS_le hPS_le
   · -- (←): S = ∅ or all vertices are cut-vertices → P_S minimal.
-    -- Requires: all minimal primes of J_G are of the form P_T(G) (Theorem 3.2 / Nullstellensatz).
-    -- Currently deferred until theorem_3_2 (⊇) is proved.
-    sorry
+    intro h
+    -- Reduce to membership in minimalPrimes, then use minimalPrimes_characterization
+    suffices hmem : primeComponent (K := K) G S ∈
+        (binomialEdgeIdeal (K := K) G).minimalPrimes by
+      simp only [Ideal.minimalPrimes, Set.mem_setOf_eq, Minimal] at hmem
+      exact hmem
+    rw [minimalPrimes_characterization]
+    refine ⟨S, rfl, fun T hTS => ?_⟩
+    -- Need: P_T ≤ P_S → P_S ≤ P_T. By prop_3_8: T ⊆ S and refinement.
+    obtain ⟨hTsubS, hComp_TS⟩ := (prop_3_8 G S T).mp hTS
+    -- It suffices to show S ⊆ T (together with T ⊆ S gives S = T, so P_S = P_T).
+    suffices hSsubT : S ≤ T by
+      exact le_of_eq (le_antisymm hSsubT hTsubS ▸ rfl)
+    -- Show S ⊆ T by contradiction: if ∃ i ∈ S \ T, derive contradiction from cut-vertex
+    intro i hiS
+    by_contra hiT
+    -- i is a cut-vertex relative to S (by hypothesis)
+    have hcut : IsCutVertexRelative G S i := by
+      rcases h with rfl | hcut
+      · simp at hiS
+      · exact hcut i hiS
+    -- Cut-vertex gives merged components: ∃ a, b ∉ S, same in G[V\(S\{i})] but not in G[V\S]
+    obtain ⟨a, b, haS, hbS, hsc_erase, hnotsc_S⟩ :=
+      exists_merged_of_cutVertex G S i hcut
+    -- Since T ⊆ S and i ∉ T: T ⊆ S \ {i}
+    have hT_sub_erase : T ≤ S.erase i :=
+      fun x hxT => Finset.mem_erase.mpr ⟨fun hxi => hiT (hxi ▸ hxT), hTsubS hxT⟩
+    -- Monotonicity: SameComponent G (S.erase i) a b → SameComponent G T a b
+    have hsc_T : SameComponent G T a b :=
+      SameComponent_mono G hT_sub_erase hsc_erase
+    -- Refinement from P_T ≤ P_S: SameComponent G T a b → SameComponent G S a b
+    have haT : a ∉ T := fun haT => haS (hTsubS haT)
+    have hbT : b ∉ T := fun hbT => hbS (hTsubS hbT)
+    have hsc_S : SameComponent G S a b := hComp_TS a b haT hbT haS hbS hsc_T
+    exact hnotsc_S hsc_S
 
 /-- The set of minimal primes of J_G is finite. -/
 theorem minimalPrimes_finite (G : SimpleGraph V) :
