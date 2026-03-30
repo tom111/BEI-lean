@@ -1143,6 +1143,12 @@ theorem primeComponent_isPrime (G : SimpleGraph V) (S : Finset V) :
   rw [heq]
   exact RingHom.ker_isPrime _
 
+/-- `P_S(G) = ker(primeComponentMap G S)`. -/
+theorem primeComponent_eq_ker (G : SimpleGraph V) (S : Finset V) :
+    primeComponent (K := K) G S =
+      RingHom.ker (primeComponentMap (K := K) G S).toRingHom :=
+  le_antisymm (primeComponent_le_ker G S) (ker_primeComponentMap_le G S)
+
 /-- `J_G ⊆ P_S(G)` for every subset S. -/
 theorem binomialEdgeIdeal_le_primeComponent (G : SimpleGraph V) (S : Finset V) :
     binomialEdgeIdeal (K := K) G ≤ primeComponent (K := K) G S := by
