@@ -48,6 +48,11 @@ The quotient `MvPolynomial σ K / ⟨X i : i ∈ s⟩` is isomorphic to `MvPolyn
 a polynomial ring in the remaining variables. -/
 theorem MvPolynomial.isPrime_span_X_image (s : Finset σ) :
     (Ideal.span ((↑s : Set σ).image (X : σ → MvPolynomial σ K))).IsPrime := by
+  -- The ideal is the kernel of φ : MvPolynomial σ K → MvPolynomial σ K where
+  -- φ(X i) = 0 for i ∈ s, and φ(X i) = X i for i ∉ s.
+  -- Since MvPolynomial σ K is a domain, ker(φ) is prime.
+  -- Showing ker(φ) = span(X '' s) requires a monomial-support argument:
+  -- each monomial in ker(φ) that uses a variable from s is in span(X '' s).
   sorry
 
 /-- Upper bound: the height of a variable ideal is at most `|s|`.
