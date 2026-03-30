@@ -1192,7 +1192,7 @@ in disjoint variable sets:
 - Total: `2|S| + Σ(n_j - 1) = |S| + (|V| - c(S))`.
 
 The sorry'd sub-facts are general results about `Ideal.height` in polynomial
-rings — see `BEI/MathlibUpstream.lean` for documentation of the Mathlib gaps.
+rings — see `toMathlib/` for documentation of the Mathlib gaps.
 
 Reference: Herzog et al. (2010), Lemma 3.1.
 -/
@@ -1200,7 +1200,7 @@ theorem lemma_3_1 (G : SimpleGraph V) (S : Finset V) :
     Ideal.height (primeComponent (K := K) G S) =
       (S.card + (Fintype.card V - componentCount G S) : ℕ) := by
   -- The proof uses three infrastructure results not yet in Mathlib v4.28.0.
-  -- See BEI/MathlibUpstream.lean for detailed documentation.
+  -- See toMathlib/ for detailed documentation.
   --
   -- (1) Height of variable ideal: height(⟨x_i, y_i : i ∈ S⟩) = 2|S|
   --     (variable ideals in MvPolynomial have height = number of variables)

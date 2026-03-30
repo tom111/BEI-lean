@@ -5,6 +5,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Mathlib.RingTheory.Ideal.Height
 import Mathlib.RingTheory.Ideal.KrullsHeightTheorem
 import Mathlib.RingTheory.MvPolynomial.Basic
+import Mathlib.Algebra.MvPolynomial.Rename
+import Mathlib.RingTheory.MvPolynomial.Ideal
 
 /-!
 # Height of variable-generated ideals in MvPolynomial
@@ -43,18 +45,152 @@ noncomputable section
 
 open MvPolynomial
 
+private abbrev killS (s : Finset σ) : MvPolynomial σ K →ₐ[K] MvPolynomial {j : σ // j ∉ s} K :=
+  killCompl (f := (Subtype.val : {j : σ // j ∉ s} → σ)) Subtype.val_injective
+
+-- Helper: span(X '' s) ⊆ ker(killS s)
+omit [Fintype σ] [DecidableEq σ] in
+private lemma span_X_le_ker_killS (s : Finset σ) :
+    Ideal.span ((↑s : Set σ).image (X : σ → MvPolynomial σ K)) ≤
+      RingHom.ker (killS s : MvPolynomial σ K →ₐ[K] _).toRingHom := by
+  apply Ideal.span_le.mpr
+  intro p hp
+  obtain ⟨i, hi, rfl⟩ := hp
+  rw [SetLike.mem_coe, RingHom.mem_ker]
+  show killS s (X i) = 0
+  simp only [killS, killCompl, aeval_X]
+  rw [dif_neg]
+  intro ⟨⟨j, hj⟩, hjval⟩
+  simp at hjval
+  exact hj (hjval ▸ hi)
+
+-- Helper: killS sends a monomial m c to the corresponding restricted monomial when m|_s = 0.
+-- Specifically, if m i = 0 for all i ∈ s, then m is in the range of mapDomain Subtype.val,
+-- and killS s (monomial m c) = monomial (comapDomain Subtype.val m ...) c.
+-- We use killCompl_rename_app as the key tool.
+omit [Fintype σ] [DecidableEq σ] in
+private lemma killS_monomial_eq (s : Finset σ) (m : σ →₀ ℕ) (c : K)
+    (hm : ∀ i ∈ (s : Set σ), m i = 0) :
+    killS (K := K) s (monomial m c) =
+      monomial (m.comapDomain Subtype.val Subtype.val_injective.injOn) c := by
+  have hsupp : (↑m.support : Set σ) ⊆ Set.range (Subtype.val : {j : σ // j ∉ s} → σ) := by
+    intro i hi
+    have : i ∉ s := fun his => by
+      have := Finsupp.mem_support_iff.mp hi
+      exact this (hm i his)
+    exact ⟨⟨i, this⟩, rfl⟩
+  -- rename Subtype.val (monomial m' c) = monomial m c
+  have hmap : (m.comapDomain Subtype.val Subtype.val_injective.injOn).mapDomain Subtype.val = m :=
+    Finsupp.mapDomain_comapDomain Subtype.val Subtype.val_injective m hsupp
+  -- By killCompl_rename_app: killS s (rename Subtype.val q) = q for any q
+  -- Set q := monomial m' c, then rename Subtype.val q = monomial (m'.mapDomain Subtype.val) c = monomial m c
+  rw [show monomial m c = rename Subtype.val (monomial (m.comapDomain Subtype.val Subtype.val_injective.injOn) c) from by
+    rw [rename_monomial, hmap]]
+  exact killCompl_rename_app Subtype.val_injective _
+
+-- Helper: if p ∉ span(X '' s), then killS s p ≠ 0
+omit [Fintype σ] in
+private lemma killS_ne_zero_of_not_mem_span (s : Finset σ) (p : MvPolynomial σ K)
+    (hp : p ∉ Ideal.span ((↑s : Set σ).image (X : σ → MvPolynomial σ K))) :
+    killS (K := K) s p ≠ 0 := by
+  rw [mem_ideal_span_X_image] at hp
+  push_neg at hp
+  obtain ⟨m, hm, hall⟩ := hp
+  -- m ∈ p.support with m i = 0 for all i ∈ (s : Set σ)
+  set m' := m.comapDomain Subtype.val Subtype.val_injective.injOn
+  -- The coefficient of m' in killS s p is p.coeff m ≠ 0
+  intro heq
+  have hmc : p.coeff m ≠ 0 := Finsupp.mem_support_iff.mp hm
+  apply hmc
+  -- The coefficient of m' in killS s p is p.coeff m, but killS s p = 0, contradiction.
+  -- Step 1: coeff m' (killS s p) = 0
+  have hzero : (killS (K := K) s p).coeff m' = 0 := by rw [heq]; simp
+  -- Step 2: coeff m' (killS s p) = p.coeff m
+  -- Use: p = ∑_{d ∈ p.support} monomial d (coeff d p)
+  -- killS s p = ∑_{d ∈ p.support} killS s (monomial d (coeff d p))
+  -- For d with d|_s ≠ 0: killS s (monomial d c) = 0 (by aeval_eq_zero)
+  -- For d with d|_s = 0: killS s (monomial d c) = monomial d' c (by killS_monomial_eq)
+  -- coeff m' of the sum = coeff m' of (monomial m' (p.coeff m)) = p.coeff m
+  rw [p.as_sum, map_sum, coeff_sum] at hzero
+  -- hzero : ∑ d ∈ p.support, (killS s (monomial d (coeff d p))).coeff m' = 0
+  -- We show all terms except d = m are 0, and the d = m term is p.coeff m.
+  have hterm : ∀ d ∈ p.support,
+      (killS (K := K) s (monomial d (p.coeff d))).coeff m' =
+        if d = m then p.coeff m else 0 := by
+    intro d hd
+    by_cases hds : ∃ i ∈ (s : Set σ), d i ≠ 0
+    · -- d uses an s-variable, so killS s (monomial d c) = 0
+      obtain ⟨i, his, hdi⟩ := hds
+      -- killS s is the same as the killS applied via span_X_le_ker_killS
+      have hmem : monomial d (p.coeff d) ∈
+          Ideal.span ((↑s : Set σ).image (X : σ → MvPolynomial σ K)) := by
+        rw [mem_ideal_span_X_image]
+        intro d' hd'
+        have hd'_eq : d' = d := by
+          have := support_monomial_subset (s := d) (a := p.coeff d) hd'
+          exact Finset.mem_singleton.mp this
+        exact ⟨i, his, hd'_eq ▸ hdi⟩
+      have hkill : killS (K := K) s (monomial d (p.coeff d)) = 0 := by
+        have := span_X_le_ker_killS (K := K) s hmem
+        rwa [RingHom.mem_ker] at this
+      simp only [hkill, coeff_zero]
+      split_ifs with heqm
+      · subst heqm; exact absurd (hall i his) hdi
+      · rfl
+    · -- d doesn't use any s-variable
+      push_neg at hds
+      rw [killS_monomial_eq s d (p.coeff d) hds, coeff_monomial]
+      -- Goal: if comapDomain ... d = m' then p.coeff d else 0 = if d = m then p.coeff m else 0
+      -- Show: comapDomain Subtype.val d ... = m' ↔ d = m
+      have hiff : d.comapDomain Subtype.val Subtype.val_injective.injOn = m' ↔ d = m := by
+        constructor
+        · intro heq
+          ext i
+          by_cases his : i ∈ s
+          · rw [hds i his, hall i his]
+          · have hi' : (⟨i, his⟩ : {j : σ // j ∉ s}) = ⟨i, his⟩ := rfl
+            have : d.comapDomain Subtype.val Subtype.val_injective.injOn (⟨i, his⟩ : {j // j ∉ s}) =
+                m' (⟨i, his⟩ : {j // j ∉ s}) := congr_fun (congr_arg DFunLike.coe heq) ⟨i, his⟩
+            simp only [Finsupp.comapDomain_apply, m'] at this
+            exact this
+        · intro heq; subst heq; rfl
+      split_ifs with h1 h2 h2
+      · subst h2; rfl
+      · exact absurd (hiff.mp h1) h2
+      · exact absurd (hiff.mpr h2) h1
+      · rfl
+  rw [Finset.sum_congr rfl hterm] at hzero
+  simp only [Finset.sum_ite_eq', hm, ↓reduceIte] at hzero
+  exact hzero
+
+omit [Fintype σ] in
 /-- The ideal generated by variables `{X i : i ∈ s}` is prime in `MvPolynomial σ K`.
 The quotient `MvPolynomial σ K / ⟨X i : i ∈ s⟩` is isomorphic to `MvPolynomial (σ \ s) K`,
 a polynomial ring in the remaining variables. -/
 theorem MvPolynomial.isPrime_span_X_image (s : Finset σ) :
     (Ideal.span ((↑s : Set σ).image (X : σ → MvPolynomial σ K))).IsPrime := by
-  -- The ideal is the kernel of φ : MvPolynomial σ K → MvPolynomial σ K where
-  -- φ(X i) = 0 for i ∈ s, and φ(X i) = X i for i ∉ s.
-  -- Since MvPolynomial σ K is a domain, ker(φ) is prime.
-  -- Showing ker(φ) = span(X '' s) requires a monomial-support argument:
-  -- each monomial in ker(φ) that uses a variable from s is in span(X '' s).
-  sorry
+  rw [Ideal.isPrime_iff]
+  constructor
+  · -- ne_top: 1 ∉ span(X '' s)
+    intro h
+    have h1 : (1 : MvPolynomial σ K) ∈ Ideal.span ((↑s : Set σ).image X) :=
+      h ▸ Submodule.mem_top
+    rw [mem_ideal_span_X_image] at h1
+    obtain ⟨i, _, hi⟩ := h1 0 (by simp)
+    exact hi (by simp)
+  · -- mul: a * b ∈ span → a ∈ span ∨ b ∈ span
+    intro a b hab
+    by_contra! h
+    obtain ⟨ha, hb⟩ := h
+    have ha' := killS_ne_zero_of_not_mem_span s a ha
+    have hb' := killS_ne_zero_of_not_mem_span s b hb
+    have hab' : killS (K := K) s (a * b) ≠ 0 := by
+      rw [map_mul]; exact mul_ne_zero ha' hb'
+    have hmem := span_X_le_ker_killS (K := K) s hab
+    rw [RingHom.mem_ker] at hmem
+    exact hab' hmem
 
+omit [DecidableEq σ] in
 /-- Upper bound: the height of a variable ideal is at most `|s|`.
 Follows from Krull's height theorem since the ideal is generated by `|s|` elements
 and is prime. -/
@@ -79,11 +215,53 @@ theorem MvPolynomial.height_span_X_le (s : Finset σ) :
         _ ≤ (↑s : Set σ).encard := Set.encard_image_le _ _
         _ = s.card := by simp
 
+-- Helper: X i ∉ span(X '' s) when i ∉ s
+omit [Fintype σ] in
+private lemma X_not_mem_span_X_image (s : Finset σ) (i : σ) (hi : i ∉ s) :
+    (X i : MvPolynomial σ K) ∉ Ideal.span ((↑s : Set σ).image X) := by
+  rw [mem_ideal_span_X_image]
+  push_neg
+  refine ⟨Finsupp.single i 1, by simp, fun j hj => ?_⟩
+  simp only [Finsupp.single_apply]
+  split_ifs with heq
+  · exact absurd (heq ▸ (Finset.mem_coe.mp hj)) hi
+  · rfl
+
+-- Helper: strict monotonicity of span(X '' s) under inclusion
+omit [Fintype σ] in
+private lemma span_X_image_ssubset (s : Finset σ) (i : σ) (hi : i ∉ s) :
+    Ideal.span ((↑s : Set σ).image (X : σ → MvPolynomial σ K)) <
+    Ideal.span ((↑(insert i s) : Set σ).image (X : σ → MvPolynomial σ K)) := by
+  constructor
+  · apply Ideal.span_mono
+    exact Set.image_mono (by simp)
+  · intro h
+    have : (X i : MvPolynomial σ K) ∈
+        Ideal.span ((↑(insert i s) : Set σ).image X) :=
+      Ideal.subset_span ⟨i, by simp, rfl⟩
+    exact X_not_mem_span_X_image s i hi (h this)
+
+omit [Fintype σ] in
 /-- Lower bound: the height of a variable ideal is at least `|s|`.
 Proved by exhibiting a chain of primes of length `|s|`. -/
 theorem MvPolynomial.height_span_X_ge (s : Finset σ) :
     s.card ≤ (Ideal.span ((↑s : Set σ).image (X : σ → MvPolynomial σ K))).height := by
-  sorry
+  induction s using Finset.induction with
+  | empty =>
+    simp only [Finset.card_empty, Finset.coe_empty, Set.image_empty, Ideal.span_empty,
+      Nat.cast_zero]
+    exact zero_le _
+  | @insert a t ha ih =>
+    rw [Finset.card_insert_of_notMem ha]
+    have hprime_t := isPrime_span_X_image (K := K) t
+    have hprime_ins := isPrime_span_X_image (K := K) (insert a t)
+    have hlt := span_X_image_ssubset (K := K) t a ha
+    rw [Ideal.height_eq_primeHeight (I := Ideal.span ((↑t : Set σ).image X))] at ih
+    rw [Ideal.height_eq_primeHeight (I := Ideal.span ((↑(insert a t) : Set σ).image X))]
+    calc (t.card + 1 : ℕ∞) = t.card + 1 := rfl
+        _ ≤ (Ideal.span ((↑t : Set σ).image X)).primeHeight + 1 := by gcongr
+        _ ≤ (Ideal.span ((↑(insert a t) : Set σ).image X)).primeHeight :=
+            Ideal.primeHeight_add_one_le_of_lt hlt
 
 /-- The ideal generated by variables `{X i : i ∈ s}` in `MvPolynomial σ K` has
 height equal to `|s|`. -/
