@@ -24,8 +24,9 @@
 | **§3 Thm 3.2** (J_G = ⋂ P_S) | PrimeDecomposition.lean | ✅ proved |
 | **§3 Cor 3.3** (dim S/J_G formula) | PrimeDecomposition.lean | ❌ sorry (needs 3.2) |
 | **§3 Cor 3.4** (CM → dim = n+c) | PrimeDecomposition.lean | ❌ sorry (needs 3.2) |
-| **§3 Prop 3.6** (J_G prime ↔ components complete) | PrimeIdeals.lean | ❌ sorry |
-| **§3 Cor 3.7** (cycle: n=3 ↔ prime ↔ CM) | PrimeDecomposition.lean | ❌ sorry (needs 3.2) |
+| **§3 Prop 3.6** (J_G prime ↔ components complete) | PrimeDecomposition.lean | ✅ proved |
+| **§3 Cor 3.7** (cycle: n=3 ↔ prime) | PrimeDecomposition.lean | ✅ proved |
+| **§3 Cor 3.7 CM** (cycle: prime ↔ CM) | PrimeDecomposition.lean | ❌ sorry (needs CM) |
 | **§3 Prop 3.8** (P_T ⊆ P_S characterization) | MinimalPrimes.lean | ✅ proved |
 | **§3 Cor 3.9** (minimal primes = cut-points) | MinimalPrimes.lean | ✅ proved |
 | **§4** (CI-ideal connection to robustness) | — | ❌ not yet started |
@@ -55,32 +56,36 @@
 ### ~~Priority 1: Theorem 3.2 ⊇~~ ✅ DONE
 ### ~~Priority 2: Corollary 2.2~~ ✅ DONE
 
-### Priority 3: Corollary 3.9 ← — minimal primes = cut-points (reverse)
-**NOW UNBLOCKED** by theorem_3_2 + minimalPrimes_characterization.
-**Paper argument:** Contradiction via Prop 3.8 and component counting.
-If c(S\{i}) < c(S) for all i ∈ S, then P_S is minimal. If P_T ⊆ P_S for
-proper T ⊂ S, choose i ∈ S\T. By c(S\{i}) < c(S), vertex i connects ≥2
-components. The components of G[V\T] merging through i violate Prop 3.8.
-**File:** MinimalPrimes.lean (~80-120 lines)
+### ~~Priority 3: Corollary 3.9~~ ✅ DONE
+### ~~Priority 4: Proposition 3.6~~ ✅ DONE
+### ~~Priority 5: Corollary 3.7~~ ✅ DONE
 
-### Priority 4: Proposition 3.6 — J_G prime ↔ components complete
-**Uses:** theorem_3_2. Forward: all complete → J_G = P_∅ is prime.
-Backward: J_G prime → unique minimal prime → P_∅ = J_G → all components complete.
-**File:** PrimeIdeals.lean (~60-100 lines)
-
-### Priority 5: Corollary 3.7 — cycle: n=3 ↔ prime
-**Uses:** Prop 3.6. Cycle prime ↔ complete ↔ n ≤ 3. Since n ≥ 3: n = 3.
-**File:** PrimeDecomposition.lean (~40-60 lines)
-
-### Priority 6: Lemma 3.1 — height(P_S) = |S| + (n − c(S))
+### Priority 6: Lemma 3.1 — height(P_S) = |S| + (n − c(S))  ⚠️ BLOCKED
 **Paper argument:** height = 2|S| + Σ(n_j − 1) = |S| + n − c(S).
-**Mathlib:** `Ideal.height` exists. Need to compute:
-(a) height({x_i, y_i}) = 2|S| (chain of primes)
-(b) height(J_{K_n}) = n−1 (2-minors of 2×n matrix — main obstacle)
-(c) Heights add for ideals in disjoint variable sets
-**File:** PrimeIdeals.lean (~200-300 lines, HARD)
+**Approach:** P_S = ker(primeComponentMap G S), so height(P_S) = dim(R) − dim(R/P_S)
+= 2n − (n − |S| + c(S)) = |S| + n − c(S). The image ring has transcendence
+degree n − |S| + c(S) (n − |S| independent x-variables + c(S) component parameters).
 
-### Priority 7: Corollaries 3.3, 3.3 lower bound
+**Mathlib infrastructure available:**
+- `Ideal.height` definition (`Mathlib.RingTheory.Ideal.Height`)
+- `MvPolynomial.ringKrullDim_of_isNoetherianRing`: dim(K[X₁,...,Xₙ]) = n
+- Krull's height theorem: height(P) ≤ |generators| (`KrullsHeightTheorem.lean`)
+- `height_le_ringKrullDim_quotient_add_spanFinrank`: ht(p) ≤ dim(R/I) + spanFinrank(I)
+- `IsLocalization.AtPrime.ringKrullDim_eq_height`: dim(R_p) = ht(p)
+
+**Mathlib gaps (blockers):**
+- **No catenary property**: `IsCatenary` not defined in Mathlib v4.28.0
+- **No height+dim formula**: `height(P) + dim(R/P) = dim(R)` for polynomial rings
+  over fields is NOT in Mathlib. Only the inequality `height(P) ≤ dim(R)` exists.
+- **No transcendence degree = Krull dim**: For f.g. algebras over fields, the equality
+  `trdeg = krullDim` is not formalized.
+- Krull's height theorem gives only the WEAK upper bound ht ≤ |generators|, not
+  the exact value, since the 2-minor ideal of a 2×n matrix has height n−1 but
+  needs n(n−1)/2 generators (not a complete intersection for n ≥ 3).
+
+**File:** PrimeIdeals.lean (~200-300 lines, HARD — blocked on Mathlib gaps)
+
+### Priority 7: Corollaries 3.3, 3.3 lower bound  ⚠️ BLOCKED on Lem 3.1
 dim S/J_G = max{(n−|S|) + c(S)}, and dim ≥ n + c(G).
 **Dependencies:** Lem 3.1 + Thm 3.2.
 **File:** PrimeDecomposition.lean (~100 lines)
@@ -102,12 +107,12 @@ Apply Thm 3.2 + Cor 2.2. New file `BEI/CIIdeals.lean` (~300-500 lines).
 |------|---------|-------|
 | GroebnerBasis.lean | 0 | Cor 2.2 moved to Radical.lean, PROVED |
 | Radical.lean | 0 | Cor 2.2 fully proved (squarefree GB → radical) |
-| PrimeIdeals.lean | 2 | Lem 3.1, Prop 3.6 |
+| PrimeIdeals.lean | 1 | Lem 3.1 only (Prop 3.6 moved to PrimeDecomposition) |
 | MinimalPrimes.lean | 0 | Cor 3.9 FULLY PROVED |
-| PrimeDecomposition.lean | 5 | corollaries only (Thm 3.2 + minimalPrimes PROVED) |
+| PrimeDecomposition.lean | 4 | Prop 3.6 PROVED, Cor 3.7 PROVED; 4 corollary sorries remain |
 | CohenMacaulay.lean | 4 | Prop 1.6 + CM definition |
 | RauhApproach.lean | 2 | archived alternative approach |
-| **Total** | **13** | |
+| **Total** | **11** | |
 
 ---
 
@@ -125,6 +130,8 @@ Apply Thm 3.2 + Cor 2.2. New file `BEI/CIIdeals.lean` (~300-500 lines).
 - `iInf_primeComponent_eq_radical`: PROVED — ⋂ P_S = radical(J_G) (no sorry dependency)
 - `corollary_2_2`: PROVED — J_G is radical (squarefree Gröbner basis → radical)
 - `isRadical_of_squarefree_isGroebnerBasis`: PROVED — general radicality theorem
+- `prop_3_6`: PROVED — J_G prime ↔ every connected component is complete (evaluation map argument)
+- `corollary_3_7`: PROVED — cycle: n=3 ↔ J_G prime (degree constraint from cycle graph)
 - `Ideal.height` IS in Mathlib v4.28.0 (previously assumed missing)
 - `IsCohenMacaulay` is NOT in Mathlib v4.28.0 (confirmed)
 - Initial ideal construction is NOT in Mathlib v4.28.0

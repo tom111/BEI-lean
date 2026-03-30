@@ -323,7 +323,7 @@ private lemma fiber_equiv_of_yDeviation_zero {G : SimpleGraph V} {S : Finset V}
               Finset.sum_lt_sum (fun k _ => hle_ite k) ⟨k, Finset.mem_univ k, hlt⟩
             linarith [hsum_eq])
       have hk_eq := hall_eq j (Finset.mem_univ j)
-      simp only [hcond, and_self, ite_true] at hk_eq
+      simp only [hcond] at hk_eq
       exact hk_eq
   -- Step 4: d₀(inl j) = d₁(inl j) follows from condition 1 and Step 3
   have heq_x : ∀ j : V, d₀ (Sum.inl j : BinomialEdgeVars V) =
@@ -851,7 +851,7 @@ private lemma primeComponentMap_S_support_zero (G : SimpleGraph V) (S : Finset V
     (hS : ∃ i ∈ S, d (Sum.inl i : BinomialEdgeVars V) ≥ 1 ∨
                    d (Sum.inr i : BinomialEdgeVars V) ≥ 1) :
     (primeComponentMap (K := K) G S) (monomial d c) = 0 := by
-  simp only [primeComponentMap, map_smul, aeval_monomial, map_one, mul_one, Algebra.id.smul_eq_mul]
+  simp only [primeComponentMap, aeval_monomial, smul_eq_mul]
   obtain ⟨i, hiS, hi⟩ := hS
   rcases hi with hi | hi
   · -- d(inl i) ≥ 1: the factor for inl i is 0^(≥1) = 0
@@ -926,7 +926,7 @@ private lemma no_s_ker_mem (G : SimpleGraph V) (S : Finset V) :
         push_neg at h_empty
         -- After push_neg, h_empty : ... = ∅
         rw [h_empty] at hfib_minus
-        simp [hc₀, neg_eq_zero] at hfib_minus
+        simp [hc₀] at hfib_minus
       obtain ⟨d₁, hd₁_mem⟩ := hfib_ne
       have hd₁_fib := Finset.mem_of_mem_erase hd₁_mem
       have hd₁T : d₁ ∈ T := (Finset.mem_filter.mp hd₁_fib).1
@@ -1049,7 +1049,7 @@ private lemma ker_primeComponentMap_le (G : SimpleGraph V) (S : Finset V) :
     rw [← Finset.sum_union]
     · conv_lhs => rw [f.as_sum]
       apply Finset.sum_congr _ (fun _ _ => rfl)
-      ext d; simp only [T_S, T_N, Finset.mem_union, Finset.mem_filter, Finsupp.mem_support_iff]
+      ext d; simp only [T_S, T_N, Finset.mem_union, Finset.mem_filter]
       constructor
       · intro hd
         by_cases hS : ∃ i ∈ S, d (Sum.inl i : BinomialEdgeVars V) ≥ 1 ∨
@@ -1107,7 +1107,7 @@ private lemma ker_primeComponentMap_le (G : SimpleGraph V) (S : Finset V) :
         intro d hd
         simp only [T_N, Finset.mem_filter] at hd
         rw [show monomial d (f.coeff d) = f.coeff d • monomial d 1 from by simp [smul_monomial]]
-        simp only [map_smul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]
+        simp only [map_smul]
         congr 1
         exact primeComponentMap_monomial_noSSupport G S hd.2
       rw [hB_phi] at hB_ker
@@ -1228,18 +1228,7 @@ theorem primeComponent_empty_connected (G : SimpleGraph V) (hConn : G.Connected)
       (fun a b h => ⟨h, Finset.notMem_empty _, Finset.notMem_empty _⟩)
     exact (SimpleGraph.reachable_iff_reflTransGen i j).mp (hConn.preconnected i j)
 
-/-! ## Proposition 3.6: When J_G is prime -/
-
-/--
-**Proposition 3.6** (Herzog et al. 2010): `J_G` is a prime ideal if and only if
-every connected component of G is a complete graph.
-
-Reference: Herzog et al. (2010), Proposition 3.6.
--/
-theorem prop_3_6 (G : SimpleGraph V) :
-    (binomialEdgeIdeal (K := K) G).IsPrime ↔
-    ∀ u w : V, G.Reachable u w → G.Adj u w ∨ u = w := by
-  sorry
+-- Proposition 3.6 is proved in PrimeDecomposition.lean (needs primeComponent_le_prime).
 
 /-! ## Variable non-membership lemmas for P_S(G) -/
 

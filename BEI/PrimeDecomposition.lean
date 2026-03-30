@@ -216,6 +216,88 @@ theorem minimalPrimes_characterization (G : SimpleGraph V) :
         ≤ primeComponent (K := K) G T := hSmin T hT_le_S
       _ ≤ Q := hT_le_Q
 
+/-! ## Proposition 3.6: J_G is prime iff components are complete -/
+
+/--
+**Proposition 3.6** (Herzog et al. 2010): `J_G` is a prime ideal if and only if
+every connected component of G is a complete graph (i.e., reachable implies adjacent).
+
+- **Forward**: If all components are complete, then `P_∅(G) = J_G` (generators
+  coincide), and `P_∅` is prime by `primeComponent_isPrime`.
+- **Backward**: If `J_G` is prime, the telescope argument gives `P_∅(G) ≤ J_G`,
+  so any reachable binomial `x_u y_w − x_w y_u ∈ J_G`. An evaluation map that
+  sends `x_u ↦ 1, y_w ↦ 1` and all other variables to `0` kills every generator
+  of `J_G` (since `¬G.Adj u w`) but sends `x_u y_w − x_w y_u` to `1`, giving
+  a contradiction.
+
+Reference: Herzog et al. (2010), Proposition 3.6.
+-/
+theorem prop_3_6 (G : SimpleGraph V) :
+    (binomialEdgeIdeal (K := K) G).IsPrime ↔
+    ∀ u w : V, G.Reachable u w → G.Adj u w ∨ u = w := by
+  constructor
+  · -- Backward: J_G prime → all components complete
+    intro hPrime u w hreach
+    by_cases heq : u = w
+    · exact Or.inr heq
+    · left; by_contra hnadj
+      -- P_∅(G) ≤ J_G using telescope + primality
+      have hP0_le : primeComponent (K := K) G ∅ ≤ binomialEdgeIdeal (K := K) G :=
+        primeComponent_le_prime G _ hPrime (le_refl _) ∅
+          (fun v hv => absurd hv (Finset.notMem_empty v))
+          (fun v _ ⟨hx, _⟩ => X_inl_not_mem_primeComponent (K := K) G ∅
+            (Finset.notMem_empty v) (binomialEdgeIdeal_le_primeComponent G ∅ hx))
+      -- x_u y_w − x_w y_u ∈ P_∅ (since u,w are reachable → SameComponent G ∅ u w)
+      have hsc : SameComponent G ∅ u w :=
+        ⟨Finset.notMem_empty _, Finset.notMem_empty _,
+         Relation.ReflTransGen.mono
+           (fun a b h => ⟨h, Finset.notMem_empty _, Finset.notMem_empty _⟩)
+           ((SimpleGraph.reachable_iff_reflTransGen u w).mp hreach)⟩
+      -- Get x_u y_w − x_w y_u ∈ J_G via P_∅ ≤ J_G
+      have hmem : (x (K := K) u * y w - x w * y u) ∈ binomialEdgeIdeal (K := K) G := by
+        rcases lt_or_gt_of_ne heq with hlt | hgt
+        · exact hP0_le (Ideal.subset_span (Set.mem_union_right _ ⟨u, w, hlt, hsc, rfl⟩))
+        · convert (binomialEdgeIdeal (K := K) G).neg_mem (hP0_le
+            (Ideal.subset_span (Set.mem_union_right _ ⟨w, u, hgt, hsc.symm, rfl⟩))) using 1
+          ring
+      -- Evaluation map: x_i ↦ δ_{i,u}, y_j ↦ δ_{j,w}
+      let φ : MvPolynomial (BinomialEdgeVars V) K →ₐ[K] K :=
+        MvPolynomial.aeval (Sum.elim (fun i => if i = u then (1 : K) else 0)
+                                     (fun i => if i = w then (1 : K) else 0))
+      -- φ kills all of J_G
+      have hφ_kill : binomialEdgeIdeal (K := K) G ≤ RingHom.ker φ.toRingHom := by
+        rw [binomialEdgeIdeal]; apply Ideal.span_le.mpr
+        rintro _ ⟨a, b, hadj_ab, _, rfl⟩
+        simp only [SetLike.mem_coe, RingHom.mem_ker, AlgHom.toRingHom_eq_coe,
+                   AlgHom.coe_toRingHom, map_sub, map_mul, x, y, φ, MvPolynomial.aeval_X,
+                   Sum.elim_inl, Sum.elim_inr]
+        have : ¬(a = u ∧ b = w) := fun ⟨ha, hb⟩ => hnadj (ha ▸ hb ▸ hadj_ab)
+        have : ¬(b = u ∧ a = w) := fun ⟨hb, ha⟩ => hnadj (ha ▸ hb ▸ hadj_ab.symm)
+        split_ifs <;> simp_all
+      -- φ(x_u y_w − x_w y_u) = 1 ≠ 0, contradicting hmem ∈ ker φ
+      have hmem_ker := hφ_kill hmem
+      rw [RingHom.mem_ker, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom] at hmem_ker
+      simp only [map_sub, map_mul, x, y, φ, MvPolynomial.aeval_X, Sum.elim_inl, Sum.elim_inr,
+                 heq, Ne.symm heq, ite_true, ite_false, one_mul, mul_zero, sub_zero,
+                 one_ne_zero] at hmem_ker
+  · -- Forward: all components complete → J_G prime
+    intro hComplete
+    have hP0_le : primeComponent (K := K) G ∅ ≤ binomialEdgeIdeal (K := K) G := by
+      apply Ideal.span_le.mpr
+      intro f hf
+      simp only [Set.mem_union, Set.mem_setOf_eq] at hf
+      rcases hf with ⟨i, hiS, _⟩ | ⟨j, k, hjk, hsc, rfl⟩
+      · exact absurd hiS (Finset.notMem_empty i)
+      · have hreach : G.Reachable j k :=
+          (SimpleGraph.reachable_iff_reflTransGen j k).mpr
+            (hsc.2.2.mono (fun _ _ ⟨h, _, _⟩ => h))
+        rcases hComplete j k hreach with hadj | heq
+        · exact Ideal.subset_span ⟨j, k, hadj, hjk, rfl⟩
+        · exact absurd (heq ▸ hjk) (lt_irrefl _)
+    rw [show binomialEdgeIdeal (K := K) G = primeComponent (K := K) G ∅ from
+      le_antisymm (binomialEdgeIdeal_le_primeComponent G ∅) hP0_le]
+    exact primeComponent_isPrime G ∅
+
 /-! ## Corollary 3.3: Dimension formula -/
 
 /--
@@ -275,7 +357,39 @@ Reference: Herzog et al. (2010), Corollary 3.7.
 theorem corollary_3_7 (G : SimpleGraph V) (hCyc : IsCycleGraph G)
     (hn : 3 ≤ Fintype.card V) :
     Fintype.card V = 3 ↔ (binomialEdgeIdeal (K := K) G).IsPrime := by
-  sorry
+  obtain ⟨hConn, hDeg⟩ := hCyc
+  -- Helper: complete cycle graph has ≤ 3 vertices
+  have aux : (∀ u w : V, u ≠ w → G.Adj u w) → Fintype.card V ≤ 3 := by
+    intro hAdj
+    obtain ⟨v⟩ := hConn.nonempty
+    obtain ⟨n1, n2, _, _, _, honly⟩ := hDeg v
+    have hsub : (Finset.univ : Finset V) ⊆ {v, n1, n2} := by
+      intro w _; simp only [Finset.mem_insert, Finset.mem_singleton]
+      exact (eq_or_ne w v).imp_right fun hw => honly w (hAdj v w hw.symm)
+    exact Finset.card_univ (α := V) ▸ (Finset.card_le_card hsub).trans Finset.card_le_three
+  constructor
+  · -- |V| = 3 → prime: in a 3-cycle every pair is adjacent
+    intro hcard; rw [prop_3_6]
+    intro u w hreach
+    by_cases huw : u = w
+    · exact Or.inr huw
+    · left
+      obtain ⟨n1, n2, hn12, hadj1, hadj2, _⟩ := hDeg u
+      -- {u, n1, n2} has 3 distinct elements = |V|, so it equals Finset.univ
+      have h3 : ({u, n1, n2} : Finset V).card = Fintype.card V := by
+        rw [hcard, Finset.card_insert_of_notMem, Finset.card_pair hn12]
+        simp only [Finset.mem_insert, Finset.mem_singleton, not_or]
+        exact ⟨G.ne_of_adj hadj1, G.ne_of_adj hadj2⟩
+      have hw_mem := (Finset.eq_univ_of_card _ h3) ▸ Finset.mem_univ w
+      simp only [Finset.mem_insert, Finset.mem_singleton] at hw_mem
+      rcases hw_mem.resolve_left (Ne.symm huw) with rfl | rfl
+      · exact hadj1
+      · exact hadj2
+  · -- prime → |V| = 3
+    intro hPrime
+    have hAdj : ∀ u w : V, u ≠ w → G.Adj u w := fun u w huw =>
+      ((prop_3_6 (K := K) G).mp hPrime u w (hConn.preconnected u w)).resolve_right huw
+    exact le_antisymm (aux hAdj) hn
 
 theorem corollary_3_7_CM (G : SimpleGraph V) (hCyc : IsCycleGraph G)
     (hn : 3 ≤ Fintype.card V) :
