@@ -12,4 +12,7 @@ import BEI.CohenMacaulay
 import BEI.PrimeIdeals
 import BEI.PrimeDecomposition
 import BEI.MinimalPrimes
-import BEI.MathlibUpstream
+-- toMathlib: general-purpose lemmas for potential Mathlib upstreaming
+import toMathlib.HeightVariableIdeal
+import toMathlib.HeightDeterminantal
+import toMathlib.HeightAdditivity

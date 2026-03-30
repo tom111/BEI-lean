@@ -309,17 +309,27 @@ Reference: Herzog et al. (2010), Corollary 3.3.
 theorem corollary_3_3 (G : SimpleGraph V) :
     ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) =
     ⨆ S : Finset V, (Fintype.card V - S.card + componentCount G S) := by
+  -- By Thm 3.2: J_G = ⋂ P_S, so dim(R/J_G) = max dim(R/P_S)
+  -- By Lem 3.1: height(P_S) = |S| + |V| − c(S)
+  -- So dim(R/P_S) = 2|V| − height(P_S) = |V| − |S| + c(S) (using catenary property)
+  -- Requires: lemma_3_1 + catenary property for MvPolynomial
   sorry
 
 /--
 Lower bound: `dim(K[x,y]/J_G) ≥ |V| + c(G)`, where `c(G)` is the number of
 connected components of G (taking S = ∅).
 
+This follows from Corollary 3.3 by evaluating at S = ∅ (the supremum is at
+least the value at ∅). Alternatively, J_G ≤ P_∅, so dim(R/J_G) ≥ dim(R/P_∅),
+and dim(R/P_∅) = |V| + c(∅) by Lemma 3.1.
+
 Reference: Herzog et al. (2010), Corollary 3.3.
 -/
 theorem corollary_3_3_lower_bound (G : SimpleGraph V) :
     Fintype.card V + componentCount G ∅ ≤
     ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) := by
+  -- Follows from: J_G ≤ P_∅ → dim(R/J_G) ≥ dim(R/P_∅) = |V| + c(∅)
+  -- The dimension of R/P_∅ uses Lem 3.1 with S = ∅
   sorry
 
 /-! ## Corollary 3.4: Cohen-Macaulay implies dimension equality -/

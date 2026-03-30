@@ -16,3 +16,6 @@ rev = "v4.28.0"
 
 [[lean_lib]]
 name = "BEI"
+
+[[lean_lib]]
+name = "toMathlib"

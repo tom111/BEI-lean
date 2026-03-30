@@ -110,10 +110,12 @@ Apply Thm 3.2 + Cor 2.2. New file `BEI/CIIdeals.lean` (~300-500 lines).
 | PrimeIdeals.lean | 1 | Lem 3.1 only — decomposed into 3 Mathlib gaps |
 | MinimalPrimes.lean | 0 | Cor 3.9 FULLY PROVED |
 | PrimeDecomposition.lean | 4 | Prop 3.6 PROVED, Cor 3.7 PROVED; 4 corollary sorries remain |
-| MathlibUpstream.lean | 2 | height_span_X_image + height_binomialEdgeIdeal_complete |
+| toMathlib/HeightVariableIdeal.lean | 3 | isPrime, upper bound, lower bound for variable ideals |
+| toMathlib/HeightDeterminantal.lean | 1 | height(J_{K_m}) = m-1 (Eagon-Northcott) |
+| toMathlib/HeightAdditivity.lean | 1 | height additivity for disjoint-variable primes |
 | CohenMacaulay.lean | 4 | Prop 1.6 + CM definition |
 | RauhApproach.lean | 2 | archived alternative approach |
-| **Total** | **13** | (11 project + 2 upstream infrastructure) |
+| **Total** | **16** | (11 project + 5 toMathlib infrastructure) |
 
 ---
 
@@ -136,7 +138,8 @@ Apply Thm 3.2 + Cor 2.2. New file `BEI/CIIdeals.lean` (~300-500 lines).
 - `Ideal.height` IS in Mathlib v4.28.0 (previously assumed missing)
 - `IsCohenMacaulay` is NOT in Mathlib v4.28.0 (confirmed)
 - Initial ideal construction is NOT in Mathlib v4.28.0
-- `MathlibUpstream.lean`: tracks general lemmas for potential Mathlib contribution
-  - `height_span_X_image`: height of variable ideal = |vars| (needs chain construction)
-  - `height_binomialEdgeIdeal_complete`: height(J_{K_m}) = m-1 (needs Eagon-Northcott/catenary)
+- `toMathlib/` directory: general-purpose lemmas for potential Mathlib contribution
+  - `HeightVariableIdeal.lean`: height of variable ideal = |vars| (3 sorries: isPrime, upper, lower)
+  - `HeightDeterminantal.lean`: height(J_{K_m}) = m-1 (1 sorry, needs Eagon-Northcott/catenary)
+  - `HeightAdditivity.lean`: height additivity for disjoint-variable primes (1 sorry, needs going-down plumbing)
   - Key Mathlib gaps: no catenary property, no height+dim formula, no trdeg=krullDim
