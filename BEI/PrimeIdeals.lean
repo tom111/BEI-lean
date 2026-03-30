@@ -1183,16 +1183,32 @@ theorem binomialEdgeIdeal_le_primeComponent (G : SimpleGraph V) (S : Finset V) :
 **Lemma 3.1** (Herzog et al. 2010):
   `height(P_S(G)) = |S| + (|V| - c(S))`
 
-The height is `Ideal.height`, defined as the infimum of `Ideal.primeHeight` over
-minimal primes of `P_S(G)`. Since `P_S(G)` is itself prime (see `primeComponent_isPrime`),
-this equals `Ideal.primeHeight (primeComponent G S)` directly.
-The value lives in `ℕ∞`.
+The proof decomposes P_S into variable generators and binomial generators
+in disjoint variable sets:
+- Variable ideal `⟨x_i, y_i : i ∈ S⟩` has height `2|S|`.
+- For each connected component C_j of G[V\S] of size n_j, the corresponding
+  complete-graph ideal `J_{K_{n_j}}` has height `n_j - 1`.
+- Heights add for ideals in disjoint variable sets (going-down for flat maps).
+- Total: `2|S| + Σ(n_j - 1) = |S| + (|V| - c(S))`.
+
+The sorry'd sub-facts are general results about `Ideal.height` in polynomial
+rings — see `BEI/MathlibUpstream.lean` for documentation of the Mathlib gaps.
 
 Reference: Herzog et al. (2010), Lemma 3.1.
 -/
 theorem lemma_3_1 (G : SimpleGraph V) (S : Finset V) :
     Ideal.height (primeComponent (K := K) G S) =
       (S.card + (Fintype.card V - componentCount G S) : ℕ) := by
+  -- The proof uses three infrastructure results not yet in Mathlib v4.28.0.
+  -- See BEI/MathlibUpstream.lean for detailed documentation.
+  --
+  -- (1) Height of variable ideal: height(⟨x_i, y_i : i ∈ S⟩) = 2|S|
+  --     (variable ideals in MvPolynomial have height = number of variables)
+  -- (2) Height of 2-minor ideal: height(J_{K_m}) = m - 1
+  --     (Eagon-Northcott theorem / catenary property of polynomial rings)
+  -- (3) Height additivity: for primes in disjoint variable sets in MvPolynomial,
+  --     height(I₁ + I₂) = height(I₁) + height(I₂)
+  --     (going-down for flat extensions: Module.Free → Module.Flat → HasGoingDown)
   sorry
 
 /--

@@ -102,17 +102,18 @@ Apply Thm 3.2 + Cor 2.2. New file `BEI/CIIdeals.lean` (~300-500 lines).
 
 ---
 
-## Sorry Count by File (2026-03-29)
+## Sorry Count by File (2026-03-30)
 | File | Sorries | Notes |
 |------|---------|-------|
 | GroebnerBasis.lean | 0 | Cor 2.2 moved to Radical.lean, PROVED |
 | Radical.lean | 0 | Cor 2.2 fully proved (squarefree GB → radical) |
-| PrimeIdeals.lean | 1 | Lem 3.1 only (Prop 3.6 moved to PrimeDecomposition) |
+| PrimeIdeals.lean | 1 | Lem 3.1 only — decomposed into 3 Mathlib gaps |
 | MinimalPrimes.lean | 0 | Cor 3.9 FULLY PROVED |
 | PrimeDecomposition.lean | 4 | Prop 3.6 PROVED, Cor 3.7 PROVED; 4 corollary sorries remain |
+| MathlibUpstream.lean | 2 | height_span_X_image + height_binomialEdgeIdeal_complete |
 | CohenMacaulay.lean | 4 | Prop 1.6 + CM definition |
 | RauhApproach.lean | 2 | archived alternative approach |
-| **Total** | **11** | |
+| **Total** | **13** | (11 project + 2 upstream infrastructure) |
 
 ---
 
@@ -135,3 +136,7 @@ Apply Thm 3.2 + Cor 2.2. New file `BEI/CIIdeals.lean` (~300-500 lines).
 - `Ideal.height` IS in Mathlib v4.28.0 (previously assumed missing)
 - `IsCohenMacaulay` is NOT in Mathlib v4.28.0 (confirmed)
 - Initial ideal construction is NOT in Mathlib v4.28.0
+- `MathlibUpstream.lean`: tracks general lemmas for potential Mathlib contribution
+  - `height_span_X_image`: height of variable ideal = |vars| (needs chain construction)
+  - `height_binomialEdgeIdeal_complete`: height(J_{K_m}) = m-1 (needs Eagon-Northcott/catenary)
+  - Key Mathlib gaps: no catenary property, no height+dim formula, no trdeg=krullDim
