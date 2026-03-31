@@ -2,6 +2,7 @@ import BEI.Definitions
 import Mathlib.RingTheory.Ideal.Quotient.Basic
 import Mathlib.RingTheory.Ideal.MinimalPrime.Basic
 import Mathlib.RingTheory.Ideal.Height
+import Mathlib.RingTheory.Ideal.KrullsHeightTheorem
 import Mathlib.RingTheory.Ideal.Maps
 import Mathlib.RingTheory.MvPolynomial.Basic
 import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
@@ -1183,39 +1184,327 @@ theorem binomialEdgeIdeal_le_primeComponent (G : SimpleGraph V) (S : Finset V) :
       exact Set.mem_union_right _
         ⟨i, j, hij, ⟨hiS, hjS, Relation.ReflTransGen.single ⟨hAdj, hiS, hjS⟩⟩, rfl⟩
 
+/-! ## Variable non-membership lemmas for P_S(G) -/
+
+/-- `x_v ∉ P_S(G)` when `v ∉ S`. This follows because `primeComponentMap` sends
+`X(inl v)` to `X(inl v) ≠ 0`, so `X(inl v) ∉ ker(primeComponentMap) = P_S`. -/
+theorem X_inl_not_mem_primeComponent (G : SimpleGraph V) (S : Finset V)
+    {v : V} (hv : v ∉ S) :
+    (X (Sum.inl v) : MvPolynomial (BinomialEdgeVars V) K) ∉ primeComponent G S := by
+  intro h
+  have hle := primeComponent_le_ker (K := K) G S
+  have hker : (primeComponentMap (K := K) G S).toRingHom (X (Sum.inl v)) = 0 :=
+    RingHom.mem_ker.mp (hle h)
+  simp only [AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom,
+    primeComponentMap, aeval_X, hv, ite_false] at hker
+  exact X_ne_zero _ hker
+
+/-- `y_v ∉ P_S(G)` when `v ∉ S`. This follows because `primeComponentMap` sends
+`X(inr v)` to `X(inl v) * X(inr (compRep G S v)) ≠ 0`. -/
+theorem X_inr_not_mem_primeComponent (G : SimpleGraph V) (S : Finset V)
+    {v : V} (hv : v ∉ S) :
+    (X (Sum.inr v) : MvPolynomial (BinomialEdgeVars V) K) ∉ primeComponent G S := by
+  intro h
+  have hle := primeComponent_le_ker (K := K) G S
+  have hker : (primeComponentMap (K := K) G S).toRingHom (X (Sum.inr v)) = 0 :=
+    RingHom.mem_ker.mp (hle h)
+  simp only [AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom,
+    primeComponentMap, aeval_X, hv, ite_false] at hker
+  exact mul_ne_zero (X_ne_zero _) (X_ne_zero _) hker
+
 /-! ## Lemma 3.1: Height formula -/
+
+section lemma31
+
+open Classical in
+/-- The column-representative generating set for P_S(G).
+Contains variable generators `{x_i, y_i : i ∈ S}` and column-representative
+binomial generators `{x_{rep(v)} y_v - x_v y_{rep(v)} : v ∉ S, v ≠ rep(v)}`. -/
+private def genSet31 (G : SimpleGraph V) (S : Finset V) :
+    Set (MvPolynomial (BinomialEdgeVars V) K) :=
+  { f | ∃ i ∈ S, f = X (Sum.inl i) ∨ f = X (Sum.inr i) } ∪
+  { f | ∃ v : V, v ∉ S ∧ v ≠ compRep G S v ∧
+    f = x (compRep G S v) * y v - x v * y (compRep G S v) }
+
+open Classical in
+private lemma genSet31_finite (G : SimpleGraph V) (S : Finset V) :
+    (genSet31 (K := K) G S).Finite := by
+  unfold genSet31
+  apply Set.Finite.union
+  · -- Variable part: subset of a finite set
+    refine Set.Finite.subset (Set.Finite.union
+      (S.finite_toSet.image (fun i => (X (Sum.inl i) : MvPolynomial (BinomialEdgeVars V) K)))
+      (S.finite_toSet.image (fun i => (X (Sum.inr i) : MvPolynomial (BinomialEdgeVars V) K))))
+      ?_
+    intro f hf
+    simp only [Set.mem_setOf_eq] at hf
+    obtain ⟨i, hiS, rfl | rfl⟩ := hf
+    · exact Set.mem_union_left _ (Set.mem_image_of_mem _ hiS)
+    · exact Set.mem_union_right _ (Set.mem_image_of_mem _ hiS)
+  · -- Binomial part: image of a finite set
+    have h2 : { f : MvPolynomial (BinomialEdgeVars V) K |
+        ∃ v : V, v ∉ S ∧ v ≠ compRep G S v ∧
+          f = x (compRep G S v) * y v - x v * y (compRep G S v) } ⊆
+        Set.range (fun v : V =>
+          x (K := K) (compRep G S v) * y v - x v * y (compRep G S v)) := by
+      intro f hf
+      obtain ⟨v, _, _, rfl⟩ := hf
+      exact ⟨v, rfl⟩
+    exact (Set.finite_range _).subset h2
+
+open Classical in
+/-- `compRep G S` is idempotent on `V \ S`. -/
+private lemma compRep_idempotent (G : SimpleGraph V) (S : Finset V)
+    {v : V} (hv : v ∉ S) : compRep G S (compRep G S v) = compRep G S v :=
+  (compRep_eq_of_sameComponent G S (sameComponent_compRep G S hv)).symm
+
+open Classical in
+/-- `SameComponent` implies reachability in the induced subgraph `G[V \ S]`. -/
+private lemma sameComponent_imp_reachable_induce (G : SimpleGraph V) (S : Finset V)
+    {a b : V} (ha : a ∉ S) (hb : b ∉ S)
+    (h : Relation.ReflTransGen (fun x y => G.Adj x y ∧ x ∉ S ∧ y ∉ S) a b) :
+    (G.induce {w : V | w ∉ S}).Reachable ⟨a, ha⟩ ⟨b, hb⟩ := by
+  revert hb
+  induction h with
+  | refl => intro hb'; exact SimpleGraph.Reachable.refl _
+  | @tail c d _ hcd ih =>
+    intro hd
+    exact (ih hcd.2.1).trans
+      (SimpleGraph.Adj.reachable (SimpleGraph.induce_adj.mpr hcd.1))
+
+open Classical in
+/-- Reachability in `G.induce (V \ S)` implies `SameComponent`. -/
+private lemma reachable_induce_imp_sameComponent (G : SimpleGraph V) (S : Finset V)
+    {u v : {w : V // w ∉ S}} (hr : (G.induce {w : V | w ∉ S}).Reachable u v) :
+    SameComponent G S u.val v.val := by
+  rw [SimpleGraph.reachable_iff_reflTransGen] at hr
+  induction hr with
+  | refl => exact ⟨u.2, u.2, .refl⟩
+  | @tail a b _ hab ih =>
+    exact ih.trans ⟨ih.2.1, b.2,
+      .single ⟨SimpleGraph.induce_adj.mp hab, a.2, b.2⟩⟩
+
+open Classical in
+/-- `componentCount G S ≤` number of `compRep` fixed points in `V \ S`. -/
+private lemma componentCount_le_fixedPoints (G : SimpleGraph V) (S : Finset V) :
+    componentCount G S ≤
+      (Finset.univ.filter (fun v => v ∉ S ∧ compRep G S v = v)).card := by
+  set G' := G.induce {v : V | v ∉ S}
+  set fp := Finset.univ.filter (fun v : V => v ∉ S ∧ compRep G S v = v)
+  -- Well-definedness: compRep is constant on connected components
+  have hwd : ∀ u v : {w : V // w ∉ S}, G'.Reachable u v →
+      compRep G S u.val = compRep G S v.val :=
+    fun u v hr => compRep_eq_of_sameComponent G S
+      (reachable_induce_imp_sameComponent G S hr)
+  -- Define the map: ConnectedComponent → V via Quot.lift
+  set f : G'.ConnectedComponent → V :=
+    Quot.lift (fun v : {w : V // w ∉ S} => compRep G S v.val) hwd
+  -- f maps into fp
+  have hf_mem : ∀ c : G'.ConnectedComponent, f c ∈ fp := by
+    intro c; obtain ⟨v, rfl⟩ := Quot.mk_surjective c
+    simp only [f, Quot.lift_mk, Finset.mem_filter, Finset.mem_univ, true_and, fp]
+    exact ⟨(sameComponent_compRep G S v.2).2.1, compRep_idempotent G S v.2⟩
+  -- f is injective
+  have hf_inj : Function.Injective f := by
+    intro c₁ c₂ heq
+    obtain ⟨u, rfl⟩ := Quot.mk_surjective c₁
+    obtain ⟨v, rfl⟩ := Quot.mk_surjective c₂
+    simp only [f, Quot.lift_mk] at heq
+    have hsc := sameComponent_of_compRep_eq G S u.2 v.2 heq
+    exact Quot.sound (sameComponent_imp_reachable_induce G S hsc.1 hsc.2.1 hsc.2.2)
+  -- componentCount = Nat.card G'.ConnectedComponent ≤ fp.card
+  unfold componentCount
+  rw [Nat.card_eq_fintype_card]
+  have hinj' : Function.Injective (fun c : G'.ConnectedComponent => (⟨f c, hf_mem c⟩ : fp)) :=
+    fun c₁ c₂ h => hf_inj (congr_arg Subtype.val h)
+  calc Fintype.card G'.ConnectedComponent
+      ≤ Fintype.card fp := Fintype.card_le_of_injective _ hinj'
+    _ = fp.card := Fintype.card_coe fp
+
+open Classical in
+private lemma genSet31_ncard_le (G : SimpleGraph V) (S : Finset V) :
+    (genSet31 (K := K) G S).ncard ≤ S.card + (Fintype.card V - componentCount G S) := by
+  -- Abbreviations
+  set varPart := { f : MvPolynomial (BinomialEdgeVars V) K |
+    ∃ i ∈ S, f = X (Sum.inl i) ∨ f = X (Sum.inr i) }
+  set binPart := { f : MvPolynomial (BinomialEdgeVars V) K |
+    ∃ v : V, v ∉ S ∧ v ≠ compRep G S v ∧
+      f = x (compRep G S v) * y v - x v * y (compRep G S v) }
+  -- Union bound
+  have h1 : (genSet31 (K := K) G S).ncard ≤ varPart.ncard + binPart.ncard :=
+    Set.ncard_union_le _ _
+  -- Variable part bound: ncard ≤ 2|S|
+  have hvar : varPart.ncard ≤ 2 * S.card := by
+    set sLR := S.image (fun i => (X (Sum.inl i) : MvPolynomial (BinomialEdgeVars V) K)) ∪
+               S.image (fun i => (X (Sum.inr i) : MvPolynomial (BinomialEdgeVars V) K))
+    have hsub : varPart ⊆ ↑sLR := by
+      intro f hf
+      obtain ⟨i, hiS, rfl | rfl⟩ := hf
+      · exact Finset.mem_coe.mpr (Finset.mem_union_left _ (Finset.mem_image_of_mem _ hiS))
+      · exact Finset.mem_coe.mpr (Finset.mem_union_right _ (Finset.mem_image_of_mem _ hiS))
+    calc varPart.ncard
+        ≤ (↑sLR : Set _).ncard := Set.ncard_le_ncard hsub (Finset.finite_toSet _)
+      _ = sLR.card := Set.ncard_coe_finset _
+      _ ≤ (S.image _).card + (S.image _).card := Finset.card_union_le _ _
+      _ ≤ S.card + S.card := Nat.add_le_add Finset.card_image_le Finset.card_image_le
+      _ = 2 * S.card := by ring
+  -- Binomial part bound: ncard ≤ |{v ∉ S : v ≠ rep v}|
+  have hbin : binPart.ncard ≤
+      (Finset.univ.filter (fun v : V => v ∉ S ∧ v ≠ compRep G S v)).card := by
+    have hfin_bin : binPart.Finite :=
+      (genSet31_finite (K := K) G S).subset Set.subset_union_right
+    have hsub : binPart ⊆ (fun v : V =>
+        (x (K := K) (compRep G S v) * y v - x v * y (compRep G S v))) ''
+        ↑(Finset.univ.filter (fun v : V => v ∉ S ∧ v ≠ compRep G S v)) := by
+      intro f hf
+      obtain ⟨v, hvS, hvr, rfl⟩ := hf
+      exact ⟨v, Finset.mem_coe.mpr (Finset.mem_filter.mpr ⟨Finset.mem_univ _, hvS, hvr⟩), rfl⟩
+    calc binPart.ncard
+        ≤ ((fun v : V =>
+            (x (K := K) (compRep G S v) * y v - x v * y (compRep G S v))) ''
+            ↑(Finset.univ.filter (fun v => v ∉ S ∧ v ≠ compRep G S v))).ncard :=
+          Set.ncard_le_ncard hsub (Set.Finite.image _ (Finset.finite_toSet _))
+      _ ≤ (↑(Finset.univ.filter (fun v => v ∉ S ∧ v ≠ compRep G S v)) : Set V).ncard :=
+          Set.ncard_image_le (Finset.finite_toSet _)
+      _ = (Finset.univ.filter (fun v => v ∉ S ∧ v ≠ compRep G S v)).card :=
+          Set.ncard_coe_finset _
+  -- Finset arithmetic: partition V\S into fixed and non-fixed points
+  set nonFixed := Finset.univ.filter (fun v : V => v ∉ S ∧ v ≠ compRep G S v)
+  set fixedPts := Finset.univ.filter (fun v : V => v ∉ S ∧ compRep G S v = v)
+  have hsplit : nonFixed.card + fixedPts.card = Fintype.card V - S.card := by
+    have hpart : Finset.univ.filter (fun v : V => v ∉ S) = nonFixed ∪ fixedPts := by
+      ext v; simp only [Finset.mem_filter, Finset.mem_univ, true_and,
+        Finset.mem_union, nonFixed, fixedPts]
+      constructor
+      · intro hv
+        by_cases h : compRep G S v = v
+        · exact Or.inr ⟨hv, h⟩
+        · exact Or.inl ⟨hv, Ne.symm h⟩
+      · rintro (⟨hv, _⟩ | ⟨hv, _⟩) <;> exact hv
+    have hdisj : Disjoint nonFixed fixedPts := by
+      rw [Finset.disjoint_filter]; intro v _ ⟨_, hne⟩ ⟨_, heq⟩; exact hne heq.symm
+    rw [← Finset.card_union_of_disjoint hdisj, ← hpart]
+    rw [show Finset.univ.filter (fun v : V => v ∉ S) = Sᶜ from by
+      ext v; simp [Finset.mem_compl]]
+    exact Finset.card_compl S
+  have hcc_le : componentCount G S ≤ fixedPts.card :=
+    componentCount_le_fixedPoints G S
+  have hS_le_V : S.card ≤ Fintype.card V := S.card_le_univ
+  -- Chain: genSet31.ncard ≤ 2|S| + nonFixed.card
+  -- nonFixed.card = |V| - |S| - fixedPts.card, componentCount ≤ fixedPts.card
+  -- So genSet31.ncard ≤ 2|S| + |V| - |S| - fixedPts.card ≤ |S| + |V| - componentCount
+  omega
+
+open Classical in
+private lemma span_genSet31_le (G : SimpleGraph V) (S : Finset V) :
+    Ideal.span (genSet31 (K := K) G S) ≤ primeComponent (K := K) G S := by
+  apply Ideal.span_le.mpr
+  intro f hf
+  rcases hf with ⟨i, hiS, rfl | rfl⟩ | ⟨v, hvS, hvr, rfl⟩
+  · exact Ideal.subset_span (Set.mem_union_left _ ⟨i, hiS, Or.inl rfl⟩)
+  · exact Ideal.subset_span (Set.mem_union_left _ ⟨i, hiS, Or.inr rfl⟩)
+  · -- x_{rep(v)} y_v - x_v y_{rep(v)} ∈ P_S, since v and rep(v) are in the same component
+    have hsc := sameComponent_compRep G S hvS
+    exact minor_mem_primeComponent (K := K) G S (Ne.symm hvr) hsc.symm
+
+open Classical in
+set_option maxHeartbeats 800000 in
+/-- P_S(G) is a minimal prime of span(genSet31). The key step uses the
+Plücker identity: for j,k in the same component with representative r,
+`x_r * (x_j y_k - x_k y_j) = x_j * (x_r y_k - x_k y_r) - x_k * (x_r y_j - x_j y_r)`
+and `x_r ∉ P_S` (since r ∉ S) to force `x_j y_k - x_k y_j ∈ Q` for any
+prime Q with `span(genSet31) ⊆ Q ⊆ P_S`. -/
+private lemma primeComponent_mem_minimalPrimes_genSet31 (G : SimpleGraph V) (S : Finset V) :
+    primeComponent (K := K) G S ∈ (Ideal.span (genSet31 (K := K) G S)).minimalPrimes := by
+  haveI := primeComponent_isPrime (K := K) G S
+  refine ⟨⟨‹_›, span_genSet31_le G S⟩, fun Q ⟨hQprime, hgenQ⟩ hQP => ?_⟩
+  -- Show all generators of P_S are in Q
+  apply Ideal.span_le.mpr
+  intro f hf
+  rcases hf with ⟨i, hiS, rfl | rfl⟩ | ⟨j, k, hjk, hsc, rfl⟩
+  · -- Variable generator x_i ∈ Q: it's in genSet31
+    exact hgenQ (Ideal.subset_span (Set.mem_union_left _ ⟨i, hiS, Or.inl rfl⟩))
+  · -- Variable generator y_i ∈ Q: it's in genSet31
+    exact hgenQ (Ideal.subset_span (Set.mem_union_left _ ⟨i, hiS, Or.inr rfl⟩))
+  · -- Binomial generator x_j y_k - x_k y_j ∈ Q via Plücker identity
+    set r := compRep G S j
+    -- r ∉ S (since j ∉ S and r = compRep G S j is in the same component)
+    have hjS := hsc.1
+    have hkS := hsc.2.1
+    have hrS : r ∉ S := (sameComponent_compRep G S hjS).2.1
+    -- x_r ∉ P_S, hence x_r ∉ Q
+    have hxr_not_P : (x (K := K) r : MvPolynomial _ K) ∉ primeComponent G S :=
+      X_inl_not_mem_primeComponent G S hrS
+    have hxr_not_Q : (x (K := K) r : MvPolynomial _ K) ∉ Q :=
+      fun h => hxr_not_P (hQP h)
+    -- Column-rep generators for j and k are in Q (via genSet31 or trivially)
+    -- Helper: x_r y_v - x_v y_r ∈ Q for any v ∉ S with compRep v = r and v ≠ r
+    have col_rep_mem_Q : ∀ v : V, v ∉ S → compRep G S v = r → v ≠ r →
+        x (K := K) r * y v - x v * y r ∈ Q := by
+      intro v hvS hvr hvne
+      apply hgenQ; apply Ideal.subset_span
+      refine Set.mem_union_right _ ⟨v, hvS, fun h => hvne (h ▸ hvr), by rw [hvr]⟩
+    -- compRep k = compRep j = r (since j,k are in the same component)
+    have hrep_k : compRep G S k = r :=
+      (compRep_eq_of_sameComponent G S hsc).symm
+    -- Plücker identity: x_r * (x_j y_k - x_k y_j) =
+    --   x_j * (x_r y_k - x_k y_r) - x_k * (x_r y_j - x_j y_r)
+    have hplucker : x (K := K) r * (x j * y k - x k * y j) =
+        x j * (x r * y k - x k * y r) - x k * (x r * y j - x j * y r) := by ring
+    have hxr_prod_mem : x (K := K) r * (x j * y k - x k * y j) ∈ Q := by
+      rw [hplucker]
+      apply Q.sub_mem
+      · apply Q.mul_mem_left
+        -- x_r y_k - x_k y_r ∈ Q
+        by_cases hkr : k = r
+        · rw [hkr, sub_self]; exact Q.zero_mem
+        · exact col_rep_mem_Q k hkS hrep_k hkr
+      · apply Q.mul_mem_left
+        -- x_r y_j - x_j y_r ∈ Q
+        by_cases hjr : j = r
+        · rw [hjr, sub_self]; exact Q.zero_mem
+        · exact col_rep_mem_Q j hjS rfl hjr
+    -- By primality: x_r ∈ Q or (x_j y_k - x_k y_j) ∈ Q
+    exact hQprime.mem_or_mem hxr_prod_mem |>.resolve_left hxr_not_Q
 
 /--
 **Lemma 3.1** (Herzog et al. 2010):
   `height(P_S(G)) = |S| + (|V| - c(S))`
 
-The proof decomposes P_S into variable generators and binomial generators
-in disjoint variable sets:
-- Variable ideal `⟨x_i, y_i : i ∈ S⟩` has height `2|S|`.
-- For each connected component C_j of G[V\S] of size n_j, the corresponding
-  complete-graph ideal `J_{K_{n_j}}` has height `n_j - 1`.
-- Heights add for ideals in disjoint variable sets (going-down for flat maps).
-- Total: `2|S| + Σ(n_j - 1) = |S| + (|V| - c(S))`.
+**Upper bound** (`≤`): The column-representative generating set `genSet31` has
+`|S| + |V| - c(S)` elements, and P_S is a minimal prime over it. Krull's height
+theorem gives `height(P_S) ≤ |S| + |V| - c(S)`.
 
-The sorry'd sub-facts are general results about `Ideal.height` in polynomial
-rings — see `toMathlib/` for documentation of the Mathlib gaps.
+**Lower bound** (`≥`): Requires height additivity for ideals in disjoint variable
+sets (see `toMathlib/HeightAdditivity.lean`), plus the height computations for
+variable ideals (`toMathlib/HeightVariableIdeal.lean`) and determinantal ideals
+(`toMathlib/HeightDeterminantal.lean`).
 
 Reference: Herzog et al. (2010), Lemma 3.1.
 -/
 theorem lemma_3_1 (G : SimpleGraph V) (S : Finset V) :
     Ideal.height (primeComponent (K := K) G S) =
       (S.card + (Fintype.card V - componentCount G S) : ℕ) := by
-  -- The proof uses three infrastructure results not yet in Mathlib v4.28.0.
-  -- See toMathlib/ for detailed documentation.
-  --
-  -- (1) Height of variable ideal: height(⟨x_i, y_i : i ∈ S⟩) = 2|S|
-  --     (variable ideals in MvPolynomial have height = number of variables)
-  -- (2) Height of 2-minor ideal: height(J_{K_m}) = m - 1
-  --     (Eagon-Northcott theorem / catenary property of polynomial rings)
-  -- (3) Height additivity: for primes in disjoint variable sets in MvPolynomial,
-  --     height(I₁ + I₂) = height(I₁) + height(I₂)
-  --     (going-down for flat extensions: Module.Free → Module.Flat → HasGoingDown)
-  sorry
+  apply le_antisymm
+  · -- Upper bound: height ≤ |S| + |V| - c(S), by Krull's height theorem
+    calc Ideal.height (primeComponent (K := K) G S)
+        _ ≤ (genSet31 (K := K) G S).ncard :=
+            Ideal.height_le_card_of_mem_minimalPrimes_span
+              (genSet31_finite G S)
+              (primeComponent_mem_minimalPrimes_genSet31 G S)
+        _ ≤ S.card + (Fintype.card V - componentCount G S) := by
+            exact_mod_cast genSet31_ncard_le G S
+  · -- Lower bound: height ≥ |S| + |V| - c(S)
+    -- Strategy: Decompose P_S into variable ideal (height 2|S|) and per-component
+    -- complete-graph ideals (height n_j - 1 each), then use height additivity.
+    -- The chain construction combines:
+    -- (1) Partial Segre chains for each component (as in HeightDeterminantal.lean)
+    -- (2) Variable chains (adding x_i, y_i one at a time)
+    -- This requires height additivity for disjoint variable sets, which depends on
+    -- going-down for flat extensions — see toMathlib/HeightAdditivity.lean.
+    sorry
+
+end lemma31
 
 /--
 For connected G, `P_∅(G)` equals the binomial edge ideal of the **complete graph** on V.
@@ -1251,33 +1540,5 @@ theorem primeComponent_empty_connected (G : SimpleGraph V) (hConn : G.Connected)
     exact (SimpleGraph.reachable_iff_reflTransGen i j).mp (hConn.preconnected i j)
 
 -- Proposition 3.6 is proved in PrimeDecomposition.lean (needs primeComponent_le_prime).
-
-/-! ## Variable non-membership lemmas for P_S(G) -/
-
-/-- `x_v ∉ P_S(G)` when `v ∉ S`. This follows because `primeComponentMap` sends
-`X(inl v)` to `X(inl v) ≠ 0`, so `X(inl v) ∉ ker(primeComponentMap) = P_S`. -/
-theorem X_inl_not_mem_primeComponent (G : SimpleGraph V) (S : Finset V)
-    {v : V} (hv : v ∉ S) :
-    (X (Sum.inl v) : MvPolynomial (BinomialEdgeVars V) K) ∉ primeComponent G S := by
-  intro h
-  have hle := primeComponent_le_ker (K := K) G S
-  have hker : (primeComponentMap (K := K) G S).toRingHom (X (Sum.inl v)) = 0 :=
-    RingHom.mem_ker.mp (hle h)
-  simp only [AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom,
-    primeComponentMap, aeval_X, hv, ite_false] at hker
-  exact X_ne_zero _ hker
-
-/-- `y_v ∉ P_S(G)` when `v ∉ S`. This follows because `primeComponentMap` sends
-`X(inr v)` to `X(inl v) * X(inr (compRep G S v)) ≠ 0`. -/
-theorem X_inr_not_mem_primeComponent (G : SimpleGraph V) (S : Finset V)
-    {v : V} (hv : v ∉ S) :
-    (X (Sum.inr v) : MvPolynomial (BinomialEdgeVars V) K) ∉ primeComponent G S := by
-  intro h
-  have hle := primeComponent_le_ker (K := K) G S
-  have hker : (primeComponentMap (K := K) G S).toRingHom (X (Sum.inr v)) = 0 :=
-    RingHom.mem_ker.mp (hle h)
-  simp only [AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom,
-    primeComponentMap, aeval_X, hv, ite_false] at hker
-  exact mul_ne_zero (X_ne_zero _) (X_ne_zero _) hker
 
 end
