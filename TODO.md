@@ -111,11 +111,11 @@ Apply Thm 3.2 + Cor 2.2. New file `BEI/CIIdeals.lean` (~300-500 lines).
 | MinimalPrimes.lean | 0 | Cor 3.9 FULLY PROVED |
 | PrimeDecomposition.lean | 4 | Prop 3.6 PROVED, Cor 3.7 PROVED; 4 corollary sorries remain |
 | toMathlib/HeightVariableIdeal.lean | 0 | FULLY PROVED: isPrime, upper, lower, exact height |
-| toMathlib/HeightDeterminantal.lean | 1 | height(J_{K_m}) = m-1 (Eagon-Northcott) |
+| toMathlib/HeightDeterminantal.lean | 0 | FULLY PROVED: height(J_{K_m}) = m-1 |
 | toMathlib/HeightAdditivity.lean | 1 | height additivity for disjoint-variable primes |
 | CohenMacaulay.lean | 4 | Prop 1.6 + CM definition |
 | RauhApproach.lean | 2 | archived alternative approach |
-| **Total** | **13** | (11 project + 2 toMathlib infrastructure) |
+| **Total** | **12** | (11 project + 1 toMathlib infrastructure) |
 
 ---
 

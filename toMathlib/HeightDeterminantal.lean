@@ -169,20 +169,224 @@ private lemma bei_complete_mem_minimalPrimes_col0 (m : ℕ) (hm : 2 ≤ m) :
 
 /-! ## Lower bound -/
 
+/-- Partial Segre map `ψ_k`: substitutes `y_i ↦ x_i · y_0` for `i.val ≤ k`,
+keeps `y_i ↦ y_i` for `i.val > k`, and keeps all `x_i ↦ x_i`. -/
+private noncomputable def partialSegreMap (m : ℕ) (k : ℕ) :
+    MvPolynomial (BinomialEdgeVars (Fin m)) K →ₐ[K]
+    MvPolynomial (BinomialEdgeVars (Fin m)) K :=
+  MvPolynomial.aeval (fun v : BinomialEdgeVars (Fin m) =>
+    match v with
+    | Sum.inl i => X (Sum.inl i)
+    | Sum.inr i =>
+      if i.val ≤ k then
+        X (Sum.inl i) * X (Sum.inr (⟨0, by have := i.isLt; omega⟩ : Fin m))
+      else X (Sum.inr i))
+
+/-- Single-step substitution `y_{k+1} ↦ x_{k+1} · y_0`, identity on all other variables.
+Used to factor `ψ_{k+1} = σ_k ∘ ψ_k`. -/
+private noncomputable def segreStep (m : ℕ) (k : ℕ) (hk : k + 1 < m) :
+    MvPolynomial (BinomialEdgeVars (Fin m)) K →ₐ[K]
+    MvPolynomial (BinomialEdgeVars (Fin m)) K :=
+  MvPolynomial.aeval (fun v : BinomialEdgeVars (Fin m) =>
+    match v with
+    | Sum.inl i => X (Sum.inl i)
+    | Sum.inr i =>
+      if i = ⟨k + 1, hk⟩ then X (Sum.inl i) * X (Sum.inr (⟨0, by omega⟩ : Fin m))
+      else X (Sum.inr i))
+
+/-- `ψ_{k+1} = σ_k ∘ ψ_k`: the partial Segre map factors through the single step. -/
+private lemma partialSegreMap_succ_eq_comp (m : ℕ) (k : ℕ) (hk : k + 1 < m) :
+    partialSegreMap (K := K) m (k + 1) =
+      (segreStep (K := K) m k hk).comp (partialSegreMap m k) := by
+  apply MvPolynomial.algHom_ext; intro v
+  simp only [AlgHom.comp_apply]
+  cases v with
+  | inl i =>
+    simp only [partialSegreMap, segreStep, MvPolynomial.aeval_X]
+  | inr i =>
+    simp only [partialSegreMap, segreStep, MvPolynomial.aeval_X]
+    by_cases hle : i.val ≤ k
+    · -- i ≤ k: both ψ_k and ψ_{k+1} substitute y_i → x_i * y_0
+      have hle' : i.val ≤ k + 1 := by omega
+      simp only [hle, hle', ite_true]
+      -- σ_k(x_i * y_0) = x_i * y_0 since y_0 ≠ y_{k+1} (0 ≠ k+1)
+      simp only [map_mul, MvPolynomial.aeval_X]
+      have h0ne : (⟨0, by omega⟩ : Fin m) ≠ ⟨k + 1, hk⟩ := by
+        intro heq; simp [Fin.ext_iff] at heq
+      simp [h0ne]
+    · by_cases heq : i.val = k + 1
+      · -- i = k+1: ψ_k leaves y_{k+1}, σ_k maps it to x_{k+1} * y_0
+        have hle' : i.val ≤ k + 1 := by omega
+        simp only [hle, hle', ite_true, ite_false]
+        simp only [MvPolynomial.aeval_X]
+        have : i = ⟨k + 1, hk⟩ := Fin.ext heq
+        simp [this]
+      · -- i > k+1: both ψ_k and ψ_{k+1} leave y_i alone
+        have hle' : ¬(i.val ≤ k + 1) := by omega
+        simp only [hle, hle', ite_false]
+        simp only [MvPolynomial.aeval_X]
+        have hne : i ≠ ⟨k + 1, hk⟩ := by intro h; exact heq (by rw [h])
+        simp [hne]
+
+/-- `ker(ψ_k) ⊆ ker(ψ_{k+1})`: follows from the factorization `ψ_{k+1} = σ_k ∘ ψ_k`. -/
+private lemma ker_partialSegreMap_le (m : ℕ) (k : ℕ) (hk : k + 1 < m) :
+    RingHom.ker (partialSegreMap (K := K) m k).toRingHom ≤
+      RingHom.ker (partialSegreMap (K := K) m (k + 1)).toRingHom := by
+  intro f hf
+  rw [RingHom.mem_ker] at hf ⊢
+  have hcomp := partialSegreMap_succ_eq_comp (K := K) m k hk
+  have : (partialSegreMap (K := K) m (k + 1)) f = 0 := by
+    rw [hcomp, AlgHom.comp_apply, show (partialSegreMap (K := K) m k) f = 0 from hf]
+    simp
+  exact this
+
+/-- `compRep ⊤ ∅ i = 0` for the complete graph: all vertices are in one component
+and 0 is the minimum. -/
+private lemma sameComponent_complete_empty (m : ℕ) (i j : Fin m) :
+    SameComponent (⊤ : SimpleGraph (Fin m)) ∅ i j := by
+  refine ⟨Finset.notMem_empty _, Finset.notMem_empty _, ?_⟩
+  by_cases hij : i = j
+  · subst hij; exact .refl
+  · exact .single ⟨(top_adj i j).mpr hij, Finset.notMem_empty _, Finset.notMem_empty _⟩
+
+private lemma compRep_complete_empty (m : ℕ) (_ : 1 ≤ m) (i : Fin m) :
+    compRep (⊤ : SimpleGraph (Fin m)) ∅ i = ⟨0, by omega⟩ := by
+  unfold compRep
+  simp only [Finset.notMem_empty, ↓reduceDIte]
+  apply le_antisymm
+  · apply Finset.min'_le
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+    exact sameComponent_complete_empty m i ⟨0, by omega⟩
+  · exact Fin.mk_le_mk.mpr (Nat.zero_le _)
+
+open Classical in
+/-- `partialSegreMap m (m-1) = primeComponentMap ⊤ ∅` on `Fin m` when `m ≥ 1`. -/
+private lemma partialSegreMap_eq_primeComponentMap (m : ℕ) (hm : 1 ≤ m) :
+    partialSegreMap (K := K) m (m - 1) = primeComponentMap (⊤ : SimpleGraph (Fin m)) ∅ := by
+  apply MvPolynomial.algHom_ext; intro v
+  cases v with
+  | inl i =>
+    simp only [partialSegreMap, primeComponentMap, MvPolynomial.aeval_X,
+      Finset.notMem_empty, ite_false]
+  | inr i =>
+    simp only [partialSegreMap, primeComponentMap, MvPolynomial.aeval_X,
+      Finset.notMem_empty, ite_false]
+    have : i.val ≤ m - 1 := by omega
+    simp only [this, ↓reduceIte]
+    congr 1
+    rw [compRep_complete_empty m hm i]
+
+/-- `ker(partialSegreMap m (m-1)) = J_{K_m}`. -/
+private lemma ker_partialSegreMap_full (m : ℕ) (hm : 2 ≤ m) :
+    RingHom.ker (partialSegreMap (K := K) m (m - 1)).toRingHom =
+      binomialEdgeIdeal (⊤ : SimpleGraph (Fin m)) := by
+  conv_lhs => rw [show (partialSegreMap (K := K) m (m - 1)) =
+    primeComponentMap (⊤ : SimpleGraph (Fin m)) ∅ from
+    partialSegreMap_eq_primeComponentMap m (by omega)]
+  rw [← primeComponent_eq_ker (K := K) (⊤ : SimpleGraph (Fin m)) ∅]
+  exact primeComponent_empty_connected (⊤ : SimpleGraph (Fin m))
+    (complete_graph_connected m hm)
+
+/-- `partialSegreMap` on `x_i` gives `x_i`. -/
+private lemma partialSegreMap_x (m k : ℕ) (i : Fin m) :
+    partialSegreMap (K := K) m k (X (Sum.inl i)) = X (Sum.inl i) := by
+  simp [partialSegreMap]
+
+/-- `partialSegreMap` on `y_i` when `i.val ≤ k`. -/
+private lemma partialSegreMap_y_le (m k : ℕ) (i : Fin m) (h : i.val ≤ k) :
+    partialSegreMap (K := K) m k (X (Sum.inr i)) =
+      X (Sum.inl i) * X (Sum.inr (⟨0, by have := i.isLt; omega⟩ : Fin m)) := by
+  simp [partialSegreMap, h]
+
+/-- `partialSegreMap` on `y_i` when `i.val > k`. -/
+private lemma partialSegreMap_y_gt (m k : ℕ) (i : Fin m) (h : ¬(i.val ≤ k)) :
+    partialSegreMap (K := K) m k (X (Sum.inr i)) = X (Sum.inr i) := by
+  simp [partialSegreMap, h]
+
+/-- The witness `x_0 · y_{k+1} - x_{k+1} · y_0` is in `ker(ψ_{k+1})`. -/
+private lemma witness_mem_ker (m : ℕ) (_ : 2 ≤ m) (k : Fin (m - 1)) :
+    x (K := K) (⟨0, by omega⟩ : Fin m) * y (⟨k.val + 1, by omega⟩ : Fin m) -
+       x (⟨k.val + 1, by omega⟩ : Fin m) * y (⟨0, by omega⟩ : Fin m) ∈
+    RingHom.ker (partialSegreMap (K := K) m (k.val + 1)).toRingHom := by
+  rw [RingHom.mem_ker, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom,
+    x, y, x, y, map_sub, map_mul, map_mul, partialSegreMap_x, partialSegreMap_x]
+  -- Now the goal has: partialSegreMap m (k+1) (X (Sum.inr ⟨k+1,_⟩))
+  --                and partialSegreMap m (k+1) (X (Sum.inr ⟨0,_⟩))
+  rw [partialSegreMap_y_le (K := K) _ _ (⟨k.val + 1, _⟩)
+    (le_refl _ : (⟨k.val + 1, _⟩ : Fin m).val ≤ k.val + 1)]
+  rw [partialSegreMap_y_le (K := K) _ _ (⟨0, _⟩)
+    (Nat.zero_le _ : (⟨0, _⟩ : Fin m).val ≤ k.val + 1)]
+  ring
+
+/-- The witness `x_0 · y_{k+1} - x_{k+1} · y_0` is NOT in `ker(ψ_k)`. -/
+private lemma witness_not_mem_ker (m : ℕ) (_ : 2 ≤ m) (k : Fin (m - 1)) :
+    x (K := K) (⟨0, by omega⟩ : Fin m) * y (⟨k.val + 1, by omega⟩ : Fin m) -
+       x (⟨k.val + 1, by omega⟩ : Fin m) * y (⟨0, by omega⟩ : Fin m) ∉
+    RingHom.ker (partialSegreMap (K := K) m k.val).toRingHom := by
+  rw [RingHom.mem_ker, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]; push_neg
+  rw [x, y, x, y, map_sub, map_mul, map_mul,
+    partialSegreMap_x (K := K), partialSegreMap_x (K := K)]
+  rw [partialSegreMap_y_gt (K := K) _ _ (⟨k.val + 1, _⟩)
+    (show ¬((⟨k.val + 1, _⟩ : Fin m).val ≤ k.val) from Nat.not_succ_le_self k.val)]
+  rw [partialSegreMap_y_le (K := K) _ _ (⟨0, _⟩)
+    (Nat.zero_le _ : (⟨0, _⟩ : Fin m).val ≤ k.val)]
+  -- Goal: X(inl ⟨0,_⟩) * X(inr ⟨k+1,_⟩) -
+  --       X(inl ⟨k+1,_⟩) * (X(inl ⟨0,_⟩) * X(inr ⟨0,_⟩)) ≠ 0
+  intro heq
+  -- Show nonzero by extracting a coefficient where first term has coeff 1 and second has 0
+  set d := Finsupp.single (Sum.inl (⟨0, by omega⟩ : Fin m) : BinomialEdgeVars (Fin m)) 1 +
+    Finsupp.single (Sum.inr (⟨k.val + 1, by omega⟩ : Fin m) : BinomialEdgeVars (Fin m)) 1
+  have h1 : MvPolynomial.coeff d
+    (X (Sum.inl (⟨0, by omega⟩ : Fin m)) * X (Sum.inr (⟨k.val + 1, by omega⟩ : Fin m)) :
+      MvPolynomial (BinomialEdgeVars (Fin m)) K) = 1 := by
+    simp [d, MvPolynomial.coeff_single_X]
+  have h2 : MvPolynomial.coeff d
+    (X (Sum.inl (⟨k.val + 1, by omega⟩ : Fin m)) *
+     (X (Sum.inl (⟨0, by omega⟩ : Fin m)) * X (Sum.inr (⟨0, by omega⟩ : Fin m))) :
+      MvPolynomial (BinomialEdgeVars (Fin m)) K) = 0 := by
+    simp only [d, MvPolynomial.coeff_X_mul']
+    convert if_neg _
+    simp only [Finsupp.mem_support_iff, Finsupp.add_apply, Finsupp.single_apply, not_not]
+    simp
+  have h3 : MvPolynomial.coeff d (0 : MvPolynomial (BinomialEdgeVars (Fin m)) K) = 0 :=
+    MvPolynomial.coeff_zero d
+  have h4 := congr_arg (MvPolynomial.coeff d) heq
+  rw [MvPolynomial.coeff_sub, h1, h2, h3] at h4
+  exact one_ne_zero (sub_zero (1 : K) ▸ h4)
+
+/-- `ker(ψ_k) ⊂ ker(ψ_{k+1})` as ideals. -/
+private lemma ker_partialSegreMap_lt (m : ℕ) (hm : 2 ≤ m) (k : Fin (m - 1)) :
+    RingHom.ker (partialSegreMap (K := K) m k.val).toRingHom <
+      RingHom.ker (partialSegreMap (K := K) m (k.val + 1)).toRingHom := by
+  refine lt_of_le_of_ne (ker_partialSegreMap_le m k.val (by omega)) ?_
+  intro heq
+  exact witness_not_mem_ker (K := K) m hm k (heq ▸ witness_mem_ker (K := K) m hm k)
+
 /-- Lower bound: height(J_{K_m}) ≥ m − 1.
 
-**Strategy** (not yet fully formalized): Define partial Segre maps
-`φ_k : K[x,y] → K[x,y]` for k = 0,...,m−1 by `x_i ↦ x_i` and
-`y_i ↦ x_i · y_0` for `i ≤ k`, `y_i ↦ y_i` otherwise.
-
-Then `ker(φ_k)` is prime (the image is a domain) and the chain
-`⊥ < ker(φ_0) < ker(φ_1) < ⋯ < ker(φ_{m-2}) < ker(φ_{m-1}) = J_{K_m}`
-has length m − 1. The strict inclusions follow because `x_0 y_{k+1} − x_{k+1} y_0`
-is in `ker(φ_{k+1})` but not in `ker(φ_k)` (the latter maps it to the nonzero
-polynomial `x_0 · y_{k+1} − x_{k+1} · x_0 · y_0`). -/
+Constructs a strictly increasing chain of prime ideals
+`ker(ψ_0) < ker(ψ_1) < ⋯ < ker(ψ_{m-1}) = J_{K_m}` of length `m − 1`,
+using partial Segre maps `ψ_k` that substitute `y_i ↦ x_i · y_0` for `i ≤ k`. -/
 private lemma height_bei_complete_ge (m : ℕ) (hm : 2 ≤ m) :
     (m - 1 : ℕ∞) ≤ Ideal.height (binomialEdgeIdeal (K := K) (⊤ : SimpleGraph (Fin m))) := by
-  sorry
+  haveI hprime := binomialEdgeIdeal_complete_isPrime (K := K) m hm
+  rw [Ideal.height_eq_primeHeight]
+  -- Build an LTSeries of PrimeSpectrum of length m-1
+  -- The chain: ker(ψ_0) < ker(ψ_1) < ... < ker(ψ_{m-1}) = J_{K_m}
+  let Q (i : ℕ) : PrimeSpectrum (MvPolynomial (BinomialEdgeVars (Fin m)) K) :=
+    ⟨RingHom.ker (partialSegreMap (K := K) m i).toRingHom, RingHom.ker_isPrime _⟩
+  let p : LTSeries (PrimeSpectrum (MvPolynomial (BinomialEdgeVars (Fin m)) K)) :=
+    ⟨m - 1, fun i => Q i.val, fun ⟨i, hi⟩ => by
+      show Q i < Q (i + 1)
+      exact ker_partialSegreMap_lt (K := K) m hm ⟨i, by omega⟩⟩
+  -- p.last = Q (m-1) has ideal ker(ψ_{m-1}) = J_{K_m}
+  have hlast : p.last = ⟨binomialEdgeIdeal (⊤ : SimpleGraph (Fin m)), hprime⟩ := by
+    apply PrimeSpectrum.ext
+    show (Q (m - 1)).asIdeal = _
+    exact ker_partialSegreMap_full m hm
+  calc (m - 1 : ℕ∞) = ↑p.length := by norm_cast
+    _ ≤ Ideal.primeHeight (binomialEdgeIdeal (K := K) (⊤ : SimpleGraph (Fin m))) := by
+        rw [Ideal.primeHeight, ← hlast]; exact Order.length_le_height_last
 
 /-! ## Main theorem -/
 
