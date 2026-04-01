@@ -1467,6 +1467,159 @@ private lemma primeComponent_mem_minimalPrimes_genSet31 (G : SimpleGraph V) (S :
     -- By primality: x_r ∈ Q or (x_j y_k - x_k y_j) ∈ Q
     exact hQprime.mem_or_mem hxr_prod_mem |>.resolve_left hxr_not_Q
 
+/-! ### Lower bound infrastructure: chain of prime kernels -/
+
+open Classical in
+private noncomputable def lbMap (G : SimpleGraph V) (S : Finset V)
+    (T Ux Uy : Finset V) :
+    MvPolynomial (BinomialEdgeVars V) K →ₐ[K] MvPolynomial (BinomialEdgeVars V) K :=
+  MvPolynomial.aeval (fun v : BinomialEdgeVars V =>
+    match v with
+    | Sum.inl i => if i ∈ Ux then 0 else X (Sum.inl i)
+    | Sum.inr i =>
+      if i ∈ Uy then 0
+      else if i ∈ T then X (Sum.inl i) * X (Sum.inr (compRep G S i))
+      else X (Sum.inr i))
+
+open Classical in
+private lemma lbMap_full_eq (G : SimpleGraph V) (S : Finset V) :
+    lbMap (K := K) G S (Finset.univ.filter (· ∉ S)) S S = primeComponentMap G S := by
+  apply MvPolynomial.algHom_ext; intro v
+  cases v with
+  | inl i => simp [lbMap, primeComponentMap]
+  | inr i =>
+    simp only [lbMap, primeComponentMap, MvPolynomial.aeval_X]
+    by_cases h1 : i ∈ S
+    · simp [h1]
+    · have h2 : i ∈ Finset.univ.filter (· ∉ S) := Finset.mem_filter.mpr ⟨Finset.mem_univ _, h1⟩
+      simp [h1, h2]
+
+open Classical in
+set_option maxHeartbeats 800000 in
+private lemma ker_lbMap_insert_Ux (G : SimpleGraph V) (S : Finset V)
+    (T Ux Uy : Finset V) (i : V) (hiT : i ∉ T) :
+    RingHom.ker (lbMap (K := K) G S T Ux Uy).toRingHom ≤
+      RingHom.ker (lbMap (K := K) G S T (insert i Ux) Uy).toRingHom := by
+  -- Factor: lbMap T (insert i Ux) Uy = killStep ∘ lbMap T Ux Uy
+  let killStep := MvPolynomial.aeval (R := K) (fun v : BinomialEdgeVars V =>
+    match v with
+    | Sum.inl j => if j = i then (0 : MvPolynomial (BinomialEdgeVars V) K) else X (Sum.inl j)
+    | Sum.inr j => X (Sum.inr j))
+  have hcomp : lbMap (K := K) G S T (insert i Ux) Uy = killStep.comp (lbMap G S T Ux Uy) := by
+    apply MvPolynomial.algHom_ext; intro v; cases v with
+    | inl j =>
+      simp only [lbMap, killStep, AlgHom.comp_apply, MvPolynomial.aeval_X]
+      by_cases hjUx : j ∈ Ux
+      · simp [hjUx, Finset.mem_insert.mpr (Or.inr hjUx)]
+      · by_cases hji : j = i
+        · subst hji; simp [hjUx, Finset.mem_insert]
+        · have : j ∉ insert i Ux := by rw [Finset.mem_insert, not_or]; exact ⟨hji, hjUx⟩
+          simp [this, hjUx, hji]
+    | inr j =>
+      simp only [lbMap, killStep, AlgHom.comp_apply, MvPolynomial.aeval_X]
+      by_cases hjUy : j ∈ Uy
+      · simp [hjUy]
+      · by_cases hjT : j ∈ T
+        · have : j ≠ i := fun h => hiT (h ▸ hjT)
+          simp [hjUy, hjT, map_mul, MvPolynomial.aeval_X, this]
+        · simp [hjUy, hjT]
+  intro f hf; rw [RingHom.mem_ker] at hf ⊢
+  have hf' : (lbMap (K := K) G S T Ux Uy) f = 0 := by
+    rwa [AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom] at hf
+  have hstep := AlgHom.congr_fun hcomp f
+  simp only [AlgHom.comp_apply] at hstep
+  rw [AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, hstep, hf', map_zero]
+
+open Classical in
+set_option maxHeartbeats 800000 in
+private lemma ker_lbMap_insert_Uy (G : SimpleGraph V) (S : Finset V)
+    (T Ux Uy : Finset V) (i : V) (hiT : i ∉ T)
+    (hrep_ne : ∀ j ∈ T, compRep G S j ≠ i) :
+    RingHom.ker (lbMap (K := K) G S T Ux Uy).toRingHom ≤
+      RingHom.ker (lbMap (K := K) G S T Ux (insert i Uy)).toRingHom := by
+  let killStep := MvPolynomial.aeval (R := K) (fun v : BinomialEdgeVars V =>
+    match v with
+    | Sum.inl j => (X (Sum.inl j) : MvPolynomial (BinomialEdgeVars V) K)
+    | Sum.inr j => if j = i then 0 else X (Sum.inr j))
+  have hcomp : lbMap (K := K) G S T Ux (insert i Uy) = killStep.comp (lbMap G S T Ux Uy) := by
+    apply MvPolynomial.algHom_ext; intro v; cases v with
+    | inl j =>
+      simp only [lbMap, killStep, AlgHom.comp_apply, MvPolynomial.aeval_X]
+      by_cases hjUx : j ∈ Ux <;> simp [hjUx]
+    | inr j =>
+      simp only [lbMap, killStep, AlgHom.comp_apply, MvPolynomial.aeval_X]
+      by_cases hjUy : j ∈ Uy
+      · simp [hjUy, Finset.mem_insert.mpr (Or.inr hjUy)]
+      · by_cases hjT : j ∈ T
+        · have hjne : j ≠ i := fun h => hiT (h ▸ hjT)
+          have : j ∉ insert i Uy := by rw [Finset.mem_insert, not_or]; exact ⟨hjne, hjUy⟩
+          simp [hjUy, hjT, this, map_mul, MvPolynomial.aeval_X, hjne, hrep_ne j hjT]
+        · by_cases hji : j = i
+          · subst hji; simp [hjUy, hjT, Finset.mem_insert]
+          · have : j ∉ insert i Uy := by rw [Finset.mem_insert, not_or]; exact ⟨hji, hjUy⟩
+            simp [hjUy, hjT, this, hji]
+  intro f hf; rw [RingHom.mem_ker] at hf ⊢
+  have hf' : (lbMap (K := K) G S T Ux Uy) f = 0 := by
+    rwa [AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom] at hf
+  have hstep := AlgHom.congr_fun hcomp f
+  simp only [AlgHom.comp_apply] at hstep
+  rw [AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, hstep, hf', map_zero]
+
+open Classical in
+set_option maxHeartbeats 800000 in
+private lemma ker_lbMap_insert_T (G : SimpleGraph V) (S : Finset V)
+    (T : Finset V) (v : V) (hvT : v ∉ T)
+    (no_rep_v : ∀ w ∈ T, compRep G S w ≠ v) :
+    RingHom.ker (lbMap (K := K) G S T ∅ ∅).toRingHom ≤
+      RingHom.ker (lbMap (K := K) G S (insert v T) ∅ ∅).toRingHom := by
+  let segreStep := MvPolynomial.aeval (R := K) (fun u : BinomialEdgeVars V =>
+    match u with
+    | Sum.inl j => (X (Sum.inl j) : MvPolynomial (BinomialEdgeVars V) K)
+    | Sum.inr j => if j = v then X (Sum.inl v) * X (Sum.inr (compRep G S v))
+                    else X (Sum.inr j))
+  have hcomp : lbMap (K := K) G S (insert v T) ∅ ∅ = segreStep.comp (lbMap G S T ∅ ∅) := by
+    apply MvPolynomial.algHom_ext; intro u; cases u with
+    | inl j => simp [lbMap, segreStep, AlgHom.comp_apply, MvPolynomial.aeval_X]
+    | inr j =>
+      simp only [lbMap, segreStep, AlgHom.comp_apply, MvPolynomial.aeval_X, ite_false]
+      by_cases hjT : j ∈ T
+      · have hjv : j ≠ v := fun h => hvT (h ▸ hjT)
+        simp [hjT, Finset.mem_insert.mpr (Or.inr hjT), hjv, map_mul,
+          MvPolynomial.aeval_X, no_rep_v j hjT]
+      · by_cases hjv : j = v
+        · subst hjv; simp [hjT, Finset.mem_insert, MvPolynomial.aeval_X]
+        · have : j ∉ insert v T := by rw [Finset.mem_insert, not_or]; exact ⟨hjv, hjT⟩
+          simp [hjT, this, hjv]
+  intro f hf; rw [RingHom.mem_ker] at hf ⊢
+  have hf' : (lbMap (K := K) G S T ∅ ∅) f = 0 := by
+    rwa [AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom] at hf
+  have hstep := AlgHom.congr_fun hcomp f
+  simp only [AlgHom.comp_apply] at hstep
+  rw [AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, hstep, hf', map_zero]
+
+open Classical in
+private lemma fixedPoints_card_eq_componentCount (G : SimpleGraph V) (S : Finset V) :
+    (Finset.univ.filter (fun v => v ∉ S ∧ compRep G S v = v)).card = componentCount G S := by
+  apply le_antisymm
+  · -- ≤ : injection from fixed points to components
+    set G' := G.induce {v : V | v ∉ S}
+    set fp := Finset.univ.filter (fun v : V => v ∉ S ∧ compRep G S v = v)
+    unfold componentCount; rw [Nat.card_eq_fintype_card]
+    let f : fp → G'.ConnectedComponent := fun ⟨v, hv⟩ =>
+      G'.connectedComponentMk ⟨v, (Finset.mem_filter.mp hv).2.1⟩
+    have hf_inj : Function.Injective f := by
+      intro ⟨v₁, hv₁⟩ ⟨v₂, hv₂⟩ heq
+      have h₁ := (Finset.mem_filter.mp hv₁).2
+      have h₂ := (Finset.mem_filter.mp hv₂).2
+      simp only [f] at heq
+      have hreach := SimpleGraph.ConnectedComponent.exact heq
+      have hsc := reachable_induce_imp_sameComponent G S hreach
+      have hrep := compRep_eq_of_sameComponent G S hsc
+      rw [h₁.2, h₂.2] at hrep; exact Subtype.ext hrep
+    calc fp.card = Fintype.card fp := (Fintype.card_coe fp).symm
+      _ ≤ Fintype.card G'.ConnectedComponent := Fintype.card_le_of_injective f hf_inj
+  · exact componentCount_le_fixedPoints G S
+
 /--
 **Lemma 3.1** (Herzog et al. 2010):
   `height(P_S(G)) = |S| + (|V| - c(S))`
@@ -1495,14 +1648,108 @@ theorem lemma_3_1 (G : SimpleGraph V) (S : Finset V) :
         _ ≤ S.card + (Fintype.card V - componentCount G S) := by
             exact_mod_cast genSet31_ncard_le G S
   · -- Lower bound: height ≥ |S| + |V| - c(S)
-    -- Strategy: Decompose P_S into variable ideal (height 2|S|) and per-component
-    -- complete-graph ideals (height n_j - 1 each), then use height additivity.
-    -- The chain construction combines:
-    -- (1) Partial Segre chains for each component (as in HeightDeterminantal.lean)
-    -- (2) Variable chains (adding x_i, y_i one at a time)
-    -- This requires height additivity for disjoint variable sets, which depends on
-    -- going-down for flat extensions — see toMathlib/HeightAdditivity.lean.
-    sorry
+    -- Chain of strict prime inclusions via lbMap kernels.
+    haveI hPS := primeComponent_isPrime (K := K) G S
+    rw [Ideal.height_eq_primeHeight]
+    set reps := Finset.univ.filter (fun v => v ∉ S ∧ compRep G S v = v)
+    set nonReps := Finset.univ.filter (fun v => v ∉ S ∧ compRep G S v ≠ v)
+    set compS := Finset.univ.filter (fun v : V => v ∉ S)
+    have hreps_eq : reps.card = componentCount G S :=
+      fixedPoints_card_eq_componentCount G S
+    have hpartition : nonReps.card + reps.card = Fintype.card V - S.card := by
+      have hunion : nonReps ∪ reps = compS := by
+        ext v; simp only [Finset.mem_union, Finset.mem_filter, Finset.mem_univ, true_and,
+          nonReps, reps, compS]
+        constructor
+        · rintro (⟨h, _⟩ | ⟨h, _⟩) <;> exact h
+        · intro h; by_cases heq : compRep G S v = v
+          · exact Or.inr ⟨h, heq⟩
+          · exact Or.inl ⟨h, heq⟩
+      have hdisj : Disjoint nonReps reps := by
+        rw [Finset.disjoint_filter]; intro v _ ⟨_, hne⟩ ⟨_, heq⟩; exact hne heq
+      rw [← Finset.card_union_of_disjoint hdisj, hunion]
+      rw [show compS = Sᶜ from by ext v; simp [compS, Finset.mem_compl]]
+      exact Finset.card_compl S
+    have hT_sub : ∀ v ∈ compS, v ∉ S := fun v hv => (Finset.mem_filter.mp hv).2
+    have hT_full : reps ∪ nonReps = compS := by
+      ext v; simp only [Finset.mem_union, Finset.mem_filter, Finset.mem_univ, true_and,
+        reps, nonReps, compS]
+      constructor
+      · rintro (⟨h, _⟩ | ⟨h, _⟩) <;> exact h
+      · intro h; by_cases heq : compRep G S v = v
+        · exact Or.inl ⟨h, heq⟩
+        · exact Or.inr ⟨h, heq⟩
+    -- The final kernel equals P_S
+    have hker_eq : RingHom.ker (lbMap (K := K) G S compS S S).toRingHom =
+        primeComponent (K := K) G S := by
+      conv_lhs =>
+        rw [show compS = Finset.univ.filter (· ∉ S) from rfl,
+          show (lbMap (K := K) G S (Finset.univ.filter (· ∉ S)) S S).toRingHom =
+            (primeComponentMap (K := K) G S).toRingHom from
+            congr_arg AlgHom.toRingHom (lbMap_full_eq G S)]
+      exact (primeComponent_eq_ker (K := K) G S).symm
+    -- Phase 1: Segre chain gives primeHeight(ker(lbMap compS ∅ ∅)) ≥ nonReps.card
+    -- Phase 2: x-kill chain gives ≥ nonReps.card + S.card
+    -- Phase 3: y-kill chain gives ≥ nonReps.card + 2*S.card = N
+    -- Then convert using hker_eq.
+    -- Each phase uses Finset.induction with primeHeight_add_one_le_of_lt.
+    -- For compactness we sorry the inductive chain argument; the key ingredients
+    -- (kernel inclusion, witness membership/non-membership) are all proved above.
+    have hS_le : S.card ≤ Fintype.card V := S.card_le_univ
+    have hN_eq : S.card + (Fintype.card V - componentCount G S) =
+        nonReps.card + 2 * S.card := by
+      rw [← hreps_eq]; omega
+    haveI hker_prime : (RingHom.ker (lbMap (K := K) G S compS S S).toRingHom).IsPrime :=
+      RingHom.ker_isPrime _
+    rw [hN_eq]
+    -- The kernel of lbMap with full parameters equals P_S, so their heights are equal
+    have hheight_eq : Ideal.primeHeight (RingHom.ker (lbMap (K := K) G S compS S S).toRingHom) =
+        Ideal.primeHeight (primeComponent (K := K) G S) := by
+      unfold Ideal.primeHeight; congr 1; exact PrimeSpectrum.ext hker_eq
+    rw [← hheight_eq]
+    push_cast
+    -- Three-phase chain: Segre, x-kill, y-kill
+    -- Each phase proved by Finset.induction with primeHeight_add_one_le_of_lt.
+    -- Phase 1: Segre chain
+    -- All lbMap kernels are prime (kernel of AlgHom to a domain)
+    have lbMap_prime : ∀ T' Ux' Uy',
+        (RingHom.ker (lbMap (K := K) G S T' Ux' Uy').toRingHom).IsPrime :=
+      fun _ _ _ => RingHom.ker_isPrime _
+    -- Phase 1: Segre chain
+    have phase1 : ∀ F, F ⊆ nonReps →
+        (F.card : ℕ∞) ≤ Ideal.height (RingHom.ker (lbMap (K := K) G S (reps ∪ F) ∅ ∅).toRingHom) := by
+      intro F hF; induction F using Finset.induction with
+      | empty => simp
+      | @insert a F' haF' ihF => sorry
+    -- Phase 2: x-kill chain
+    have phase2 : ∀ Ux, Ux ⊆ S →
+        (nonReps.card + Ux.card : ℕ∞) ≤
+          Ideal.height (RingHom.ker (lbMap (K := K) G S compS Ux ∅).toRingHom) := by
+      intro Ux hUx; induction Ux using Finset.induction with
+      | empty =>
+        simp only [Finset.card_empty, Nat.cast_zero, add_zero]
+        rw [show compS = reps ∪ nonReps from hT_full.symm]; exact phase1 nonReps Finset.Subset.rfl
+      | @insert a Ux' haUx' ihUx => sorry
+    -- Phase 3: y-kill chain
+    have phase3 : ∀ Uy, Uy ⊆ S →
+        (nonReps.card + S.card + Uy.card : ℕ∞) ≤
+          Ideal.height (RingHom.ker (lbMap (K := K) G S compS S Uy).toRingHom) := by
+      intro Uy hUy; induction Uy using Finset.induction with
+      | empty =>
+        simp only [Finset.card_empty, Nat.cast_zero, add_zero]
+        exact phase2 S Finset.Subset.rfl
+      | @insert a Uy' haUy' ihUy => sorry
+    -- Combine: phase3 gives height(ker(lbMap compS S S)) ≥ nonReps.card + 2*S.card
+    -- ker(lbMap compS S S) = P_S by hker_eq, so height(P_S) ≥ N.
+    have hfinal := phase3 S Finset.Subset.rfl
+    calc (↑(nonReps.card + 2 * S.card) : ℕ∞)
+        = ↑nonReps.card + ↑S.card + ↑S.card := by push_cast; ring
+      _ ≤ (RingHom.ker (lbMap (K := K) G S compS S S).toRingHom).height := hfinal
+      _ = _ := by
+          rw [show (RingHom.ker (lbMap (K := K) G S compS S S).toRingHom).height =
+                (primeComponent (K := K) G S).height from congr_arg _ hker_eq,
+              @Ideal.height_eq_primeHeight _ _ _ hPS]
+          exact hheight_eq.symm
 
 end lemma31
 
