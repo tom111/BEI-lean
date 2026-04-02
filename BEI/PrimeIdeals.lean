@@ -1720,7 +1720,96 @@ theorem lemma_3_1 (G : SimpleGraph V) (S : Finset V) :
         (F.card : ℕ∞) ≤ Ideal.height (RingHom.ker (lbMap (K := K) G S (reps ∪ F) ∅ ∅).toRingHom) := by
       intro F hF; induction F using Finset.induction with
       | empty => simp
-      | @insert a F' haF' ihF => sorry
+      | @insert a F' haF' ihF =>
+        have haF'Sub : F' ⊆ nonReps := (Finset.insert_subset_iff.mp hF).2
+        have haInNonReps : a ∈ nonReps := hF (Finset.mem_insert_self a F')
+        have haNotS : a ∉ S := (Finset.mem_filter.mp haInNonReps).2.1
+        have ha_compRep_ne : compRep G S a ≠ a :=
+          (Finset.mem_filter.mp haInNonReps).2.2
+        have haNotReps : a ∉ reps := by
+          intro h; exact (Finset.mem_filter.mp haInNonReps).2.2
+            (Finset.mem_filter.mp h).2.2
+        have haNotT : a ∉ reps ∪ F' := by
+          rw [Finset.mem_union, not_or]; exact ⟨haNotReps, haF'⟩
+        set r := compRep G S a with hr_def
+        have hr_in_reps : r ∈ reps := by
+          rw [Finset.mem_filter]; exact ⟨Finset.mem_univ _,
+            (sameComponent_compRep G S haNotS).2.1,
+            compRep_idempotent G S haNotS⟩
+        have hno_rep : ∀ w ∈ reps ∪ F', compRep G S w ≠ a := by
+          intro w hw heq
+          rcases Finset.mem_union.mp hw with hw_r | hw_F
+          · -- w ∈ reps: compRep w = w, so w = a, contradicts a ∉ reps
+            have h1 : compRep G S w = w := (Finset.mem_filter.mp hw_r).2.2
+            rw [h1] at heq; exact haNotReps (heq ▸ hw_r)
+          · -- w ∈ F' ⊆ nonReps: compRep w ∈ reps, so a ∈ reps, contradiction
+            have hwNR := haF'Sub hw_F
+            have hwNotS := (Finset.mem_filter.mp hwNR).2.1
+            have hcr_reps : compRep G S w ∈ reps := by
+              rw [Finset.mem_filter]; exact ⟨Finset.mem_univ _,
+                (sameComponent_compRep G S hwNotS).2.1,
+                compRep_idempotent G S hwNotS⟩
+            exact haNotReps (heq ▸ hcr_reps)
+        have hle := ker_lbMap_insert_T (K := K) G S (reps ∪ F') a haNotT hno_rep
+        have hinsert_eq : insert a (reps ∪ F') = reps ∪ insert a F' := by
+          ext v; simp only [Finset.mem_insert, Finset.mem_union]
+          tauto
+        -- Witness: x_r * y_a - x_a * y_r is in the larger kernel but not the smaller
+        set witness : MvPolynomial (BinomialEdgeVars V) K :=
+          X (Sum.inr a) * X (Sum.inl r) - X (Sum.inl a) * X (Sum.inr r)
+        have hr_in_T : r ∈ reps ∪ F' :=
+          Finset.mem_union.mpr (Or.inl hr_in_reps)
+        have ha_in_insertT : a ∈ insert a (reps ∪ F') :=
+          Finset.mem_insert_self a _
+        have hr_in_insertT : r ∈ insert a (reps ∪ F') :=
+          Finset.mem_insert.mpr (Or.inr hr_in_T)
+        have hr_compRep : compRep G S r = r :=
+          compRep_idempotent G S haNotS
+        have hwitness_mem : witness ∈
+            RingHom.ker (lbMap (K := K) G S (insert a (reps ∪ F')) ∅ ∅).toRingHom := by
+          rw [RingHom.mem_ker, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]
+          show (lbMap (K := K) G S (insert a (reps ∪ F')) ∅ ∅) witness = 0
+          simp only [witness, map_sub, map_mul]
+          unfold lbMap
+          simp only [MvPolynomial.aeval_X, Finset.notMem_empty, ↓reduceIte,
+            ha_in_insertT, hr_in_insertT, hr_compRep]
+          ring
+        have hwitness_nmem : witness ∉
+            RingHom.ker (lbMap (K := K) G S (reps ∪ F') ∅ ∅).toRingHom := by
+          intro h
+          rw [RingHom.mem_ker, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom] at h
+          change (lbMap (K := K) G S (reps ∪ F') ∅ ∅) witness = 0 at h
+          simp only [witness, map_sub, map_mul] at h
+          unfold lbMap at h
+          simp only [MvPolynomial.aeval_X, Finset.notMem_empty, ↓reduceIte,
+            haNotT, hr_in_T, hr_compRep] at h
+          -- h : X (inr a) * X (inl r) - X (inl a) * (X (inl r) * X (inr r)) = 0
+          -- Evaluate at a point to get contradiction: set x_r = 1, y_a = 1, rest = 0
+          let f : BinomialEdgeVars V → K := fun v =>
+            if v = Sum.inr a then 1 else if v = Sum.inl r then 1 else 0
+          have heval := congr_arg (MvPolynomial.eval f) h
+          simp only [map_sub, map_mul, MvPolynomial.eval_X, map_zero, f] at heval
+          simp only [reduceCtorEq, ↓reduceIte, mul_one] at heval
+          rw [if_neg (show Sum.inl a ≠ Sum.inl (compRep G S a) from
+            fun h => ha_compRep_ne.symm (Sum.inl_injective h)),
+            if_neg (show Sum.inr (compRep G S a) ≠ Sum.inr a from
+            fun h => ha_compRep_ne (Sum.inr_injective h))] at heval
+          simp at heval
+        have hlt : RingHom.ker (lbMap (K := K) G S (reps ∪ F') ∅ ∅).toRingHom <
+            RingHom.ker (lbMap (K := K) G S (reps ∪ insert a F') ∅ ∅).toRingHom := by
+          rw [← hinsert_eq]
+          exact lt_of_le_of_ne hle (fun heq => hwitness_nmem (heq ▸ hwitness_mem))
+        haveI := lbMap_prime (reps ∪ F') ∅ ∅
+        haveI := lbMap_prime (reps ∪ insert a F') ∅ ∅
+        have hn := ihF haF'Sub
+        rw [Ideal.height_eq_primeHeight] at hn
+        rw [Finset.card_insert_of_notMem haF', Ideal.height_eq_primeHeight]
+        push_cast
+        calc (↑F'.card + 1 : ℕ∞)
+            ≤ (RingHom.ker (lbMap (K := K) G S (reps ∪ F') ∅ ∅).toRingHom).primeHeight + 1 := by
+              gcongr
+          _ ≤ (RingHom.ker (lbMap (K := K) G S (reps ∪ insert a F') ∅ ∅).toRingHom).primeHeight :=
+              Ideal.primeHeight_add_one_le_of_lt hlt
     -- Phase 2: x-kill chain
     have phase2 : ∀ Ux, Ux ⊆ S →
         (nonReps.card + Ux.card : ℕ∞) ≤
@@ -1729,7 +1818,37 @@ theorem lemma_3_1 (G : SimpleGraph V) (S : Finset V) :
       | empty =>
         simp only [Finset.card_empty, Nat.cast_zero, add_zero]
         rw [show compS = reps ∪ nonReps from hT_full.symm]; exact phase1 nonReps Finset.Subset.rfl
-      | @insert a Ux' haUx' ihUx => sorry
+      | @insert a Ux' haUx' ihUx =>
+        have haS : a ∈ S := hUx (Finset.mem_insert_self a Ux')
+        have hUx'S : Ux' ⊆ S := (Finset.insert_subset_iff.mp hUx).2
+        have haCompS : a ∉ compS := fun h => (Finset.mem_filter.mp h).2 haS
+        have hle := ker_lbMap_insert_Ux (K := K) G S compS Ux' ∅ a haCompS
+        have hwitness_mem : X (Sum.inl a) ∈
+            RingHom.ker (lbMap (K := K) G S compS (insert a Ux') ∅).toRingHom := by
+          rw [RingHom.mem_ker, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]
+          show (lbMap (K := K) G S compS (insert a Ux') ∅) (X (Sum.inl a)) = 0
+          unfold lbMap; rw [MvPolynomial.aeval_X]; exact if_pos (Finset.mem_insert_self a Ux')
+        have hwitness_nmem : X (Sum.inl a) ∉
+            RingHom.ker (lbMap (K := K) G S compS Ux' ∅).toRingHom := by
+          intro h
+          rw [RingHom.mem_ker, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom] at h
+          change (lbMap (K := K) G S compS Ux' ∅) (X (Sum.inl a)) = 0 at h
+          unfold lbMap at h; rw [MvPolynomial.aeval_X] at h; dsimp only [] at h
+          rw [if_neg haUx'] at h; exact MvPolynomial.X_ne_zero _ h
+        have hlt : RingHom.ker (lbMap (K := K) G S compS Ux' ∅).toRingHom <
+            RingHom.ker (lbMap (K := K) G S compS (insert a Ux') ∅).toRingHom :=
+          lt_of_le_of_ne hle (fun heq => hwitness_nmem (heq ▸ hwitness_mem))
+        haveI := lbMap_prime compS Ux' ∅
+        haveI := lbMap_prime compS (insert a Ux') ∅
+        have hn := ihUx hUx'S
+        rw [Ideal.height_eq_primeHeight] at hn
+        rw [Finset.card_insert_of_notMem haUx', Ideal.height_eq_primeHeight]
+        push_cast
+        calc (↑nonReps.card + ↑Ux'.card + 1 : ℕ∞)
+            ≤ (RingHom.ker (lbMap (K := K) G S compS Ux' ∅).toRingHom).primeHeight + 1 := by
+              gcongr
+          _ ≤ (RingHom.ker (lbMap (K := K) G S compS (insert a Ux') ∅).toRingHom).primeHeight :=
+              Ideal.primeHeight_add_one_le_of_lt hlt
     -- Phase 3: y-kill chain
     have phase3 : ∀ Uy, Uy ⊆ S →
         (nonReps.card + S.card + Uy.card : ℕ∞) ≤
@@ -1738,7 +1857,42 @@ theorem lemma_3_1 (G : SimpleGraph V) (S : Finset V) :
       | empty =>
         simp only [Finset.card_empty, Nat.cast_zero, add_zero]
         exact phase2 S Finset.Subset.rfl
-      | @insert a Uy' haUy' ihUy => sorry
+      | @insert a Uy' haUy' ihUy =>
+        have haS : a ∈ S := hUy (Finset.mem_insert_self a Uy')
+        have hUy'S : Uy' ⊆ S := (Finset.insert_subset_iff.mp hUy).2
+        have haCompS : a ∉ compS := fun h => (Finset.mem_filter.mp h).2 haS
+        have hrep_ne : ∀ j ∈ compS, compRep G S j ≠ a := by
+          intro j hj heq
+          have hjNotS := (Finset.mem_filter.mp hj).2
+          exact (sameComponent_compRep G S hjNotS).2.1 (heq ▸ haS)
+        have hle := ker_lbMap_insert_Uy (K := K) G S compS S Uy' a haCompS hrep_ne
+        have hwitness_mem : X (Sum.inr a) ∈
+            RingHom.ker (lbMap (K := K) G S compS S (insert a Uy')).toRingHom := by
+          rw [RingHom.mem_ker, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]
+          show (lbMap (K := K) G S compS S (insert a Uy')) (X (Sum.inr a)) = 0
+          unfold lbMap; rw [MvPolynomial.aeval_X]
+          exact if_pos (Finset.mem_insert_self a Uy')
+        have hwitness_nmem : X (Sum.inr a) ∉
+            RingHom.ker (lbMap (K := K) G S compS S Uy').toRingHom := by
+          intro h
+          rw [RingHom.mem_ker, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom] at h
+          change (lbMap (K := K) G S compS S Uy') (X (Sum.inr a)) = 0 at h
+          unfold lbMap at h; rw [MvPolynomial.aeval_X] at h; dsimp only [] at h
+          rw [if_neg haUy', if_neg haCompS] at h; exact MvPolynomial.X_ne_zero _ h
+        have hlt : RingHom.ker (lbMap (K := K) G S compS S Uy').toRingHom <
+            RingHom.ker (lbMap (K := K) G S compS S (insert a Uy')).toRingHom :=
+          lt_of_le_of_ne hle (fun heq => hwitness_nmem (heq ▸ hwitness_mem))
+        haveI := lbMap_prime compS S Uy'
+        haveI := lbMap_prime compS S (insert a Uy')
+        have hn := ihUy hUy'S
+        rw [Ideal.height_eq_primeHeight] at hn
+        rw [Finset.card_insert_of_notMem haUy', Ideal.height_eq_primeHeight]
+        push_cast
+        calc (↑nonReps.card + ↑S.card + ↑Uy'.card + 1 : ℕ∞)
+            ≤ (RingHom.ker (lbMap (K := K) G S compS S Uy').toRingHom).primeHeight + 1 := by
+              gcongr
+          _ ≤ (RingHom.ker (lbMap (K := K) G S compS S (insert a Uy')).toRingHom).primeHeight :=
+              Ideal.primeHeight_add_one_le_of_lt hlt
     -- Combine: phase3 gives height(ker(lbMap compS S S)) ≥ nonReps.card + 2*S.card
     -- ker(lbMap compS S S) = P_S by hker_eq, so height(P_S) ≥ N.
     have hfinal := phase3 S Finset.Subset.rfl
