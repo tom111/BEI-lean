@@ -92,16 +92,15 @@ private lemma height_sup_eq_height_transferred
     (RingEquiv.height_map e _).symm]
   rw [Ideal.map_sup, h1, h2]
 
-/-- The transferred ideal is prime when I₁ and I₂ are prime.
+/-- **BUG**: This statement is FALSE as stated!
+Counterexample: I₁ = ⟨x₁²+1⟩ prime in ℚ[x₁], I₂ = ⟨x₂²+1⟩ prime in ℚ[x₂].
+The sup ⟨x₁²+1, x₂²+1⟩ in ℚ[x₁,x₂] is NOT prime: the quotient ≅ ℚ(i)×ℚ(i)
+has zero divisor (x₁-x₂)(x₁+x₂) = x₁²-x₂² ≡ 0.
 
-**Proof sketch**: Via `quotientEquivQuotientMvPolynomial`, the quotient by `I₂.map C`
-is `MvPolynomial σ₁ (MvPolynomial σ₂ K / I₂)`. In this ring, the residual ideal is
-`I₁.map(MvPolynomial.map (algebraMap K L))` where `L = MvPolynomial σ₂ K / I₂` is a
-domain. For any prime `Q` minimal over this residual, `Q` is prime. The original ideal
-`P'` is the preimage of `Q` in the quotient, hence prime.
-
-The main Mathlib gap is showing that `I₁.map(map f)` has at least one minimal prime
-in a polynomial ring over a domain, which follows from Noetherianity. -/
+The final theorem `height_sup_disjoint` IS mathematically correct, but needs
+a proof restructured around minimal primes of the sup rather than primality
+of the sup itself. The `liesOver_transferred` and `comap_C_map_map_algebraMap_eq_bot`
+proofs above are correct and reusable. -/
 private lemma isPrime_transferred
     {σ₁ σ₂ : Type*} [Fintype σ₁] [Fintype σ₂] [DecidableEq σ₁] [DecidableEq σ₂]
     (I₁ : Ideal (MvPolynomial σ₁ K)) (I₂ : Ideal (MvPolynomial σ₂ K))
