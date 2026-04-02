@@ -20,7 +20,7 @@
 | **§1 Prop 1.6** (CM sufficient condition for closed graphs) | CohenMacaulay.lean | ❌ blocked on `IsCohenMacaulay` |
 | **§2 Thm 2.1** (reduced GB = admissible paths) | GroebnerBasis.lean | ✅ proved |
 | **§2 Cor 2.2** (J_G radical) | Radical.lean | ✅ proved |
-| **§3 Lem 3.1** (height P_S = \|S\| + n − c(S)) | PrimeIdeals.lean | ❌ sorry |
+| **§3 Lem 3.1** (height P_S = \|S\| + n − c(S)) | PrimeIdeals.lean | ✅ proved |
 | **§3 Thm 3.2** (J_G = ⋂ P_S) | PrimeDecomposition.lean | ✅ proved |
 | **§3 Cor 3.3** (dim S/J_G formula) | PrimeDecomposition.lean | ❌ sorry (needs 3.2) |
 | **§3 Cor 3.4** (CM → dim = n+c) | PrimeDecomposition.lean | ❌ sorry (needs 3.2) |
@@ -60,34 +60,18 @@
 ### ~~Priority 4: Proposition 3.6~~ ✅ DONE
 ### ~~Priority 5: Corollary 3.7~~ ✅ DONE
 
-### Priority 6: Lemma 3.1 — height(P_S) = |S| + (n − c(S))  ⚠️ BLOCKED
-**Paper argument:** height = 2|S| + Σ(n_j − 1) = |S| + n − c(S).
-**Approach:** P_S = ker(primeComponentMap G S), so height(P_S) = dim(R) − dim(R/P_S)
-= 2n − (n − |S| + c(S)) = |S| + n − c(S). The image ring has transcendence
-degree n − |S| + c(S) (n − |S| independent x-variables + c(S) component parameters).
+### ~~Priority 6: Lemma 3.1~~ ✅ DONE
+**Proved** via direct prime chain construction (3 induction phases):
+- Phase 1 (Segre): adds non-representative vertices to T via `ker_lbMap_insert_T`
+- Phase 2 (x-kill): zeros out x-variables via `ker_lbMap_insert_Ux`
+- Phase 3 (y-kill): zeros out y-variables via `ker_lbMap_insert_Uy`
+Each step uses `primeHeight_add_one_le_of_lt` on strict kernel inclusions.
+Upper bound via Krull's height theorem + `genSet31` generating set.
+**No catenary or trdeg needed** — bypassed Mathlib gaps entirely.
 
-**Mathlib infrastructure available:**
-- `Ideal.height` definition (`Mathlib.RingTheory.Ideal.Height`)
-- `MvPolynomial.ringKrullDim_of_isNoetherianRing`: dim(K[X₁,...,Xₙ]) = n
-- Krull's height theorem: height(P) ≤ |generators| (`KrullsHeightTheorem.lean`)
-- `height_le_ringKrullDim_quotient_add_spanFinrank`: ht(p) ≤ dim(R/I) + spanFinrank(I)
-- `IsLocalization.AtPrime.ringKrullDim_eq_height`: dim(R_p) = ht(p)
-
-**Mathlib gaps (blockers):**
-- **No catenary property**: `IsCatenary` not defined in Mathlib v4.28.0
-- **No height+dim formula**: `height(P) + dim(R/P) = dim(R)` for polynomial rings
-  over fields is NOT in Mathlib. Only the inequality `height(P) ≤ dim(R)` exists.
-- **No transcendence degree = Krull dim**: For f.g. algebras over fields, the equality
-  `trdeg = krullDim` is not formalized.
-- Krull's height theorem gives only the WEAK upper bound ht ≤ |generators|, not
-  the exact value, since the 2-minor ideal of a 2×n matrix has height n−1 but
-  needs n(n−1)/2 generators (not a complete intersection for n ≥ 3).
-
-**File:** PrimeIdeals.lean (~200-300 lines, HARD — blocked on Mathlib gaps)
-
-### Priority 7: Corollaries 3.3, 3.3 lower bound  ⚠️ BLOCKED on Lem 3.1
+### Priority 7: Corollaries 3.3, 3.3 lower bound  ⚠️ BLOCKED on catenary
 dim S/J_G = max{(n−|S|) + c(S)}, and dim ≥ n + c(G).
-**Dependencies:** Lem 3.1 + Thm 3.2.
+**Dependencies:** Lem 3.1 (✅ done) + catenary property (not in Mathlib v4.28.0).
 **File:** PrimeDecomposition.lean (~100 lines)
 
 ### Priority 8: Cohen-Macaulay results (DEFERRED)
@@ -102,20 +86,20 @@ Apply Thm 3.2 + Cor 2.2. New file `BEI/CIIdeals.lean` (~300-500 lines).
 
 ---
 
-## Sorry Count by File (2026-03-30)
+## Sorry Count by File (2026-04-02)
 | File | Sorries | Notes |
 |------|---------|-------|
 | GroebnerBasis.lean | 0 | Cor 2.2 moved to Radical.lean, PROVED |
 | Radical.lean | 0 | Cor 2.2 fully proved (squarefree GB → radical) |
-| PrimeIdeals.lean | 1 | Lem 3.1 only — decomposed into 3 Mathlib gaps |
+| PrimeIdeals.lean | 0 | Lem 3.1 FULLY PROVED (direct chain, no catenary needed) |
 | MinimalPrimes.lean | 0 | Cor 3.9 FULLY PROVED |
 | PrimeDecomposition.lean | 4 | Prop 3.6 PROVED, Cor 3.7 PROVED; 4 corollary sorries remain |
 | toMathlib/HeightVariableIdeal.lean | 0 | FULLY PROVED: isPrime, upper, lower, exact height |
 | toMathlib/HeightDeterminantal.lean | 0 | FULLY PROVED: height(J_{K_m}) = m-1 |
-| toMathlib/HeightAdditivity.lean | 1 | height additivity for disjoint-variable primes |
+| toMathlib/HeightAdditivity.lean | 3 | height additivity for disjoint-variable primes |
 | CohenMacaulay.lean | 4 | Prop 1.6 + CM definition |
 | RauhApproach.lean | 2 | archived alternative approach |
-| **Total** | **12** | (11 project + 1 toMathlib infrastructure) |
+| **Total** | **13** | (10 project + 3 toMathlib infrastructure) |
 
 ---
 
@@ -136,10 +120,13 @@ Apply Thm 3.2 + Cor 2.2. New file `BEI/CIIdeals.lean` (~300-500 lines).
 - `prop_3_6`: PROVED — J_G prime ↔ every connected component is complete (evaluation map argument)
 - `corollary_3_7`: PROVED — cycle: n=3 ↔ J_G prime (degree constraint from cycle graph)
 - `Ideal.height` IS in Mathlib v4.28.0 (previously assumed missing)
-- `IsCohenMacaulay` is NOT in Mathlib v4.28.0 (confirmed)
+- `IsCohenMacaulay` is NOT in Mathlib v4.28.0 (confirmed); not in v4.29.0 either (open PR #26218 unmerged)
+- `IsCatenary` is NOT in any Mathlib version (open PR #26245 blocked on CM PR #26218)
+- TODO: Rename `HerzogLemmas.lean` to a content-based name (e.g. `PolynomialIdentities.lean` or `BinomialEdgeAlgebra.lean`)
 - Initial ideal construction is NOT in Mathlib v4.28.0
+- `lemma_3_1`: PROVED — height(P_S) = |S| + n - c(S) (direct chain, no catenary needed)
 - `toMathlib/` directory: general-purpose lemmas for potential Mathlib contribution
-  - `HeightVariableIdeal.lean`: height of variable ideal = |vars| (3 sorries: isPrime, upper, lower)
-  - `HeightDeterminantal.lean`: height(J_{K_m}) = m-1 (1 sorry, needs Eagon-Northcott/catenary)
-  - `HeightAdditivity.lean`: height additivity for disjoint-variable primes (1 sorry, needs going-down plumbing)
+  - `HeightVariableIdeal.lean`: FULLY PROVED
+  - `HeightDeterminantal.lean`: FULLY PROVED
+  - `HeightAdditivity.lean`: height additivity for disjoint-variable primes (3 sorries, not needed for Lem 3.1)
   - Key Mathlib gaps: no catenary property, no height+dim formula, no trdeg=krullDim
