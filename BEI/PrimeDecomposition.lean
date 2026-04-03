@@ -480,54 +480,7 @@ theorem corollary_3_7 (G : SimpleGraph V) (hCyc : IsCycleGraph G)
       ((prop_3_6 (K := K) G).mp hPrime u w (hConn.preconnected u w)).resolve_right huw
     exact le_antisymm (aux hAdj) hn
 
-/-- For a cycle graph G and nonempty S, removing S vertices from a cycle creates
-at most |S| connected components: `componentCount G S ≤ S.card`.
-
-Combinatorial argument: removing k vertices from a cycle of length n ≥ 4 creates
-at most k path segments. -/
-theorem cycle_componentCount_le_card (G : SimpleGraph V) (hCyc : IsCycleGraph G)
-    (S : Finset V) (hS : S.Nonempty) (hn : 4 ≤ Fintype.card V) :
-    componentCount G S ≤ S.card := by
-  sorry
-
-/-- For a cycle graph G with n ≥ 4 vertices and nonempty S, height(P_S) ≥ n. -/
-theorem cycle_height_primeComponent_nonempty (G : SimpleGraph V) (hCyc : IsCycleGraph G)
-    (S : Finset V) (hS : S.Nonempty) (hn : 4 ≤ Fintype.card V) :
-    (Fintype.card V : ℕ∞) ≤ Ideal.height (primeComponent (K := K) G S) := by
-  rw [lemma_3_1]
-  apply Nat.cast_le (α := ℕ∞).mpr
-  have hle := cycle_componentCount_le_card G hCyc S hS hn
-  omega
-
-/--
-**Corollary 3.7 (unmixed branch)**: For a cycle G with n ≥ 3 vertices,
-  `J_G` is prime ↔ `J_G` is unmixed.
-
-The direction `prime → unmixed` is trivial (a prime ideal has one minimal prime).
-The direction `unmixed → prime` uses: `height(P_∅) = n - 1` while
-`height(P_S) ≥ n` for nonempty S. So unmixedness forces P_∅ to be the unique
-minimal prime, making J_G prime by radicality.
-
-Reference: Herzog et al. (2010), Corollary 3.7 (a)↔(b)↔(c).
--/
-theorem corollary_3_7_unmixed (G : SimpleGraph V) (hCyc : IsCycleGraph G)
-    (hn : 3 ≤ Fintype.card V) :
-    (binomialEdgeIdeal (K := K) G).IsPrime ↔
-    (binomialEdgeIdeal (K := K) G).IsUnmixed := by
-  constructor
-  · -- prime → unmixed: trivial
-    exact Ideal.IsPrime.isUnmixed
-  · -- unmixed → prime
-    intro hunmixed
-    -- Use (a) ↔ (b) already proved
-    rw [← corollary_3_7 (K := K) G hCyc hn]
-    -- We need |V| = 3. Prove by contradiction: if |V| ≥ 4, choose two
-    -- non-adjacent vertices S = {v₁, v₂} on the cycle. Then:
-    --   c(S) = 2 (cycle splits into two paths)
-    --   P_S is a minimal prime (by corollary_3_9: both v_i are cut vertices of S)
-    --   height(P_∅) = n - 1, height(P_S) = n
-    -- contradicting unmixedness.
-    sorry
+-- Corollary 3.7 unmixed branch (a↔b↔c) is in MinimalPrimes.lean to avoid import cycle.
 
 theorem corollary_3_7_CM (G : SimpleGraph V) (hCyc : IsCycleGraph G)
     (hn : 3 ≤ Fintype.card V) :

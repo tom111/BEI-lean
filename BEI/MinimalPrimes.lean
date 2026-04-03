@@ -546,4 +546,68 @@ theorem cutVertex_iff_componentCount (G : SimpleGraph V) (S : Finset V) (i : V) 
     i ∈ S ∧ componentCount G (S.erase i) < componentCount G S := by
   rfl
 
+/-! ## Corollary 3.7 unmixed branch -/
+
+/-- Removing a single vertex from a cycle graph gives a connected induced subgraph.
+Therefore `componentCount G {v} = 1`. -/
+theorem cycle_componentCount_singleton (G : SimpleGraph V) (hCyc : IsCycleGraph G)
+    (v : V) (hn : 3 ≤ Fintype.card V) :
+    componentCount G {v} = 1 := by
+  sorry
+
+/-- On a cycle with n ≥ 4 vertices, there exist two non-adjacent vertices. -/
+theorem cycle_exists_nonadj (G : SimpleGraph V) (hCyc : IsCycleGraph G)
+    (hn : 4 ≤ Fintype.card V) :
+    ∃ u w : V, u ≠ w ∧ ¬G.Adj u w := by
+  sorry
+
+/-- Removing two non-adjacent vertices from a cycle gives exactly 2 components. -/
+theorem cycle_componentCount_pair_nonadj (G : SimpleGraph V) (hCyc : IsCycleGraph G)
+    (u w : V) (hne : u ≠ w) (hnadj : ¬G.Adj u w) (hn : 4 ≤ Fintype.card V) :
+    componentCount G {u, w} = 2 := by
+  sorry
+
+/--
+**Corollary 3.7 (unmixed branch)**: For a cycle G with n ≥ 3 vertices,
+  `J_G` is prime ↔ `J_G` is unmixed.
+
+Reference: Herzog et al. (2010), Corollary 3.7 (a)↔(b)↔(c).
+-/
+theorem corollary_3_7_unmixed (G : SimpleGraph V) (hCyc : IsCycleGraph G)
+    (hn : 3 ≤ Fintype.card V) :
+    (binomialEdgeIdeal (K := K) G).IsPrime ↔
+    (binomialEdgeIdeal (K := K) G).IsUnmixed := by
+  constructor
+  · exact Ideal.IsPrime.isUnmixed
+  · intro hunmixed
+    rw [← corollary_3_7 (K := K) G hCyc hn]
+    by_contra h4
+    have hn4 : 4 ≤ Fintype.card V := by omega
+    obtain ⟨u, w, huw, hnadj⟩ := cycle_exists_nonadj G hCyc hn4
+    have hP0_min : primeComponent (K := K) G ∅ ∈
+        (binomialEdgeIdeal (K := K) G).minimalPrimes := by
+      exact (corollary_3_9 (K := K) G ∅ hCyc.1).mpr (Or.inl rfl)
+    have hPuw_min : primeComponent (K := K) G {u, w} ∈
+        (binomialEdgeIdeal (K := K) G).minimalPrimes := by
+      apply (corollary_3_9 (K := K) G {u, w} hCyc.1).mpr
+      right; intro i hi
+      rw [cutVertex_iff_componentCount]
+      exact ⟨hi, by sorry⟩
+    have hP0_ht : Ideal.height (primeComponent (K := K) G ∅) =
+        (Fintype.card V - 1 : ℕ) := by
+      rw [lemma_3_1 (K := K)]; congr 1
+      -- |∅| + |V| - componentCount G ∅ = |V| - 1 since componentCount G ∅ = 1
+      sorry
+    have hPuw_ht : Ideal.height (primeComponent (K := K) G {u, w}) =
+        (Fintype.card V : ℕ) := by
+      rw [lemma_3_1 (K := K)]; congr 1
+      -- |{u,w}| + |V| - componentCount G {u,w} = 2 + |V| - 2 = |V|
+      sorry
+    have : Ideal.height (primeComponent (K := K) G ∅) ≠
+        Ideal.height (primeComponent (K := K) G {u, w}) := by
+      rw [hP0_ht, hPuw_ht]
+      simp only [ne_eq, Nat.cast_inj]
+      omega
+    exact this (hunmixed _ _ hP0_min hPuw_min)
+
 end
