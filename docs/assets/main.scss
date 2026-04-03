@@ -1,0 +1,93 @@
+---
+---
+
+@import "minima";
+
+.wrapper {
+  max-width: 1180px;
+}
+
+.site-header {
+  border-top: 6px solid #1f5f8b;
+  border-bottom: 1px solid #d7dee5;
+}
+
+.site-title,
+.site-title:visited {
+  color: #17324d;
+  font-weight: 700;
+}
+
+.page-content {
+  padding-top: 32px;
+}
+
+h1, h2, h3 {
+  color: #17324d;
+}
+
+h1 {
+  margin-bottom: 0.5rem;
+}
+
+p, li {
+  line-height: 1.6;
+}
+
+.intro-card {
+  background: #f6f9fc;
+  border: 1px solid #d7e3ef;
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  margin: 1rem 0 1.5rem 0;
+}
+
+.quick-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin: 1rem 0 1.5rem 0;
+}
+
+.quick-links a {
+  background: #17324d;
+  color: #fff;
+  text-decoration: none;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+}
+
+.quick-links a:hover {
+  background: #1f5f8b;
+}
+
+table {
+  width: 100%;
+  display: table;
+  font-size: 0.96rem;
+}
+
+th, td {
+  vertical-align: top;
+  padding: 0.65rem 0.75rem;
+}
+
+th {
+  background: #f3f6f9;
+}
+
+tr:nth-child(even) td {
+  background: #fbfcfd;
+}
+
+code {
+  font-size: 0.92em;
+}
+
+blockquote {
+  color: #4a5968;
+  border-left: 4px solid #d1dce8;
+  background: #fafcff;
+  padding: 0.55rem 1rem;
+}

@@ -4,6 +4,12 @@ title: Overview
 
 # Overview
 
+<div class="intro-card">
+The project is organized around the four main sections of the paper. The pages in this
+blueprint are meant to help a human reader move back and forth between the published
+mathematics and the Lean development.
+</div>
+
 ## Aim
 
 The formalization aims to stay as close as possible to the original paper in

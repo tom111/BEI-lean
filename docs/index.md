@@ -8,11 +8,25 @@ This site is a blueprint for the Lean formalization of the paper
 _Binomial edge ideals and conditional independence statements_
 by Jürgen Herzog, Takayuki Hibi, Freyja Hreinsdóttir, Thomas Kahle, and Johannes Rauh.
 
+<div class="intro-card">
+This blueprint is a reader-facing map of the project. It tells you which results from the
+paper are formalized, where they live in the Lean codebase, and how closely the formal
+statements match the originals.
+</div>
+
 It is intended as a reader-facing map of the project:
 
 - which results from the paper are formalized;
 - where they live in the Lean codebase;
 - and with what fidelity they correspond to the original statements.
+
+<div class="quick-links">
+  <a href="overview.md">Overview</a>
+  <a href="section-1.md">Section 1</a>
+  <a href="section-2.md">Section 2</a>
+  <a href="section-3.md">Section 3</a>
+  <a href="section-4.md">Section 4</a>
+</div>
 
 ## The paper
 
