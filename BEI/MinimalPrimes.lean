@@ -559,7 +559,21 @@ theorem cycle_componentCount_singleton (G : SimpleGraph V) (hCyc : IsCycleGraph 
 theorem cycle_exists_nonadj (G : SimpleGraph V) (hCyc : IsCycleGraph G)
     (hn : 4 ≤ Fintype.card V) :
     ∃ u w : V, u ≠ w ∧ ¬G.Adj u w := by
-  sorry
+  have hDeg := hCyc.2
+  -- Pick any vertex v
+  obtain ⟨v⟩ := hCyc.1.nonempty
+  obtain ⟨n1, n2, hn12, hadj1, hadj2, honly⟩ := hDeg v
+  -- {v, n1, n2} has 3 elements; since |V| ≥ 4, there exists w ∉ {v, n1, n2}
+  have h3 : ({v, n1, n2} : Finset V).card ≤ 3 := Finset.card_le_three
+  have huniv : (Finset.univ : Finset V).card = Fintype.card V := Finset.card_univ
+  have : ∃ w : V, w ∉ ({v, n1, n2} : Finset V) := by
+    by_contra h; push_neg at h
+    have : Finset.univ ⊆ {v, n1, n2} := fun x _ => h x
+    linarith [Finset.card_le_card this]
+  obtain ⟨w, hw⟩ := this
+  simp only [Finset.mem_insert, Finset.mem_singleton, not_or] at hw
+  -- w ≠ v and w is not adjacent to v (since v's only neighbors are n1 and n2)
+  exact ⟨v, w, Ne.symm hw.1, fun hadj => (honly w hadj).elim hw.2.1 hw.2.2⟩
 
 /-- Removing two non-adjacent vertices from a cycle gives exactly 2 components. -/
 theorem cycle_componentCount_pair_nonadj (G : SimpleGraph V) (hCyc : IsCycleGraph G)
@@ -592,7 +606,11 @@ theorem corollary_3_7_unmixed (G : SimpleGraph V) (hCyc : IsCycleGraph G)
       apply (corollary_3_9 (K := K) G {u, w} hCyc.1).mpr
       right; intro i hi
       rw [cutVertex_iff_componentCount]
-      exact ⟨hi, by sorry⟩
+      refine ⟨hi, ?_⟩
+      rw [cycle_componentCount_pair_nonadj G hCyc u w huw hnadj hn4]
+      -- c({u,w}.erase i) = 1 since i ∈ {u,w} means {u,w}\{i} is a singleton
+      -- and c(singleton) = 1 by cycle_componentCount_singleton
+      sorry
     have hc0 : componentCount G ∅ = 1 := by
       rw [componentCount_empty]
       haveI := hCyc.1.preconnected.subsingleton_connectedComponent
