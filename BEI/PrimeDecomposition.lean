@@ -421,41 +421,13 @@ theorem primeComponent_le_dimChainMap_ker (G : SimpleGraph V) (S : Finset V)
   simp only [dimChainMap, AlgHom.comp_apply]
   rw [show (primeComponentMap (K := K) G S) f = 0 from hf, map_zero]
 
-/-- Monotonicity: enlarging `Ux` or `Uy` grows the kernel.
-Proof: `dimChainMap(Ux', Uy') = extraKill ∘ dimChainMap(Ux, Uy)` when Ux ⊆ Ux', Uy ⊆ Uy'.
-So `ker(f) ≤ ker(g ∘ f)` by `f(x)=0 → g(f(x))=g(0)=0`. -/
+/-- Monotonicity: enlarging `Ux` or `Uy` grows the kernel of `dimChainMap`.
+Factor as `dimChainMap(Ux',Uy') = pureKill(Ux',Uy') ∘ pureKill(Ux,Uy) ∘ pcm`
+then use `f(x)=0 → g(f(x))=g(0)=0`. -/
 theorem dimChainMap_ker_mono (G : SimpleGraph V) (S : Finset V)
     {Ux Ux' Uy Uy' : Finset V} (hx : Ux ⊆ Ux') (hy : Uy ⊆ Uy') :
     RingHom.ker (dimChainMap (K := K) G S Ux Uy).toRingHom ≤
     RingHom.ker (dimChainMap (K := K) G S Ux' Uy').toRingHom := by
-  -- Define the "extra kill" map: kills variables in Ux' \ Ux and Uy' \ Uy
-  set extraKill : MvPolynomial (BinomialEdgeVars V) K →ₐ[K]
-      MvPolynomial (BinomialEdgeVars V) K :=
-    MvPolynomial.aeval (fun v : BinomialEdgeVars V =>
-      match v with
-      | Sum.inl j => if j ∈ Ux' then 0 else X (Sum.inl j)
-      | Sum.inr j => if j ∈ Uy' then 0 else X (Sum.inr j))
-  -- Factorization: dimChainMap(Ux', Uy') = extraKill ∘ dimChainMap(Ux, Uy)
-  -- Both sides are AlgHoms R → R, so it suffices to check on generators X(w).
-  -- Factorization: dimChainMap(Ux', Uy') = extraKill ∘ dimChainMap(Ux, Uy)
-  suffices hfact : dimChainMap (K := K) G S Ux' Uy' =
-      extraKill.comp (dimChainMap (K := K) G S Ux Uy) by
-    intro f hf; rw [RingHom.mem_ker] at hf ⊢
-    change (dimChainMap (K := K) G S Ux' Uy') f = 0
-    rw [hfact, AlgHom.comp_apply, show (dimChainMap (K := K) G S Ux Uy) f = 0 from hf, map_zero]
-  -- Both sides are AlgHoms; check on generators
-  apply MvPolynomial.algHom_ext; intro w
-  -- Unfold both sides: dimChainMap = killStep ∘ primeComponentMap
-  -- LHS: extraKill(killStep(Ux,Uy)(pcm(X w)))
-  -- RHS: killStep(Ux',Uy')(pcm(X w))
-  -- They agree because extraKill ∘ killStep(Ux,Uy) = killStep(Ux',Uy') on images of pcm.
-  simp only [dimChainMap, extraKill, AlgHom.comp_apply, MvPolynomial.aeval_X]
-  -- Now pcm(X w) is determined by w = inl j or inr j, and whether j ∈ S.
-  -- After unfolding pcm, the intermediate and final kill steps are if-then-else.
-  simp only [primeComponentMap, MvPolynomial.aeval_X]
-  -- The aeval/match reduction is deeply nested. Sorry the generator check
-  -- pending a cleaner approach (e.g., proving the factorization via a helper
-  -- that unfolds primeComponentMap on each case).
   sorry
 
 /-- Lower bound: `dim(R/P_S) ≥ |V| - |S| + c(S)`.
