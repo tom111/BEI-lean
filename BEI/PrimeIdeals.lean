@@ -90,7 +90,7 @@ noncomputable def compRep (G : SimpleGraph V) (S : Finset V) (v : V) : V :=
         ⟨hv, hv, Relation.ReflTransGen.refl⟩⟩)
 
 open Classical in
-private lemma compRep_eq_of_sameComponent (G : SimpleGraph V) (S : Finset V)
+lemma compRep_eq_of_sameComponent (G : SimpleGraph V) (S : Finset V)
     {u v : V} (h : SameComponent G S u v) : compRep G S u = compRep G S v := by
   unfold compRep
   simp only [h.1, h.2.1, ↓reduceDIte]
@@ -1274,7 +1274,7 @@ private lemma sameComponent_imp_reachable_induce (G : SimpleGraph V) (S : Finset
 
 open Classical in
 /-- Reachability in `G.induce (V \ S)` implies `SameComponent`. -/
-private lemma reachable_induce_imp_sameComponent (G : SimpleGraph V) (S : Finset V)
+lemma reachable_induce_imp_sameComponent (G : SimpleGraph V) (S : Finset V)
     {u v : {w : V // w ∉ S}} (hr : (G.induce {w : V | w ∉ S}).Reachable u v) :
     SameComponent G S u.val v.val := by
   rw [SimpleGraph.reachable_iff_reflTransGen] at hr
@@ -1286,7 +1286,7 @@ private lemma reachable_induce_imp_sameComponent (G : SimpleGraph V) (S : Finset
 
 open Classical in
 /-- `componentCount G S ≤` number of `compRep` fixed points in `V \ S`. -/
-private lemma componentCount_le_fixedPoints (G : SimpleGraph V) (S : Finset V) :
+lemma componentCount_le_fixedPoints (G : SimpleGraph V) (S : Finset V) :
     componentCount G S ≤
       (Finset.univ.filter (fun v => v ∉ S ∧ compRep G S v = v)).card := by
   set G' := G.induce {v : V | v ∉ S}
