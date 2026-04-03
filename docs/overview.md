@@ -7,45 +7,46 @@ title: Overview
 ## Aim
 
 The formalization aims to stay as close as possible to the original paper in
-[`BEI.tex`](/home/tom/BEI-lean/BEI.tex), while still respecting the realities of Lean and
-Mathlib.
+[BEI.tex](https://github.com/tom111/BEI-lean/blob/master/BEI.tex), while still making
+good use of Lean and Mathlib.
 
-The project should therefore be read on two levels:
+This means the blueprint should be read on two levels:
 
 1. the **paper level**: what theorem is being formalized;
-2. the **Lean level**: how the theorem is packaged, split, or blocked.
+2. the **Lean level**: how the theorem is represented in the code.
 
-## Current structure
+## Main source files
 
-The core code lives in:
+The core development lives in:
 
-- [`BEI/Definitions.lean`](/home/tom/BEI-lean/BEI/Definitions.lean)
-- [`BEI/GraphProperties.lean`](/home/tom/BEI-lean/BEI/GraphProperties.lean)
-- [`BEI/ClosedGraphs.lean`](/home/tom/BEI-lean/BEI/ClosedGraphs.lean)
-- [`BEI/GroebnerBasis.lean`](/home/tom/BEI-lean/BEI/GroebnerBasis.lean)
-- [`BEI/Radical.lean`](/home/tom/BEI-lean/BEI/Radical.lean)
-- [`BEI/PrimeIdeals.lean`](/home/tom/BEI-lean/BEI/PrimeIdeals.lean)
-- [`BEI/PrimeDecomposition.lean`](/home/tom/BEI-lean/BEI/PrimeDecomposition.lean)
-- [`BEI/MinimalPrimes.lean`](/home/tom/BEI-lean/BEI/MinimalPrimes.lean)
+- [BEI/Definitions.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Definitions.lean)
+- [BEI/GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean)
+- [BEI/ClosedGraphs.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/ClosedGraphs.lean)
+- [BEI/GroebnerBasis.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GroebnerBasis.lean)
+- [BEI/Radical.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Radical.lean)
+- [BEI/PrimeIdeals.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeIdeals.lean)
+- [BEI/PrimeDecomposition.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecomposition.lean)
+- [BEI/MinimalPrimes.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/MinimalPrimes.lean)
 
-## Main bottlenecks
+Supporting generic lemmas intended for possible upstreaming live in:
 
-### Section 3 dimension formulas
+- [toMathlib/](https://github.com/tom111/BEI-lean/tree/master/toMathlib)
 
-The core issue is not "the theorem is hard" in the abstract. The real issue is that the
-project still needs a clean route to:
+## Organization by paper section
 
-- `ringKrullDim (R ⧸ primeComponent G S)`;
-- and then `ringKrullDim (R ⧸ J_G)` as a supremum over minimal primes.
+- Section 1 covers closed graphs and the quadratic Gröbner basis criterion.
+- Section 2 covers the reduced Gröbner basis and radicality.
+- Section 3 covers prime components, minimal primes, and dimension statements.
+- Section 4 concerns the conditional-independence interpretation.
 
-### Cohen–Macaulay branch
+## How to use this site
 
-The CM-dependent results are not yet honest formalizations, because the current project
-still uses a placeholder notion in
-[`BEI/CohenMacaulay.lean`](/home/tom/BEI-lean/BEI/CohenMacaulay.lean).
+The section pages are theorem maps. Each one tells you:
 
-## Supporting material
+- the paper result;
+- the Lean declaration(s);
+- the code file;
+- and the fidelity of the formalization.
 
-The repo also contains theorem and workflow guides in [`guides/`](/home/tom/BEI-lean/guides),
-which act as worker-facing proof blueprints for hard remaining steps.
-
+The blueprint is therefore primarily a navigational aid for mathematicians and Lean users
+who want to know what is already in place.

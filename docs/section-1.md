@@ -6,30 +6,29 @@ title: Section 1
 
 ## Theorem map
 
-| Paper result | Lean name | File | Fidelity | Notes |
-|---|---|---|---|---|
-| Theorem 1.1 | `theorem_1_1` | `ClosedGraphs.lean` | Exact | Generators form a Gröbner basis iff the graph is closed |
-| Proposition 1.2 | `prop_1_2` | `GraphProperties.lean` | Exact | Closed implies chordal and claw-free |
-| Corollary 1.3 | `cor_1_3` and related wrappers | `GraphProperties.lean` | Mixed | Structural content is formalized; packaging still needs review |
-| Proposition 1.4 | `prop_1_4` | `GraphProperties.lean` | Equivalent | Uses shortest walks / directedness packaging |
-| Proposition 1.5 | `prop_1_5` | `GraphProperties.lean` | Exact | Unique minimal closed supergraph |
-| Proposition 1.6 | `prop_1_6` | `CohenMacaulay.lean` | Blocked | Depends on real CM infrastructure |
+| Paper result | Lean declaration(s) | Lean file | Fidelity |
+|---|---|---|---|
+| Theorem 1.1 | `theorem_1_1` | [ClosedGraphs.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/ClosedGraphs.lean) | Exact |
+| Proposition 1.2 | `prop_1_2` | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Exact |
+| Corollary 1.3 | `cor_1_3` and related wrappers | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Mixed |
+| Proposition 1.4 | `prop_1_4` | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Equivalent |
+| Proposition 1.5 | `prop_1_5` | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Exact |
+| Proposition 1.6 | `prop_1_6` | [CohenMacaulay.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/CohenMacaulay.lean) | Blocked |
 
 ## Notes
 
+### Theorem 1.1
+
+This is the central theorem of Section 1: the quadratic generators form a Gröbner basis
+if and only if the graph is closed.
+
 ### Corollary 1.3
 
-This is the most important Section 1 fidelity issue.
+This is the main Section 1 packaging subtlety.
 
-The paper says, informally:
+The paper states, informally:
 
-> A bipartite graph is closed iff it is a line.
+> A bipartite graph is closed if and only if it is a line.
 
-The Lean development currently formalizes the structural consequence and documents the
-connectedness / labeling subtlety. This is mathematically honest, but it should continue
-to be tracked explicitly as a packaging issue.
-
-Relevant guide:
-
-- [`guides/COR_1_3_EXACT_STATEMENT.md`](/home/tom/BEI-lean/guides/COR_1_3_EXACT_STATEMENT.md)
-
+The Lean development formalizes the structural content and tracks the connectedness and
+labeling subtleties explicitly.

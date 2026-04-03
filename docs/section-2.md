@@ -6,21 +6,18 @@ title: Section 2
 
 ## Theorem map
 
-| Paper result | Lean name | File | Fidelity | Notes |
-|---|---|---|---|---|
-| Theorem 2.1 | `theorem_2_1`, `theorem_2_1_reduced` | `GroebnerBasis.lean` | Equivalent, split | Gröbner-basis-ness and reducedness are proved separately |
-| Corollary 2.2 | `corollary_2_2` | `Radical.lean` | Exact | `J_G` is radical |
+| Paper result | Lean declaration(s) | Lean file | Fidelity |
+|---|---|---|---|
+| Theorem 2.1 | `theorem_2_1`, `theorem_2_1_reduced` | [GroebnerBasis.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GroebnerBasis.lean) | Equivalent, split |
+| Corollary 2.2 | `corollary_2_2` | [Radical.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Radical.lean) | Exact |
 
 ## Notes
 
-The mathematics of Section 2 is largely in place, but the main file
-[`BEI/GroebnerBasis.lean`](/home/tom/BEI-lean/BEI/GroebnerBasis.lean) is still carrying
-too much low-level proof detail in one place.
+The mathematics of Section 2 is substantially in place.
 
-Relevant cleanup guides:
+The main paper theorem is represented in Lean by a split packaging:
 
-- [`guides/PUBLIC_THEOREM_LAYER.md`](/home/tom/BEI-lean/guides/PUBLIC_THEOREM_LAYER.md)
-- [`guides/PATH_AND_INTERNAL_VERTEX_API.md`](/home/tom/BEI-lean/guides/PATH_AND_INTERNAL_VERTEX_API.md)
-- [`guides/MONOMIAL_AND_FINSUPP_API.md`](/home/tom/BEI-lean/guides/MONOMIAL_AND_FINSUPP_API.md)
-- [`guides/FILE_SPLITTING_PLAN.md`](/home/tom/BEI-lean/guides/FILE_SPLITTING_PLAN.md)
+- one theorem for the Gröbner-basis property;
+- and one theorem for reducedness.
 
+This is mathematically faithful, but not yet packaged as a single paper-style endpoint.
