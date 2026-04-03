@@ -421,14 +421,56 @@ theorem primeComponent_le_dimChainMap_ker (G : SimpleGraph V) (S : Finset V)
   simp only [dimChainMap, AlgHom.comp_apply]
   rw [show (primeComponentMap (K := K) G S) f = 0 from hf, map_zero]
 
+/-- A "pure kill" map: sends `X(inl j) ↦ 0` for `j ∈ Ux`, `X(inr j) ↦ 0` for `j ∈ Uy`,
+and leaves all other variables unchanged. -/
+private noncomputable def pureKill (Ux Uy : Finset V) :
+    MvPolynomial (BinomialEdgeVars V) K →ₐ[K]
+    MvPolynomial (BinomialEdgeVars V) K :=
+  MvPolynomial.aeval (fun v : BinomialEdgeVars V =>
+    match v with
+    | Sum.inl j => if j ∈ Ux then 0 else X (Sum.inl j)
+    | Sum.inr j => if j ∈ Uy then 0 else X (Sum.inr j))
+
+/-- `pureKill(Ux',Uy') = pureKill(Ux',Uy') ∘ pureKill(Ux,Uy)` when `Ux ⊆ Ux'`, `Uy ⊆ Uy'`. -/
+private theorem pureKill_absorb {Ux Ux' Uy Uy' : Finset V}
+    (hx : Ux ⊆ Ux') (hy : Uy ⊆ Uy') :
+    pureKill (K := K) Ux' Uy' =
+    (pureKill (K := K) Ux' Uy').comp (pureKill (K := K) Ux Uy) := by
+  apply MvPolynomial.algHom_ext; intro w
+  simp only [pureKill, AlgHom.comp_apply, MvPolynomial.aeval_X]
+  cases w with
+  | inl j =>
+    by_cases h : j ∈ Ux
+    · simp [h, map_zero, hx h]
+    · by_cases h' : j ∈ Ux'
+      · simp [h, MvPolynomial.aeval_X, h']
+      · simp [h, MvPolynomial.aeval_X, h']
+  | inr j =>
+    by_cases h : j ∈ Uy
+    · simp [h, map_zero, hy h]
+    · by_cases h' : j ∈ Uy'
+      · simp [h, MvPolynomial.aeval_X, h']
+      · simp [h, MvPolynomial.aeval_X, h']
+
 /-- Monotonicity: enlarging `Ux` or `Uy` grows the kernel of `dimChainMap`.
-Factor as `dimChainMap(Ux',Uy') = pureKill(Ux',Uy') ∘ pureKill(Ux,Uy) ∘ pcm`
-then use `f(x)=0 → g(f(x))=g(0)=0`. -/
+Uses: `dimChainMap(Ux',Uy') = pureKill(Ux',Uy') ∘ pcm = pureKill(Ux',Uy') ∘ pureKill(Ux,Uy) ∘ pcm
+= pureKill(Ux',Uy') ∘ dimChainMap(Ux,Uy)`, then `f(x)=0 → g(f(x))=g(0)=0`. -/
 theorem dimChainMap_ker_mono (G : SimpleGraph V) (S : Finset V)
     {Ux Ux' Uy Uy' : Finset V} (hx : Ux ⊆ Ux') (hy : Uy ⊆ Uy') :
     RingHom.ker (dimChainMap (K := K) G S Ux Uy).toRingHom ≤
     RingHom.ker (dimChainMap (K := K) G S Ux' Uy').toRingHom := by
-  sorry
+  -- dimChainMap = pureKill ∘ primeComponentMap (by definition)
+  -- pureKill(Ux',Uy') = pureKill(Ux',Uy') ∘ pureKill(Ux,Uy)  (by pureKill_absorb)
+  -- So dimChainMap(Ux',Uy') = pureKill(Ux',Uy') ∘ dimChainMap(Ux,Uy)
+  have hfact : dimChainMap (K := K) G S Ux' Uy' =
+      (pureKill (K := K) Ux' Uy').comp (dimChainMap (K := K) G S Ux Uy) := by
+    show (pureKill Ux' Uy').comp (primeComponentMap G S) =
+      (pureKill Ux' Uy').comp ((pureKill Ux Uy).comp (primeComponentMap G S))
+    rw [← AlgHom.comp_assoc, ← pureKill_absorb hx hy]
+  intro f hf; rw [RingHom.mem_ker] at hf ⊢
+  change (dimChainMap (K := K) G S Ux' Uy') f = 0
+  rw [hfact, AlgHom.comp_apply,
+      show (dimChainMap (K := K) G S Ux Uy) f = 0 from hf, map_zero]
 
 /-- Lower bound: `dim(R/P_S) ≥ |V| - |S| + c(S)`.
 Uses an explicit chain of primes (kernels of `dimChainMap` with increasing
