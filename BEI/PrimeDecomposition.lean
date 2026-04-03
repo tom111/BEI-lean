@@ -330,14 +330,15 @@ Reference: Herzog et al. (2010), Corollary 3.3.
 -/
 
 /-- Upper bound: `dim(R/P_S) ≤ |V| - |S| + c(S)`.
-Uses `height + coheight ≤ dim(R)` with `height(P_S) = |S| + |V| - c(S)` and `dim(R) = 2|V|`. -/
+Any chain of primes above P_S has length ≤ dim(R) - height(P_S). -/
 theorem ringKrullDim_quot_primeComponent_le (G : SimpleGraph V) (S : Finset V) :
     ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ primeComponent (K := K) G S) ≤
     (Fintype.card V - S.card + componentCount G S : ℕ) := by
-  -- dim(R/P) = coheight(P) in PrimeSpectrum
-  -- height(P) + coheight(P) ≤ dim(R) = 2|V|
-  -- height(P) = |S| + |V| - c(S)
-  -- So coheight(P) ≤ 2|V| - (|S| + |V| - c(S)) = |V| - |S| + c(S)
+  -- Convert to krullDim of zeroLocus
+  rw [ringKrullDim_quotient]
+  -- Every LTSeries in zeroLocus(P_S) gives primes Q₀ < ... < Qₘ all ≥ P_S.
+  -- height(P_S) + m ≤ height(Qₘ) ≤ dim(R) = 2|V|.
+  -- So m ≤ 2|V| - height(P_S) = |V| - |S| + c(S).
   sorry
 
 /-- Lower bound: `dim(R/P_S) ≥ |V| - |S| + c(S)`.
