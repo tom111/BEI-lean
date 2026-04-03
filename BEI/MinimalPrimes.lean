@@ -567,17 +567,15 @@ private lemma cycle_induce_preconnected (G : SimpleGraph V) (hCyc : IsCycleGraph
   suffices hsuff : ∀ (t : V) (ht : t ∈ S),
       G'.Reachable ⟨t, ht⟩ ⟨n1, hn1S⟩ from
     (hsuff a ha).trans (hsuff b hb).symm
-  -- For all t ∈ S, show Reachable from t to n1 in G'.
-  -- Key argument: the set R = {t ∈ S | G'.Reachable t ⟨n1, hn1S⟩} is all of S.
-  -- Proof by contradiction: if ∃ d ∈ S \ R, then the set S \ R is non-empty
-  -- and "closed" under G-neighbors in S (if c ∉ R and G.Adj c d with d ∈ S, then d ∉ R).
-  -- This means: no G-edges between R and S \ R.
-  -- If n2 ∈ R: then no vertex in S \ R is adj to v (v's neighbors are n1, n2 ∈ R).
-  --   So S \ R has no G-edges to anything outside S \ R. But G is connected. So S \ R = ∅.
-  -- If n2 ∉ R: the sum of "S-internal degrees" in R is odd (n1 contributes 1, others 2),
-  --   contradicting the fact that this sum = 2 * |edges| (even).
-  --
-  -- We formalize the simpler parts and sorry the hard parity step.
+  -- Strategy (from ANSWER_10): for each t ∈ S, take a shortest walk from t to n1 in G.
+  -- A shortest walk cannot pass through v (if it did, we could shortcut via v's neighbors
+  -- n1 or n2, contradicting minimality). So the walk lies in S and transfers to G'.
+  intro t ht
+  -- Choose a shortest walk from t to n1 in G
+  have hreach := hConn.preconnected t n1
+  obtain ⟨p⟩ := hreach
+  -- The shortest walk avoids v; transfer to G'. Full proof is a sorry pending
+  -- walk-surgery lemma (shortest_walk_avoids_forbidden_vertex).
   sorry
 
 /-- Removing a single vertex from a cycle graph gives a connected induced subgraph.
