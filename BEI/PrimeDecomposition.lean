@@ -472,6 +472,41 @@ theorem dimChainMap_ker_mono (G : SimpleGraph V) (S : Finset V)
   rw [hfact, AlgHom.comp_apply,
       show (dimChainMap (K := K) G S Ux Uy) f = 0 from hf, map_zero]
 
+/-! ### Strict inclusion witnesses for the chain -/
+
+/-- Phase 1/3 witness: `X(inl v)` maps to 0 when `v ∉ S` and `v ∈ Ux`. -/
+theorem dimChainMap_inl_eq_zero (G : SimpleGraph V) (S : Finset V)
+    (Ux Uy : Finset V) (v : V) (hvS : v ∉ S) (hvUx : v ∈ Ux) :
+    (dimChainMap (K := K) G S Ux Uy) (X (Sum.inl v)) = 0 := by
+  simp only [dimChainMap, AlgHom.comp_apply, primeComponentMap, MvPolynomial.aeval_X,
+    hvS, ↓reduceIte, hvUx]
+
+/-- Phase 1/3 witness: `X(inl v)` maps to nonzero when `v ∉ S` and `v ∉ Ux`. -/
+theorem dimChainMap_inl_ne_zero (G : SimpleGraph V) (S : Finset V)
+    (Ux Uy : Finset V) (v : V) (hvS : v ∉ S) (hvUx : v ∉ Ux) :
+    (dimChainMap (K := K) G S Ux Uy) (X (Sum.inl v)) ≠ 0 := by
+  simp only [dimChainMap, AlgHom.comp_apply, primeComponentMap, MvPolynomial.aeval_X,
+    hvS, ↓reduceIte, hvUx]
+  exact MvPolynomial.X_ne_zero _
+
+/-- Phase 2 witness: `X(inr v)` maps to 0 when `v ∉ S`, `compRep v = v`, and `v ∈ Uy`. -/
+theorem dimChainMap_inr_rep_eq_zero (G : SimpleGraph V) (S : Finset V)
+    (Ux Uy : Finset V) (v : V) (hvS : v ∉ S) (hvUy : v ∈ Uy)
+    (hrep : compRep G S v = v) :
+    (dimChainMap (K := K) G S Ux Uy) (X (Sum.inr v)) = 0 := by
+  simp only [dimChainMap, AlgHom.comp_apply, primeComponentMap, MvPolynomial.aeval_X,
+    hvS, ↓reduceIte, hrep, map_mul, hvUy, mul_zero]
+
+/-- Phase 2 witness: `X(inr v)` maps to nonzero when `v ∉ S`, `compRep v = v`,
+`v ∉ Ux`, and `v ∉ Uy`. -/
+theorem dimChainMap_inr_rep_ne_zero (G : SimpleGraph V) (S : Finset V)
+    (Ux Uy : Finset V) (v : V) (hvS : v ∉ S) (hvUx : v ∉ Ux) (hvUy : v ∉ Uy)
+    (hrep : compRep G S v = v) :
+    (dimChainMap (K := K) G S Ux Uy) (X (Sum.inr v)) ≠ 0 := by
+  simp only [dimChainMap, AlgHom.comp_apply, primeComponentMap, MvPolynomial.aeval_X,
+    hvS, ↓reduceIte, hrep, map_mul, hvUx, hvUy]
+  exact mul_ne_zero (MvPolynomial.X_ne_zero _) (MvPolynomial.X_ne_zero _)
+
 /-- Lower bound: `dim(R/P_S) ≥ |V| - |S| + c(S)`.
 Uses an explicit chain of primes (kernels of `dimChainMap` with increasing
 variable kills) above P_S. See ANSWER_08 for the full strategy.  -/
