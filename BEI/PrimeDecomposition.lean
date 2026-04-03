@@ -532,9 +532,11 @@ theorem corollary_3_3 (G : SimpleGraph V) :
   -- Step 1: dim(R/J_G) = sup over minimal primes P of dim(R/P)
   have hrad := corollary_2_2 (K := K) G
   rw [ringKrullDim_quotient_radical _ hrad]
-  -- Step 2: rewrite each dim(R/P) using ringKrullDim_quot_primeComponent
-  -- Step 3: the sup over minimal primes equals sup over all S
-  -- (because minimalPrimes_characterization identifies them as a subset of {P_S})
+  -- Step 2: every minimal prime is some P_S, so sup over minPrimes ≤ sup over S
+  -- Step 3: for each S, J_G ≤ P_S, so some minimal P ≤ P_S, giving dim(R/P) ≥ dim(R/P_S)
+  -- Both directions use ringKrullDim_quot_primeComponent + minimalPrimes_characterization.
+  -- ≤: every minimal prime is P_S for some S (by minimalPrimes_characterization)
+  -- ≥: for each S, some minimal prime P ≤ P_S, so dim(R/P) ≥ dim(R/P_S)
   sorry
 
 /--

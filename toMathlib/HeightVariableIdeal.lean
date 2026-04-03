@@ -61,7 +61,7 @@ private lemma span_X_le_ker_killS (s : Finset σ) :
   simp only [killS, killCompl, aeval_X]
   rw [dif_neg]
   intro ⟨⟨j, hj⟩, hjval⟩
-  simp at hjval
+  simp only [] at hjval
   exact hj (hjval ▸ hi)
 
 -- Helper: killS sends a monomial m c to the corresponding restricted monomial when m|_s = 0.

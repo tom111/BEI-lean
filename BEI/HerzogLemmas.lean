@@ -27,23 +27,27 @@ open MvPolynomial MonomialOrder
 
 /-! ## fij identities -/
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- `fij i₁ i₂ = -(fij i₂ i₁)` (antisymmetry). -/
 lemma fij_antisymm (i₁ i₂ : V) :
     fij (K := K) i₁ i₂ = -(fij (K := K) i₂ i₁) := by
   simp only [fij]; ring
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- **Telescoping identity for fij**: `y b * fij a c = y c * fij a b + y a * fij b c`.
 This is the fundamental identity for the τ-path decomposition in Theorem 2.1. -/
 lemma fij_telescope (a b c : V) :
     y (K := K) b * fij a c = y c * fij a b + y a * fij b c := by
   simp only [fij, x, y]; ring
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- **x-telescoping identity for fij**: `x b * fij a c = x a * fij b c + x c * fij a b`.
 Dual of `fij_telescope` (y-telescope). Used for the shared-first endpoint case. -/
 lemma fij_x_telescope (a b c : V) :
     x (K := K) b * fij a c = x a * fij b c + x c * fij a b := by
   simp only [fij, x, y]; ring
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- **Coprime swap identity**: the coprime S-polynomial `x_l y_k * fij i j - x_j y_i * fij k l`
 can be rewritten using the "swapped" pairs `(i,k)` and `(j,l)` instead of `(i,j)` and `(k,l)`.
 This is the key algebraic identity for the coprime case of Theorem 2.1. -/
@@ -95,6 +99,7 @@ lemma isRemainder_fij_via_groebnerElement (G : SimpleGraph V)
   rw [hfactor]
   exact isRemainder_single_mul _ _ _ hge_mem
 
+omit [DecidableEq V] in
 /-- `IsRemainder (f₁ + f₂) G 0` from `IsRemainder f₁ G 0` and `IsRemainder f₂ G 0`,
 provided both summands have degree ≤ degree of the sum. -/
 lemma isRemainder_add
@@ -121,23 +126,28 @@ lemma isRemainder_add
 
 /-! ## Degree bounds for sums -/
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- `BinomialEdgeVars V` inequality helpers for `Sum.inl`/`Sum.inr` discrimination. -/
 lemma bev_inl_ne_inl {a b : V} (h : a ≠ b) :
     (Sum.inl a : BinomialEdgeVars V) ≠ Sum.inl b :=
   show (Sum.inl a : V ⊕ V) ≠ Sum.inl b from fun heq => h (Sum.inl.inj heq)
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 lemma bev_inr_ne_inr {a b : V} (h : a ≠ b) :
     (Sum.inr a : BinomialEdgeVars V) ≠ Sum.inr b :=
   show (Sum.inr a : V ⊕ V) ≠ Sum.inr b from fun heq => h (Sum.inr.inj heq)
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 lemma bev_inr_ne_inl {a b : V} :
     (Sum.inr a : BinomialEdgeVars V) ≠ Sum.inl b :=
   show (Sum.inr a : V ⊕ V) ≠ Sum.inl b from Sum.inr_ne_inl
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 lemma bev_inl_ne_inr {a b : V} :
     (Sum.inl a : BinomialEdgeVars V) ≠ Sum.inr b :=
   show (Sum.inl a : V ⊕ V) ≠ Sum.inr b from Sum.inl_ne_inr
 
+omit [DecidableEq V] in
 /-- If the degrees of `f` and `g` are different, both `degree f` and `degree g`
 are `≼` the degree of `f + g`. This is the key degree bound for `isRemainder_add`. -/
 lemma degree_bounds_of_ne
@@ -168,6 +178,7 @@ lemma degree_bounds_of_ne
 
 /-! ## No-monomial lemma and collapse map -/
 
+omit [DecidableEq V] [Fintype V] in
 /-- Elements of `J_G` evaluate to 0 at the all-ones point (x_v = y_v = 1).
 This is because each generator `x_i y_j - x_j y_i` evaluates to `1·1 - 1·1 = 0`. -/
 private lemma eval_one_zero_of_mem (G : SimpleGraph V)
@@ -182,6 +193,7 @@ private lemma eval_one_zero_of_mem (G : SimpleGraph V)
     simp [RingHom.mem_ker, x, y]
   exact RingHom.mem_ker.mp (hle hf)
 
+omit [DecidableEq V] [Fintype V] in
 /-- **No monomial in J_G**: If `monomial d c ∈ J_G` then `c = 0`.
 Proof: evaluate at `x_v = y_v = 1`; monomials evaluate to their coefficient,
 but J_G elements evaluate to 0. -/
@@ -190,13 +202,14 @@ private lemma binomialEdgeIdeal_no_monomial (G : SimpleGraph V)
     (h : (monomial d c : MvPolynomial (BinomialEdgeVars V) K) ∈ binomialEdgeIdeal G) :
     c = 0 := by
   have := eval_one_zero_of_mem G _ h
-  simp [eval_monomial] at this
+  simp only [eval_monomial, one_pow, Finsupp.prod, Finset.prod_const_one, mul_one] at this
   exact this
 
 /-- The rename homomorphism that collapses x_v and y_v to the same variable X_v.
 This kills every generator x_i y_j - x_j y_i since they become X_i X_j - X_j X_i = 0. -/
 def collapse : BinomialEdgeVars V → V := Sum.elim id id
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- The collapse map sends each generator to 0:
 rename collapse (x_i y_j - x_j y_i) = 0. -/
 lemma rename_collapse_generator (i j : V) :
@@ -207,6 +220,7 @@ lemma rename_collapse_generator (i j : V) :
     Sum.elim_inl, Sum.elim_inr]
   ring
 
+omit [DecidableEq V] [Fintype V] in
 /-- The collapse map kills J_G: rename collapse f = 0 for f ∈ J_G. -/
 lemma rename_collapse_eq_zero (G : SimpleGraph V)
     (f : MvPolynomial (BinomialEdgeVars V) K)

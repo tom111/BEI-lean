@@ -38,6 +38,7 @@ noncomputable def pathMonomial (i j : V) (π : List V) :
   let yPart := (internals.filter (fun v => v < i)).map (fun v => y v)
   xPart.prod * yPart.prod
 
+omit [DecidableEq V] in
 /-- For the trivial path [i, j], the path monomial is 1 (no internal vertices). -/
 @[simp]
 theorem pathMonomial_pair (i j : V) :
@@ -52,6 +53,7 @@ noncomputable def groebnerElement (i j : V) (π : List V) :
     MvPolynomial (BinomialEdgeVars V) K :=
   pathMonomial i j π * (x i * y j - x j * y i)
 
+omit [DecidableEq V] in
 /-- For the trivial path, the Gröbner element equals the generator `f_{ij}`. -/
 @[simp]
 theorem groebnerElement_pair (i j : V) :
@@ -73,11 +75,11 @@ def groebnerBasisSet (G : SimpleGraph V) :
 ### Helper lemmas for groebnerElem_mem_aux
 -/
 
+omit [LinearOrder V] [DecidableEq V] in
 /-- The reversed walk in an undirected graph is still a walk. -/
 private lemma chain'_reverse (G : SimpleGraph V) (π : List V)
-    (hW : π.Chain' (fun a b => G.Adj a b)) :
-    π.reverse.Chain' (fun a b => G.Adj a b) := by
-  change List.IsChain (fun a b => G.Adj a b) π.reverse
+    (hW : π.IsChain (fun a b => G.Adj a b)) :
+    π.reverse.IsChain (fun a b => G.Adj a b) := by
   rw [List.isChain_reverse]
   exact List.IsChain.imp (fun _ _ h => G.symm h) (hW : List.IsChain _ π)
 
@@ -92,7 +94,7 @@ Then `pathMonomial i j π = y v₀ * pathMonomial v₀ i α' * pathMonomial v₀
 
 This is the key algebraic identity enabling the induction; proof deferred.
 -/
-private lemma pathMonomial_split_below (G : SimpleGraph V) (i j v₀ : V)
+private lemma pathMonomial_split_below (_G : SimpleGraph V) (i j v₀ : V)
     (hij : i < j) (hv₀i : v₀ < i) (π β α' : List V)
     (hπHead : π.head? = some i) (hπLast : π.getLast? = some j)
     (hπND : π.Nodup)
@@ -137,7 +139,8 @@ private lemma pathMonomial_split_below (G : SimpleGraph V) (i j v₀ : V)
         exact Option.some.inj (h1.symm.trans (h3.trans h2))
       exact absurd heq (ne_of_lt (lt_trans hv₀i hij))
   -- Step 2: list equality for internalVertices
-  have hintEq : internalVertices π = (internalVertices α').reverse ++ [v₀] ++ internalVertices β := by
+  have hintEq : internalVertices π =
+      (internalVertices α').reverse ++ [v₀] ++ internalVertices β := by
     simp only [internalVertices]
     rw [hα', hβ]
     have htake_ne : π.take k ≠ [] := by simp [List.take_eq_nil_iff, hk_pos.ne', hne]
@@ -283,7 +286,7 @@ Path monomial factorization at an above-j internal vertex v₀ (Case B).
 
 `pathMonomial i j π = x v₀ * pathMonomial j v₀ β.reverse * pathMonomial i v₀ α'.reverse`.
 -/
-private lemma pathMonomial_split_above (G : SimpleGraph V) (i j v₀ : V)
+private lemma pathMonomial_split_above (_G : SimpleGraph V) (i j v₀ : V)
     (hij : i < j) (hv₀j : j < v₀) (π β α' : List V)
     (hπHead : π.head? = some i) (hπLast : π.getLast? = some j)
     (hπND : π.Nodup)
@@ -328,7 +331,8 @@ private lemma pathMonomial_split_above (G : SimpleGraph V) (i j v₀ : V)
         exact Option.some.inj (h1.symm.trans (h3.trans h2))
       exact absurd heq (ne_of_gt hv₀j)
   -- Step 2: list equality for internalVertices (identical to split_below)
-  have hintEq : internalVertices π = (internalVertices α').reverse ++ [v₀] ++ internalVertices β := by
+  have hintEq : internalVertices π =
+      (internalVertices α').reverse ++ [v₀] ++ internalVertices β := by
     simp only [internalVertices]
     rw [hα', hβ]
     have htake_ne : π.take k ≠ [] := by simp [List.take_eq_nil_iff, hk_pos.ne', hne]
@@ -489,18 +493,18 @@ private lemma subwalk_props (G : SimpleGraph V) (π : List V) (v₀ i j : V)
     (hv₀Int : v₀ ∈ internalVertices π)
     (hv₀Max : ∀ w ∈ internalVertices π, w < i → w ≤ v₀)
     (hv₀j : v₀ < j)
-    (hπW : π.Chain' (fun a b => G.Adj a b)) :
+    (hπW : π.IsChain (fun a b => G.Adj a b)) :
     let k := π.idxOf v₀
     let β := π.drop k
     let α' := (π.take (k + 1)).reverse
     -- Properties of β (walk from v₀ to j)
     β.head? = some v₀ ∧ β.getLast? = some j ∧ β.length < π.length ∧ β.Nodup ∧
     (∀ v ∈ β, v = v₀ ∨ v = j ∨ v < v₀ ∨ j < v) ∧
-    β.Chain' (fun a b => G.Adj a b) ∧
+    β.IsChain (fun a b => G.Adj a b) ∧
     -- Properties of α' (walk from v₀ to i)
     α'.head? = some v₀ ∧ α'.getLast? = some i ∧ α'.length < π.length ∧ α'.Nodup ∧
     (∀ v ∈ α', v = v₀ ∨ v = i ∨ v < v₀ ∨ i < v) ∧
-    α'.Chain' (fun a b => G.Adj a b) := by
+    α'.IsChain (fun a b => G.Adj a b) := by
   intro k β α'
   -- Setup: v₀ in π, k = idxOf v₀
   have hv₀_in_π : v₀ ∈ π :=
@@ -671,7 +675,7 @@ private lemma subwalk_props_above (G : SimpleGraph V) (π : List V) (v₀ i j : 
     (hv₀Int : v₀ ∈ internalVertices π)
     (hv₀Min : ∀ w ∈ internalVertices π, j < w → v₀ ≤ w)
     (hj_lt_v₀ : j < v₀)
-    (hπW : π.Chain' (fun a b => G.Adj a b)) :
+    (hπW : π.IsChain (fun a b => G.Adj a b)) :
     let k := π.idxOf v₀
     let β := π.drop k
     let α' := (π.take (k + 1)).reverse
@@ -679,12 +683,12 @@ private lemma subwalk_props_above (G : SimpleGraph V) (π : List V) (v₀ i j : 
     β.reverse.head? = some j ∧ β.reverse.getLast? = some v₀ ∧
     β.reverse.length < π.length ∧ β.reverse.Nodup ∧
     (∀ v ∈ β.reverse, v = j ∨ v = v₀ ∨ v < j ∨ v₀ < v) ∧
-    β.reverse.Chain' (fun a b => G.Adj a b) ∧
+    β.reverse.IsChain (fun a b => G.Adj a b) ∧
     -- α'.reverse is a walk from i to v₀
     α'.reverse.head? = some i ∧ α'.reverse.getLast? = some v₀ ∧
     α'.reverse.length < π.length ∧ α'.reverse.Nodup ∧
     (∀ v ∈ α'.reverse, v = i ∨ v = v₀ ∨ v < i ∨ v₀ < v) ∧
-    α'.reverse.Chain' (fun a b => G.Adj a b) := by
+    α'.reverse.IsChain (fun a b => G.Adj a b) := by
   intro k β α'
   have hv₀_in_π : v₀ ∈ π :=
     (List.tail_sublist π).subset ((List.dropLast_sublist π.tail).subset hv₀Int)
@@ -748,7 +752,7 @@ private lemma subwalk_props_above (G : SimpleGraph V) (π : List V) (v₀ i j : 
     change (π.drop k).length < π.length
     simp [List.length_drop]; omega
   have hβND : β.Nodup := (List.drop_sublist k π).nodup hπND
-  have hβW : β.Chain' (fun a b => G.Adj a b) := List.IsChain.drop hπW' k
+  have hβW : β.IsChain (fun a b => G.Adj a b) := List.IsChain.drop hπW' k
   -- α' properties (α' = (π.take(k+1)).reverse)
   have hα'H : α'.head? = some v₀ := by
     rw [List.head?_reverse]; simp [List.getLast?_take, hk_lt, hπk]
@@ -760,7 +764,7 @@ private lemma subwalk_props_above (G : SimpleGraph V) (π : List V) (v₀ i j : 
     simp [List.length_reverse, List.length_take]; omega
   have hα'ND : α'.Nodup :=
     List.nodup_reverse.mpr ((List.take_sublist (k + 1) π).nodup hπND)
-  have hα'W : α'.Chain' (fun a b => G.Adj a b) := by
+  have hα'W : α'.IsChain (fun a b => G.Adj a b) := by
     change List.IsChain (fun a b => G.Adj a b) ((π.take (k + 1)).reverse)
     rw [List.isChain_reverse]
     exact List.IsChain.imp (fun _ _ h => G.symm h) (List.IsChain.take hπW' (k + 1))
@@ -866,7 +870,7 @@ private theorem groebnerElem_mem_aux (G : SimpleGraph V) :
     π.head? = some i → π.getLast? = some j →
     π.Nodup →
     (∀ v ∈ π, v = i ∨ v = j ∨ v < i ∨ j < v) →
-    π.Chain' (fun a b => G.Adj a b) →
+    π.IsChain (fun a b => G.Adj a b) →
     pathMonomial (K := K) i j π * (x i * y j - x j * y i) ∈ binomialEdgeIdeal G := by
   intro n
   induction n using Nat.strong_induction_on with
@@ -882,7 +886,7 @@ private theorem groebnerElem_mem_aux (G : SimpleGraph V) :
   | [a, b], hH, hL, hW, _, _, _ =>
     simp only [List.head?_cons, Option.some.injEq] at hH
     simp only [List.getLast?_cons_cons, List.getLast?_singleton, Option.some.injEq] at hL
-    have hAdj : G.Adj a b := by simp [List.Chain'] at hW; exact hW
+    have hAdj : G.Adj a b := by simp [List.IsChain] at hW; exact hW
     have hpm : pathMonomial (K := K) i j [a, b] = 1 := by
       rw [← hH, ← hL]; exact pathMonomial_pair a b
     rw [hpm, one_mul]
@@ -1013,10 +1017,13 @@ private theorem groebnerElem_mem_aux (G : SimpleGraph V) :
           (by simp) hL hND hInt hv₀_int hv₀_min rfl rfl
       -- Algebraic identity: x v₀ * f_{aj} = x_j * f_{a,v₀} - x_a * f_{j,v₀}
       rw [hMon]
-      have halg : x (K := K) v₀ * pathMonomial j v₀ β.reverse * pathMonomial a v₀ α'.reverse *
-            (x a * y j - x j * y a) =
-          x j * pathMonomial j v₀ β.reverse * (pathMonomial a v₀ α'.reverse * (x a * y v₀ - x v₀ * y a)) -
-          x a * pathMonomial a v₀ α'.reverse * (pathMonomial j v₀ β.reverse * (x j * y v₀ - x v₀ * y j)) := by
+      have halg : x (K := K) v₀ * pathMonomial j v₀ β.reverse *
+            pathMonomial a v₀ α'.reverse * (x a * y j - x j * y a) =
+          x j * pathMonomial j v₀ β.reverse *
+            (pathMonomial a v₀ α'.reverse * (x a * y v₀ - x v₀ * y a)) -
+          x a * pathMonomial a v₀ α'.reverse *
+            (pathMonomial j v₀ β.reverse *
+              (x j * y v₀ - x v₀ * y j)) := by
         ring
       rw [halg]
       exact Ideal.sub_mem _
@@ -1039,6 +1046,7 @@ theorem groebnerElement_mem (G : SimpleGraph V) (i j : V) (π : List V)
   obtain ⟨hij, hHead, hLast, hNodup, hInternal, hWalk, _⟩ := hπ
   exact groebnerElem_mem_aux G π.length i j π rfl hij hHead hLast hNodup hInternal hWalk
 
+omit [DecidableEq V] in
 /-- Every generator `f_{ij}` (for edges {i,j} ∈ E(G), i < j) is in the Gröbner basis set. -/
 theorem generator_in_groebnerBasisSet (G : SimpleGraph V) (i j : V)
     (hAdj : G.Adj i j) (hij : i < j) :
