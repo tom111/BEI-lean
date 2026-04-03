@@ -6,7 +6,7 @@ import Mathlib.Combinatorics.SimpleGraph.Finite
 import Mathlib.Combinatorics.SimpleGraph.Hasse
 import Mathlib.Combinatorics.SimpleGraph.ConcreteColorings
 
-variable {V : Type*} [LinearOrder V] [DecidableEq V]
+variable {V : Type*} [LinearOrder V]
 
 /-!
 # Graph-theoretic properties for binomial edge ideals
