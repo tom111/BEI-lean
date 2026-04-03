@@ -390,12 +390,46 @@ theorem ringKrullDim_quot_primeComponent_le (G : SimpleGraph V) (S : Finset V) :
   rw [hdim_quot]
   exact WithBot.coe_le_coe.mpr hcoht
 
+/-- Kill selected variables: compose `primeComponentMap` with an evaluation that
+sends `X(inl v) ↦ 0` for `v ∈ Ux` and `X(inr v) ↦ 0` for `v ∈ Uy`.
+The kernel is prime (codomain is `MvPolynomial`, a domain) and contains `P_S`. -/
+noncomputable def dimChainMap (G : SimpleGraph V) (S : Finset V)
+    (Ux Uy : Finset V) :
+    MvPolynomial (BinomialEdgeVars V) K →ₐ[K]
+    MvPolynomial (BinomialEdgeVars V) K :=
+  (MvPolynomial.aeval (fun v : BinomialEdgeVars V =>
+    match v with
+    | Sum.inl j => if j ∈ Ux then 0 else X (Sum.inl j)
+    | Sum.inr j => if j ∈ Uy then 0 else X (Sum.inr j))).comp
+  (primeComponentMap G S)
+
+/-- The kernel of `dimChainMap` is a prime ideal (codomain is a domain). -/
+theorem dimChainMap_ker_isPrime (G : SimpleGraph V) (S : Finset V)
+    (Ux Uy : Finset V) :
+    (RingHom.ker (dimChainMap (K := K) G S Ux Uy).toRingHom).IsPrime :=
+  RingHom.ker_isPrime _
+
+/-- `P_S ≤ ker(dimChainMap)`: the kernel contains the prime component. -/
+theorem primeComponent_le_dimChainMap_ker (G : SimpleGraph V) (S : Finset V)
+    (Ux Uy : Finset V) :
+    primeComponent (K := K) G S ≤
+    RingHom.ker (dimChainMap (K := K) G S Ux Uy).toRingHom := by
+  rw [primeComponent_eq_ker (K := K)]
+  intro f hf
+  rw [RingHom.mem_ker] at hf ⊢
+  change (dimChainMap (K := K) G S Ux Uy) f = 0
+  simp only [dimChainMap, AlgHom.comp_apply]
+  rw [show (primeComponentMap (K := K) G S) f = 0 from hf, map_zero]
+
 /-- Lower bound: `dim(R/P_S) ≥ |V| - |S| + c(S)`.
-Requires an explicit chain of primes above P_S of the right length. -/
+Uses an explicit chain of primes (kernels of `dimChainMap` with increasing
+variable kills) above P_S. See ANSWER_08 for the full strategy.  -/
 theorem ringKrullDim_quot_primeComponent_ge (G : SimpleGraph V) (S : Finset V) :
     (Fintype.card V - S.card + componentCount G S : ℕ) ≤
     ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ primeComponent (K := K) G S) := by
-  -- Explicit chain: P_S < Q_1 < ... < Q_{c-1} < (x_all, y_S) < ... < (x_all, y_all)
+  -- Chain of prime kernels: vary (Ux, Uy) from (∅,∅) to (all non-reps, all reps, all reps)
+  -- Each step adds one variable to Ux or Uy, giving a strictly larger kernel.
+  -- Total chain length = |non-reps| + |reps| + |reps| = |V\S| - c(S) + c(S) + c(S) = |V\S| + c(S)
   sorry
 
 /-- The dimension of the quotient by a prime component. This is the key sub-theorem
