@@ -329,12 +329,32 @@ equivalence argument for the specific structure of P_S.
 Reference: Herzog et al. (2010), Corollary 3.3.
 -/
 
+/-- Upper bound: `dim(R/P_S) ≤ |V| - |S| + c(S)`.
+Uses `height + coheight ≤ dim(R)` with `height(P_S) = |S| + |V| - c(S)` and `dim(R) = 2|V|`. -/
+theorem ringKrullDim_quot_primeComponent_le (G : SimpleGraph V) (S : Finset V) :
+    ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ primeComponent (K := K) G S) ≤
+    (Fintype.card V - S.card + componentCount G S : ℕ) := by
+  -- dim(R/P) = coheight(P) in PrimeSpectrum
+  -- height(P) + coheight(P) ≤ dim(R) = 2|V|
+  -- height(P) = |S| + |V| - c(S)
+  -- So coheight(P) ≤ 2|V| - (|S| + |V| - c(S)) = |V| - |S| + c(S)
+  sorry
+
+/-- Lower bound: `dim(R/P_S) ≥ |V| - |S| + c(S)`.
+Requires an explicit chain of primes above P_S of the right length. -/
+theorem ringKrullDim_quot_primeComponent_ge (G : SimpleGraph V) (S : Finset V) :
+    (Fintype.card V - S.card + componentCount G S : ℕ) ≤
+    ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ primeComponent (K := K) G S) := by
+  -- Explicit chain: P_S < Q_1 < ... < Q_{c-1} < (x_all, y_S) < ... < (x_all, y_all)
+  sorry
+
 /-- The dimension of the quotient by a prime component. This is the key sub-theorem
 for Corollary 3.3. -/
 theorem ringKrullDim_quot_primeComponent (G : SimpleGraph V) (S : Finset V) :
     ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ primeComponent (K := K) G S) =
-    (Fintype.card V - S.card + componentCount G S : ℕ) := by
-  sorry
+    (Fintype.card V - S.card + componentCount G S : ℕ) :=
+  le_antisymm (ringKrullDim_quot_primeComponent_le G S)
+    (ringKrullDim_quot_primeComponent_ge G S)
 
 theorem corollary_3_3 (G : SimpleGraph V) :
     ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) =
