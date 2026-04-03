@@ -191,6 +191,10 @@ private lemma prop_3_8_sameComponent_preserved
 - every connected component of `G[V \ T]` whose vertices intersect `V \ S`
   is contained (on `V \ S`) in a single component of `G[V \ S]`.
 
+**Fidelity: Equivalent.** The paper's condition is stated in terms of vertex sets of
+connected components; the Lean version uses `SameComponent G T u v → SameComponent G S u v`
+for vertices outside S, which is the same.
+
 Reference: Herzog et al. (2010), Proposition 3.8.
 -/
 theorem prop_3_8 (G : SimpleGraph V) (S T : Finset V) :
@@ -453,6 +457,9 @@ the cut-vertex condition provides `a, b ∉ S` connected in `G[V \ (S \ {i})]` b
 Since `T ⊆ S \ {i}`, monotonicity gives connectivity in `G[V \ T]`, and the refinement from
 `P_T ≤ P_S` lifts this to `G[V \ S]` -- contradiction. Hence `S ⊆ T`, so `T = S`,
 and `P_S` is minimal among `{P_T}`. We conclude via `minimalPrimes_characterization`.
+
+**Fidelity: Equivalent.** The paper states `c(S \ {i}) < c(S)` for each `i ∈ S`;
+the Lean version uses `IsCutVertexRelative G S i`, which captures the same condition.
 
 Reference: Herzog et al. (2010), Corollary 3.9.
 -/

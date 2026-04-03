@@ -88,6 +88,10 @@ The proof has three steps:
 2. **This theorem**: Buchberger's criterion — all S-polynomials reduce to 0.
 3. `theorem_2_1_reduced`: No leading monomial divides another (reducedness).
 
+**Fidelity: Equivalent, split.** The paper states Gröbner basis + reducedness in one
+theorem. Here the two properties are proved separately, then combined in the wrapper
+`theorem_2_1_isReducedGroebnerBasis`.
+
 Reference: Herzog et al. (2010), Theorem 2.1.
 -/
 
@@ -2669,6 +2673,30 @@ private lemma prod_X_image_squarefree {σ R : Type*} [CommSemiring R] [NoZeroDiv
         exact ha_not_t ((hf (h.trans hb_eq.symm)) ▸ hb_t)
       simp [prod_X_image_degree_zero' f t m v hv_not_t]
     · simp [ih (List.Nodup.of_cons hnd)]
+
+/-! ## Paper-faithful wrapper: Theorem 2.1 (reduced Gröbner basis)
+
+The paper states Theorem 2.1 as a single result: the admissible-path family is
+a **reduced** Gröbner basis. We package the two separately-proved parts into one
+combined statement. -/
+
+/--
+**Theorem 2.1** (paper-faithful wrapper): The admissible-path Gröbner basis set is
+a reduced Gröbner basis of `J_G`. This combines:
+- `theorem_2_1`: the set is a Gröbner basis;
+- `theorem_2_1_reduced`: no leading monomial divides another.
+
+Reference: Herzog et al. (2010), Theorem 2.1.
+-/
+theorem theorem_2_1_isReducedGroebnerBasis (G : SimpleGraph V) :
+    binomialEdgeMonomialOrder.IsGroebnerBasis
+      (groebnerBasisSet (K := K) G) (binomialEdgeIdeal (K := K) G) ∧
+    ∀ (i₁ j₁ : V) (π₁ : List V) (_ : IsAdmissiblePath G i₁ j₁ π₁)
+      (i₂ j₂ : V) (π₂ : List V) (_ : IsAdmissiblePath G i₂ j₂ π₂),
+      (i₁, j₁, π₁) ≠ (i₂, j₂, π₂) →
+      ¬ (binomialEdgeMonomialOrder.degree (groebnerElement (K := K) i₁ j₁ π₁) ≤
+         binomialEdgeMonomialOrder.degree (groebnerElement (K := K) i₂ j₂ π₂)) :=
+  ⟨theorem_2_1 G, fun _ _ _ h₁ _ _ _ h₂ hne => theorem_2_1_reduced G _ _ _ h₁ _ _ _ h₂ hne⟩
 
 /-! ## Corollary 2.2: J_G is radical -/
 

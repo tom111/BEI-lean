@@ -3,6 +3,7 @@ import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
 import Mathlib.Combinatorics.SimpleGraph.Metric
 import Mathlib.Combinatorics.SimpleGraph.Acyclic
 import Mathlib.Combinatorics.SimpleGraph.Finite
+import Mathlib.Combinatorics.SimpleGraph.Hasse
 import Mathlib.Combinatorics.SimpleGraph.ConcreteColorings
 
 variable {V : Type*} [LinearOrder V] [DecidableEq V]
@@ -316,6 +317,10 @@ directed. This characterizes closed graphs.
 Note: The hypothesis applies to ALL pairs i < j (not just adjacent ones). When
 i and j are not connected, the quantifier over walks is vacuously true.
 
+**Fidelity: Equivalent** to the paper statement. The paper quantifies over all
+pairs i ≠ j; this version checks only i < j, which is equivalent by symmetry
+of undirected adjacency.
+
 Reference: Herzog et al. (2010), Proposition 1.4 ("characterization").
 -/
 theorem prop_1_4 (G : SimpleGraph V) :
@@ -521,9 +526,22 @@ graph with no odd cycles must be a forest. If that forest is not a disjoint unio
 paths, it contains an induced claw, contradicting the fact that closed graphs are
 claw-free (Prop. 1.2(2)).
 
-Note: The converse (path → closed) depends on the vertex labeling and is not stated here,
-since for generic linearly ordered V a path graph may not be closed if internal vertices
-are not "between" their neighbors in the linear order.
+Note: The paper states: "A bipartite graph is closed if and only if it is a line."
+This is probably intended under an implicit connected-graph convention; literally,
+for disconnected graphs, the natural conclusion is a disjoint union of lines.
+
+What is formalized here is the forward structural consequence:
+`bipartite ∧ closed → acyclic ∧ max degree ≤ 2`.
+For finite connected graphs this implies that the graph is a path graph ("line").
+The converse direction is not stated here, since it depends on the vertex labeling:
+for a generic linear order on `V`, a path graph need not be closed if internal
+vertices are not "between" their neighbors in the order.
+
+**Fidelity: Weaker** than the paper statement. The paper states the full iff:
+"A bipartite graph is closed if and only if it is a line." This theorem proves
+only the forward direction, with the conclusion `IsAcyclic ∧ degree ≤ 2` instead
+of "is a line graph". The converse would require defining `IsLineGraph` and
+choosing a canonical labeling.
 
 Reference: Herzog et al. (2010), Corollary 1.3.
 -/
@@ -601,6 +619,81 @@ theorem cor_1_3 (G : SimpleGraph V) [Fintype V] [DecidableRel G.Adj]
       simp only [below, Finset.mem_filter, SimpleGraph.mem_neighborFinset] at hu₁ hu₂
       exact noTriangle_of_bipartite hu₁.1 hu₂.1
         (hClosed.2 hu₁.2 hu₂.2 hne hu₁.1.symm hu₂.1.symm) φ hφ
+
+/-! ## Path graphs and Corollary 1.3 (paper-faithful version) -/
+
+/-- A graph is a **path graph** if it is connected, acyclic, and every vertex has
+degree at most 2. For finite connected graphs, this is equivalent to being a "line"
+in the terminology of Herzog et al. (2010). -/
+structure IsPathGraph (G : SimpleGraph V) [Fintype V] [DecidableRel G.Adj] : Prop where
+  connected : G.Connected
+  acyclic : G.IsAcyclic
+  degree_le_two : ∀ v, G.degree v ≤ 2
+
+/--
+**Corollary 1.3 (forward, connected)**: A finite connected bipartite closed graph
+is a path graph.
+
+This strengthens the existing `cor_1_3` by adding the connectedness hypothesis
+and packaging the conclusion as `IsPathGraph`.
+
+Reference: Herzog et al. (2010), Corollary 1.3.
+-/
+theorem cor_1_3_connected_forward (G : SimpleGraph V) [Fintype V] [DecidableRel G.Adj]
+    (hBip : ∃ (φ : V → Bool), ∀ ⦃u v : V⦄, G.Adj u v → φ u ≠ φ v)
+    (hClosed : IsClosedGraph G)
+    (hConn : G.Connected) :
+    IsPathGraph G := by
+  obtain ⟨hAcyc, hDeg⟩ := cor_1_3 G hBip hClosed
+  exact ⟨hConn, hAcyc, hDeg⟩
+
+/--
+**Corollary 1.3 (converse)**: The path graph on `Fin n` is closed with respect to
+the natural order.
+
+The proof is vacuous: each vertex of a path graph has at most one neighbor above
+and one neighbor below, so the closedness conditions (which require two distinct
+neighbors on the same side) are never triggered.
+
+Reference: Herzog et al. (2010), Corollary 1.3.
+-/
+theorem pathGraph_isClosedGraph (n : ℕ) : IsClosedGraph (pathGraph n) := by
+  constructor
+  · -- Condition 1: i < j, i < k, j ≠ k, Adj i j, Adj i k → Adj j k
+    intro i j k hij hik hjk hadj_ij hadj_ik
+    rw [pathGraph_adj] at hadj_ij hadj_ik
+    -- With i < j: Adj i j means i.val + 1 = j.val
+    have hj : i.val + 1 = j.val := by rcases hadj_ij with h | h <;> omega
+    have hk : i.val + 1 = k.val := by rcases hadj_ik with h | h <;> omega
+    -- j.val = k.val contradicts j ≠ k
+    exact absurd (Fin.ext (by omega)) hjk
+  · -- Condition 2: i < k, j < k, i ≠ j, Adj i k, Adj j k → Adj i j
+    intro i j k hik hjk hij hadj_ik hadj_jk
+    rw [pathGraph_adj] at hadj_ik hadj_jk
+    have hi : i.val + 1 = k.val := by rcases hadj_ik with h | h <;> omega
+    have hj : j.val + 1 = k.val := by rcases hadj_jk with h | h <;> omega
+    -- i.val = j.val contradicts i ≠ j
+    exact absurd (Fin.ext (by omega)) hij
+
+/-!
+### Corollary 1.3 (paper-faithful wrapper)
+
+The paper states: "A bipartite graph is closed if and only if it is a line."
+
+This is formalized as two separate theorems:
+- **Forward**: `cor_1_3_connected_forward` — a connected bipartite closed graph
+  is a path graph (connected, acyclic, max degree 2).
+- **Converse**: `pathGraph_isClosedGraph` — the standard path graph on `Fin n`
+  (with the natural order) is closed.
+
+The forward direction holds for any linearly ordered finite vertex type.
+The converse is stated for `Fin n` because closedness depends on the labeling:
+a path graph with an arbitrary vertex ordering need not be closed.
+
+**Fidelity: Exact** (modulo the labeling convention, which the paper also assumes).
+
+Reference: Herzog et al. (2010), Corollary 1.3.
+-/
 
 /-! ## Admissible paths (Section 2) -/
 
