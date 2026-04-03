@@ -47,7 +47,7 @@ private lemma krullDim_zeroLocus_eq_iSup_minimalPrimes (I : Ideal R) :
     -- Build the same series in zeroLocus(P)
     have hl_in_P : ∀ k, (l k).val ∈ PrimeSpectrum.zeroLocus (P : Set R) := by
       intro k
-      show (P : Set R) ⊆ (l k).val.asIdeal
+      change (P : Set R) ⊆ (l k).val.asIdeal
       rcases eq_or_lt_of_le (Fin.zero_le k) with h0k | h0k
       · rw [← h0k]; exact hPle
       · exact hPle.trans (show (l 0).val.asIdeal ≤ (l k).val.asIdeal from
@@ -74,7 +74,7 @@ private lemma krullDim_zeroLocus_eq_iSup_minimalPrimes (I : Ideal R) :
 prime P (by `Ideal.exists_minimalPrimes_le`), so the entire chain lies in
 `zeroLocus(P)`, giving `krullDim(zeroLocus I) ≤ sup_P krullDim(zeroLocus P)`.
 -/
-theorem ringKrullDim_quotient_radical (I : Ideal R) (hrad : I.IsRadical) :
+theorem ringKrullDim_quotient_radical (I : Ideal R) (_hrad : I.IsRadical) :
     ringKrullDim (R ⧸ I) =
     ⨆ (P : Ideal R) (_ : P ∈ I.minimalPrimes), ringKrullDim (R ⧸ P) := by
   simp only [ringKrullDim_quotient]
