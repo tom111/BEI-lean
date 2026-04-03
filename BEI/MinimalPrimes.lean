@@ -548,12 +548,52 @@ theorem cutVertex_iff_componentCount (G : SimpleGraph V) (S : Finset V) (i : V) 
 
 /-! ## Corollary 3.7 unmixed branch -/
 
+/-- In a cycle graph, the induced subgraph on `V \ {v}` is preconnected. -/
+private lemma cycle_induce_preconnected (G : SimpleGraph V) (hCyc : IsCycleGraph G)
+    (v : V) (hn : 3 ≤ Fintype.card V) :
+    (G.induce {x : V | x ∉ ({v} : Finset V)}).Preconnected := by
+  classical
+  obtain ⟨hConn, hDeg⟩ := hCyc
+  obtain ⟨n1, n2, hn12, hadj1, hadj2, honly⟩ := hDeg v
+  have hn1v : n1 ≠ v := G.ne_of_adj hadj1.symm
+  have hn2v : n2 ≠ v := G.ne_of_adj hadj2.symm
+  set S : Set V := {x : V | x ∉ ({v} : Finset V)} with hS_def
+  set G' := G.induce S
+  have hn1S : n1 ∈ S := by simp [S, hn1v]
+  have hn2S : n2 ∈ S := by simp [S, hn2v]
+  -- We show: for all a, b ∈ S, G'.Reachable a b.
+  -- Suffices: for all a ∈ S, G'.Reachable a ⟨n1, hn1S⟩.
+  intro ⟨a, ha⟩ ⟨b, hb⟩
+  suffices hsuff : ∀ (t : V) (ht : t ∈ S),
+      G'.Reachable ⟨t, ht⟩ ⟨n1, hn1S⟩ from
+    (hsuff a ha).trans (hsuff b hb).symm
+  -- For all t ∈ S, show Reachable from t to n1 in G'.
+  -- Key argument: the set R = {t ∈ S | G'.Reachable t ⟨n1, hn1S⟩} is all of S.
+  -- Proof by contradiction: if ∃ d ∈ S \ R, then the set S \ R is non-empty
+  -- and "closed" under G-neighbors in S (if c ∉ R and G.Adj c d with d ∈ S, then d ∉ R).
+  -- This means: no G-edges between R and S \ R.
+  -- If n2 ∈ R: then no vertex in S \ R is adj to v (v's neighbors are n1, n2 ∈ R).
+  --   So S \ R has no G-edges to anything outside S \ R. But G is connected. So S \ R = ∅.
+  -- If n2 ∉ R: the sum of "S-internal degrees" in R is odd (n1 contributes 1, others 2),
+  --   contradicting the fact that this sum = 2 * |edges| (even).
+  --
+  -- We formalize the simpler parts and sorry the hard parity step.
+  sorry
+
 /-- Removing a single vertex from a cycle graph gives a connected induced subgraph.
 Therefore `componentCount G {v} = 1`. -/
 theorem cycle_componentCount_singleton (G : SimpleGraph V) (hCyc : IsCycleGraph G)
     (v : V) (hn : 3 ≤ Fintype.card V) :
     componentCount G {v} = 1 := by
-  sorry
+  classical
+  unfold componentCount
+  set G' := G.induce {x : V | x ∉ ({v} : Finset V)}
+  obtain ⟨n1, _, _, _, _, _⟩ := hCyc.2 v
+  have hn1v : n1 ≠ v := G.ne_of_adj (by assumption : G.Adj v n1).symm
+  have hn1S : n1 ∈ ({x : V | x ∉ ({v} : Finset V)} : Set V) := by simp [hn1v]
+  have hpc := cycle_induce_preconnected G hCyc v hn
+  haveI := hpc.subsingleton_connectedComponent
+  exact Nat.card_of_subsingleton (G'.connectedComponentMk ⟨n1, hn1S⟩)
 
 /-- On a cycle with n ≥ 4 vertices, there exist two non-adjacent vertices. -/
 theorem cycle_exists_nonadj (G : SimpleGraph V) (hCyc : IsCycleGraph G)
@@ -610,7 +650,17 @@ theorem corollary_3_7_unmixed (G : SimpleGraph V) (hCyc : IsCycleGraph G)
       rw [cycle_componentCount_pair_nonadj G hCyc u w huw hnadj hn4]
       -- c({u,w}.erase i) = 1 since i ∈ {u,w} means {u,w}\{i} is a singleton
       -- and c(singleton) = 1 by cycle_componentCount_singleton
-      sorry
+      simp only [Finset.mem_insert, Finset.mem_singleton] at hi
+      -- i ∈ {u, w} so either i = u or i = w
+      rcases hi with rfl | rfl
+      · -- i = u: {u,w}.erase u = {w}, componentCount G {w} = 1 < 2
+        simp [huw]
+        rw [cycle_componentCount_singleton G hCyc _ (by omega)]; omega
+      · -- i = w: {u,w}.erase w = {u}, componentCount G {u} = 1 < 2
+        have hne : i ∉ ({u} : Finset V) := by simp [show i ≠ u from Ne.symm huw]
+        rw [show ({u, i} : Finset V) = insert i {u} from by rw [Finset.pair_comm]]
+        rw [Finset.erase_insert hne]
+        rw [cycle_componentCount_singleton G hCyc _ (by omega)]; omega
     have hc0 : componentCount G ∅ = 1 := by
       rw [componentCount_empty]
       haveI := hCyc.1.preconnected.subsingleton_connectedComponent

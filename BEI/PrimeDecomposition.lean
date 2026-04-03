@@ -2,7 +2,8 @@ import BEI.PrimeIdeals
 import BEI.CohenMacaulay
 import BEI.Radical
 import Mathlib.RingTheory.Ideal.MinimalPrime.Basic
-import Mathlib.RingTheory.KrullDimension.NonZeroDivisors
+import Mathlib.RingTheory.KrullDimension.Polynomial
+import Mathlib.RingTheory.KrullDimension.Field
 import toMathlib.QuotientDimension
 
 variable {K : Type*} [Field K]
@@ -334,12 +335,60 @@ Any chain of primes above P_S has length ≤ dim(R) - height(P_S). -/
 theorem ringKrullDim_quot_primeComponent_le (G : SimpleGraph V) (S : Finset V) :
     ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ primeComponent (K := K) G S) ≤
     (Fintype.card V - S.card + componentCount G S : ℕ) := by
-  -- Convert to krullDim of zeroLocus
-  rw [ringKrullDim_quotient]
-  -- Every LTSeries in zeroLocus(P_S) gives primes Q₀ < ... < Qₘ all ≥ P_S.
-  -- height(P_S) + m ≤ height(Qₘ) ≤ dim(R) = 2|V|.
-  -- So m ≤ 2|V| - height(P_S) = |V| - |S| + c(S).
-  sorry
+  haveI hP := primeComponent_isPrime (K := K) G S
+  set P := primeComponent (K := K) G S
+  set p : PrimeSpectrum (MvPolynomial (BinomialEdgeVars V) K) := ⟨P, hP⟩
+  set n := Fintype.card V
+  set s := S.card
+  set cS := componentCount G S
+  -- dim(R/P) = coheight(p)
+  have hdim_quot : ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ P) =
+      ↑(Order.coheight p) := by
+    rw [ringKrullDim_quotient]
+    have : PrimeSpectrum.zeroLocus (P : Set (MvPolynomial (BinomialEdgeVars V) K)) =
+        Set.Ici p := Set.ext fun _ => Iff.rfl
+    rw [this, Order.coheight_eq_krullDim_Ici]
+  -- height(p) = s + (n - cS)
+  have hht : Order.height p = (s + (n - cS) : ℕ) := by
+    change Ideal.primeHeight P = _
+    rw [← Ideal.height_eq_primeHeight]; exact lemma_3_1 G S
+  -- ringKrullDim R = 2n (as WithBot ℕ∞)
+  have hdim : ringKrullDim (MvPolynomial (BinomialEdgeVars V) K) = (2 * n : ℕ) := by
+    rw [MvPolynomial.ringKrullDim_of_isNoetherianRing,
+      ringKrullDim_eq_zero_of_field K, zero_add]
+    simp only [BinomialEdgeVars, Nat.card_eq_fintype_card, Fintype.card_sum]
+    norm_cast; ring
+  -- height + coheight ≤ 2n (in ℕ∞)
+  set R := MvPolynomial (BinomialEdgeVars V) K
+  have h_add_le : Order.height p + Order.coheight p ≤ (2 * n : ℕ∞) := by
+    set f : PrimeSpectrum R → ℕ∞ := fun a => Order.height a + Order.coheight a
+    have h1 : f p ≤ ⨆ a, f a := le_ciSup (OrderTop.bddAbove _) p
+    have h2 : ↑(⨆ a, f a) = ringKrullDim R :=
+      (Order.krullDim_eq_iSup_height_add_coheight_of_nonempty
+        (α := PrimeSpectrum R)).symm
+    have h3 : (⨆ a, f a : ℕ∞) ≤ (2 * n : ℕ∞) := by
+      rw [← WithBot.coe_le_coe, h2, hdim]; norm_cast
+    exact h1.trans h3
+  -- coheight p ≤ n - s + cS
+  have hs_le : s ≤ n := Finset.card_le_univ S
+  have hcS_le : cS ≤ n :=
+    (Nat.card_le_card_of_surjective _ Quot.mk_surjective).trans
+      (by rw [Nat.card_eq_fintype_card]; exact Fintype.card_subtype_le _)
+  rw [hht] at h_add_le
+  have hcoht : Order.coheight p ≤ (n - s + cS : ℕ) := by
+    -- From h_add_le: ↑(s + (n - cS)) + coheight p ≤ 2 * ↑n
+    -- We want: coheight p ≤ ↑(n - s + cS)
+    -- Key arithmetic: s + (n - cS) + (n - s + cS) = 2 * n
+    suffices hsuff : ↑(s + (n - cS)) + Order.coheight p ≤ ↑(s + (n - cS)) + ↑(n - s + cS) by
+      exact (ENat.add_le_add_iff_left (ENat.coe_ne_top _)).mp hsuff
+    calc ↑(s + (n - cS)) + Order.coheight p
+        ≤ 2 * ↑n := h_add_le
+      _ = ↑(2 * n) := by push_cast; ring
+      _ = ↑(s + (n - cS) + (n - s + cS)) := by norm_cast; omega
+      _ = ↑(s + (n - cS)) + ↑(n - s + cS) := by push_cast; ring
+  -- Combine: dim(R/P) = coheight p ≤ n - s + cS
+  rw [hdim_quot]
+  exact WithBot.coe_le_coe.mpr hcoht
 
 /-- Lower bound: `dim(R/P_S) ≥ |V| - |S| + c(S)`.
 Requires an explicit chain of primes above P_S of the right length. -/
