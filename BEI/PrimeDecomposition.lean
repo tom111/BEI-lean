@@ -529,8 +529,12 @@ theorem ringKrullDim_quot_primeComponent (G : SimpleGraph V) (S : Finset V) :
 theorem corollary_3_3 (G : SimpleGraph V) :
     ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) =
     ⨆ S : Finset V, (Fintype.card V - S.card + componentCount G S : ℕ) := by
-  -- Step 1: dim(R/J_G) = sup_S dim(R/P_S)
-  -- Step 2: dim(R/P_S) = |V| - |S| + c(S)
+  -- Step 1: dim(R/J_G) = sup over minimal primes P of dim(R/P)
+  have hrad := corollary_2_2 (K := K) G
+  rw [ringKrullDim_quotient_radical _ hrad]
+  -- Step 2: rewrite each dim(R/P) using ringKrullDim_quot_primeComponent
+  -- Step 3: the sup over minimal primes equals sup over all S
+  -- (because minimalPrimes_characterization identifies them as a subset of {P_S})
   sorry
 
 /--
