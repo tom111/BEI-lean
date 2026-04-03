@@ -25,24 +25,57 @@ theorem ringKrullDim_quotient_anti {I J : Ideal R} (h : I ≤ J) :
 
 /-! ## Dimension of quotient by radical ideal -/
 
+/-- The Krull dimension of a `zeroLocus I` subposet equals the supremum over
+minimal primes P of I of the Krull dimension of the `zeroLocus P` subposet.
+
+The key argument: any `LTSeries` in `zeroLocus I` has its minimum element above
+some minimal prime P (by `Ideal.exists_minimalPrimes_le`), so the entire series
+lies in `zeroLocus P`. -/
+private lemma krullDim_zeroLocus_eq_iSup_minimalPrimes (I : Ideal R) :
+    Order.krullDim (PrimeSpectrum.zeroLocus (I : Set R)) =
+    ⨆ (P : Ideal R) (_ : P ∈ I.minimalPrimes),
+      Order.krullDim (PrimeSpectrum.zeroLocus (P : Set R)) := by
+  apply le_antisymm
+  · -- Upper bound: every LTSeries in zeroLocus(I) lies in some zeroLocus(P)
+    simp only [Order.krullDim, iSup_le_iff]
+    intro l
+    -- l(0) is a prime ideal containing I
+    have h0_mem := (l 0).prop  -- (I : Set R) ⊆ (l 0).val.asIdeal
+    -- Some minimal prime P sits below l(0)
+    obtain ⟨P, hPmin, hPle⟩ := Ideal.exists_minimalPrimes_le (I := I)
+      (J := (l 0).val.asIdeal) h0_mem
+    -- Build the same series in zeroLocus(P)
+    have hl_in_P : ∀ k, (l k).val ∈ PrimeSpectrum.zeroLocus (P : Set R) := by
+      intro k
+      show (P : Set R) ⊆ (l k).val.asIdeal
+      rcases eq_or_lt_of_le (Fin.zero_le k) with h0k | h0k
+      · rw [← h0k]; exact hPle
+      · exact hPle.trans (show (l 0).val.asIdeal ≤ (l k).val.asIdeal from
+          le_of_lt (l.rel_of_lt h0k))
+    let l' : LTSeries (PrimeSpectrum.zeroLocus (P : Set R)) :=
+      { length := l.length
+        toFun := fun k => ⟨(l k).val, hl_in_P k⟩
+        step := fun k => l.step k }
+    apply le_iSup₂_of_le P hPmin
+    exact le_iSup (fun (s : LTSeries _) => (s.length : WithBot ℕ∞)) l'
+  · -- Lower bound: zeroLocus(P) ⊆ zeroLocus(I) for each minimal prime
+    apply iSup₂_le
+    intro P hP
+    apply Order.krullDim_le_of_strictMono
+      (fun ⟨q, hq⟩ => ⟨q, show (I : Set R) ⊆ q.asIdeal from hP.1.2.trans hq⟩)
+      (fun _ _ h => h)
+
 /-- For a radical ideal `I`, `dim(R/I) = sup dim(R/P)` over minimal primes P of I.
 
-**Lower bound** (proved): each P ∈ minimalPrimes(I) satisfies I ≤ P, so
+**Lower bound**: each P ∈ minimalPrimes(I) satisfies I ≤ P, so
 `dim(R/I) ≥ dim(R/P)` by `ringKrullDim_quotient_anti`.
 
-**Upper bound** (sorry): any `LTSeries` in `zeroLocus(I)` starts above some minimal
+**Upper bound**: any `LTSeries` in `zeroLocus(I)` starts above some minimal
 prime P (by `Ideal.exists_minimalPrimes_le`), so the entire chain lies in
 `zeroLocus(P)`, giving `krullDim(zeroLocus I) ≤ sup_P krullDim(zeroLocus P)`.
 -/
 theorem ringKrullDim_quotient_radical (I : Ideal R) (hrad : I.IsRadical) :
     ringKrullDim (R ⧸ I) =
     ⨆ (P : Ideal R) (_ : P ∈ I.minimalPrimes), ringKrullDim (R ⧸ P) := by
-  apply le_antisymm
-  · -- Upper bound: dim(R/I) ≤ sup dim(R/P) over minimal primes
-    -- Proof sketch: use ringKrullDim_quotient to convert to zeroLocus,
-    -- then show every LTSeries in zeroLocus(I) lies in some zeroLocus(P).
-    sorry
-  · -- Lower bound: sup dim(R/P) ≤ dim(R/I)
-    apply iSup₂_le
-    intro P hP
-    exact ringKrullDim_quotient_anti hP.1.2
+  simp only [ringKrullDim_quotient]
+  exact krullDim_zeroLocus_eq_iSup_minimalPrimes I

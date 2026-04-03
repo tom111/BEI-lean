@@ -306,30 +306,41 @@ theorem prop_3_6 (G : SimpleGraph V) :
 
 /-! ## Corollary 3.3: Dimension formula -/
 
-/--
+/-!
+### Corollary 3.3: Dimension formula
+
 **Corollary 3.3** (Herzog et al. 2010):
   `dim(K[x,y]/J_G) = max_{S ⊆ V} (|V| - |S| + c(S))`
 
-**Proof structure:**
-- Upper bound: `dim(R/J_G) ≤ max_S (n - |S| + c(S))` follows from:
-  `ringKrullDim_quotient` + height-coheight inequality + Lemma 3.1.
-- Lower bound: `dim(R/J_G) ≥ max_S (n - |S| + c(S))` requires constructing an
-  explicit chain of primes of the right length above P_S(G) ⊇ J_G.
+**Proof structure** (using `ringKrullDim_quotient_radical`):
 
-**Blocker:** The catenary property (`height(P) + dim(R/P) = dim(R)` for primes in
-polynomial rings) is not in Mathlib v4.28.0. Neither direction yields easily:
-- Upper bound needs `coheight(P_S) ≤ dim(R) - height(P_S)` (from order theory ✓)
-- Lower bound needs `coheight(P_S) ≥ dim(R) - height(P_S)` (catenary, missing)
+Step 1: `dim(R/J_G) = sup_S dim(R/P_S)` — from `ringKrullDim_quotient_radical`
+applied to `J_G` (radical by Cor 2.2), using `theorem_3_2` to identify J_G with
+the intersection of P_S's.
 
-A BEI-specific proof is possible by constructing explicit chains of primes
-above P_∅(G) (replacing complete-graph BEIs with x-variable ideals one component at
-a time), using the fact that polynomial rings over domains are domains.
+Step 2: `dim(R/P_S) = |V| - |S| + c(S)` for each S — the key sub-theorem
+`ringKrullDim_quot_primeComponent`, which requires computing the quotient
+dimension directly for each prime component.
+
+**Remaining blocker:** Step 2 (Layer 1 of the dimension guide). Computing
+`dim(R/P_S)` requires either the catenary property or a direct chain/ring
+equivalence argument for the specific structure of P_S.
 
 Reference: Herzog et al. (2010), Corollary 3.3.
 -/
+
+/-- The dimension of the quotient by a prime component. This is the key sub-theorem
+for Corollary 3.3. -/
+theorem ringKrullDim_quot_primeComponent (G : SimpleGraph V) (S : Finset V) :
+    ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ primeComponent (K := K) G S) =
+    (Fintype.card V - S.card + componentCount G S : ℕ) := by
+  sorry
+
 theorem corollary_3_3 (G : SimpleGraph V) :
     ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) =
-    ⨆ S : Finset V, (Fintype.card V - S.card + componentCount G S) := by
+    ⨆ S : Finset V, (Fintype.card V - S.card + componentCount G S : ℕ) := by
+  -- Step 1: dim(R/J_G) = sup_S dim(R/P_S)
+  -- Step 2: dim(R/P_S) = |V| - |S| + c(S)
   sorry
 
 /--
