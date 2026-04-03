@@ -421,6 +421,15 @@ theorem primeComponent_le_dimChainMap_ker (G : SimpleGraph V) (S : Finset V)
   simp only [dimChainMap, AlgHom.comp_apply]
   rw [show (primeComponentMap (K := K) G S) f = 0 from hf, map_zero]
 
+/-- Monotonicity: enlarging `Ux` or `Uy` grows the kernel.
+Proof: `dimChainMap(Ux', Uy') = extraKill ∘ dimChainMap(Ux, Uy)` when Ux ⊆ Ux', Uy ⊆ Uy'.
+So `ker(f) ≤ ker(g ∘ f)` by `f(x)=0 → g(f(x))=g(0)=0`. -/
+theorem dimChainMap_ker_mono (G : SimpleGraph V) (S : Finset V)
+    {Ux Ux' Uy Uy' : Finset V} (hx : Ux ⊆ Ux') (hy : Uy ⊆ Uy') :
+    RingHom.ker (dimChainMap (K := K) G S Ux Uy).toRingHom ≤
+    RingHom.ker (dimChainMap (K := K) G S Ux' Uy').toRingHom := by
+  sorry
+
 /-- Lower bound: `dim(R/P_S) ≥ |V| - |S| + c(S)`.
 Uses an explicit chain of primes (kernels of `dimChainMap` with increasing
 variable kills) above P_S. See ANSWER_08 for the full strategy.  -/
