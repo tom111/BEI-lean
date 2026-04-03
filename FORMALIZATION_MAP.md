@@ -46,8 +46,8 @@ This file maps each paper result to its Lean formalization, noting fidelity.
 | Paper result | Status | Blocker |
 |---|---|---|
 | Proposition 1.6 (CM for special closed graphs) | Not started | `IsCohenMacaulay` not in Mathlib |
-| Corollary 3.3 (dimension formula) | Statement present | See detailed blocker below |
-| Corollary 3.3 (lower bound) | Statement present | See detailed blocker below |
+| Corollary 3.3 (dimension formula) | Cast sorry only | All math proved; one ℕ→WithBot ℕ∞ cast lemma |
+| Corollary 3.3 (lower bound) | **Proved** | Via ringKrullDim_quot_primeComponent + monotonicity |
 | Corollary 3.4 (CM implies dim = n+c) | Statement present | `IsCohenMacaulay` placeholder |
 | Corollary 3.5 (unmixed iff connected components) | Not started | Unmixed definition needed |
 
