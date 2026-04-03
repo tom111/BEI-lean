@@ -21,11 +21,11 @@ It is intended as a reader-facing map of the project:
 - and with what fidelity they correspond to the original statements.
 
 <div class="quick-links">
-  <a href="overview.md">Overview</a>
-  <a href="section-1.md">Section 1</a>
-  <a href="section-2.md">Section 2</a>
-  <a href="section-3.md">Section 3</a>
-  <a href="section-4.md">Section 4</a>
+  <a href="{{ '/overview.html' | relative_url }}">Overview</a>
+  <a href="{{ '/section-1.html' | relative_url }}">Section 1</a>
+  <a href="{{ '/section-2.html' | relative_url }}">Section 2</a>
+  <a href="{{ '/section-3.html' | relative_url }}">Section 3</a>
+  <a href="{{ '/section-4.html' | relative_url }}">Section 4</a>
 </div>
 
 ## The paper
