@@ -736,9 +736,30 @@ theorem corollary_3_3 (G : SimpleGraph V) :
   -- Step 1: dim(R/J_G) = sup over minimal primes P of dim(R/P)
   have hrad := corollary_2_2 (K := K) G
   rw [ringKrullDim_quotient_radical _ hrad]
-  -- Step 2: rewrite each dim(R/P) using ringKrullDim_quot_primeComponent
-  -- Step 3: the sup over minimal primes equals sup over all S
-  -- (because minimalPrimes_characterization identifies them as a subset of {P_S})
+  -- Intermediate: ⨆ minPrimes dim(R/P) = ⨆ S, dim(R/P_S)
+  -- (because minimalPrimes ⊆ {P_S} and for each S, some minPrime ≤ P_S)
+  have hkey : (⨆ P ∈ (binomialEdgeIdeal (K := K) G).minimalPrimes,
+      ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ P)) =
+    ⨆ S : Finset V,
+      ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ primeComponent (K := K) G S) := by
+    apply le_antisymm
+    · apply iSup₂_le; intro P hP
+      rw [minimalPrimes_characterization] at hP
+      obtain ⟨S, rfl, _⟩ := hP
+      exact le_iSup (f := fun S => ringKrullDim
+        (MvPolynomial (BinomialEdgeVars V) K ⧸ primeComponent (K := K) G S)) S
+    · apply iSup_le; intro S
+      haveI := primeComponent_isPrime (K := K) G S
+      obtain ⟨P, hP, hPS⟩ := Ideal.exists_minimalPrimes_le
+        (binomialEdgeIdeal_le_primeComponent (K := K) G S)
+      exact le_trans (ringKrullDim_quotient_anti hPS)
+        (le_iSup₂ (f := fun P (_ : P ∈ (binomialEdgeIdeal (K := K) G).minimalPrimes) =>
+          ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ P)) P hP)
+  rw [hkey]
+  -- Now: ⨆ S, dim(R/P_S) = ⨆ S, (|V| - |S| + c(S))
+  simp_rw [ringKrullDim_quot_primeComponent]
+  -- Goal: ⨆ S, ↑(f S) = ↑(⨆ S, f S) in WithBot ℕ∞
+  -- This is just pushing Nat → WithBot ℕ∞ cast through iSup.
   sorry
 
 /--
@@ -782,11 +803,7 @@ theorem corollary_3_3_lower_bound (G : SimpleGraph V) :
   -- Step 1: dim(R/J_G) ≥ dim(R/P_∅) by monotonicity (J_G ≤ P_∅)
   calc ↑(Fintype.card V + componentCount G ∅)
       ≤ ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ primeComponent (K := K) G ∅) := by
-        -- Step 2: dim(R/P_∅) ≥ n + c(G)
-        -- This requires computing dim(R/P_∅) via an explicit chain of primes.
-        -- Chain: P_∅ < Q₁ < ... < Q_{c-1} < (x_all) < (x_all,y₁) < ... < m
-        -- Each Q_k replaces one component's BEI with x-variables (prime by poly-over-domain).
-        sorry
+        rw [ringKrullDim_quot_primeComponent]; simp
     _ ≤ ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) :=
         ringKrullDim_quotient_anti (binomialEdgeIdeal_le_primeComponent G ∅)
 
