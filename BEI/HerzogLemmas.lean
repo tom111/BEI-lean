@@ -83,13 +83,13 @@ lemma isRemainder_fij_via_groebnerElement (G : SimpleGraph V)
   have hge_mem : groebnerElement (K := K) a b σ ∈ groebnerBasisSet G :=
     ⟨a, b, σ, hσ, rfl⟩
   have hge_eq : groebnerElement (K := K) a b σ = monomial d_σ 1 * fij a b := by
-    show pathMonomial (K := K) a b σ * fij a b = monomial d_σ 1 * fij a b
+    change pathMonomial (K := K) a b σ * fij a b = monomial d_σ 1 * fij a b
     rw [hσ_eq]
   have hfactor : q * fij (K := K) a b =
       monomial (d_q - d_σ) 1 * groebnerElement (K := K) a b σ := by
     rw [hq, hge_eq, ← mul_assoc]
     congr 1
-    show monomial d_q 1 = monomial (d_q - d_σ) 1 * monomial d_σ 1
+    change monomial d_q 1 = monomial (d_q - d_σ) 1 * monomial d_σ 1
     conv_lhs => rw [show d_q = (d_q - d_σ) + d_σ from (tsub_add_cancel_of_le hdiv).symm]
     simp [monomial_mul]
   rw [hfactor]
@@ -151,7 +151,7 @@ lemma degree_bounds_of_ne
       ≼[binomialEdgeMonomialOrder]
       binomialEdgeMonomialOrder.degree (f + g)) := by
   have hne_syn := binomialEdgeMonomialOrder.toSyn.injective.ne hne
-  show binomialEdgeMonomialOrder.toSyn _ ≤ _ ∧ _
+  change binomialEdgeMonomialOrder.toSyn _ ≤ _ ∧ _
   rcases lt_or_gt_of_ne hne_syn with h | h
   · constructor
     · calc _ ≤ binomialEdgeMonomialOrder.toSyn (binomialEdgeMonomialOrder.degree g) :=

@@ -231,7 +231,7 @@ private lemma single_swap_mem (G : SimpleGraph V) (S : Finset V)
       X (Sum.inr k : BinomialEdgeVars V) :
     MvPolynomial (BinomialEdgeVars V) K) ∈ primeComponent (K := K) G S by
     convert h using 1
-    show monomial (sxk + syj) (1 : K) - monomial (sxj + syk) 1 =
+    change monomial (sxk + syj) (1 : K) - monomial (sxj + syk) 1 =
       X (Sum.inl k : BinomialEdgeVars V) * X (Sum.inr j : BinomialEdgeVars V) -
       X (Sum.inl j : BinomialEdgeVars V) * X (Sum.inr k : BinomialEdgeVars V)
     simp only [MvPolynomial.X]
@@ -1768,7 +1768,7 @@ theorem lemma_3_1 (G : SimpleGraph V) (S : Finset V) :
         have hwitness_mem : witness ∈
             RingHom.ker (lbMap (K := K) G S (insert a (reps ∪ F')) ∅ ∅).toRingHom := by
           rw [RingHom.mem_ker, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]
-          show (lbMap (K := K) G S (insert a (reps ∪ F')) ∅ ∅) witness = 0
+          change (lbMap (K := K) G S (insert a (reps ∪ F')) ∅ ∅) witness = 0
           simp only [witness, map_sub, map_mul]
           unfold lbMap
           simp only [MvPolynomial.aeval_X, Finset.notMem_empty, ↓reduceIte,
@@ -1826,7 +1826,7 @@ theorem lemma_3_1 (G : SimpleGraph V) (S : Finset V) :
         have hwitness_mem : X (Sum.inl a) ∈
             RingHom.ker (lbMap (K := K) G S compS (insert a Ux') ∅).toRingHom := by
           rw [RingHom.mem_ker, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]
-          show (lbMap (K := K) G S compS (insert a Ux') ∅) (X (Sum.inl a)) = 0
+          change (lbMap (K := K) G S compS (insert a Ux') ∅) (X (Sum.inl a)) = 0
           unfold lbMap; rw [MvPolynomial.aeval_X]; exact if_pos (Finset.mem_insert_self a Ux')
         have hwitness_nmem : X (Sum.inl a) ∉
             RingHom.ker (lbMap (K := K) G S compS Ux' ∅).toRingHom := by
@@ -1869,7 +1869,7 @@ theorem lemma_3_1 (G : SimpleGraph V) (S : Finset V) :
         have hwitness_mem : X (Sum.inr a) ∈
             RingHom.ker (lbMap (K := K) G S compS S (insert a Uy')).toRingHom := by
           rw [RingHom.mem_ker, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]
-          show (lbMap (K := K) G S compS S (insert a Uy')) (X (Sum.inr a)) = 0
+          change (lbMap (K := K) G S compS S (insert a Uy')) (X (Sum.inr a)) = 0
           unfold lbMap; rw [MvPolynomial.aeval_X]
           exact if_pos (Finset.mem_insert_self a Uy')
         have hwitness_nmem : X (Sum.inr a) ∉

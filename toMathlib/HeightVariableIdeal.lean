@@ -57,7 +57,7 @@ private lemma span_X_le_ker_killS (s : Finset σ) :
   intro p hp
   obtain ⟨i, hi, rfl⟩ := hp
   rw [SetLike.mem_coe, RingHom.mem_ker]
-  show killS s (X i) = 0
+  change killS s (X i) = 0
   simp only [killS, killCompl, aeval_X]
   rw [dif_neg]
   intro ⟨⟨j, hj⟩, hjval⟩

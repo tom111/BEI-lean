@@ -402,7 +402,7 @@ private lemma internal_of_drop (τ : List V) (k : ℕ) (a b : V)
       exact Option.some.inj ((List.getLast?_eq_some_getLast hne).symm.trans hLast)
     exact ne_getLast_of_mem_tdl _ ((List.drop_sublist k τ).nodup hND) hne_drop u hu
       (heq ▸ hlast.symm)
-  show u ∈ τ.tail.dropLast
+  change u ∈ τ.tail.dropLast
   cases τ with
   | nil => exact absurd rfl hne
   | cons w rest =>
@@ -445,7 +445,7 @@ private lemma internal_of_take (τ : List V) (k : ℕ) (a b : V)
     rw [← List.dropLast_append_getLast hne,
         Option.some.inj ((List.getLast?_eq_some_getLast hne).symm.trans hLast)] at hND
     exact (List.nodup_append.mp hND).2.2 b hb_in_dl b (List.mem_singleton.mpr rfl) rfl
-  show u ∈ τ.tail.dropLast
+  change u ∈ τ.tail.dropLast
   cases τ with
   | nil => exact absurd rfl hne
   | cons w rest =>
@@ -683,11 +683,11 @@ theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
         -- Recombine monomials
         congr 1
         · congr 1
-          show monomial (d_q - ev₀) (1:K) * x (K := K) a = monomial d₁ 1
+          change monomial (d_q - ev₀) (1:K) * x (K := K) a = monomial d₁ 1
           change monomial (d_q - ev₀) (1:K) * monomial ea (1:K) = monomial d₁ 1
           rw [monomial_mul, one_mul]
         · congr 1
-          show monomial (d_q - ev₀) (1:K) * x (K := K) b = monomial d₂ 1
+          change monomial (d_q - ev₀) (1:K) * x (K := K) b = monomial d₂ 1
           change monomial (d_q - ev₀) (1:K) * monomial eb (1:K) = monomial d₂ 1
           rw [monomial_mul, one_mul]
       -- Degree bounds for isRemainder_add
@@ -1048,11 +1048,11 @@ theorem isRemainder_fij_of_covered_walk_y (G : SimpleGraph V) :
         -- Recombine monomials
         congr 1
         · congr 1
-          show monomial (d_q - eyv₀) (1:K) * y (K := K) b = monomial d₁ 1
+          change monomial (d_q - eyv₀) (1:K) * y (K := K) b = monomial d₁ 1
           change monomial (d_q - eyv₀) (1:K) * monomial eyb (1:K) = monomial d₁ 1
           rw [monomial_mul, one_mul]
         · congr 1
-          show monomial (d_q - eyv₀) (1:K) * y (K := K) a = monomial d₂ 1
+          change monomial (d_q - eyv₀) (1:K) * y (K := K) a = monomial d₂ 1
           change monomial (d_q - eyv₀) (1:K) * monomial eya (1:K) = monomial d₂ 1
           rw [monomial_mul, one_mul]
       -- Degree bounds for isRemainder_add (y-variant)
@@ -2446,7 +2446,7 @@ private lemma walk_from_shared_first_aux (G : SimpleGraph V) :
         | nil => exact absurd rfl hσ_ne
         | cons x rest =>
           have hxa : x = a := by simp at hσh; exact hσh
-          show 0 < List.findIdx (fun w => w == v) (x :: rest)
+          change 0 < List.findIdx (fun w => w == v) (x :: rest)
           simp only [List.findIdx_cons]
           have hxv : ¬(x = v) := by rw [hxa]; exact Ne.symm hva
           simp only [BEq.beq, beq_iff_eq, hxv, ite_false]

@@ -225,7 +225,7 @@ theorem theorem_2_1 (G : SimpleGraph V) :
         (hfij_inl v (ne_of_gt (lt_trans hil hlv)))
         (hfil_inl v (ne_of_gt (lt_trans hil hlv)))).2 (hE_ge_D _))
     have cov_eq_i : E (Sum.inr i) ≥ 1 := by
-      show (D + (Finsupp.single (Sum.inr i) 1 : BinomialEdgeVars V →₀ ℕ)) (Sum.inr i) ≥ 1
+      change (D + (Finsupp.single (Sum.inr i) 1 : BinomialEdgeVars V →₀ ℕ)) (Sum.inr i) ≥ 1
       rw [Finsupp.add_apply, Finsupp.single_apply, if_pos rfl]; omega
     -- Both subcases reduce to: IsRemainder (monomial E 1 * fij a b) groebnerBasisSet 0
     -- where a = min(j,l), b = max(j,l)
@@ -413,7 +413,7 @@ theorem theorem_2_1 (G : SimpleGraph V) :
         (hfij_inl v (ne_of_gt (lt_trans hij hjv)))
         (hfkj_inl v (ne_of_gt (lt_trans hkj hjv)))).2 (hE_ge_D _))
     have cov_eq_j : E (Sum.inl j) ≥ 1 := by
-      show (D + (Finsupp.single (Sum.inl j) 1 : BinomialEdgeVars V →₀ ℕ)) (Sum.inl j) ≥ 1
+      change (D + (Finsupp.single (Sum.inl j) 1 : BinomialEdgeVars V →₀ ℕ)) (Sum.inl j) ≥ 1
       rw [Finsupp.add_apply, Finsupp.single_apply, if_pos rfl]; omega
     rcases lt_or_gt_of_ne heq_i with hik | hki
     · -- i < k: reduce to IsRemainder (monomial E 1 * fij i k) groebnerBasisSet 0
@@ -2754,7 +2754,7 @@ theorem groebnerElement_leadingMonomial_squarefree
       exact one_ne_zero this.symm
     exact h
   -- Decompose degree of groebnerElement = degree(pathMonomial) + degree(fij)
-  show binomialEdgeMonomialOrder.degree (pathMonomial i j π * (x i * y j - x j * y i)) v ≤ 1
+  change binomialEdgeMonomialOrder.degree (pathMonomial i j π * (x i * y j - x j * y i)) v ≤ 1
   rw [degree_mul hpm_ne hfij_ne, Finsupp.add_apply]
   -- Degree of fij at v
   have hfij_deg : (binomialEdgeMonomialOrder.degree (x i * y j - x j * y i :

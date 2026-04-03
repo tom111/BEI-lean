@@ -153,14 +153,14 @@ private lemma comap_C_map_map_algebraMap_eq_bot
     · -- Constants: both reduce to algebraMap K (Q ⊗ L)
       intro k
       simp only [RingHom.comp_apply, map_C]
-      show eval₂ incR (fun i => incL (π (X i))) (C (algebraMap K L k)) =
+      change eval₂ incR (fun i => incL (π (X i))) (C (algebraMap K L k)) =
         incL (π (C k))
       -- Both sides equal algebraMap K (Q ⊗[K] L) k
       simp only [eval₂_C]
       change incR (algebraMap K L k) = incL (algebraMap K Q k)
       -- incR(algebraMap K L k) = 1 ⊗ algebraMap K L k = algebraMap K (Q ⊗ L) k
       -- incL(algebraMap K Q k) = algebraMap K Q k ⊗ 1 = algebraMap K (Q ⊗ L) k
-      show Algebra.TensorProduct.includeRight (algebraMap K L k) =
+      change Algebra.TensorProduct.includeRight (algebraMap K L k) =
         Algebra.TensorProduct.includeLeftRingHom (algebraMap K Q k)
       trans (algebraMap K (TensorProduct K Q L) k)
       · exact (Algebra.TensorProduct.includeRight (R := K) (A := Q) (B := L)).commutes k
@@ -169,7 +169,7 @@ private lemma comap_C_map_map_algebraMap_eq_bot
     · -- Variables: both give incL(π(Xᵢ))
       intro i
       simp only [RingHom.comp_apply, map_X]
-      show eval₂ incR (fun i => incL (π (X i))) (X i) = incL (π (X i))
+      change eval₂ incR (fun i => incL (π (X i))) (X i) = incL (π (X i))
       simp [eval₂_X]
   -- (3) ψ kills I.map(map f): the kernel of ψ contains I.map(map f)
   have hψ_kill : I.map (MvPolynomial.map (algebraMap K L)) ≤ RingHom.ker ψ := by
@@ -203,7 +203,7 @@ private lemma liesOver_transferred
   set P := I₁.map (MvPolynomial.map (C : K →+* MvPolynomial σ₂ K)) ⊔
     I₂.map (C : MvPolynomial σ₂ K →+* MvPolynomial σ₁ (MvPolynomial σ₂ K))
   constructor
-  show I₂ = P.comap (algebraMap (MvPolynomial σ₂ K) (MvPolynomial σ₁ (MvPolynomial σ₂ K)))
+  change I₂ = P.comap (algebraMap (MvPolynomial σ₂ K) (MvPolynomial σ₁ (MvPolynomial σ₂ K)))
   rw [algebraMap_eq]
   apply le_antisymm
   · -- Easy direction: I₂ ≤ P.comap C
@@ -232,7 +232,7 @@ private lemma liesOver_transferred
       rw [Ideal.map_eq_bot_iff_le_ker]
       intro q hq
       rw [RingHom.mem_ker]
-      show mapπ ((C : MvPolynomial σ₂ K →+* _) q) = 0
+      change mapπ ((C : MvPolynomial σ₂ K →+* _) q) = 0
       simp only [mapπ, map_C, π]
       rw [Ideal.Quotient.eq_zero_iff_mem.mpr hq, map_zero]
     rw [h_kill, sup_bot_eq] at hfP
@@ -262,7 +262,7 @@ private lemma liesOver_transferred
       have halg : algebraMap K (MvPolynomial σ₂ K ⧸ I₂) =
           π.comp (C : K →+* MvPolynomial σ₂ K) := by
         ext k
-        show algebraMap K (MvPolynomial σ₂ K ⧸ I₂) k = π (C k)
+        change algebraMap K (MvPolynomial σ₂ K ⧸ I₂) k = π (C k)
         rw [IsScalarTower.algebraMap_apply K (MvPolynomial σ₂ K) (MvPolynomial σ₂ K ⧸ I₂)]
         simp [algebraMap_eq, π]
       rw [halg]

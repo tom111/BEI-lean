@@ -377,12 +377,12 @@ private lemma height_bei_complete_ge (m : ℕ) (hm : 2 ≤ m) :
     ⟨RingHom.ker (partialSegreMap (K := K) m i).toRingHom, RingHom.ker_isPrime _⟩
   let p : LTSeries (PrimeSpectrum (MvPolynomial (BinomialEdgeVars (Fin m)) K)) :=
     ⟨m - 1, fun i => Q i.val, fun ⟨i, hi⟩ => by
-      show Q i < Q (i + 1)
+      change Q i < Q (i + 1)
       exact ker_partialSegreMap_lt (K := K) m hm ⟨i, by omega⟩⟩
   -- p.last = Q (m-1) has ideal ker(ψ_{m-1}) = J_{K_m}
   have hlast : p.last = ⟨binomialEdgeIdeal (⊤ : SimpleGraph (Fin m)), hprime⟩ := by
     apply PrimeSpectrum.ext
-    show (Q (m - 1)).asIdeal = _
+    change (Q (m - 1)).asIdeal = _
     exact ker_partialSegreMap_full m hm
   calc (m - 1 : ℕ∞) = ↑p.length := by norm_cast
     _ ≤ Ideal.primeHeight (binomialEdgeIdeal (K := K) (⊤ : SimpleGraph (Fin m))) := by
