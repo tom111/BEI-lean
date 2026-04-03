@@ -578,8 +578,20 @@ theorem ringKrullDim_quot_primeComponent_ge (G : SimpleGraph V) (S : Finset V) :
   -- dimChainMap G S ∅ ∅ = pureKill ∅ ∅ ∘ primeComponentMap = id ∘ primeComponentMap
   have hdimChain_eq : (dimChainMap (K := K) G S ∅ ∅).toRingHom =
       (primeComponentMap (K := K) G S).toRingHom := by
-    -- dimChainMap ∅ ∅ = pureKill ∅ ∅ ∘ pcm = id ∘ pcm = pcm
-    sorry
+    -- dimChainMap ∅ ∅ = pureKill ∅ ∅ ∘ pcm. And pureKill ∅ ∅ = id (no vars killed).
+    suffices h : dimChainMap (K := K) G S ∅ ∅ = primeComponentMap (K := K) G S by
+      rw [h]
+    show (pureKill (K := K) ∅ ∅).comp (primeComponentMap G S) = primeComponentMap G S
+    suffices hid : ∀ g : MvPolynomial (BinomialEdgeVars V) K,
+        (pureKill (K := K) ∅ ∅) g = g by
+      ext1 f; exact hid _
+    intro g; induction g using MvPolynomial.induction_on with
+    | C c => simp [pureKill, AlgHom.commutes]
+    | add p q ihp ihq => simp [map_add, ihp, ihq]
+    | mul_X p v ih =>
+      simp only [map_mul, pureKill, MvPolynomial.aeval_X]
+      cases v <;> simp [MvPolynomial.aeval_X]
+      all_goals exact ih
   have hker_empty : RingHom.ker (dimChainMap (K := K) G S ∅ ∅).toRingHom = P := by
     show _ = primeComponent (K := K) G S
     rw [primeComponent_eq_ker (K := K), hdimChain_eq]
