@@ -593,16 +593,21 @@ theorem corollary_3_7_unmixed (G : SimpleGraph V) (hCyc : IsCycleGraph G)
       right; intro i hi
       rw [cutVertex_iff_componentCount]
       exact ⟨hi, by sorry⟩
+    have hc0 : componentCount G ∅ = 1 := by
+      rw [componentCount_empty]
+      haveI := hCyc.1.preconnected.subsingleton_connectedComponent
+      have hne := hCyc.1.nonempty
+      exact Nat.card_of_subsingleton (G.connectedComponentMk hne.some)
     have hP0_ht : Ideal.height (primeComponent (K := K) G ∅) =
         (Fintype.card V - 1 : ℕ) := by
       rw [lemma_3_1 (K := K)]; congr 1
-      -- |∅| + |V| - componentCount G ∅ = |V| - 1 since componentCount G ∅ = 1
-      sorry
+      simp [hc0]
+    have hcuw : componentCount G {u, w} = 2 :=
+      cycle_componentCount_pair_nonadj G hCyc u w huw hnadj hn4
     have hPuw_ht : Ideal.height (primeComponent (K := K) G {u, w}) =
         (Fintype.card V : ℕ) := by
       rw [lemma_3_1 (K := K)]; congr 1
-      -- |{u,w}| + |V| - componentCount G {u,w} = 2 + |V| - 2 = |V|
-      sorry
+      rw [hcuw, Finset.card_pair huw]; omega
     have : Ideal.height (primeComponent (K := K) G ∅) ≠
         Ideal.height (primeComponent (K := K) G {u, w}) := by
       rw [hP0_ht, hPuw_ht]
