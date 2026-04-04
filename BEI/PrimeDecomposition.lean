@@ -305,37 +305,7 @@ theorem prop_3_6 (G : SimpleGraph V) :
       le_antisymm (binomialEdgeIdeal_le_primeComponent G ∅) hP0_le]
     exact primeComponent_isPrime G ∅
 
-/-! ## Corollary 3.4: Cohen-Macaulay implies dimension equality -/
-
-/--
-**Corollary 3.4** (Herzog et al. 2010): If `K[x,y]/J_G` is Cohen-Macaulay, then
-  `dim(K[x,y]/J_G) = |V| + c(G)`
-where `c(G)` is the number of connected components of G.
-
-Reference: Herzog et al. (2010), Corollary 3.4.
--/
-theorem corollary_3_4 (G : SimpleGraph V)
-    (hCM : IsCohenMacaulay (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G)) :
-    ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) =
-    Fintype.card V + componentCount G ∅ := by
-  -- Step 1: CM equidimensionality → all minimal primes of J_G have equal dim(R/P)
-  set J := binomialEdgeIdeal (K := K) G
-  have hequal : ∀ P Q : Ideal (MvPolynomial (BinomialEdgeVars V) K),
-      P ∈ J.minimalPrimes → Q ∈ J.minimalPrimes →
-      ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ P) =
-      ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ Q) := by
-    intro P Q hP hQ
-    rw [Ideal.minimalPrimes_eq_comap] at hP hQ
-    obtain ⟨P', hP'min, rfl⟩ := hP
-    obtain ⟨Q', hQ'min, rfl⟩ := hQ
-    have hcm := hCM.equidimensional P' Q' hP'min hQ'min
-    -- Third isomorphism: dim(R/comap P') = dim((R/J)/P') for P = comap(mk J) P'
-    -- R/P ≅ (R/J)/P' via factor_surjective. Both are quotients of R by the same ideal.
-    -- Use ringKrullDim_le_of_surjective in both directions via factor maps.
-    sorry
-  -- Step 2: dim(R/J_G) = dim(R/P_∅) since all minimal primes have equal dim
-  -- and dim(R/J_G) = ⨆ over minimal primes (by ringKrullDim_quotient_radical)
-  sorry
+-- Corollary 3.4 is in PrimeDecompositionDimension.lean (needs corollary_3_3).
 
 /-! ## Unmixedness -/
 
