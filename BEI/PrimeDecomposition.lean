@@ -755,11 +755,10 @@ theorem corollary_3_3 (G : SimpleGraph V) :
       exact le_trans (ringKrullDim_quotient_anti hPS)
         (le_iSup₂ (f := fun P (_ : P ∈ (binomialEdgeIdeal (K := K) G).minimalPrimes) =>
           ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ P)) P hP)
-  rw [hkey]
-  -- Now: ⨆ S, dim(R/P_S) = ⨆ S, (|V| - |S| + c(S))
-  -- All mathematical content proved. Remaining: cast compatibility
-  -- ⨆ S, dim(R/P_S) = ⨆ S, (|V|-|S|+c(S) : ℕ) in WithBot ℕ∞.
-  -- Uses ringKrullDim_quot_primeComponent + cast lemma.
+  rw [hkey]; simp_rw [ringKrullDim_quot_primeComponent]
+  -- Remaining: ⨆ S, ↑(f S) = ↑(⨆ S, f S) where ↑ : ℕ → WithBot ℕ∞.
+  -- The RHS ⨆ is actually in WithBot ℕ∞ (ℕ has no iSup), so both sides
+  -- should be equal, but Lean's elaboration creates a cast diamond.
   sorry
 
 /--
