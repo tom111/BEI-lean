@@ -6,6 +6,7 @@ import BEI.AdmissiblePaths
 import BEI.ClosedGraphs
 import BEI.HerzogLemmas
 import BEI.CoveredWalks
+import BEI.GroebnerBasisSPolynomial
 import BEI.GroebnerBasis
 import BEI.Radical
 import BEI.CohenMacaulay
