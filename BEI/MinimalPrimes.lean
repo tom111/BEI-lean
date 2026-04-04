@@ -571,11 +571,11 @@ private lemma cycle_induce_preconnected (G : SimpleGraph V) (hCyc : IsCycleGraph
   -- A shortest walk cannot pass through v (if it did, we could shortcut via v's neighbors
   -- n1 or n2, contradicting minimality). So the walk lies in S and transfers to G'.
   intro t ht
-  -- Choose a shortest walk from t to n1 in G
-  have hreach := hConn.preconnected t n1
-  obtain ⟨p⟩ := hreach
-  -- The shortest walk avoids v; transfer to G'. Full proof is a sorry pending
-  -- walk-surgery lemma (shortest_walk_avoids_forbidden_vertex).
+  -- Get a walk from t to n1 in G
+  obtain ⟨p⟩ := hConn.preconnected t n1
+  -- Key: there exists a walk avoiding v. Transfer it to G'.
+  -- The avoidance argument (shortest walk from t≠v to n1≠v cannot pass
+  -- through degree-2 vertex v without being shortenable) is sorry'd.
   sorry
 
 /-- Removing a single vertex from a cycle graph gives a connected induced subgraph.
