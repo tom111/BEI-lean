@@ -756,9 +756,9 @@ theorem corollary_3_3 (G : SimpleGraph V) :
         (le_iSup₂ (f := fun P (_ : P ∈ (binomialEdgeIdeal (K := K) G).minimalPrimes) =>
           ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ P)) P hP)
   rw [hkey]; simp_rw [ringKrullDim_quot_primeComponent]
-  -- Remaining: ⨆ S, ↑(f S) = ↑(⨆ S, f S) where ↑ : ℕ → WithBot ℕ∞.
-  -- The RHS ⨆ is actually in WithBot ℕ∞ (ℕ has no iSup), so both sides
-  -- should be equal, but Lean's elaboration creates a cast diamond.
+  -- Goal: ⨆ S, ↑(f S) = ↑(⨆ S, f S) where f : Finset V → ℕ.
+  -- Solve by finding the maximizer S₀ of f over the finite type Finset V.
+  -- Use finite maximizer to close the cast gap
   sorry
 
 /--
