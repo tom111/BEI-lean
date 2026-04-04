@@ -54,7 +54,7 @@ faithfully the current Lean statements match the paper.
 
 | Paper endpoint | Current state |
 |---|---|
-| Proposition 1.6 | blocked on a real CM foundation |
+| Proposition 1.6 | CM definition replaced; proof needs deep CM theory (initial ideal transfer) |
 | Corollary 3.4 | statement present, proof still `sorry` |
 | Corollary 3.7 (unmixed branch) | close, but still depends on two graph combinatorics sorries |
 | Corollary 3.7 (CM branch) | blocked on CM foundations |

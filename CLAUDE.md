@@ -70,4 +70,4 @@ There is no test suite — correctness is enforced by Lean's type checker. A suc
 
 - Treat `BEI.tex` and the Lean files as the source of truth.
 - If a theorem is finished, moved, split across files, or downgraded from an earlier claim, update `TODO.md` and `FORMALIZATION_MAP.md` in the same round.
-- Do not overclaim Cohen–Macaulay results while `IsCohenMacaulay` remains a placeholder.
+- `IsCohenMacaulay` now has a real definition (equidimensionality) in `toMathlib/CohenMacaulay/Defs.lean`, but the CM-dependent theorems (Prop 1.6, Cor 3.4, Cor 3.7 CM) still need proofs.

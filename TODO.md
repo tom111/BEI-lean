@@ -43,9 +43,9 @@ Active CM work lives in:
 - `guides/ANSWER_05_COHEN_MACAULAY_FOUNDATION.md`
 - `guides/cm_pr_26218/`
 
-The honest blocker is still the same: `IsCohenMacaulay` is currently a placeholder,
-so Proposition 1.6, Corollary 3.4, and the CM branch of Corollary 3.7 are not yet
-genuinely formalized.
+`IsCohenMacaulay` now has a real definition (equidimensionality, adapted from mathlib
+PR #26218) in `toMathlib/CohenMacaulay/Defs.lean`. Proposition 1.6, Corollary 3.4,
+and the CM branch of Corollary 3.7 still need proofs using this definition.
 
 ### Priority 2: Finish Corollary 3.7 outside the CM branch
 
