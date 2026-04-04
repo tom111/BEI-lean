@@ -317,6 +317,13 @@ theorem corollary_3_4 (G : SimpleGraph V)
     (hCM : IsCohenMacaulay (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G)) :
     ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) =
     Fintype.card V + componentCount G ∅ := by
+  -- By Cor 3.3: dim = ⨆ S, (|V| - |S| + c(S)).
+  -- P_∅ is a minimal prime, so dim ≥ |V| + c(G) (taking S = ∅).
+  -- CM (equidimensional) forces all minimal primes to have the same height.
+  -- Since height(P_∅) = |V| - c(G) is the minimum height, equidimensionality
+  -- means all minimal P_S have the same height, hence the sup = |V| + c(G).
+  -- This requires connecting our IsCohenMacaulayRing (on R/J_G) to equal
+  -- heights of minimal primes of J_G in R.
   sorry
 
 /-! ## Unmixedness -/
