@@ -2,6 +2,7 @@ import BEI.PrimeIdeals
 import BEI.CohenMacaulay
 import BEI.Radical
 import Mathlib.RingTheory.Ideal.MinimalPrime.Basic
+import Mathlib.RingTheory.Ideal.MinimalPrime.Localization
 
 variable {K : Type*} [Field K]
 variable {V : Type*} [LinearOrder V] [DecidableEq V] [Fintype V]
@@ -317,10 +318,23 @@ theorem corollary_3_4 (G : SimpleGraph V)
     (hCM : IsCohenMacaulay (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G)) :
     ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) =
     Fintype.card V + componentCount G ∅ := by
-  -- CM (equidimensional) + Cor 3.3 + P_∅ is minimal → dim = dim(R/P_∅) = |V| + c(G).
-  -- The equidimensionality of R/J_G forces all minimal primes to have the same
-  -- quotient dimension. Since P_∅ has dim(R/P_∅) = |V| + c(G), so does every
-  -- other minimal prime, hence the sup in Cor 3.3 equals this value.
+  -- Step 1: CM equidimensionality → all minimal primes of J_G have equal dim(R/P)
+  set J := binomialEdgeIdeal (K := K) G
+  have hequal : ∀ P Q : Ideal (MvPolynomial (BinomialEdgeVars V) K),
+      P ∈ J.minimalPrimes → Q ∈ J.minimalPrimes →
+      ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ P) =
+      ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ Q) := by
+    intro P Q hP hQ
+    rw [Ideal.minimalPrimes_eq_comap] at hP hQ
+    obtain ⟨P', hP'min, rfl⟩ := hP
+    obtain ⟨Q', hQ'min, rfl⟩ := hQ
+    have hcm := hCM.equidimensional P' Q' hP'min hQ'min
+    -- Third isomorphism: dim(R/comap P') = dim((R/J)/P') for P = comap(mk J) P'
+    -- R/P ≅ (R/J)/P' via factor_surjective. Both are quotients of R by the same ideal.
+    -- Use ringKrullDim_le_of_surjective in both directions via factor maps.
+    sorry
+  -- Step 2: dim(R/J_G) = dim(R/P_∅) since all minimal primes have equal dim
+  -- and dim(R/J_G) = ⨆ over minimal primes (by ringKrullDim_quotient_radical)
   sorry
 
 /-! ## Unmixedness -/
