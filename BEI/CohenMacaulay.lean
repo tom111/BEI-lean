@@ -1,4 +1,5 @@
 import BEI.Definitions
+import toMathlib.CohenMacaulay.Defs
 import Mathlib.RingTheory.Ideal.Quotient.Basic
 import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
 
@@ -11,17 +12,19 @@ open MvPolynomial SimpleGraph
 /-!
 # Cohen-Macaulay rings and binomial edge ideals
 
-This file provides a placeholder definition for Cohen-Macaulay rings (not yet in Mathlib)
-and formalizes Proposition 1.6 of Herzog et al. (2010):
+Uses `IsCohenMacaulayRing` from `toMathlib/CohenMacaulay/Defs.lean`, which defines
+CM via equidimensionality (all minimal primes have the same height). This is a
+consequence of the full CM definition (depth = dim), adapted from mathlib PR #26218.
 
+Formalizes Proposition 1.6 of Herzog et al. (2010):
   If G is a connected closed graph satisfying an additional interval condition,
   then S/J_G is Cohen-Macaulay.
 
 ## Reference: Herzog et al. (2010), Section 1
 -/
 
-/-- Placeholder for Cohen-Macaulay rings, pending a Mathlib definition. -/
-def IsCohenMacaulay (R : Type*) [CommRing R] : Prop := sorry
+-- Re-export for backward compatibility
+abbrev IsCohenMacaulay (R : Type*) [CommRing R] := IsCohenMacaulayRing R
 
 /--
 The additional condition from Proposition 1.6: whenever {i, j+1} and {j, k+1}
