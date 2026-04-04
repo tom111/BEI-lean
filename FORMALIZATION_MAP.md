@@ -37,7 +37,7 @@ This file maps each paper result to its Lean formalization, noting fidelity.
 | Corollary 3.3 (lower bound) | `corollary_3_3_lower_bound` | PrimeDecomposition.lean | **Sorry** | `dim ≥ |V| + c(G)` |
 | Corollary 3.4 | `corollary_3_4` | PrimeDecomposition.lean | **Sorry** | Depends on `IsCohenMacaulay` placeholder |
 | Proposition 3.6 | `prop_3_6` | PrimeDecomposition.lean | Equivalent | "Components complete" rephrased as `Reachable → Adj ∨ eq` |
-| Corollary 3.7 (a↔b) | `corollary_3_7` | PrimeDecomposition.lean | Partial | `|V|=3 ↔ prime` proved; (c) unmixed and (d) CM parts are sorry |
+| Corollary 3.7 (a↔b) | `corollary_3_7` | PrimeDecomposition.lean | Partial | `|V|=3 ↔ prime` proved; `prime ↔ unmixed` structured (2 graph sorries in MinimalPrimes); (d) CM sorry |
 | Proposition 3.8 | `prop_3_8` | MinimalPrimes.lean | Equivalent | Component containment rephrased via `SameComponent` predicate |
 | Corollary 3.9 | `corollary_3_9` | MinimalPrimes.lean | Equivalent | Cut-point condition via `IsCutVertexRelative` |
 
@@ -46,8 +46,8 @@ This file maps each paper result to its Lean formalization, noting fidelity.
 | Paper result | Status | Blocker |
 |---|---|---|
 | Proposition 1.6 (CM for special closed graphs) | Not started | `IsCohenMacaulay` not in Mathlib |
-| Corollary 3.3 (dimension formula) | Cast sorry only | All math proved; one ℕ→WithBot ℕ∞ cast lemma |
-| Corollary 3.3 (lower bound) | **Proved** | Via ringKrullDim_quot_primeComponent + monotonicity |
+| Corollary 3.3 (dimension formula) | **Proved** | `corollary_3_3` in PrimeDecompositionDimension.lean |
+| Corollary 3.3 (lower bound) | **Proved** | `corollary_3_3_lower_bound` in PrimeDecompositionDimension.lean |
 | Corollary 3.4 (CM implies dim = n+c) | Statement present | `IsCohenMacaulay` placeholder |
 | Corollary 3.5 (unmixed iff connected components) | Not started | Unmixed definition needed |
 
