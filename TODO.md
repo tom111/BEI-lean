@@ -84,12 +84,12 @@ Some of these splits still need cleanup, but these are the current live location
 
 | File | Sorries | Notes |
 |---|---:|---|
-| `BEI/CohenMacaulay.lean` | 4 | placeholder CM definition and CM branch theorems |
+| `BEI/CohenMacaulay.lean` | 3 | CM-dependent theorems (Prop 1.6, Examples 1.7); CM definition is real |
 | `BEI/PrimeDecomposition.lean` | 2 | `corollary_3_4`, `corollary_3_7_CM` |
 | `BEI/MinimalPrimes.lean` | 2 | cycle / unmixed combinatorics |
 | `toMathlib/HeightAdditivity.lean` | 2 | dormant infrastructure |
 | `BEI/RauhApproach.lean` | 2 | archived, not on main path |
-| **Active total** | **10** | excluding archived `RauhApproach` |
+| **Active total** | **9** | excluding archived `RauhApproach` |
 
 ---
 

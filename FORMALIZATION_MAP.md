@@ -38,7 +38,7 @@ faithfully the current Lean statements match the paper.
 | Theorem 3.2 | `theorem_3_2` | `BEI/PrimeDecomposition.lean` | Exact | `J_G = ⨅ S, P_S(G)` |
 | Corollary 3.3 | `corollary_3_3` | `BEI/PrimeDecompositionDimension.lean` | Exact | Dimension formula proved directly in the quotient |
 | Corollary 3.3 (lower bound) | `corollary_3_3_lower_bound` | `BEI/PrimeDecompositionDimension.lean` | Exact | `dim ≥ |V| + c(G)` |
-| Corollary 3.4 | `corollary_3_4` | `BEI/PrimeDecomposition.lean` | Sorry | Statement present, but blocked by CM placeholder foundations |
+| Corollary 3.4 | `corollary_3_4` | `BEI/PrimeDecomposition.lean` | Sorry | CM definition exists; proof needs connecting equidimensionality to quotient heights |
 | Proposition 3.6 | `prop_3_6` | `BEI/PrimeDecomposition.lean` | Equivalent | Completeness of components phrased via reachability |
 | Corollary 3.7 | `corollary_3_7`, `corollary_3_7_unmixed`, `corollary_3_7_CM` | `BEI/PrimeDecomposition.lean`, `BEI/MinimalPrimes.lean` | Partial | Prime branch done; unmixed branch has two remaining graph-theory sorries; CM branch is blocked |
 | Proposition 3.8 | `prop_3_8` | `BEI/MinimalPrimes.lean` | Equivalent | Rephrased using `SameComponent` |
