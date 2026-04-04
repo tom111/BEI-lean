@@ -33,19 +33,14 @@ open MvPolynomial SimpleGraph Classical
 **Corollary 3.3** (Herzog et al. 2010):
   `dim(K[x,y]/J_G) = max_{S ⊆ V} (|V| - |S| + c(S))`
 
-**Proof structure** (using `ringKrullDim_quotient_radical`):
+The formal proof proceeds in two layers:
 
-Step 1: `dim(R/J_G) = sup_S dim(R/P_S)` — from `ringKrullDim_quotient_radical`
-applied to `J_G` (radical by Cor 2.2), using `theorem_3_2` to identify J_G with
-the intersection of P_S's.
+1. compute `dim(R / P_S(G)) = |V| - |S| + c(S)` for each prime component;
+2. combine this with Theorem 3.2 and radicality of `J_G` to assemble the formula
+   for `R / J_G`.
 
-Step 2: `dim(R/P_S) = |V| - |S| + c(S)` for each S — the key sub-theorem
-`ringKrullDim_quot_primeComponent`, which requires computing the quotient
-dimension directly for each prime component.
-
-**Remaining blocker:** Step 2 (Layer 1 of the dimension guide). Computing
-`dim(R/P_S)` requires either the catenary property or a direct chain/ring
-equivalence argument for the specific structure of P_S.
+The lower-bound theorem `corollary_3_3_lower_bound` is then obtained by evaluating
+the maximum at `S = ∅`.
 
 Reference: Herzog et al. (2010), Corollary 3.3.
 -/
@@ -535,4 +530,3 @@ theorem corollary_3_3_lower_bound (G : SimpleGraph V) :
         rw [ringKrullDim_quot_primeComponent]; simp
     _ ≤ ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) :=
         ringKrullDim_quotient_anti (binomialEdgeIdeal_le_primeComponent G ∅)
-

@@ -7,5 +7,6 @@ This is an attempt to formalize the paper "Binomial edge ideals and conditional 
 
 Documentation and blueprint scaffold:
 
-- [FORMALIZATION_MAP.md](/home/tom/BEI-lean/FORMALIZATION_MAP.md)
-- [docs/index.md](/home/tom/BEI-lean/docs/index.md)
+- [Formalization map](FORMALIZATION_MAP.md)
+- [Blueprint source](docs/index.md)
+- [Published blueprint](https://tom111.github.io/BEI-lean/)

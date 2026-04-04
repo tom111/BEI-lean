@@ -26,7 +26,7 @@ lake update
 lake clean
 ```
 
-There is no test suite — correctness is enforced by Lean's type checker. A successful `lake build` with no errors or `sorry`s is the goal.
+There is no test suite — correctness is enforced by Lean's type checker. A successful `lake build` with no errors is required, and reducing the remaining `sorry`s is the current mathematical goal.
 
 ## Project Structure
 
@@ -37,13 +37,19 @@ There is no test suite — correctness is enforced by Lean's type checker. A suc
 - `BEI/AdmissiblePaths.lean` — `pathMonomial`, `groebnerElement`, `groebnerBasisSet`; admissible path membership
 - `BEI/GroebnerAPI.lean` — `IsRemainder`, `IsGroebnerBasis`, Buchberger's criterion (fully proved)
 - `BEI/ClosedGraphs.lean` — **Theorem 1.1**: closed graph ↔ quadratic Gröbner basis (fully proved)
-- `BEI/GroebnerBasis.lean` — Theorem 2.1 (reduced Gröbner basis) and Corollary 2.2 (radical)
+- `BEI/GroebnerBasisSPolynomial.lean` — Buchberger / S-polynomial proof of Theorem 2.1
+- `BEI/GroebnerBasis.lean` — reducedness half of Theorem 2.1 and the paper-facing wrapper theorem
+- `BEI/Radical.lean` — Corollary 2.2 (`J_G` is radical)
 - `BEI/PrimeIdeals.lean` — `primeComponent`, `componentCount`; Section 3 prime ideal properties
 - `BEI/MinimalPrimes.lean` — Proposition 3.8, Corollary 3.9; minimal prime characterization
-- `BEI/PrimeDecomposition.lean` — Theorem 3.2 (prime decomposition), dimension corollaries
+- `BEI/PrimeDecomposition.lean` — Theorem 3.2, Proposition 3.6, and the remaining cycle / CM endpoints
+- `BEI/PrimeDecompositionDimension.lean` — Corollary 3.3 (dimension formula)
 - `BEI/CohenMacaulay.lean` — Placeholder for Cohen-Macaulay results (deferred; not in Mathlib)
 - `BEI.lean` — Root library entry point
 - `BEI.tex` — Reference paper with the mathematical content being formalized
+- `TODO.md` / `FORMALIZATION_MAP.md` — human-facing status docs that must be updated whenever theorem status or file layout changes
+- `guides/` — self-contained agent guides for the active formalization branches
+- `questions/` — incoming worker questions; preserve question context in any answer guide before deleting the question file
 
 ## Key Mathematical Concepts
 
@@ -59,3 +65,9 @@ There is no test suite — correctness is enforced by Lean's type checker. A suc
 - Linter `weak.linter.mathlibStandardSet` is enabled; follow Mathlib style for naming and formatting.
 - Use `open MvPolynomial` when working with multivariate polynomials (already opened in `Definitions.lean`).
 - Relevant Mathlib namespaces: `MvPolynomial`, `Ideal`, `SimpleGraph`, `LinearOrder`.
+
+## Status-Tracking Rule
+
+- Treat `BEI.tex` and the Lean files as the source of truth.
+- If a theorem is finished, moved, split across files, or downgraded from an earlier claim, update `TODO.md` and `FORMALIZATION_MAP.md` in the same round.
+- Do not overclaim Cohen–Macaulay results while `IsCohenMacaulay` remains a placeholder.
