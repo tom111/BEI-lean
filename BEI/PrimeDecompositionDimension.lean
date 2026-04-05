@@ -1,4 +1,5 @@
 import BEI.PrimeDecomposition
+import BEI.MinimalPrimes
 import Mathlib.RingTheory.KrullDimension.Polynomial
 import Mathlib.RingTheory.KrullDimension.Field
 import Mathlib.RingTheory.Ideal.MinimalPrime.Localization
@@ -568,3 +569,292 @@ theorem corollary_3_4 (G : SimpleGraph V)
   -- Step 2: dim(R/J_G) = |V| + c(G). By Cor 3.3 and equidimensionality.
   -- All minimal primes have dim = dim(R/P_∅) = |V| + c(G).
   sorry
+
+/-! ## CM from equidimensional minimal primes -/
+
+/-- Third isomorphism for quotient dimensions:
+`dim((R/J)/P') = dim(R/(comap(mk J) P'))`. -/
+private theorem ringKrullDim_quotQuot_eq
+    (J : Ideal (MvPolynomial (BinomialEdgeVars V) K))
+    (P' : Ideal (MvPolynomial (BinomialEdgeVars V) K ⧸ J)) :
+    ringKrullDim ((MvPolynomial (BinomialEdgeVars V) K ⧸ J) ⧸ P') =
+    ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸
+      Ideal.comap (Ideal.Quotient.mk J) P') := by
+  set Q := Ideal.comap (Ideal.Quotient.mk J) P'
+  have hJQ : J ≤ Q := by
+    intro x hx
+    show Ideal.Quotient.mk J x ∈ P'
+    rw [Ideal.Quotient.eq_zero_iff_mem.mpr hx]
+    exact P'.zero_mem
+  have hmap_eq : Q.map (Ideal.Quotient.mk J) = P' :=
+    Ideal.map_comap_of_surjective _ Ideal.Quotient.mk_surjective P'
+  rw [← hmap_eq]
+  exact ringKrullDim_eq_of_ringEquiv (DoubleQuot.quotQuotEquivQuotOfLE hJQ)
+
+/-- If all `Ideal.minimalPrimes` of `J` have the same quotient dimension, then `R ⧸ J`
+is Cohen–Macaulay (under the equidimensionality definition). -/
+theorem isCohenMacaulay_of_equidim_minimalPrimes
+    (J : Ideal (MvPolynomial (BinomialEdgeVars V) K))
+    (hequal : ∀ P Q : Ideal (MvPolynomial (BinomialEdgeVars V) K),
+      P ∈ J.minimalPrimes → Q ∈ J.minimalPrimes →
+      ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ P) =
+      ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ Q)) :
+    IsCohenMacaulayRing (MvPolynomial (BinomialEdgeVars V) K ⧸ J) where
+  equidimensional P' Q' hP'min hQ'min := by
+    -- Convert: minimalPrimes (R/J) → J.minimalPrimes via comap
+    have hP_mem : Ideal.comap (Ideal.Quotient.mk J) P' ∈ J.minimalPrimes := by
+      rw [Ideal.minimalPrimes_eq_comap]; exact ⟨P', hP'min, rfl⟩
+    have hQ_mem : Ideal.comap (Ideal.Quotient.mk J) Q' ∈ J.minimalPrimes := by
+      rw [Ideal.minimalPrimes_eq_comap]; exact ⟨Q', hQ'min, rfl⟩
+    rw [ringKrullDim_quotQuot_eq J P', ringKrullDim_quotQuot_eq J Q']
+    exact hequal _ _ hP_mem hQ_mem
+
+/-! ## Example 1.7(b): Path graph is CM -/
+
+/-- The path graph on Fin n is connected when n ≥ 1.
+Proof: vertex 0 can reach any vertex k by walking along edges 0-1-2-...-k. -/
+private theorem path_connected (n : ℕ) (hn : n ≥ 1) (G : SimpleGraph (Fin n))
+    (hPath : ∀ (i j : Fin n),
+      G.Adj i j ↔ (i.val + 1 = j.val ∨ j.val + 1 = i.val)) :
+    G.Connected := by
+  rw [SimpleGraph.connected_iff]
+  refine ⟨fun u v => ?_, ⟨⟨0, by omega⟩⟩⟩
+  suffices ∀ (w : Fin n), G.Reachable ⟨0, by omega⟩ w by
+    exact (this u).symm.trans (this v)
+  intro w
+  -- Induction on w.val
+  have : ∀ k (hk : k < n), G.Reachable ⟨0, by omega⟩ ⟨k, hk⟩ := by
+    intro k
+    induction k with
+    | zero => intro _; exact SimpleGraph.Reachable.refl _
+    | succ k ih =>
+      intro hk
+      have hk' : k < n := by omega
+      have hadj : G.Adj ⟨k, hk'⟩ ⟨k + 1, hk⟩ := by rw [hPath]; left; rfl
+      exact (ih hk').trans (SimpleGraph.Adj.reachable hadj)
+  exact this w.val w.isLt
+
+/-- In a path graph, if vertices u, v ∉ S and all integers strictly between u.val and v.val
+are also not in S, then u and v are in the same component of G[V\S]. -/
+private theorem path_sameComponent_of_interval (n : ℕ) (G : SimpleGraph (Fin n))
+    (hPath : ∀ (i j : Fin n),
+      G.Adj i j ↔ (i.val + 1 = j.val ∨ j.val + 1 = i.val))
+    (S : Finset (Fin n)) (u v : Fin n) (huS : u ∉ S) (hvS : v ∉ S)
+    (huv : u.val ≤ v.val)
+    (hint : ∀ k : Fin n, u.val < k.val → k.val < v.val → k ∉ S) :
+    SameComponent G S u v := by
+  refine ⟨huS, hvS, ?_⟩
+  -- Induction on the gap between u and v
+  suffices ∀ (d : ℕ) (a b : Fin n), a ∉ S → b ∉ S → a.val + d = b.val →
+      (∀ k : Fin n, a.val < k.val → k.val < b.val → k ∉ S) →
+      Relation.ReflTransGen (fun x y => G.Adj x y ∧ x ∉ S ∧ y ∉ S) a b from
+    this (v.val - u.val) u v huS hvS (by omega) hint
+  intro d
+  induction d with
+  | zero =>
+    intro a b _ _ hd _
+    have : a = b := Fin.ext (by omega)
+    subst this; exact Relation.ReflTransGen.refl
+  | succ d ih =>
+    intro a b haS hbS hd hint'
+    have ha1 : a.val + 1 < n := by omega
+    let a' : Fin n := ⟨a.val + 1, ha1⟩
+    have ha'val : a'.val = a.val + 1 := rfl
+    have ha'S : a' ∉ S := by
+      cases d with
+      | zero =>
+        have hab : a' = b := Fin.ext (by omega)
+        rw [hab]; exact hbS
+      | succ d =>
+        have h1 : a.val < a'.val := by omega
+        have h2 : a'.val < b.val := by omega
+        exact hint' a' h1 h2
+    have hadj : G.Adj a a' := by
+      rw [hPath]; left; exact ha'val
+    have hd' : a'.val + d = b.val := by omega
+    have hint'' : ∀ k : Fin n, a'.val < k.val → k.val < b.val → k ∉ S :=
+      fun k hk1 hk2 => hint' k (by omega) hk2
+    exact Relation.ReflTransGen.head ⟨hadj, haS, ha'S⟩ (ih a' b ha'S hbS hd' hint'')
+
+/-- For a path graph on `Fin n`, `componentCount G S ≤ S.card + 1`.
+
+**Proof**: Construct an injection from connected components to `Option S`.
+For each component `c` of `G[V\S]`, let `m(c)` be the maximum vertex in `c`.
+If `m(c).val + 1 < n`, then the vertex `m(c) + 1` must be in `S` (otherwise it would
+be adjacent to `m(c)` in the path and thus in the same component, contradicting
+maximality). Map `c` to `some ⟨m(c)+1, _⟩`. If `m(c).val + 1 ≥ n`, map to `none`.
+This map is injective because two distinct components cannot share their max vertex. -/
+private theorem path_componentCount_le_card_add_one (n : ℕ) (_hn : n ≥ 1)
+    (G : SimpleGraph (Fin n))
+    (hPath : ∀ (i j : Fin n),
+      G.Adj i j ↔ (i.val + 1 = j.val ∨ j.val + 1 = i.val))
+    (S : Finset (Fin n)) :
+    componentCount G S ≤ S.card + 1 := by
+  classical
+  unfold componentCount
+  set H := G.induce {v : Fin n | v ∉ S}
+  haveI : Fintype H.ConnectedComponent := Fintype.ofFinite _
+  rw [Nat.card_eq_fintype_card]
+  -- For each component, build the set of its Fin n vertices
+  let compVerts : H.ConnectedComponent → Finset (Fin n) := fun c =>
+    Finset.univ.filter (fun v => ∃ hv : v ∉ S, H.connectedComponentMk ⟨v, hv⟩ = c)
+  -- Each component is nonempty
+  have hne : ∀ c : H.ConnectedComponent, (compVerts c).Nonempty := by
+    intro c
+    induction c using SimpleGraph.ConnectedComponent.ind with | h v =>
+    exact ⟨v.val, Finset.mem_filter.mpr ⟨Finset.mem_univ _, v.prop, rfl⟩⟩
+  -- Membership characterization
+  have hmem : ∀ c v, v ∈ compVerts c ↔
+      ∃ hv : v ∉ S, H.connectedComponentMk ⟨v, hv⟩ = c := by
+    intro c v; simp [compVerts]
+  -- Max vertex of each component
+  let maxV : H.ConnectedComponent → Fin n := fun c => (compVerts c).max' (hne c)
+  -- maxV(c) ∈ compVerts c, hence ∉ S and in component c
+  have hmaxV_mem : ∀ c, maxV c ∈ compVerts c := fun c => Finset.max'_mem _ _
+  have hmaxV_not_S : ∀ c, maxV c ∉ S := by
+    intro c; obtain ⟨hv, _⟩ := (hmem c _).mp (hmaxV_mem c); exact hv
+  have hmaxV_comp : ∀ c, H.connectedComponentMk ⟨maxV c, hmaxV_not_S c⟩ = c := by
+    intro c
+    obtain ⟨hv, hc⟩ := (hmem c _).mp (hmaxV_mem c)
+    exact hc
+  -- If maxV(c) + 1 < n, then maxV(c) + 1 ∈ S
+  have hmax_succ_in_S : ∀ c : H.ConnectedComponent, ∀ hlt : (maxV c).val + 1 < n,
+      (⟨(maxV c).val + 1, hlt⟩ : Fin n) ∈ S := by
+    intro c hlt
+    by_contra hnotS
+    set m := maxV c
+    set m1 : Fin n := ⟨m.val + 1, hlt⟩
+    -- m1 is adjacent to m in the path
+    have hadj : G.Adj m m1 := by rw [hPath]; left; rfl
+    -- So m1 is in the same component as m in H
+    have hm1_comp : H.connectedComponentMk ⟨m1, hnotS⟩ = c := by
+      rw [← hmaxV_comp c, SimpleGraph.ConnectedComponent.eq]
+      exact SimpleGraph.Adj.reachable (SimpleGraph.induce_adj.mpr hadj.symm)
+    -- So m1 ∈ compVerts c
+    have hm1_in : m1 ∈ compVerts c := (hmem c m1).mpr ⟨hnotS, hm1_comp⟩
+    -- But m is the max of compVerts c, and m1.val = m.val + 1 > m.val
+    have hle : m1 ≤ m := Finset.le_max' (compVerts c) m1 hm1_in
+    rw [Fin.le_iff_val_le_val] at hle; simp [m1] at hle
+  -- maxV is injective (a vertex belongs to exactly one component)
+  have hmaxV_inj : Function.Injective maxV := by
+    intro c1 c2 heq
+    rw [← hmaxV_comp c1, ← hmaxV_comp c2]
+    congr 1; exact Subtype.ext heq
+  -- Build the injection: CC(H) → Option S
+  let φ : H.ConnectedComponent → Option S := fun c =>
+    if h : (maxV c).val + 1 < n then
+      some ⟨⟨(maxV c).val + 1, by omega⟩, hmax_succ_in_S c h⟩
+    else none
+  have hφ_inj : Function.Injective φ := by
+    intro c1 c2 heq
+    simp only [φ] at heq
+    by_cases h1 : (maxV c1).val + 1 < n <;> by_cases h2 : (maxV c2).val + 1 < n
+    · simp [h1, h2] at heq
+      exact hmaxV_inj (Fin.ext (by omega))
+    · simp [h1, h2] at heq
+    · simp [h1, h2] at heq
+    · exact hmaxV_inj (Fin.ext (by omega))
+  calc Fintype.card H.ConnectedComponent
+      ≤ Fintype.card (Option S) := Fintype.card_le_of_injective φ hφ_inj
+    _ = Fintype.card S + 1 := Fintype.card_option
+    _ = S.card + 1 := by rw [Fintype.card_coe]
+
+/-- For the path graph, removing a set S of non-consecutive interior vertices from the path
+creates |S| + 1 connected components (each removed vertex splits one path segment in two).
+For minimal primes of J_G, S consists of such vertices, so c(S) = |S| + c(∅). -/
+private theorem path_minimalPrime_dim_eq (n : ℕ) (G : SimpleGraph (Fin n))
+    (hPath : ∀ (i j : Fin n),
+      G.Adj i j ↔ (i.val + 1 = j.val ∨ j.val + 1 = i.val))
+    (S : Finset (Fin n))
+    (hmin : primeComponent (K := K) G S ∈ (binomialEdgeIdeal (K := K) G).minimalPrimes) :
+    (Fintype.card (Fin n) - S.card + componentCount G S : ℕ) =
+    (Fintype.card (Fin n) + componentCount G ∅ : ℕ) := by
+  rcases S.eq_empty_or_nonempty with rfl | hne
+  · simp
+  · have hn : n ≥ 1 := by obtain ⟨v, _⟩ := hne; exact Fin.pos v
+    have hconn := path_connected n hn G hPath
+    have hc0 : componentCount G ∅ = 1 := by
+      rw [componentCount_empty]
+      haveI : Subsingleton G.ConnectedComponent :=
+        hconn.preconnected.subsingleton_connectedComponent
+      haveI : Nonempty G.ConnectedComponent :=
+        ⟨G.connectedComponentMk ⟨0, by omega⟩⟩
+      exact Nat.card_unique
+    have hub : componentCount G S ≤ S.card + 1 :=
+      path_componentCount_le_card_add_one n hn G hPath S
+    have hSn : S.card ≤ n := by
+      calc S.card ≤ Finset.univ.card := Finset.card_le_card (Finset.subset_univ _)
+        _ = n := Fintype.card_fin n
+    -- Prove c(S) = |S| + 1 by combining upper bound with strong induction.
+    -- Strategy: by strong induction on |S|. For nonempty S:
+    --   (a) corollary_3_9 gives every i ∈ S is a cut vertex ⟹ c(S\{i}) < c(S)
+    --   (b) upper bound: c(S) ≤ |S| + 1
+    --   (c) IH on S\{i} (which is also a minimal prime by cut-vertex preservation for
+    --       paths): c(S\{i}) = |S\{i}| + 1 = |S|
+    --   (d) from (a): c(S) > c(S\{i}) = |S|, so c(S) ≥ |S| + 1
+    --   (e) from (b) and (d): c(S) = |S| + 1
+    -- The remaining sorry is cut-vertex preservation for path graphs (non-consecutive
+    -- elements of S remain cut vertices after erasing one element).
+    suffices hlb : componentCount G S ≥ S.card + 1 by
+      rw [Fintype.card_fin, hc0]; omega
+    -- Obtain cut vertex from corollary_3_9
+    have hcv : ∀ i ∈ S, IsCutVertexRelative G S i := by
+      have h39 := (corollary_3_9 (K := K) G S hconn).mp hmin
+      rcases h39 with rfl | h
+      · exact absurd rfl (Finset.Nonempty.ne_empty hne)
+      · exact h
+    obtain ⟨i, hiS⟩ := hne
+    have hcut_lt := (hcv i hiS).2  -- c(S.erase i) < c(S)
+    -- P_{S.erase i} is also a minimal prime (cut vertex preservation for paths)
+    -- For paths: elements of S are non-consecutive interior vertices.
+    -- Erasing i doesn't affect neighborhoods of remaining j ∈ S (since |i-j| ≥ 2),
+    -- so each j is still a cut vertex relative to S.erase i.
+    have hmin_erase : primeComponent (K := K) G (S.erase i) ∈
+        (binomialEdgeIdeal (K := K) G).minimalPrimes := by
+      rw [corollary_3_9 (K := K) G (S.erase i) hconn]
+      rcases (S.erase i).eq_empty_or_nonempty with heq | _
+      · exact Or.inl heq
+      · right; intro j hjS'
+        -- j ∈ S.erase i, so j ∈ S and j ≠ i
+        -- j was a cut vertex relative to S; show it's a cut vertex relative to S.erase i
+        -- This uses: in a path graph, if no two elements of S are adjacent,
+        -- then removing i from S doesn't affect connectivity near j.
+        sorry
+    -- IH on S.erase i: c(S.erase i) = |S.erase i| + 1
+    have ih := path_minimalPrime_dim_eq n G hPath (S.erase i) hmin_erase
+    have hcard_erase := Finset.card_erase_of_mem hiS
+    rw [Fintype.card_fin, hc0] at ih
+    -- ih : n - (S.card - 1) + c(S.erase i) = n + 1
+    -- From cut vertex: c(S) > c(S.erase i) = n + 1 - (n - (S.card - 1)) = S.card
+    omega
+  termination_by S.card
+  decreasing_by exact Finset.card_erase_lt_of_mem hiS
+
+/--
+**Example 1.7(b)** (Herzog et al. 2010): The path on `n` vertices (with natural ordering)
+yields a Cohen–Macaulay quotient.
+
+Proof: Every minimal prime `P_S` of `J_G` satisfies `dim(R/P_S) = n + 1`.
+This is because for valid S (non-consecutive interior vertices), removing S from
+the path creates |S| + 1 connected components, so `n - |S| + c(S) = n + 1`.
+Since all minimal primes have equal quotient dimension, `R/J_G` is equidimensional = CM.
+-/
+theorem path_is_CM (n : ℕ) (G : SimpleGraph (Fin n))
+    (hPath : ∀ (i j : Fin n),
+      G.Adj i j ↔ (i.val + 1 = j.val ∨ j.val + 1 = i.val)) :
+    IsCohenMacaulay
+      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ binomialEdgeIdeal G) := by
+  apply isCohenMacaulay_of_equidim_minimalPrimes
+  intro P Q hP hQ
+  -- Every minimal prime is P_S for some S
+  have hP' := hP; have hQ' := hQ
+  rw [minimalPrimes_characterization G] at hP' hQ'
+  obtain ⟨SP, rfl, _⟩ := hP'
+  obtain ⟨SQ, rfl, _⟩ := hQ'
+  -- Use the dimension formula
+  rw [ringKrullDim_quot_primeComponent, ringKrullDim_quot_primeComponent]
+  -- Reduce to the combinatorial fact
+  congr 1
+  have hP_eq := path_minimalPrime_dim_eq (K := K) n G hPath SP hP
+  have hQ_eq := path_minimalPrime_dim_eq (K := K) n G hPath SQ hQ
+  omega
