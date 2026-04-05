@@ -21,7 +21,7 @@ faithfully the current Lean statements match the paper.
 | Corollary 1.3 | `cor_1_3`, `cor_1_3_connected_forward`, `pathGraph_isClosedGraph` | `BEI/GraphProperties.lean` | Exact | Formalized in the connected-graph form implicit in the paper |
 | Proposition 1.4 | `prop_1_4` | `BEI/GraphProperties.lean` | Equivalent | Directed shortest-path formulation |
 | Proposition 1.5 | `prop_1_5` | `BEI/GraphProperties.lean` | Exact | Unique minimal closed supergraph |
-| Proposition 1.6 | `prop_1_6` | `BEI/CohenMacaulay.lean` | Sorry | The theorem is present over the local working CM definition, but the proof is still open |
+| Proposition 1.6 | `prop_1_6` | `BEI/CohenMacaulay.lean` | Sorry | The theorem is present over the local working CM definition; `complete_is_CM` and `path_is_CM` are now proved, but the general transfer step is still open |
 
 ## Section 2: Reduced Gröbner Basis and Radicality
 
@@ -63,8 +63,9 @@ faithfully the current Lean statements match the paper.
 
 - `BEI/GroebnerBasisSPolynomial.lean` now carries the long S-polynomial proof of Theorem 2.1.
 - `BEI/GroebnerBasis.lean` carries reducedness and the paper-facing wrapper.
-- `BEI/PrimeDecompositionDimension.lean` carries Corollary 3.3.
+- `BEI/PrimeDecompositionDimension.lean` carries Corollary 3.3, Corollary 3.4, the path CM example, and supporting equidimensionality lemmas.
 - `BEI/PrimeDecomposition.lean` carries Theorem 3.2, Proposition 3.6, and the remaining CM endpoint for Corollary 3.7.
+- `BEI/CohenMacaulay.lean` carries Proposition 1.6 and the complete-graph CM example.
 - `toMathlib/CohenMacaulay/Defs.lean` carries the local working CM definition currently used in the project.
 
 These split points should be reflected in status docs whenever the structure changes again.

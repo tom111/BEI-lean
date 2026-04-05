@@ -17,21 +17,22 @@ The original question asked what foundation, if any, should be built locally:
 ## Short answer
 
 Do not build a fake local `IsCohenMacaulay` definition and then use it as if the CM
-branch were formalized. That will blur the line between real algebra and scaffolding.
+branch were formalized. That would blur the line between real algebra and scaffolding.
 
-The pragmatic choice is:
+The pragmatic choice was:
 
-1. formalize the non-CM reductions honestly;
-2. isolate weaker properties like equidimensionality or unmixedness when those are the
-   actual statements used;
-3. leave genuinely CM-dependent conclusions blocked on a real CM foundation.
+1. build a real local working notion based on equidimensionality;
+2. formalize the non-CM reductions honestly;
+3. isolate exactly which CM/equidimensionality consequences are still missing.
+
+That is now the actual state of the repo.
 
 ## What this means in practice
 
 ### Corollary 3.4
 
-This should be reframed around the exact equidimensionality consequence needed, not full
-Cohen–Macaulayness.
+This should be reframed around the exact equidimensionality consequence needed, not a
+broader depth-based theory.
 
 ### Corollary 3.7
 
@@ -39,8 +40,12 @@ Do the unmixed branch now; leave the CM branch deferred.
 
 ### Proposition 1.6
 
-Formalize the reduction to the associated bipartite edge-ideal setup, but do not pretend
-the final CM implication is proved until there is a real CM theory behind it.
+The repo can now legitimately explore two routes:
+
+- the paper-faithful reduction to the associated bipartite edge-ideal setup;
+- a direct equidimensionality proof over the local definition.
+
+But do not pretend the final CM implication is proved until one of those routes is actually completed.
 
 ## On full CM infrastructure
 
@@ -54,5 +59,4 @@ That is a real subproject, not a small local patch.
 
 ## Recommendation
 
-Treat Cohen–Macaulayness as an external foundation problem.
-Build around it for now, rather than through it.
+Treat the remaining CM work as a precise theorem problem, not as a vague missing-foundation problem.

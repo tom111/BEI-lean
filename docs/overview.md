@@ -47,8 +47,8 @@ Supporting generic lemmas intended for possible upstreaming live in:
 - Section 1 covers closed graphs and the quadratic Gröbner basis criterion.
 - Section 2 covers the reduced Gröbner basis and radicality.
 - Section 3 covers prime components, minimal primes, and dimension statements.
-- The remaining cycle / CM endpoints for Section 3 are split between `PrimeDecomposition.lean`,
-  `PrimeDecompositionDimension.lean`, and `MinimalPrimes.lean`.
+- The remaining CM endpoints for Section 3 are split between `PrimeDecomposition.lean`
+  and `PrimeDecompositionDimension.lean`.
 - Section 4 concerns the conditional-independence interpretation.
 
 ## How to use this site

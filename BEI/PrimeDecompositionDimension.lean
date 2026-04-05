@@ -1043,8 +1043,8 @@ private theorem path_minimalPrime_dim_eq (n : ℕ) (G : SimpleGraph (Fin n))
     --       paths): c(S\{i}) = |S\{i}| + 1 = |S|
     --   (d) from (a): c(S) > c(S\{i}) = |S|, so c(S) ≥ |S| + 1
     --   (e) from (b) and (d): c(S) = |S| + 1
-    -- The remaining sorry is cut-vertex preservation for path graphs (non-consecutive
-    -- elements of S remain cut vertices after erasing one element).
+    -- The key path-specific input is cut-vertex preservation under erasure for
+    -- non-consecutive interior vertices.
     suffices hlb : componentCount G S ≥ S.card + 1 by
       rw [Fintype.card_fin, hc0]; omega
     -- Obtain cut vertex from corollary_3_9

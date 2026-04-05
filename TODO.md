@@ -41,15 +41,21 @@ Active CM work lives in:
 - `guides/PROP_1_6_COHEN_MACAULAY.md`
 - `guides/COR_3_4_CM_DIMENSION.md`
 - `guides/ANSWER_05_COHEN_MACAULAY_FOUNDATION.md`
+- `guides/ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md`
 - `guides/cm_pr_26218/`
 
 `IsCohenMacaulay` now has a real local working definition (equidimensionality, adapted
 from mathlib PR #26218) in `toMathlib/CohenMacaulay/Defs.lean`.
 
 The remaining CM endpoints are:
-- `BEI/CohenMacaulay.lean`: `prop_1_6`, `complete_is_CM`, `path_is_CM`
+- `BEI/CohenMacaulay.lean`: `prop_1_6`
 - `BEI/PrimeDecompositionDimension.lean`: `corollary_3_4`
 - `BEI/PrimeDecomposition.lean`: `corollary_3_7_CM`
+
+Recently completed CM groundwork includes:
+- `BEI/CohenMacaulay.lean`: `complete_is_CM`
+- `BEI/PrimeDecompositionDimension.lean`: `path_is_CM`
+- `BEI/PrimeDecompositionDimension.lean`: quotient-dimension and equidimensionality helpers
 
 This branch is no longer blocked on a missing definition, but it still needs honest
 proofs and should not be overclaimed.
@@ -72,7 +78,8 @@ are stable enough that the final statements can be phrased cleanly.
 - `BEI/GroebnerBasisSPolynomial.lean` carries the Buchberger / S-polynomial proof of Theorem 2.1.
 - `BEI/GroebnerBasis.lean` carries reducedness and the paper-facing wrapper.
 - `BEI/PrimeDecomposition.lean` carries Theorem 3.2, Proposition 3.6, and the CM/cycle endpoints.
-- `BEI/PrimeDecompositionDimension.lean` carries Corollary 3.3.
+- `BEI/PrimeDecompositionDimension.lean` carries Corollary 3.3, Corollary 3.4, the path CM example, and supporting quotient-dimension / equidimensionality lemmas.
+- `BEI/CohenMacaulay.lean` carries Proposition 1.6 and the complete-graph CM example.
 - `toMathlib/CohenMacaulay/Defs.lean` carries the local working CM definition used by the current CM branch.
 
 Some of these splits still need cleanup, but these are the current live locations.
@@ -83,12 +90,12 @@ Some of these splits still need cleanup, but these are the current live location
 
 | File | Sorries | Notes |
 |---|---:|---|
-| `BEI/CohenMacaulay.lean` | 3 | CM-dependent theorems (Prop 1.6, Examples 1.7) |
+| `BEI/CohenMacaulay.lean` | 1 | `prop_1_6` |
 | `BEI/PrimeDecomposition.lean` | 1 | `corollary_3_7_CM` |
 | `BEI/PrimeDecompositionDimension.lean` | 1 | `corollary_3_4` |
 | `toMathlib/HeightAdditivity.lean` | 2 | dormant infrastructure |
 | `BEI/RauhApproach.lean` | 2 | archived, not on main path |
-| **Active total** | **7** | excluding archived `RauhApproach` |
+| **Active total** | **5** | excluding archived `RauhApproach` |
 
 ---
 

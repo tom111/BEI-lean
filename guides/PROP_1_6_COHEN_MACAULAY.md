@@ -8,29 +8,36 @@ The paper proves:
 > interval condition from Proposition 1.6, then `S / J_G` is Cohen–Macaulay.
 
 The current Lean file [CohenMacaulay.lean](/home/tom/BEI-lean/BEI/CohenMacaulay.lean)
-contains a placeholder `IsCohenMacaulay := sorry`, so none of the CM claims are yet
-honest formalizations.
+now uses the local working definition from
+[toMathlib/CohenMacaulay/Defs.lean](/home/tom/BEI-lean/toMathlib/CohenMacaulay/Defs.lean),
+and the branch already has two honest CM examples:
+
+- `complete_is_CM`
+- `path_is_CM` (in [PrimeDecompositionDimension.lean](/home/tom/BEI-lean/BEI/PrimeDecompositionDimension.lean))
+
+What remains open is the general Proposition 1.6 theorem itself.
 
 
 ## First decision: what counts as "proved in Lean" here?
 
-This project needs a real CM foundation. There are only two legitimate routes:
+This project now has a usable local CM foundation. The real decision is not whether CM
+exists at all, but how to reach Proposition 1.6 from the current infrastructure.
 
-1. Mathlib gains a usable `IsCohenMacaulay` notion and enough supporting theorems;
-2. this repo formalizes the needed CM theory locally.
+There are two serious routes:
 
-Anything built on the current placeholder is only scaffolding, not a proof.
+1. a paper-faithful reduction through the initial ideal and Herzog–Hibi bipartite graph;
+2. a direct equidimensionality proof using the local definition.
 
 
 ## Recommended strategy
 
-Do not attack Proposition 1.6 first.
+Do not treat Proposition 1.6 as a one-lemma cleanup. It is now the main CM bottleneck.
 
-Instead, split the problem into:
+Split the problem into:
 
-1. a non-CM combinatorial/algebraic reduction;
-2. a CM theorem for the associated bipartite edge ideal;
-3. a transfer theorem from the initial ideal to the original quotient.
+1. the paper-faithful reduction from `in_<(J_G)` to a bipartite edge ideal `I(Γ)`;
+2. the exact CM/equidimensional statement needed for that bipartite graph;
+3. the transfer from the reduced examples / infrastructure to the general proposition.
 
 
 ## Part 1: formalize the reduction from the paper
@@ -44,8 +51,8 @@ The paper's proof does:
 4. therefore the initial quotient is Cohen–Macaulay;
 5. hence the original quotient is Cohen–Macaulay.
 
-Only step 3 and step 5 require CM infrastructure. Steps 1, 2, and much of 4 can be
-formalized now.
+Only step 3 and step 5 in the paper genuinely require CM infrastructure. Steps 1, 2,
+and much of 4 can be formalized now, and they are the most paper-faithful next targets.
 
 ### Immediate subgoals
 
@@ -74,25 +81,11 @@ These are purely graph-combinatorial.
 
 ## Part 2: decide the CM foundation
 
-### Option A: wait for Mathlib
+### Route A: paper-faithful reduction first
 
-This is the cleanest route, but it blocks the whole CM branch.
+This remains the most defensible route.
 
-### Option B: local CM API with only the theorems actually needed
-
-If waiting is unacceptable, define a local CM interface in a disciplined way:
-
-- a real definition, not `sorry`;
-- only for the class of rings actually used;
-- only with the transfer theorems needed in the paper.
-
-This is ambitious and should be treated as a subproject.
-
-### Option C: temporarily package the reduction theorem only
-
-This is the best short-term move.
-
-Prove:
+Prove the reduction theorem:
 
 ```text
 if G satisfies Prop 1.6 assumptions, then after the variable permutation
@@ -100,7 +93,18 @@ the initial ideal corresponds to a bipartite edge ideal Gamma satisfying
 the Herzog–Hibi conditions.
 ```
 
-That gets the entire non-CM content of the proposition into Lean honestly.
+That gets the entire non-CM content of the proposition into Lean honestly, and makes the
+remaining CM input very explicit.
+
+### Route B: direct equidimensionality on minimal primes
+
+This route became more plausible once `path_is_CM` and the local equidimensionality API
+were proved. But it is not the paper’s route, and it risks inventing a new theorem of
+independent graph-combinatorial difficulty.
+
+If pursuing it, read:
+
+- [ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md](/home/tom/BEI-lean/guides/ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md)
 
 
 ## Part 3: the actual CM theorem needed
@@ -131,13 +135,13 @@ Treat it as a separate infrastructure theorem, not as a tiny closing step.
 
 ## Practical recommendation for Claude
 
-For now, Claude should do only this:
+For now, Claude should do one of these two disciplined things:
 
-1. replace the fake "proof" mentality with a reduction theorem;
-2. formalize all non-CM ingredients of Proposition 1.6;
-3. leave the final CM implication behind an explicit dependency note.
+1. formalize the paper’s reduction to the bipartite graph `Γ`; or
+2. if explicitly assigned to the equidimensionality route, isolate the exact graph
+   invariant that replaces the path proof and work only on that.
 
-That creates durable progress without pretending the CM problem is solved.
+Do not bounce between both approaches in one round.
 
 
 ## Definition of done
@@ -146,5 +150,5 @@ This guide is successful when the repo contains:
 
 1. a precise reduction theorem from Proposition 1.6 assumptions to the associated
    Herzog–Hibi bipartite setup;
-2. a clear statement of the exact external CM theorem still needed;
-3. no misleading dependence on the current placeholder definition.
+2. a clear statement of the exact CM/equidimensional theorem still needed for the final step;
+3. no stale text implying that the local CM definition is still a placeholder.

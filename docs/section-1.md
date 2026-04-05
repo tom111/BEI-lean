@@ -32,3 +32,10 @@ The paper states, informally:
 
 The Lean development now packages the result in a paper-faithful connected-graph form,
 while making the connectedness and labeling subtleties explicit.
+
+### Examples 1.7
+
+The supporting Cohen–Macaulay examples from Section 1 are now partly formalized:
+
+- Example 1.7(a): `complete_is_CM` in `BEI/CohenMacaulay.lean`
+- Example 1.7(b): `path_is_CM` in `BEI/PrimeDecompositionDimension.lean`

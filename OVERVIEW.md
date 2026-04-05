@@ -14,6 +14,11 @@ The project already formalizes the main algebraic backbone of the paper:
 - Corollary 3.3 on the Krull-dimension formula
 - Proposition 3.8 and Corollary 3.9 on minimal primes
 
+It also now contains the basic Cohen–Macaulay examples from the paper:
+
+- the complete graph case
+- the path graph case
+
 The remaining paper endpoints are concentrated in:
 
 - the Cohen–Macaulay branch (Proposition 1.6, Corollary 3.4, Corollary 3.7 CM)
@@ -60,8 +65,7 @@ how to finish the remaining paper endpoints cleanly and document them accurately
 At the time of this summary:
 
 - the non-CM Section 3 backbone is in place, including the unmixed branch of Corollary 3.7;
-- the CM branch uses a real local working definition, but several CM-dependent theorems
-  still contain `sorry`;
+- the CM branch uses a real local working definition, and the complete / path examples are proved, but the remaining CM-dependent theorems still contain `sorry`;
 - Section 4 has not yet been formalized as a theorem layer.
 
 

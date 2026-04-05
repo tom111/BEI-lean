@@ -13,6 +13,7 @@ Current focus: Cohen–Macaulay branch
 - [PROP_1_6_COHEN_MACAULAY.md](PROP_1_6_COHEN_MACAULAY.md) — Proposition 1.6 CM branch
 - [COR_3_4_CM_DIMENSION.md](COR_3_4_CM_DIMENSION.md) — Corollary 3.4 CM branch
 - [ANSWER_05_COHEN_MACAULAY_FOUNDATION.md](ANSWER_05_COHEN_MACAULAY_FOUNDATION.md) — CM foundations and honest scope
+- [ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md](ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md) — direct equidimensionality route for Prop. 1.6?
 - [cm_pr_26218/](cm_pr_26218/) — Mathlib CM PR backport / import plan
 
 Other open statement guides:

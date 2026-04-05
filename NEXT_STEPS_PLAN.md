@@ -40,12 +40,16 @@ But the main CM-dependent theorems are still open:
 
 - `BEI/CohenMacaulay.lean`
   - `prop_1_6`
-  - `complete_is_CM`
-  - `path_is_CM`
 - `BEI/PrimeDecompositionDimension.lean`
   - `corollary_3_4`
 - `BEI/PrimeDecomposition.lean`
   - `corollary_3_7_CM`
+
+The branch has nevertheless moved materially:
+
+- `complete_is_CM` is proved in `BEI/CohenMacaulay.lean`
+- `path_is_CM` is proved in `BEI/PrimeDecompositionDimension.lean`
+- quotient-dimension and equidimensionality lemmas now exist for the local CM route
 
 ### Working discipline
 
@@ -59,6 +63,7 @@ But the main CM-dependent theorems are still open:
 - `guides/PROP_1_6_COHEN_MACAULAY.md`
 - `guides/COR_3_4_CM_DIMENSION.md`
 - `guides/ANSWER_05_COHEN_MACAULAY_FOUNDATION.md`
+- `guides/ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md`
 - `guides/cm_pr_26218/`
 
 
@@ -115,5 +120,6 @@ Once that is true, the natural next stage is:
 If choosing the next task today:
 
 1. continue the CM branch from the new local CM definition;
-2. keep the status files and blueprint aligned as the code changes;
-3. start Section 4 only once the CM branch is honestly scoped.
+2. focus first on the remaining `prop_1_6` bottleneck, since Corollary 3.4 and Corollary 3.7 CM both sit downstream of the same CM/equidimensionality story;
+3. keep the status files and blueprint aligned as the code changes;
+4. start Section 4 only once the CM branch is honestly scoped.
