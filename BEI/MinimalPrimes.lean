@@ -254,7 +254,7 @@ theorem prop_3_8 (G : SimpleGraph V) (S T : Finset V) :
 /-! ## Corollary 3.9: Minimal prime characterization -/
 
 /-- Helper: a walk in the induced subgraph gives a `ReflTransGen` path. -/
-private lemma induced_walk_to_reflTransGen {G : SimpleGraph V} {S : Finset V}
+lemma induced_walk_to_reflTransGen {G : SimpleGraph V} {S : Finset V}
     (u v : {w : V | w ∉ S}) (walk : (G.induce {w : V | w ∉ S}).Walk u v) :
     Relation.ReflTransGen (fun x y => G.Adj x y ∧ x ∉ S ∧ y ∉ S) u.val v.val := by
   induction walk with
@@ -264,7 +264,7 @@ private lemma induced_walk_to_reflTransGen {G : SimpleGraph V} {S : Finset V}
 
 /-- Monotonicity of `SameComponent`: if `T ⊆ S`, then any path avoiding `S` also avoids `T`,
 so `SameComponent G S u v → SameComponent G T u v`. -/
-private lemma SameComponent_mono (G : SimpleGraph V) {S T : Finset V} (hTS : T ≤ S)
+lemma SameComponent_mono (G : SimpleGraph V) {S T : Finset V} (hTS : T ≤ S)
     {u v : V} (hsc : SameComponent G S u v) : SameComponent G T u v := by
   refine ⟨fun huT => hsc.1 (hTS huT), fun hvT => hsc.2.1 (hTS hvT), ?_⟩
   exact Relation.ReflTransGen.lift id
@@ -272,7 +272,7 @@ private lemma SameComponent_mono (G : SimpleGraph V) {S T : Finset V} (hTS : T �
     hsc.2.2
 
 /-- Convert `SameComponent G S u v` to `Reachable` in the induced subgraph `G[V \ S]`. -/
-private lemma sameComponent_to_reachable (G : SimpleGraph V) (S : Finset V)
+lemma sameComponent_to_reachable (G : SimpleGraph V) (S : Finset V)
     (u v : V) (huS : u ∉ S) (hvS : v ∉ S) (hsc : SameComponent G S u v) :
     (G.induce {w : V | w ∉ S}).Reachable ⟨u, huS⟩ ⟨v, hvS⟩ := by
   obtain ⟨_, _, hpath⟩ := hsc
@@ -296,7 +296,7 @@ private lemma sameComponent_to_reachable (G : SimpleGraph V) (S : Finset V)
 /-- If `i` is a cut-vertex relative to `S`, then two components of `G[V \ S]` merge when `i` is
 removed from `S`. Formally: there exist `a, b ∉ S` connected in `G[V \ (S \ {i})]` but not in
 `G[V \ S]`. -/
-private lemma exists_merged_of_cutVertex (G : SimpleGraph V) (S : Finset V) (i : V)
+lemma exists_merged_of_cutVertex (G : SimpleGraph V) (S : Finset V) (i : V)
     (hcut : IsCutVertexRelative G S i) :
     ∃ a b : V, a ∉ S ∧ b ∉ S ∧
       SameComponent G (S.erase i) a b ∧ ¬SameComponent G S a b := by

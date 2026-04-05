@@ -759,6 +759,256 @@ private theorem path_componentCount_le_card_add_one (n : ℕ) (_hn : n ≥ 1)
     _ = Fintype.card S + 1 := Fintype.card_option
     _ = S.card + 1 := by rw [Fintype.card_coe]
 
+/-- In a path graph, any `ReflTransGen` walk that avoids `T` and starts at a vertex
+with value `< j.val` (where `j ∈ T`) stays strictly below `j.val`. This is the
+discrete intermediate-value argument: each step changes `.val` by 1, so crossing
+`j.val` would require visiting `j`, contradicting avoidance of `T`. -/
+private lemma path_reflTransGen_stays_below (n : ℕ) (G : SimpleGraph (Fin n))
+    (hPath : ∀ (i j : Fin n), G.Adj i j ↔ (i.val + 1 = j.val ∨ j.val + 1 = i.val))
+    (T : Finset (Fin n)) (j : Fin n) (hjT : j ∈ T)
+    {a c : Fin n} (ha_lt : a.val < j.val)
+    (hac : Relation.ReflTransGen (fun x y => G.Adj x y ∧ x ∉ T ∧ y ∉ T) a c) :
+    c.val < j.val := by
+  induction hac with
+  | refl => exact ha_lt
+  | @tail b d _ hbd ih =>
+    have hb_lt := ih
+    obtain ⟨hadj, _, hdT⟩ := hbd
+    rw [hPath] at hadj
+    rcases hadj with h | h
+    · -- b.val + 1 = d.val
+      by_contra hd_ge; push_neg at hd_ge
+      have : d.val ≤ j.val := by omega
+      have : d.val = j.val := by omega
+      have : d = j := Fin.ext this
+      exact hdT (this ▸ hjT)
+    · -- d.val + 1 = b.val
+      omega
+
+/-- Symmetric version: a walk starting above `j.val` stays above `j.val`. -/
+private lemma path_reflTransGen_stays_above (n : ℕ) (G : SimpleGraph (Fin n))
+    (hPath : ∀ (i j : Fin n), G.Adj i j ↔ (i.val + 1 = j.val ∨ j.val + 1 = i.val))
+    (T : Finset (Fin n)) (j : Fin n) (hjT : j ∈ T)
+    {a c : Fin n} (ha_gt : j.val < a.val)
+    (hac : Relation.ReflTransGen (fun x y => G.Adj x y ∧ x ∉ T ∧ y ∉ T) a c) :
+    j.val < c.val := by
+  induction hac with
+  | refl => exact ha_gt
+  | @tail b d _ hbd ih =>
+    have hb_gt := ih
+    obtain ⟨hadj, _, hdT⟩ := hbd
+    rw [hPath] at hadj
+    rcases hadj with h | h
+    · -- b.val + 1 = d.val
+      omega
+    · -- d.val + 1 = b.val
+      by_contra hd_le; push_neg at hd_le
+      have : d.val ≥ j.val := by omega
+      have : d.val = j.val := by omega
+      have : d = j := Fin.ext this
+      exact hdT (this ▸ hjT)
+
+/-- In a path graph, if `j ∈ T` separates `a` (with `a.val < j.val`) from `b`
+(with `b.val > j.val`), then `a` and `b` are not connected in `G[V \ T]`. -/
+private lemma path_not_sameComponent_across (n : ℕ) (G : SimpleGraph (Fin n))
+    (hPath : ∀ (i j : Fin n), G.Adj i j ↔ (i.val + 1 = j.val ∨ j.val + 1 = i.val))
+    (T : Finset (Fin n)) (j a b : Fin n) (hjT : j ∈ T)
+    (_haT : a ∉ T) (_hbT : b ∉ T)
+    (ha : a.val < j.val) (hb : j.val < b.val) :
+    ¬SameComponent G T a b := by
+  intro ⟨_, _, hpath⟩
+  have hc_lt := path_reflTransGen_stays_below n G hPath T j hjT ha hpath
+  omega
+
+/-- In a path graph, if `j` is a cut vertex relative to `S` (where every element of `S` is a
+cut vertex), then `j` is also a cut vertex relative to `S.erase i` for any `i ∈ S` with `i ≠ j`.
+
+The proof finds witnesses on opposite sides of `j` using `exists_merged_of_cutVertex` and the
+path separator lemma, then transfers them to `S.erase i` using monotonicity. The CC inequality
+follows by `Fintype.card_lt_of_surjective_not_injective`. -/
+private lemma path_cutVertex_of_erase (n : ℕ) (G : SimpleGraph (Fin n))
+    (hPath : ∀ (i j : Fin n), G.Adj i j ↔ (i.val + 1 = j.val ∨ j.val + 1 = i.val))
+    (S : Finset (Fin n)) (i j : Fin n)
+    (hijS : j ∈ S.erase i)
+    (hcutj : IsCutVertexRelative G S j) :
+    IsCutVertexRelative G (S.erase i) j := by
+  have hjS : j ∈ S := Finset.mem_of_mem_erase hijS
+  have hij : j ≠ i := (Finset.mem_erase.mp hijS).1
+  constructor
+  · exact hijS
+  · -- Need: componentCount G ((S.erase i).erase j) < componentCount G (S.erase i)
+    -- Step 1: Get witnesses a, b on opposite sides of j
+    obtain ⟨a, b, haS, hbS, hsc_ej, hnotsc_S⟩ :=
+      exists_merged_of_cutVertex G S j hcutj
+    -- a ≠ j and b ≠ j (since a, b ∉ S and j ∈ S)
+    have haj : a ≠ j := fun h => haS (h ▸ hjS)
+    have hbj : b ≠ j := fun h => hbS (h ▸ hjS)
+    -- Step 2: Show a.val < j.val < b.val (or b < j < a) using path structure
+    -- From SameComponent G (S.erase j) a b: no element of S.erase j lies strictly between a and b.
+    -- From ¬SameComponent G S a b: some element of S lies strictly between a and b.
+    -- That element must be j (the only element of S not in S.erase j).
+    -- Therefore a and b are on opposite sides of j.
+    have hab_opp : (a.val < j.val ∧ j.val < b.val) ∨ (b.val < j.val ∧ j.val < a.val) := by
+      have ha_ne : a.val ≠ j.val := fun h => haj (Fin.ext h)
+      have hb_ne : b.val ≠ j.val := fun h => hbj (Fin.ext h)
+      -- Case split on positions relative to j. If both on same side, derive contradiction.
+      rcases Nat.lt_or_gt_of_ne ha_ne with ha_lt | ha_gt <;>
+        rcases Nat.lt_or_gt_of_ne hb_ne with hb_lt | hb_gt
+      · -- Both below j: show SameComponent G S a b, contradicting hnotsc_S.
+        -- Key: from SameComponent G (S.erase j) a b, any k between a and b with k ∈ S.erase j
+        -- would separate them (path_not_sameComponent_across). So no such k exists.
+        -- Since a, b < j, any k between them has k < j, hence k ≠ j, hence k ∉ S.erase j → k ∉ S.
+        -- By path_sameComponent_of_interval: SameComponent G S a b.
+        exfalso; apply hnotsc_S
+        rcases le_or_gt a.val b.val with hab | hab
+        · exact path_sameComponent_of_interval n G hPath S a b haS hbS hab (fun k hak hkb => by
+            by_contra hkS
+            have : k ≠ j := fun h => by omega
+            exact path_not_sameComponent_across n G hPath (S.erase j) k a b
+              (Finset.mem_erase.mpr ⟨this, hkS⟩)
+              (fun h => haS (Finset.erase_subset j S h))
+              (fun h => hbS (Finset.erase_subset j S h))
+              (by omega) (by omega) hsc_ej)
+        · exact (path_sameComponent_of_interval n G hPath S b a hbS haS (by omega) (fun k hbk hka => by
+            by_contra hkS
+            have : k ≠ j := fun h => by omega
+            exact path_not_sameComponent_across n G hPath (S.erase j) k b a
+              (Finset.mem_erase.mpr ⟨this, hkS⟩)
+              (fun h => hbS (Finset.erase_subset j S h))
+              (fun h => haS (Finset.erase_subset j S h))
+              (by omega) (by omega) hsc_ej.symm)).symm
+      · exact Or.inl ⟨ha_lt, hb_gt⟩
+      · exact Or.inr ⟨hb_lt, ha_gt⟩
+      · -- Both above j: symmetric to "both below" case.
+        exfalso; apply hnotsc_S
+        rcases le_or_gt a.val b.val with hab | hab
+        · exact path_sameComponent_of_interval n G hPath S a b haS hbS hab (fun k hak hkb => by
+            by_contra hkS
+            have : k ≠ j := fun h => by omega
+            exact path_not_sameComponent_across n G hPath (S.erase j) k a b
+              (Finset.mem_erase.mpr ⟨this, hkS⟩)
+              (fun h => haS (Finset.erase_subset j S h))
+              (fun h => hbS (Finset.erase_subset j S h))
+              (by omega) (by omega) hsc_ej)
+        · exact (path_sameComponent_of_interval n G hPath S b a hbS haS (by omega) (fun k hbk hka => by
+            by_contra hkS
+            have : k ≠ j := fun h => by omega
+            exact path_not_sameComponent_across n G hPath (S.erase j) k b a
+              (Finset.mem_erase.mpr ⟨this, hkS⟩)
+              (fun h => hbS (Finset.erase_subset j S h))
+              (fun h => haS (Finset.erase_subset j S h))
+              (by omega) (by omega) hsc_ej.symm)).symm
+    -- Step 3: WLOG a.val < j.val < b.val (use .symm for the other case)
+    -- Step 4: Transfer witnesses to S.erase i context
+    -- a, b ∉ S implies a, b ∉ S.erase i (S.erase i ⊆ S)
+    have haSi : a ∉ S.erase i := fun h => haS (Finset.erase_subset i S h)
+    have hbSi : b ∉ S.erase i := fun h => hbS (Finset.erase_subset i S h)
+    -- j ∈ S.erase i separates them
+    have hnotsc_Si : ¬SameComponent G (S.erase i) a b := by
+      rcases hab_opp with ⟨ha_lt, hb_gt⟩ | ⟨hb_lt, ha_gt⟩
+      · exact path_not_sameComponent_across n G hPath (S.erase i) j a b hijS haSi hbSi ha_lt hb_gt
+      · exact fun h => path_not_sameComponent_across n G hPath (S.erase i) j b a hijS hbSi haSi
+          hb_lt ha_gt h.symm
+    -- (S.erase i).erase j ⊆ S.erase j (monotonicity)
+    have herase_sub : (S.erase i).erase j ≤ S.erase j := by
+      intro x hx
+      rw [Finset.mem_erase] at hx ⊢
+      exact ⟨hx.1, Finset.mem_of_mem_erase hx.2⟩
+    -- SameComponent G ((S.erase i).erase j) a b (by monotonicity from S.erase j)
+    have hsc_eij : SameComponent G ((S.erase i).erase j) a b :=
+      SameComponent_mono G herase_sub hsc_ej
+    -- Step 5: Pigeonhole via Fintype.card_lt_of_surjective_not_injective
+    unfold componentCount
+    haveI : Fintype (G.induce {v : Fin n | v ∉ (S.erase i).erase j}).ConnectedComponent :=
+      Fintype.ofFinite _
+    haveI : Fintype (G.induce {v : Fin n | v ∉ S.erase i}).ConnectedComponent :=
+      Fintype.ofFinite _
+    rw [Nat.card_eq_fintype_card, Nat.card_eq_fintype_card]
+    -- The inclusion V\(S.erase i) ⊆ V\((S.erase i).erase j) induces a map on CC
+    have hincl : ({w : Fin n | w ∉ S.erase i} : Set (Fin n)) ⊆
+        {w | w ∉ (S.erase i).erase j} :=
+      fun w hw h => hw (Finset.erase_subset j (S.erase i) h)
+    let ι := SimpleGraph.induceHomOfLE G hincl
+    let jSe : {w : Fin n | w ∉ (S.erase i).erase j} :=
+      ⟨j, Finset.notMem_erase j (S.erase i)⟩
+    let f := SimpleGraph.ConnectedComponent.map ι.toHom
+    -- Get a neighbor of j that is ∉ S (to use for surjectivity)
+    -- From hab_opp, j has vertices on both sides. We get j-1 or j+1 ∉ S.
+    obtain ⟨k, hkS, hadj_jk⟩ : ∃ k : Fin n, k ∉ S ∧ G.Adj j k := by
+      rcases hab_opp with ⟨ha_lt, hb_gt⟩ | ⟨hb_lt, ha_gt⟩
+      · -- a < j < b. Show j-1 ∉ S.
+        have hj_pos : 0 < j.val := by omega
+        set jm : Fin n := ⟨j.val - 1, by omega⟩
+        have hjm_val : jm.val = j.val - 1 := rfl
+        refine ⟨jm, ?_, by rw [hPath]; right; show jm.val + 1 = j.val; omega⟩
+        by_contra hjmS
+        have hjmj : jm ≠ j := fun h => by have := congr_arg Fin.val h; omega
+        have hjm_ej : jm ∈ S.erase j := Finset.mem_erase.mpr ⟨hjmj, hjmS⟩
+        rcases Nat.eq_or_lt_of_le (show a.val ≤ jm.val by omega) with h | h
+        · exact haS (Fin.ext h ▸ hjmS)
+        · exact path_not_sameComponent_across n G hPath (S.erase j) jm a b hjm_ej
+            (fun h => haS (Finset.erase_subset j S h))
+            (fun h => hbS (Finset.erase_subset j S h))
+            h (by omega) hsc_ej
+      · -- b < j < a. Show j+1 ∉ S.
+        have hj_lt : j.val + 1 < n := by omega
+        set jp : Fin n := ⟨j.val + 1, hj_lt⟩
+        refine ⟨jp, ?_, by rw [hPath]; left; simp [jp]⟩
+        by_contra hjpS
+        have hjp_val : jp.val = j.val + 1 := rfl
+        have hjpj : jp ≠ j := fun h => by have := congr_arg Fin.val h; omega
+        have hjp_ej : jp ∈ S.erase j := Finset.mem_erase.mpr ⟨hjpj, hjpS⟩
+        -- jp.val = j.val + 1 and b < j < a, so b.val < jp.val ≤ a.val
+        rcases Nat.eq_or_lt_of_le (show jp.val ≤ a.val by omega) with h | h
+        · -- jp.val = a.val, so a = jp. But a ∉ S and jp ∈ S, contradiction.
+          exact haS (Fin.ext h.symm ▸ hjpS)
+        · -- jp strictly between b and a
+          exact path_not_sameComponent_across n G hPath (S.erase j) jp b a hjp_ej
+            (fun h => hbS (Finset.erase_subset j S h))
+            (fun h => haS (Finset.erase_subset j S h))
+            (by omega) h hsc_ej.symm
+    have hkSi : k ∉ S.erase i := fun h => hkS (Finset.mem_of_mem_erase h)
+    apply Fintype.card_lt_of_surjective_not_injective f
+    · -- Surjective: every component of G[V\((S.erase i).erase j)] has a preimage
+      intro cc
+      induction cc using SimpleGraph.ConnectedComponent.ind with | h v =>
+      by_cases hvj : v.val = j
+      · -- v represents j. Map k's component to it.
+        refine ⟨(G.induce {w | w ∉ S.erase i}).connectedComponentMk ⟨k, hkSi⟩, ?_⟩
+        simp only [f, SimpleGraph.ConnectedComponent.map_mk]
+        rw [SimpleGraph.ConnectedComponent.eq, SimpleGraph.Reachable,
+            show v = jSe from Subtype.ext hvj]
+        exact ⟨SimpleGraph.Walk.cons (v := jSe)
+          (by rw [SimpleGraph.induce_adj]; exact hadj_jk.symm) SimpleGraph.Walk.nil⟩
+      · -- v ≠ j. So v ∉ S.erase i.
+        have hvSi : v.val ∉ S.erase i := fun h =>
+          v.prop (Finset.mem_erase.mpr ⟨fun hh => hvj hh, h⟩)
+        refine ⟨(G.induce {w | w ∉ S.erase i}).connectedComponentMk ⟨v.val, hvSi⟩, ?_⟩
+        have heq : ι.toHom ⟨v.val, hvSi⟩ = v := Subtype.ext rfl
+        rw [show f ((G.induce {w | w ∉ S.erase i}).connectedComponentMk ⟨v.val, hvSi⟩) =
+                 (G.induce {w | w ∉ (S.erase i).erase j}).connectedComponentMk
+                   (ι.toHom ⟨v.val, hvSi⟩) from
+             SimpleGraph.ConnectedComponent.map_mk ι.toHom ⟨v.val, hvSi⟩, heq]
+    · -- Not injective: a and b are in different components of V\(S.erase i)
+      -- but same component of V\((S.erase i).erase j)
+      intro hinj
+      have hCab : (G.induce {w | w ∉ S.erase i}).connectedComponentMk ⟨a, haSi⟩ ≠
+                  (G.induce {w | w ∉ S.erase i}).connectedComponentMk ⟨b, hbSi⟩ := by
+        rw [ne_eq, SimpleGraph.ConnectedComponent.eq]
+        rintro ⟨walk⟩
+        exact hnotsc_Si (reachable_induce_imp_sameComponent G (S.erase i) ⟨walk⟩)
+      apply hCab
+      apply hinj
+      simp only [f, SimpleGraph.ConnectedComponent.map_mk]
+      rw [SimpleGraph.ConnectedComponent.eq]
+      -- a and b are reachable in G[V\((S.erase i).erase j)]
+      have ha_eij : a ∉ (S.erase i).erase j := fun h =>
+        haS (Finset.erase_subset j (S.erase i) h |> Finset.erase_subset i S)
+      have hb_eij : b ∉ (S.erase i).erase j := fun h =>
+        hbS (Finset.erase_subset j (S.erase i) h |> Finset.erase_subset i S)
+      have hreach := sameComponent_to_reachable G ((S.erase i).erase j) a b ha_eij hb_eij hsc_eij
+      convert hreach using 1 <;> exact Subtype.ext rfl
+
 /-- For the path graph, removing a set S of non-consecutive interior vertices from the path
 creates |S| + 1 connected components (each removed vertex splits one path segment in two).
 For minimal primes of J_G, S consists of such vertices, so c(S) = |S| + c(∅). -/
@@ -815,11 +1065,7 @@ private theorem path_minimalPrime_dim_eq (n : ℕ) (G : SimpleGraph (Fin n))
       rcases (S.erase i).eq_empty_or_nonempty with heq | _
       · exact Or.inl heq
       · right; intro j hjS'
-        -- j ∈ S.erase i, so j ∈ S and j ≠ i
-        -- j was a cut vertex relative to S; show it's a cut vertex relative to S.erase i
-        -- This uses: in a path graph, if no two elements of S are adjacent,
-        -- then removing i from S doesn't affect connectivity near j.
-        sorry
+        exact path_cutVertex_of_erase n G hPath S i j hjS' (hcv j (Finset.mem_of_mem_erase hjS'))
     -- IH on S.erase i: c(S.erase i) = |S.erase i| + 1
     have ih := path_minimalPrime_dim_eq n G hPath (S.erase i) hmin_erase
     have hcard_erase := Finset.card_erase_of_mem hiS
