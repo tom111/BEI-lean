@@ -15,7 +15,11 @@ and the branch already has two honest CM examples:
 - `complete_is_CM`
 - `path_is_CM` (in [PrimeDecompositionDimension.lean](/home/tom/BEI-lean/BEI/PrimeDecompositionDimension.lean))
 
-What remains open is the general Proposition 1.6 theorem itself.
+It also now has the paper-side graph reduction:
+
+- `prop_1_6_herzogHibi`
+
+What remains open is the final algebraic step of Proposition 1.6.
 
 
 ## First decision: what counts as "proved in Lean" here?
@@ -39,6 +43,9 @@ Split the problem into:
 2. the exact CM/equidimensional statement needed for that bipartite graph;
 3. the transfer from the reduced examples / infrastructure to the general proposition.
 
+At this point, item 1 has partially landed on the graph side: the Herzog–Hibi
+conditions are packaged in `prop_1_6_herzogHibi`.
+
 
 ## Part 1: formalize the reduction from the paper
 
@@ -51,8 +58,9 @@ The paper's proof does:
 4. therefore the initial quotient is Cohen–Macaulay;
 5. hence the original quotient is Cohen–Macaulay.
 
-Only step 3 and step 5 in the paper genuinely require CM infrastructure. Steps 1, 2,
-and much of 4 can be formalized now, and they are the most paper-faithful next targets.
+Only step 3 and step 5 in the paper genuinely require CM infrastructure. The current
+repo has now formalized the graph side of step 3, so the remaining work is increasingly
+concentrated in the algebraic packaging and transfer.
 
 ### Immediate subgoals
 
@@ -78,6 +86,12 @@ Create the graph used in the paper's reduction and prove it satisfies:
 
 These are purely graph-combinatorial.
 
+Status:
+
+- the Herzog–Hibi conditions themselves are now packaged;
+- the missing part is the actual algebraic identification with the initial ideal /
+  bipartite edge ideal.
+
 
 ## Part 2: decide the CM foundation
 
@@ -85,7 +99,7 @@ These are purely graph-combinatorial.
 
 This remains the most defensible route.
 
-Prove the reduction theorem:
+Prove the remaining reduction theorem:
 
 ```text
 if G satisfies Prop 1.6 assumptions, then after the variable permutation
@@ -93,8 +107,8 @@ the initial ideal corresponds to a bipartite edge ideal Gamma satisfying
 the Herzog–Hibi conditions.
 ```
 
-That gets the entire non-CM content of the proposition into Lean honestly, and makes the
-remaining CM input very explicit.
+The graph-condition half is now done. What remains is the algebraic identification that
+connects those conditions to the relevant bipartite edge ideal.
 
 ### Route B: direct equidimensionality on minimal primes
 
@@ -152,3 +166,10 @@ This guide is successful when the repo contains:
    Herzog–Hibi bipartite setup;
 2. a clear statement of the exact CM/equidimensional theorem still needed for the final step;
 3. no stale text implying that the local CM definition is still a placeholder.
+
+Current state:
+
+- item 3 is done;
+- item 2 is substantially done;
+- item 1 is only partially done, because the graph conditions are packaged but the
+  algebraic identification with the initial ideal is still missing.

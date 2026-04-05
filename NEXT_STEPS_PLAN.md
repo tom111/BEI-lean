@@ -49,6 +49,7 @@ The branch has nevertheless moved materially:
 
 - `complete_is_CM` is proved in `BEI/CohenMacaulay.lean`
 - `path_is_CM` is proved in `BEI/PrimeDecompositionDimension.lean`
+- `prop_1_6_herzogHibi` isolates the graph-combinatorial reduction from the paper
 - quotient-dimension and equidimensionality lemmas now exist for the local CM route
 
 ### Working discipline
@@ -120,6 +121,6 @@ Once that is true, the natural next stage is:
 If choosing the next task today:
 
 1. continue the CM branch from the new local CM definition;
-2. focus first on the remaining `prop_1_6` bottleneck, since Corollary 3.4 and Corollary 3.7 CM both sit downstream of the same CM/equidimensionality story;
+2. focus first on the remaining algebraic inputs for `prop_1_6`, since Corollary 3.4 and Corollary 3.7 CM both sit downstream of the same CM/equidimensionality story;
 3. keep the status files and blueprint aligned as the code changes;
 4. start Section 4 only once the CM branch is honestly scoped.

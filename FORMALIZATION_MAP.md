@@ -21,7 +21,7 @@ faithfully the current Lean statements match the paper.
 | Corollary 1.3 | `cor_1_3`, `cor_1_3_connected_forward`, `pathGraph_isClosedGraph` | `BEI/GraphProperties.lean` | Exact | Formalized in the connected-graph form implicit in the paper |
 | Proposition 1.4 | `prop_1_4` | `BEI/GraphProperties.lean` | Equivalent | Directed shortest-path formulation |
 | Proposition 1.5 | `prop_1_5` | `BEI/GraphProperties.lean` | Exact | Unique minimal closed supergraph |
-| Proposition 1.6 | `prop_1_6` | `BEI/CohenMacaulay.lean` | Sorry | The theorem is present over the local working CM definition; `complete_is_CM` and `path_is_CM` are now proved, but the general transfer step is still open |
+| Proposition 1.6 | `prop_1_6`, `prop_1_6_herzogHibi` | `BEI/CohenMacaulay.lean` | Sorry | The graph-combinatorial reduction to the Herzog–Hibi conditions is formalized; the remaining gap is the algebraic CM transfer |
 
 ## Section 2: Reduced Gröbner Basis and Radicality
 
@@ -54,7 +54,7 @@ faithfully the current Lean statements match the paper.
 
 | Paper endpoint | Current state |
 |---|---|
-| Proposition 1.6 | theorem present, but proof still open over the local CM definition |
+| Proposition 1.6 | graph-combinatorial reduction done; remaining gap is the algebraic CM transfer from the paper route |
 | Corollary 3.4 | statement present, proof still `sorry` |
 | Corollary 3.7 | prime and unmixed branches are proved; the CM branch is still `sorry` |
 | Section 4 | not started |

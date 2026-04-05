@@ -39,3 +39,10 @@ The supporting Cohen–Macaulay examples from Section 1 are now partly formalize
 
 - Example 1.7(a): `complete_is_CM` in `BEI/CohenMacaulay.lean`
 - Example 1.7(b): `path_is_CM` in `BEI/PrimeDecompositionDimension.lean`
+
+### Proposition 1.6
+
+The graph-combinatorial reduction from the paper is now formalized in
+`prop_1_6_herzogHibi`. The remaining gap is algebraic: the Herzog–Hibi
+Cohen–Macaulay theorem for the associated bipartite graph, together with the transfer
+from the initial ideal back to `J_G`.

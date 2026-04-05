@@ -17,7 +17,7 @@
 | **§1 Cor 1.3** (bipartite closed graphs / line graphs) | `BEI/GraphProperties.lean` | `[x]` paper-faithful version proved |
 | **§1 Prop 1.4** (shortest paths directed) | `BEI/GraphProperties.lean` | `[x]` proved |
 | **§1 Prop 1.5** (closure exists) | `BEI/GraphProperties.lean` | `[x]` proved |
-| **§1 Prop 1.6** (CM sufficient condition) | `BEI/CohenMacaulay.lean` | `[~]` theorem present, proof still open |
+| **§1 Prop 1.6** (CM sufficient condition) | `BEI/CohenMacaulay.lean` | `[~]` graph-combinatorial reduction done; final algebraic CM step still open |
 | **§2 Thm 2.1** (reduced Gröbner basis) | `BEI/GroebnerBasisSPolynomial.lean`, `BEI/GroebnerBasis.lean` | `[x]` proved |
 | **§2 Cor 2.2** (`J_G` radical) | `BEI/Radical.lean` | `[x]` proved |
 | **§3 Lem 3.1** (height formula for `P_S`) | `BEI/PrimeIdeals.lean` | `[x]` proved |
@@ -54,8 +54,14 @@ The remaining CM endpoints are:
 
 Recently completed CM groundwork includes:
 - `BEI/CohenMacaulay.lean`: `complete_is_CM`
+- `BEI/CohenMacaulay.lean`: `prop_1_6_herzogHibi`
 - `BEI/PrimeDecompositionDimension.lean`: `path_is_CM`
 - `BEI/PrimeDecompositionDimension.lean`: quotient-dimension and equidimensionality helpers
+
+For Proposition 1.6 specifically, the remaining gap is now algebraic rather than graph-theoretic:
+- initial ideal description / packaging from the Gröbner-basis side
+- Herzog–Hibi CM theorem for the associated bipartite graph
+- transfer from `S / in_<(J_G)` to `S / J_G`
 
 This branch is no longer blocked on a missing definition, but it still needs honest
 proofs and should not be overclaimed.

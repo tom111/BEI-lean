@@ -37,6 +37,13 @@ So the right recommendation is:
 - do **not** let it displace the paper-faithful reduction as the main plan without a
   clear reason.
 
+Update since the question was asked:
+
+- the paper-faithful route has now moved forward via `prop_1_6_herzogHibi`, which
+  packages the Herzog–Hibi graph conditions on the BEI side;
+- that makes the direct equidimensionality route even more clearly a fallback, not the
+  default next step.
+
 ## What the paper actually does
 
 The proof in `BEI.tex` goes:
