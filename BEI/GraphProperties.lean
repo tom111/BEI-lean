@@ -492,6 +492,45 @@ theorem prop_1_4 (G : SimpleGraph V) :
         -- hdirected : IsDirectedWalk G [j, k, i]; second step requires k < i, false
         exact absurd hdirected.2.1.2 (not_lt.mpr hik.le)
 
+/-- In a connected closed graph on `Fin n`, consecutive vertices `i` and `⟨i+1, _⟩`
+are always adjacent. This follows from Proposition 1.4: a shortest walk from `i` to
+`i+1` must be directed, but a directed walk of length ≥ 2 would require an
+intermediate vertex strictly between `i` and `i+1`, which is impossible for
+consecutive naturals.
+
+Used in the proof of Proposition 1.6 (condition (i) of the Herzog–Hibi criterion). -/
+theorem closedGraph_adj_consecutive {n : ℕ} {G : SimpleGraph (Fin n)}
+    (hClosed : IsClosedGraph G) (hConn : G.Connected)
+    (i : Fin n) (hi : i.val + 1 < n) :
+    G.Adj i ⟨i.val + 1, hi⟩ := by
+  by_contra h_nadj
+  have hreach : G.Reachable i ⟨i.val + 1, hi⟩ := hConn i _
+  obtain ⟨w, hw⟩ := hreach.exists_walk_length_eq_dist
+  have hlen2 : 2 ≤ w.length := by
+    have := hreach.pos_dist_of_ne (show i ≠ ⟨i.val + 1, hi⟩ by simp [Fin.ext_iff])
+    have : G.dist i ⟨i.val + 1, hi⟩ ≠ 1 :=
+      fun h => h_nadj (dist_eq_one_iff_adj.mp h)
+    omega
+  have hdir := (prop_1_4 G).mp hClosed i _
+    (show (i : Fin n) < ⟨i.val + 1, hi⟩ by simp [Fin.lt_def]) w hw
+  -- Generalize the endpoint to a free variable for Walk elimination
+  suffices ∀ (j : Fin n), j.val = i.val + 1 →
+      ∀ (w : G.Walk i j), 2 ≤ w.length →
+      IsDirectedWalk G w.support → False by
+    exact this _ rfl w hlen2 hdir
+  intro j hj w hlen hd
+  cases w with
+  | nil => simp [Walk.length] at hlen
+  | cons h₁ w' =>
+    rename_i v₁
+    cases w' with
+    | nil => simp [Walk.length_cons] at hlen
+    | cons h₂ w'' =>
+      have hiv := hd.1.2  -- i < v₁
+      have hvj := isDW_head_lt (Walk.cons h₂ w'') (by simp [Walk.length_cons]) hd.2  -- v₁ < j
+      -- i.val < v₁.val < j.val = i.val + 1 is impossible for ℕ
+      omega
+
 -- Helper: snd of a non-nil closed walk is in the support tail.
 private lemma snd_mem_tail' {G : SimpleGraph V} {v : V} (c : G.Walk v v) (hnil : ¬c.Nil) :
     c.snd ∈ c.support.tail := by
