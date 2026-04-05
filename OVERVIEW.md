@@ -1,21 +1,78 @@
 # BEI Formalization: Executive Summary
 
-## What This Is
+## What This Repository Covers
 
-A Lean 4 / Mathlib v4.28.0 formalization of Herzog, Hibi, Hreinsdóttir, Kahle, and Rauh (2010), "Binomial edge ideals and conditional independence statements." The central result is Theorem 1.1: the binomial edge ideal $J_G$ has a quadratic Gröbner basis if and only if $G$ is a closed graph.
+This is a Lean 4 / Mathlib formalization of Herzog, Hibi, Hreinsdóttir, Kahle, and
+Rauh, "Binomial edge ideals and conditional independence statements" (2010).
 
-## Mathematical Content
+The project already formalizes the main algebraic backbone of the paper:
 
-The polynomial ring $K[x_1,\ldots,x_n, y_1,\ldots,y_n]$ is modeled using `MvPolynomial (V ⊕ V) K`, where `Sum.inl i` represents $x_i$ and `Sum.inr i` represents $y_i$. The binomial edge ideal is $J_G = \langle x_i y_j - x_j y_i : \{i,j\} \in E(G),\, i < j \rangle$. A graph is *closed* if for any two edges sharing a vertex, a third edge must exist — the algebraic-combinatorial condition that forces all S-polynomials of the Gröbner basis generators to reduce to zero.
+- Theorem 1.1 on closed graphs and quadratic Gröbner bases
+- Theorem 2.1 on the admissible-path Gröbner basis
+- Corollary 2.2 on radicality
+- Lemma 3.1 and Theorem 3.2 on the prime components `P_S(G)`
+- Corollary 3.3 on the Krull-dimension formula
+- Proposition 3.8 and Corollary 3.9 on minimal primes
 
-The project also formalizes the prime decomposition $J_G = \bigcap_S P_S(G)$ (Theorem 3.2), where each $P_S(G)$ is a prime ideal indexed by subsets $S \subseteq V$ satisfying a cut-vertex condition, and the Krull dimension formula $\dim K[x,y]/J_G = |V| + c(G)$ where $c(G)$ is the number of connected components of $G$.
+The remaining paper endpoints are concentrated in:
 
-## Project Structure
+- the Cohen–Macaulay branch (Proposition 1.6, Corollary 3.4, Corollary 3.7 CM)
+- Section 4 on CI-ideals
 
-The source lives in `BEI/` with roughly one file per mathematical theme: `Definitions.lean` (core ring-theoretic setup), `Groebner.lean` (lex term order), `MonomialOrder.lean` (leading monomial computations), `GraphProperties.lean` (chordal/claw-free graphs, Proposition 1.4), `AdmissiblePaths.lean` (path monomials, Gröbner basis elements), `GroebnerAPI.lean` (abstract Buchberger theory), `ClosedGraphs.lean` (Theorem 1.1), `PrimeIdeals.lean`, `MinimalPrimes.lean`, `PrimeDecomposition.lean`, and `GroebnerBasis.lean` (Theorem 2.1).
 
-## Current Progress
+## Mathematical Setup
 
-The foundational layers are complete. The lex monomial order, all leading monomial proofs for $f_{ij}$, graph-theoretic properties (Proposition 1.4 and Corollary 1.3), and admissible-path membership are all fully proved with zero sorries. The abstract Buchberger criterion — `isGroebnerBasis_iff_sPolynomial_isRemainder` — is fully proved in `GroebnerAPI.lean` via well-founded induction on the maximum degree appearing in any remainder representation. Most significantly, **Theorem 1.1 is fully proved**: `theorem_1_1` in `ClosedGraphs.lean` shows that the quadratic generators form a Gröbner basis if and only if the graph is closed. The forward direction (`closed_implies_groebner`) applies the Buchberger criterion with a four-case S-polynomial analysis covering same-pair, shared-first-endpoint, shared-last-endpoint, and coprime configurations.
+The polynomial ring is modeled as `MvPolynomial (V ⊕ V) K`, where `Sum.inl i` and
+`Sum.inr i` represent the variables `x_i` and `y_i`.
 
-The project currently has **17 sorries** across 5 files. The remaining sorries split into three difficulty bands. Accessible but requiring work: `corollary_3_9` (blocked on `primeComponent_isPrime`) and `corollary_3_3_lower_bound` (a chain-of-primes argument). Genuinely hard: `primeComponent_isPrime` (needs an explicit ring homomorphism into a product of polynomial rings), `theorem_3_2 ⊇` (radical ideal theory), and the Gröbner basis characterization for general admissible-path sets. Deferred indefinitely: Cohen–Macaulay results and `corollary_2_2` (squarefree initial ideal $\Rightarrow$ radical), both of which depend on Mathlib infrastructure not yet available in v4.28.0.
+For a graph `G`, the binomial edge ideal is:
+
+`J_G = ⟨x_i y_j - x_j y_i : {i,j} ∈ E(G), i < j⟩`.
+
+The formalization follows the paper closely, but where Lean packages a theorem
+differently, the status files record whether the result is exact, equivalent, partial,
+or still open.
+
+
+## Current Structure
+
+The main mathematical files are now split roughly as follows:
+
+- `BEI/ClosedGraphs.lean` — Theorem 1.1
+- `BEI/GroebnerBasisSPolynomial.lean` — Buchberger / S-polynomial proof of Theorem 2.1
+- `BEI/GroebnerBasis.lean` — reducedness and paper-facing Theorem 2.1 wrapper
+- `BEI/Radical.lean` — Corollary 2.2
+- `BEI/PrimeIdeals.lean` — prime components and the height formula
+- `BEI/PrimeDecomposition.lean` — Theorem 3.2, Proposition 3.6, Corollary 3.7 prime / CM branch
+- `BEI/PrimeDecompositionDimension.lean` — Corollaries 3.3 and 3.4
+- `BEI/MinimalPrimes.lean` — Proposition 3.8, Corollary 3.9, and Corollary 3.7 unmixed branch
+- `BEI/CohenMacaulay.lean` — Proposition 1.6 and the CM examples
+
+Generic or backported infrastructure lives in `toMathlib/`, including
+`toMathlib/CohenMacaulay/Defs.lean`.
+
+
+## Current Status
+
+The project is no longer in the “infrastructure only” stage. The main question is now
+how to finish the remaining paper endpoints cleanly and document them accurately.
+
+At the time of this summary:
+
+- the non-CM Section 3 backbone is in place, including the unmixed branch of Corollary 3.7;
+- the CM branch uses a real local working definition, but several CM-dependent theorems
+  still contain `sorry`;
+- Section 4 has not yet been formalized as a theorem layer.
+
+
+## Where To Look Next
+
+For theorem-by-theorem status:
+
+- see `FORMALIZATION_MAP.md`
+- see `TODO.md`
+
+For the public blueprint:
+
+- see `docs/`
+- or the published site at `https://tom111.github.io/BEI-lean/`

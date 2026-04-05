@@ -28,21 +28,27 @@ The core development lives in:
 - [BEI/Definitions.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Definitions.lean)
 - [BEI/GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean)
 - [BEI/ClosedGraphs.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/ClosedGraphs.lean)
+- [BEI/GroebnerBasisSPolynomial.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GroebnerBasisSPolynomial.lean)
 - [BEI/GroebnerBasis.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GroebnerBasis.lean)
 - [BEI/Radical.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Radical.lean)
 - [BEI/PrimeIdeals.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeIdeals.lean)
 - [BEI/PrimeDecomposition.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecomposition.lean)
+- [BEI/PrimeDecompositionDimension.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecompositionDimension.lean)
 - [BEI/MinimalPrimes.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/MinimalPrimes.lean)
+- [BEI/CohenMacaulay.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/CohenMacaulay.lean)
 
 Supporting generic lemmas intended for possible upstreaming live in:
 
 - [toMathlib/](https://github.com/tom111/BEI-lean/tree/master/toMathlib)
+- including [toMathlib/CohenMacaulay/Defs.lean](https://github.com/tom111/BEI-lean/blob/master/toMathlib/CohenMacaulay/Defs.lean)
 
 ## Organization by paper section
 
 - Section 1 covers closed graphs and the quadratic Gröbner basis criterion.
 - Section 2 covers the reduced Gröbner basis and radicality.
 - Section 3 covers prime components, minimal primes, and dimension statements.
+- The remaining cycle / CM endpoints for Section 3 are split between `PrimeDecomposition.lean`,
+  `PrimeDecompositionDimension.lean`, and `MinimalPrimes.lean`.
 - Section 4 concerns the conditional-independence interpretation.
 
 ## How to use this site

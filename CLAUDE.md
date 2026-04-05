@@ -44,7 +44,8 @@ There is no test suite — correctness is enforced by Lean's type checker. A suc
 - `BEI/MinimalPrimes.lean` — Proposition 3.8, Corollary 3.9; minimal prime characterization
 - `BEI/PrimeDecomposition.lean` — Theorem 3.2, Proposition 3.6, and the remaining cycle / CM endpoints
 - `BEI/PrimeDecompositionDimension.lean` — Corollary 3.3 (dimension formula)
-- `BEI/CohenMacaulay.lean` — Placeholder for Cohen-Macaulay results (deferred; not in Mathlib)
+- `BEI/CohenMacaulay.lean` — CM-dependent paper results (currently over a local working CM definition)
+- `toMathlib/CohenMacaulay/Defs.lean` — local backport / working definition for the CM branch
 - `BEI.lean` — Root library entry point
 - `BEI.tex` — Reference paper with the mathematical content being formalized
 - `TODO.md` / `FORMALIZATION_MAP.md` — human-facing status docs that must be updated whenever theorem status or file layout changes
@@ -70,4 +71,54 @@ There is no test suite — correctness is enforced by Lean's type checker. A suc
 
 - Treat `BEI.tex` and the Lean files as the source of truth.
 - If a theorem is finished, moved, split across files, or downgraded from an earlier claim, update `TODO.md` and `FORMALIZATION_MAP.md` in the same round.
-- `IsCohenMacaulay` now has a real definition (equidimensionality) in `toMathlib/CohenMacaulay/Defs.lean`, but the CM-dependent theorems (Prop 1.6, Cor 3.4, Cor 3.7 CM) still need proofs.
+- `IsCohenMacaulay` now has a real local working definition (equidimensionality) in `toMathlib/CohenMacaulay/Defs.lean`, but the CM-dependent theorems (Prop 1.6, Cor 3.4, Cor 3.7 CM) still need proofs.
+- `OVERVIEW.md`, `NEXT_STEPS_PLAN.md`, and the public `docs/` pages should stay reader-facing; avoid turning them into internal blocker logs.
+
+## Worker Routine
+
+When starting fresh on a task:
+
+1. Read the relevant paper statement in `BEI.tex`.
+2. Read the live Lean declaration and nearby helper lemmas.
+3. Read the matching file in `guides/` if one exists.
+4. Restrict work to the requested theorem / file / branch before expanding scope.
+
+Do not start by rewriting unrelated proofs, reorganizing files, or updating docs unless the
+task actually requires that.
+
+## Scope Discipline
+
+- Prefer finishing one local mathematical objective over making partial edits across several branches.
+- Keep theorem work, proof-engineering cleanup, and documentation cleanup separate unless they are tightly coupled.
+- If a proof attempt becomes monolithic or brittle, factor it into private helper lemmas instead of continuing to patch one giant term.
+- Treat scratch files and abandoned proof attempts as references, not as canonical code to preserve.
+
+## Guides And Questions
+
+- If a relevant guide exists in `guides/`, use it first.
+- Guides should be self-contained and should preserve the original question context.
+- If blocked, write a focused question in `questions/` about one exact sublemma or API issue, not a broad project-status note.
+- After a question is answered in a new guide, the corresponding question file should be deleted.
+- If a guide has been fully carried out and is no longer needed, the worker may delete that guide.
+- When removing a completed guide, also update `guides/INDEX.md` so the guide list stays truthful.
+
+## After Finishing A Guide
+
+When a guide-driven task is genuinely finished, the worker should do the associated cleanup
+in the same round when appropriate:
+
+1. remove or mark complete the guide that has been fully consumed;
+2. update `guides/INDEX.md`;
+3. update `TODO.md` and `FORMALIZATION_MAP.md` if theorem status or file location changed;
+4. update `CLAUDE.md` only if the standing workflow or file structure changed;
+5. delete any answered question file from `questions/`;
+6. if the resulting state is stable and truthful, commit that secured progress to git instead of leaving it only in the worktree.
+
+Do not keep obsolete guides around if they now misrepresent the active work.
+
+## Change Discipline
+
+- Do not touch unrelated active branches just because they are nearby.
+- Do not update status files or public docs in the middle of a proof attempt unless theorem status or file layout has actually changed.
+- Before introducing a broad abstraction, check whether a smaller BEI-specific lemma is enough.
+- Commit secured progress in small honest commits. Do not bundle broken proof attempts, speculative cleanup, or stale status updates into the same commit as finished work.

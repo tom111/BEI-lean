@@ -10,10 +10,10 @@ title: Section 1
 |---|---|---|---|
 | Theorem 1.1 | `theorem_1_1` | [ClosedGraphs.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/ClosedGraphs.lean) | Exact |
 | Proposition 1.2 | `prop_1_2` | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Exact |
-| Corollary 1.3 | `cor_1_3` and related wrappers | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Mixed |
+| Corollary 1.3 | `cor_1_3` and related wrappers | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Exact |
 | Proposition 1.4 | `prop_1_4` | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Equivalent |
 | Proposition 1.5 | `prop_1_5` | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Exact |
-| Proposition 1.6 | `prop_1_6` | [CohenMacaulay.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/CohenMacaulay.lean) | Blocked |
+| Proposition 1.6 | `prop_1_6` | [CohenMacaulay.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/CohenMacaulay.lean) | Sorry |
 
 ## Notes
 
@@ -30,5 +30,5 @@ The paper states, informally:
 
 > A bipartite graph is closed if and only if it is a line.
 
-The Lean development formalizes the structural content and tracks the connectedness and
-labeling subtleties explicitly.
+The Lean development now packages the result in a paper-faithful connected-graph form,
+while making the connectedness and labeling subtleties explicit.

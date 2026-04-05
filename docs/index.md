@@ -48,6 +48,7 @@ It is intended as a reader-facing map of the project:
 - **Equivalent**: the Lean theorem is mathematically equivalent but phrased differently.
 - **Weaker**: Lean proves a genuine weakening of the paper statement.
 - **Partial**: part of the paper statement is formalized, part is still missing.
+- **Sorry**: the statement is present in Lean, but the proof is still incomplete.
 - **Blocked**: the intended statement is identified, but the needed foundation is not yet in place.
 
 ## Blueprint pages
@@ -60,7 +61,8 @@ It is intended as a reader-facing map of the project:
 
 ## Snapshot
 
-- Section 1 is largely formalized.
-- Section 2 is largely formalized.
-- Section 3 contains the core algebraic heart of the project.
+- Section 1 is largely formalized, including Theorem 1.1.
+- Section 2 is largely formalized, including the reduced Gröbner basis and radicality results.
+- Section 3 now includes the prime decomposition, minimal-prime results, and the dimension formula.
+- The main remaining Section 3 gaps are the Cohen–Macaulay endpoints of Corollary 3.7 and Corollary 3.4.
 - Section 4 is not yet formalized as a theorem layer.

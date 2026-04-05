@@ -93,10 +93,20 @@ Each guide should make clear which of these jobs it is addressing.
 
 ### Do not overclaim on Cohen-Macaulayness
 
-The CM branch is not currently honest formalized mathematics.
-Do not treat placeholder definitions as finished theory.
-Prefer documenting exact blockers and weaker honest substitutes such as unmixedness or
-equidimensionality when appropriate.
+The CM branch now has a real local working definition in
+`toMathlib/CohenMacaulay/Defs.lean`, but that does **not** mean the CM part of the
+paper is finished.
+
+Do not:
+
+- describe Proposition 1.6, Corollary 3.4, or Corollary 3.7 CM as proved when they
+  still contain `sorry`;
+- present the local equidimensionality-style CM definition as if the full upstream
+  Mathlib CM theory were already available;
+- blur the distinction between a working BEI-specific CM consequence and the full
+  depth-based theory from commutative algebra.
+
+Prefer documenting exact blockers and the current honest scope of the local CM branch.
 
 
 ## Preferred Answer Style

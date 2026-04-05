@@ -21,7 +21,7 @@ faithfully the current Lean statements match the paper.
 | Corollary 1.3 | `cor_1_3`, `cor_1_3_connected_forward`, `pathGraph_isClosedGraph` | `BEI/GraphProperties.lean` | Exact | Formalized in the connected-graph form implicit in the paper |
 | Proposition 1.4 | `prop_1_4` | `BEI/GraphProperties.lean` | Equivalent | Directed shortest-path formulation |
 | Proposition 1.5 | `prop_1_5` | `BEI/GraphProperties.lean` | Exact | Unique minimal closed supergraph |
-| Proposition 1.6 | `prop_1_6` | `BEI/CohenMacaulay.lean` | Blocked | Depends on a real `IsCohenMacaulay` foundation |
+| Proposition 1.6 | `prop_1_6` | `BEI/CohenMacaulay.lean` | Sorry | The theorem is present over the local working CM definition, but the proof is still open |
 
 ## Section 2: Reduced Gröbner Basis and Radicality
 
@@ -38,9 +38,9 @@ faithfully the current Lean statements match the paper.
 | Theorem 3.2 | `theorem_3_2` | `BEI/PrimeDecomposition.lean` | Exact | `J_G = ⨅ S, P_S(G)` |
 | Corollary 3.3 | `corollary_3_3` | `BEI/PrimeDecompositionDimension.lean` | Exact | Dimension formula proved directly in the quotient |
 | Corollary 3.3 (lower bound) | `corollary_3_3_lower_bound` | `BEI/PrimeDecompositionDimension.lean` | Exact | `dim ≥ |V| + c(G)` |
-| Corollary 3.4 | `corollary_3_4` | `BEI/PrimeDecomposition.lean` | Sorry | CM definition exists; proof needs connecting equidimensionality to quotient heights |
+| Corollary 3.4 | `corollary_3_4` | `BEI/PrimeDecompositionDimension.lean` | Sorry | CM definition exists; proof needs the quotient-dimension assembly from equidimensionality |
 | Proposition 3.6 | `prop_3_6` | `BEI/PrimeDecomposition.lean` | Equivalent | Completeness of components phrased via reachability |
-| Corollary 3.7 | `corollary_3_7`, `corollary_3_7_unmixed`, `corollary_3_7_CM` | `BEI/PrimeDecomposition.lean`, `BEI/MinimalPrimes.lean` | Partial | Prime branch done; unmixed branch has two remaining graph-theory sorries; CM branch is blocked |
+| Corollary 3.7 | `corollary_3_7`, `corollary_3_7_unmixed`, `corollary_3_7_CM` | `BEI/PrimeDecomposition.lean`, `BEI/MinimalPrimes.lean` | Partial | Prime branch and unmixed branch are proved; the remaining CM branch is still open |
 | Proposition 3.8 | `prop_3_8` | `BEI/MinimalPrimes.lean` | Equivalent | Rephrased using `SameComponent` |
 | Corollary 3.9 | `corollary_3_9` | `BEI/MinimalPrimes.lean` | Equivalent | Rephrased via `IsCutVertexRelative` |
 
@@ -54,10 +54,9 @@ faithfully the current Lean statements match the paper.
 
 | Paper endpoint | Current state |
 |---|---|
-| Proposition 1.6 | CM definition replaced; proof needs deep CM theory (initial ideal transfer) |
+| Proposition 1.6 | theorem present, but proof still open over the local CM definition |
 | Corollary 3.4 | statement present, proof still `sorry` |
-| Corollary 3.7 (unmixed branch) | close, but still depends on two graph combinatorics sorries |
-| Corollary 3.7 (CM branch) | blocked on CM foundations |
+| Corollary 3.7 | prime and unmixed branches are proved; the CM branch is still `sorry` |
 | Section 4 | not started |
 
 ## Current File Split Notes
@@ -65,6 +64,7 @@ faithfully the current Lean statements match the paper.
 - `BEI/GroebnerBasisSPolynomial.lean` now carries the long S-polynomial proof of Theorem 2.1.
 - `BEI/GroebnerBasis.lean` carries reducedness and the paper-facing wrapper.
 - `BEI/PrimeDecompositionDimension.lean` carries Corollary 3.3.
-- `BEI/PrimeDecomposition.lean` carries Theorem 3.2, Proposition 3.6, and the remaining CM / cycle endpoints.
+- `BEI/PrimeDecomposition.lean` carries Theorem 3.2, Proposition 3.6, and the remaining CM endpoint for Corollary 3.7.
+- `toMathlib/CohenMacaulay/Defs.lean` carries the local working CM definition currently used in the project.
 
 These split points should be reflected in status docs whenever the structure changes again.
