@@ -167,9 +167,13 @@ This guide is successful when the repo contains:
 2. a clear statement of the exact CM/equidimensional theorem still needed for the final step;
 3. no stale text implying that the local CM definition is still a placeholder.
 
-Current state:
+Current state (2026-04-05):
 
-- item 3 is done;
-- item 2 is substantially done;
-- item 1 is only partially done, because the graph conditions are packaged but the
-  algebraic identification with the initial ideal is still missing.
+- item 1 is done: `initialIdeal_closed_eq` proves the initial ideal description,
+  `yPredVar` and `rename_yPredVar_generator` formalize the variable shift,
+  `bipartiteEdgeMonomialIdeal` defines the shifted ideal, and
+  `prop_1_6_herzogHibi` packages the HH conditions on Γ.
+- item 2 is done: the two remaining external inputs are clearly stated in the
+  docstring of `prop_1_6` — the Herzog–Hibi CM theorem and the initial ideal
+  CM transfer.
+- item 3 is done.
