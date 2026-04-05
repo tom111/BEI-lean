@@ -12,8 +12,8 @@ For a cycle of length `n`, the paper proves equivalence of:
 Current Lean state:
 
 - `(a) <-> (b)` is formalized in [corollary_3_7](/home/tom/BEI-lean/BEI/PrimeDecomposition.lean)
-- `(d) <-> (b)` has a stub in `corollary_3_7_CM`
-- `(c)` is not packaged yet
+- `(b) <-> (c)` is fully proved in `corollary_3_7_unmixed` (MinimalPrimes.lean)
+- `(d) <-> (b)` has a stub in `corollary_3_7_CM` — blocked on CM infrastructure
 
 
 ## Recommended order inside this corollary

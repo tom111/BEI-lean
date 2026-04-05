@@ -5,6 +5,8 @@ Completed guides (deleted):
 - Cor 3.3 — dimension formula fully proved
 - PrimeDecomposition organization split — done
 - GroebnerBasis organization split — done
+- Cycle componentCount combinatorics (Q9, Q13, Q14, Q15) — all resolved
+- Unmixed for Cor 3.7 (Q6) — `corollary_3_7_unmixed` fully proved
 
 Current focus: Cohen–Macaulay branch
 
@@ -15,13 +17,8 @@ Current focus: Cohen–Macaulay branch
 
 Other open statement guides:
 
-1. [COR_3_7_FULL_EQUIVALENCE.md](COR_3_7_FULL_EQUIVALENCE.md) — 2 graph theory sorries
+1. [COR_3_7_FULL_EQUIVALENCE.md](COR_3_7_FULL_EQUIVALENCE.md) — unmixed done; CM direction still open
 2. [SECTION_4_CI_IDEALS.md](SECTION_4_CI_IDEALS.md) — wait for stable backbone
-
-Remaining answer guides (still relevant):
-- [ANSWER_06_UNMIXED_FOR_COR_3_7.md](ANSWER_06_UNMIXED_FOR_COR_3_7.md)
-- [ANSWER_09_CYCLE_COMPONENTCOUNT_COMBINATORICS.md](ANSWER_09_CYCLE_COMPONENTCOUNT_COMBINATORICS.md)
-- [ANSWER_10_CYCLE_INDUCE_PRECONNECTED.md](ANSWER_10_CYCLE_INDUCE_PRECONNECTED.md)
 
 Dormant / background guides:
 - [ANSWER_04_HEIGHT_ADDITIVITY_REPAIR.md](ANSWER_04_HEIGHT_ADDITIVITY_REPAIR.md) — not on the active critical path
