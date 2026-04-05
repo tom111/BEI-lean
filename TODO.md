@@ -55,11 +55,12 @@ The remaining CM endpoints are:
 Recently completed CM groundwork includes:
 - `BEI/CohenMacaulay.lean`: `complete_is_CM`
 - `BEI/CohenMacaulay.lean`: `prop_1_6_herzogHibi`
+- `BEI/CohenMacaulay.lean`: `initialIdeal_closed_eq`, `yPredVar`, `rename_yPredVar_generator`, `bipartiteEdgeMonomialIdeal`
 - `BEI/PrimeDecompositionDimension.lean`: `path_is_CM`
 - `BEI/PrimeDecompositionDimension.lean`: quotient-dimension and equidimensionality helpers
 
 For Proposition 1.6 specifically, the remaining gap is now algebraic rather than graph-theoretic:
-- initial ideal description / packaging from the Gröbner-basis side
+- ideal-level transport to the shifted bipartite edge ideal
 - Herzog–Hibi CM theorem for the associated bipartite graph
 - transfer from `S / in_<(J_G)` to `S / J_G`
 

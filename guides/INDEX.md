@@ -14,6 +14,7 @@ Current focus: Cohen–Macaulay branch
 - [COR_3_4_CM_DIMENSION.md](COR_3_4_CM_DIMENSION.md) — Corollary 3.4 CM branch
 - [ANSWER_05_COHEN_MACAULAY_FOUNDATION.md](ANSWER_05_COHEN_MACAULAY_FOUNDATION.md) — CM foundations and honest scope
 - [ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md](ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md) — direct equidimensionality route for Prop. 1.6?
+- [ANSWER_17_PROP_1_6_STRATEGY.md](ANSWER_17_PROP_1_6_STRATEGY.md) — why the paper route should still be preferred
 - [cm_pr_26218/](cm_pr_26218/) — Mathlib CM PR backport / import plan
 
 Other open statement guides:

@@ -43,8 +43,12 @@ Split the problem into:
 2. the exact CM/equidimensional statement needed for that bipartite graph;
 3. the transfer from the reduced examples / infrastructure to the general proposition.
 
-At this point, item 1 has partially landed on the graph side: the Herzog–Hibi
-conditions are packaged in `prop_1_6_herzogHibi`.
+At this point, item 1 is effectively done on the BEI side:
+
+- `initialIdeal_closed_eq` packages the initial ideal description;
+- `yPredVar` and `rename_yPredVar_generator` package the variable shift;
+- `bipartiteEdgeMonomialIdeal` packages the shifted monomial ideal;
+- `prop_1_6_herzogHibi` packages the Herzog–Hibi graph conditions.
 
 
 ## Part 1: formalize the reduction from the paper
@@ -71,10 +75,15 @@ Prove a theorem identifying the leading monomials of the quadratic generators fo
 The repo already has enough Gröbner infrastructure that this should be packaging, not
 new mathematics.
 
+Status: done as `initialIdeal_closed_eq`.
+
 #### Subgoal 2: formalize the `y_j -> y_{j-1}` automorphism
 
 Represent the cyclic variable permutation as a ring equivalence of multivariate
 polynomial rings and prove that it transports the initial ideal to the bipartite edge ideal.
+
+Status: the variable map and generator-level transport are now packaged; the remaining
+work is the ideal-level transport statement.
 
 #### Subgoal 3: define the bipartite graph `Gamma`
 
@@ -88,9 +97,9 @@ These are purely graph-combinatorial.
 
 Status:
 
-- the Herzog–Hibi conditions themselves are now packaged;
-- the missing part is the actual algebraic identification with the initial ideal /
-  bipartite edge ideal.
+- the Herzog–Hibi conditions are packaged;
+- the bipartite edge monomial ideal is defined;
+- the missing part is the ideal-level algebraic identification and the external CM input.
 
 
 ## Part 2: decide the CM foundation
@@ -107,8 +116,11 @@ the initial ideal corresponds to a bipartite edge ideal Gamma satisfying
 the Herzog–Hibi conditions.
 ```
 
-The graph-condition half is now done. What remains is the algebraic identification that
-connects those conditions to the relevant bipartite edge ideal.
+The BEI-side reduction is now fully packaged. What remains is:
+
+1. the ideal-level transport statement;
+2. the external CM theorem for the bipartite edge ideal;
+3. the CM transfer back from `in_<(J_G)` to `J_G`.
 
 ### Route B: direct equidimensionality on minimal primes
 
@@ -177,3 +189,9 @@ Current state (2026-04-05):
   docstring of `prop_1_6` — the Herzog–Hibi CM theorem and the initial ideal
   CM transfer.
 - item 3 is done.
+
+Consequent strategy:
+
+- do not switch to the direct equidimensionality route by default;
+- treat [ANSWER_17_PROP_1_6_STRATEGY.md](/home/tom/BEI-lean/guides/ANSWER_17_PROP_1_6_STRATEGY.md)
+  as the standing answer on why the paper route should remain primary.
