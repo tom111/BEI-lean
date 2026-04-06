@@ -29,7 +29,10 @@
 | **§3 Prop 3.8** (`P_T ⊆ P_S` characterization) | `BEI/MinimalPrimes.lean` | `[x]` proved |
 | **§3 Cor 3.9** (minimal primes via cut-point sets) | `BEI/MinimalPrimes.lean` | `[x]` proved |
 | **§4 Bridge** (CI ideal = BEI, single statement) | `BEI/CIIdeals.lean` | `[x]` proved |
-| **§4 Multi** (robustness specification, corollaries) | not yet started | `[ ]` pending |
+| **§4 Spec bridge** (robustness specification) | `BEI/CIIdeals.lean` | `[x]` proved |
+| **§4 Radical** (CI ideal is radical) | `BEI/CIIdeals.lean` | `[x]` proved |
+| **§4 Primes** (CI prime decomposition) | `BEI/CIIdeals.lean` | `[x]` proved |
+| **§4 Minimal primes** (CI minimal prime characterization) | not yet started | `[ ]` pending |
 
 ---
 
@@ -70,11 +73,11 @@ proofs and should not be overclaimed.
 
 ### Priority 2: Section 4
 
-Section 4 has begun in `BEI/CIIdeals.lean`. The single-statement bridge theorem
-(`ciIdeal_single_eq_binomialEdgeIdeal`) is proved. Remaining work:
-- Multi-statement robustness specifications (union of CI graphs)
-- Corollaries transferring radicality (Cor 2.2) and minimal prime characterization
-  (Section 3) to CI ideals via the bridge
+Section 4 is largely complete in `BEI/CIIdeals.lean`. Proved:
+- Single-statement and specification-level bridge theorems
+- Radicality transfer (Cor 2.2) and prime decomposition transfer (Thm 3.2)
+
+Remaining: minimal-prime characterization transfer (Cor 3.9)
 
 ### Background / dormant
 
@@ -90,6 +93,7 @@ Section 4 has begun in `BEI/CIIdeals.lean`. The single-statement bridge theorem
 - `BEI/GroebnerBasis.lean` carries reducedness and the paper-facing wrapper.
 - `BEI/PrimeDecomposition.lean` carries Theorem 3.2, Proposition 3.6, and the CM/cycle endpoints.
 - `BEI/PrimeDecompositionDimension.lean` carries Corollary 3.3, Corollary 3.4, the path CM example, and supporting quotient-dimension / equidimensionality lemmas.
+- `BEI/CIIdeals.lean` carries the Section 4 binary-output definitions and the single-statement CI ideal = BEI bridge.
 - `BEI/CohenMacaulay.lean` carries Proposition 1.6 and the complete-graph CM example.
 - `toMathlib/CohenMacaulay/Defs.lean` carries the local working CM definition used by the current CM branch.
 

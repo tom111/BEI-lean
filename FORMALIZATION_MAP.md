@@ -51,8 +51,10 @@ faithfully the current Lean statements match the paper.
 | CI graph (binary output) | `ciGraph` | `BEI/CIIdeals.lean` | Exact | Graph on Omega with edges = same T-projection |
 | CI ideal (binary output) | `ciIdeal` | `BEI/CIIdeals.lean` | Exact | 2x2 minors of the probability matrix |
 | Single-statement bridge | `ciIdeal_single_eq_binomialEdgeIdeal` | `BEI/CIIdeals.lean` | Exact | CI ideal = BEI of the associated graph |
-| Robustness specification | | | Not started | Multi-statement union of CI graphs |
-| Corollaries (radical, minimal primes for CI) | | | Not started | Follow from Sections 2-3 via the bridge |
+| Robustness specification | `CIStatement`, `ciGraphSpec`, `ciIdealSpec` | `BEI/CIIdeals.lean` | Exact | Family of CI statements, union graph, combined ideal |
+| Specification bridge | `ciIdealSpec_eq_binomialEdgeIdeal` | `BEI/CIIdeals.lean` | Exact | CI ideal of specification = BEI of union graph |
+| CI radicality | `ciIdealSpec_isRadical` | `BEI/CIIdeals.lean` | Exact | Transferred from Corollary 2.2 |
+| CI prime decomposition | `ciIdealSpec_primeDecomposition` | `BEI/CIIdeals.lean` | Exact | Transferred from Theorem 3.2 |
 
 ## Current Open Endpoints
 
@@ -61,7 +63,7 @@ faithfully the current Lean statements match the paper.
 | Proposition 1.6 | BEI-side reduction packaged end-to-end; remaining gap is the external Herzog–Hibi theorem plus CM transfer from the initial ideal |
 | Corollary 3.4 | statement present, proof still `sorry` |
 | Corollary 3.7 | prime and unmixed branches are proved; the CM branch is still `sorry` |
-| Section 4 | single-statement bridge proved; multi-statement and corollaries not started |
+| Section 4 | specification bridge, radicality, and prime decomposition proved; minimal-prime transfer not yet done |
 
 ## Current File Split Notes
 
@@ -69,6 +71,7 @@ faithfully the current Lean statements match the paper.
 - `BEI/GroebnerBasis.lean` carries reducedness and the paper-facing wrapper.
 - `BEI/PrimeDecompositionDimension.lean` carries Corollary 3.3, Corollary 3.4, the path CM example, and supporting equidimensionality lemmas.
 - `BEI/PrimeDecomposition.lean` carries Theorem 3.2, Proposition 3.6, and the remaining CM endpoint for Corollary 3.7.
+- `BEI/CIIdeals.lean` carries the Section 4 binary-output setup and the single-statement bridge theorem.
 - `BEI/CohenMacaulay.lean` carries Proposition 1.6 and the complete-graph CM example.
 - `toMathlib/CohenMacaulay/Defs.lean` carries the local working CM definition currently used in the project.
 
