@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Thomas Kahle
 -/
 import Mathlib.RingTheory.Ideal.Maps
+import Mathlib.RingTheory.IsPrimary
 import Mathlib.RingTheory.MvPolynomial.Ideal
 import Mathlib.Algebra.MvPolynomial.Rename
 
@@ -216,6 +217,46 @@ theorem IsMonomial.isPrime_iff_eq_span_X_image
   · -- variable-generated ideals are prime
     rintro ⟨s, rfl⟩
     exact MvPolynomial.isPrime_span_X_image_set s
+
+/-! ### Basic `IsMonomial` API -/
+
+omit [IsDomain R] in
+theorem IsMonomial.span_X_image (s : Set σ) :
+    IsMonomial (span (MvPolynomial.X '' s : Set (MvPolynomial σ R))) := by
+  intro p hp d hd
+  rw [MvPolynomial.mem_ideal_span_X_image] at hp ⊢
+  intro m hm
+  have hm_eq : m = d :=
+    Finset.mem_singleton.mp (MvPolynomial.support_monomial_subset hm)
+  exact hm_eq ▸ hp d hd
+
+/-! ### Primary monomial ideal criterion -/
+
+theorem isPrimary_monomial_criterion
+    {I : Ideal (MvPolynomial σ R)}
+    (hprim : I.IsPrimary)
+    {s : Set σ} (hrad : I.radical = span (MvPolynomial.X '' s))
+    {d : σ →₀ ℕ} (hd : MvPolynomial.monomial d (1 : R) ∉ I)
+    {i : σ} (hi : i ∉ s) :
+    MvPolynomial.monomial (d + Finsupp.single i 1) (1 : R) ∉ I := by
+  intro hmem
+  have heq : MvPolynomial.monomial (d + Finsupp.single i 1) (1 : R) =
+      MvPolynomial.X i * MvPolynomial.monomial d 1 := by
+    simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul, add_comm]
+  rw [heq] at hmem
+  have h := hprim.mem_or_mem (show MvPolynomial.X i • MvPolynomial.monomial d 1 ∈ I
+    from by rwa [smul_eq_mul])
+  rw [show Submodule.colon I ⊤ = I from by ext; simp] at h
+  rcases h with h1 | h2
+  · exact hd h1
+  · rw [hrad, MvPolynomial.mem_ideal_span_X_image] at h2
+    have his : i ∈ s := by
+      obtain ⟨j, hj, hne⟩ := h2 (Finsupp.single i 1) (by simp)
+      have : j = i := by
+        by_contra hji
+        exact hne (Finsupp.single_eq_of_ne hji)
+      rwa [← this]
+    exact hi his
 
 end Ideal
 
