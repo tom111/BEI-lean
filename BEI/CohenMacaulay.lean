@@ -79,12 +79,8 @@ all three conditions of the Herzog–Hibi criterion.
 This is the graph-combinatorial content of the paper's reduction. The diagonal
 condition (i) follows from `closedGraph_adj_consecutive` (Proposition 1.4),
 and the transitivity condition (iii) is exactly the hypothesis.
-
-The remaining steps to complete Proposition 1.6 are purely algebraic:
-1. Initial ideal: `in_<(J_G) = ⟨xᵢ yⱼ : {i,j} ∈ E(G), i < j⟩` (from Theorem 1.1)
-2. Herzog–Hibi theorem: edge ideal of Γ satisfying (i)–(iii) is Cohen–Macaulay
-3. CM transfer: `S/in_<(I)` is CM → `S/I` is CM
--/
+Condition (ii) (upper triangularity, `i ≤ j`) is built into
+`bipartiteEdgeMonomialIdeal` and verified by `rename_yPredVar_monomialInitialIdeal`. -/
 theorem prop_1_6_herzogHibi (n : ℕ) (G : SimpleGraph (Fin n))
     (hConn : G.Connected) (hClosed : IsClosedGraph G)
     (hCond : SatisfiesProp1_6Condition n G) :
@@ -137,6 +133,7 @@ def monomialInitialIdeal (G : SimpleGraph V) :
     Ideal (MvPolynomial (BinomialEdgeVars V) K) :=
   Ideal.span { m | ∃ i j : V, G.Adj i j ∧ i < j ∧ m = X (Sum.inl i) * X (Sum.inr j) }
 
+omit [DecidableEq V] in
 open MonomialOrder in
 /-- For a closed graph G, the leading-term ideal of `J_G` equals the monomial
     initial ideal `⟨x_i y_j : {i,j} ∈ E(G), i < j⟩`.
@@ -147,6 +144,7 @@ theorem initialIdeal_closed_eq (G : SimpleGraph V) (hClosed : IsClosedGraph G) :
     Ideal.span (binomialEdgeMonomialOrder.leadingTerm ''
       ↑(binomialEdgeIdeal (K := K) G)) =
     monomialInitialIdeal (K := K) G := by
+  classical
   -- The quadratic generators form a Gröbner basis (Theorem 1.1)
   have hGB := closed_implies_groebner (K := K) G hClosed
   -- Extract: span(lt(I)) = span(lt(generators))
@@ -236,25 +234,24 @@ theorem rename_yPredVar_monomialInitialIdeal {n : ℕ} (hn : 0 < n)
     apply Ideal.span_le.mpr
     rintro m ⟨f, ⟨i, j, hadj, hij, rfl⟩, rfl⟩
     apply Ideal.subset_span
-    have hj_pos : 0 < j.val := by
-      exact Nat.pos_of_ne_zero (by intro h; simp [Fin.lt_def, h] at hij)
-    set j' : Fin n := ⟨j.val - 1, by omega⟩ with hj'_def
-    have hj'_succ : j'.val + 1 < n := by simp [hj'_def]; omega
+    set j' : Fin n := ⟨j.val - 1, by omega⟩
+    have hj'v : j'.val = j.val - 1 := rfl
+    have hj'_succ : j'.val + 1 < n := by omega
     have hj'_adj : G.Adj i ⟨j'.val + 1, hj'_succ⟩ := by
-      have h : (⟨j'.val + 1, hj'_succ⟩ : Fin n) = j :=
-        Fin.ext (by simp [hj'_def, Fin.val_mk]; omega)
-      rw [h]; exact hadj
-    have hj'_le : i ≤ j' := by
-      change i.val ≤ j'.val; simp [hj'_def]; omega
+      rw [show (⟨j'.val + 1, hj'_succ⟩ : Fin n) = j from
+        Fin.ext (by dsimp only; omega)]
+      exact hadj
+    have hj'_le : i ≤ j' := by change i.val ≤ j'.val; omega
     exact ⟨i, j', hj'_succ, hj'_adj, hj'_le, rename_yPredVar_generator hn i j hij⟩
   · -- Backward: each bipartite generator is an image of a monomialInitialIdeal generator
     apply Ideal.span_le.mpr
     rintro m ⟨i, j, hj, hadj, hij, rfl⟩
     apply Ideal.subset_span
-    set j' : Fin n := ⟨j.val + 1, by omega⟩ with hj'_def
-    have hij' : i < j' := by change i.val < j'.val; simp [hj'_def]; omega
-    have hj'_eq : (⟨j'.val - 1, by omega⟩ : Fin n) = j := by
-      exact Fin.ext (by simp [hj'_def])
+    set j' : Fin n := ⟨j.val + 1, by omega⟩
+    have hj'v : j'.val = j.val + 1 := rfl
+    have hij' : i < j' := by change i.val < j'.val; omega
+    have hj'_eq : (⟨j'.val - 1, by omega⟩ : Fin n) = j :=
+      Fin.ext (by dsimp only; omega)
     refine ⟨X (Sum.inl i) * X (Sum.inr j'), ⟨i, j', hadj, hij', rfl⟩, ?_⟩
     rw [rename_yPredVar_generator hn i j' hij', hj'_eq]
 
