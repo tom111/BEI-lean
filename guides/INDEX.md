@@ -13,8 +13,9 @@ Completed guides (deleted):
 
 ## Immediate Work Packets
 
+- [ANSWER_18_PRIMARY_CONVERSE_DECOMPOSITION.md](ANSWER_18_PRIMARY_CONVERSE_DECOMPOSITION.md) — immediate restart packet for the primary converse: prove that outside-radical variables do not affect monomial membership, and do not return to the false `coeff_mul_lexMax_left` route
 - [PROP_1_6_COHEN_MACAULAY.md](PROP_1_6_COHEN_MACAULAY.md) — primary remaining paper endpoint: Proposition 1.6 CM branch and its remaining external algebraic inputs
-- [MONOMIAL_IDEAL_PRIMARY_DECOMP.md](MONOMIAL_IDEAL_PRIMARY_DECOMP.md) — supporting `toMathlib` packet: the forward primary theorem is now proved; remaining target is the converse direction via a product leading-term argument
+- [MONOMIAL_IDEAL_PRIMARY_DECOMP.md](MONOMIAL_IDEAL_PRIMARY_DECOMP.md) — supporting `toMathlib` packet: prime classification and forward primary theory are done; use this for theorem context, but start the converse from the decomposition guide above
 - [SQUAREFREE_MONOMIAL_MINIMAL_PRIMES.md](SQUAREFREE_MONOMIAL_MINIMAL_PRIMES.md) — next supporting packet: minimal primes of squarefree monomial ideals via minimal vertex covers
 
 ## Longer-Horizon CM Packet
@@ -26,7 +27,6 @@ The Proposition 1.6 branch is still larger than a one-lemma task. The reference 
 These are not first-line work packets, but they contain important strategic context.
 
 - [ANSWER_05_COHEN_MACAULAY_FOUNDATION.md](ANSWER_05_COHEN_MACAULAY_FOUNDATION.md) — CM foundations and honest scope
-- [ANSWER_18_PRIMARY_CONVERSE_DECOMPOSITION.md](ANSWER_18_PRIMARY_CONVERSE_DECOMPOSITION.md) — break the primary converse into smaller structural lemmas; avoid the false `coeff_mul_lexMax_left` route
 - [ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md](ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md) — backup direct route for Proposition 1.6
 - [ANSWER_17_PROP_1_6_STRATEGY.md](ANSWER_17_PROP_1_6_STRATEGY.md) — why the paper route should still be preferred
 - [CM_CODEBASE_RESEARCH_MONOMIAL_IDEAL.md](CM_CODEBASE_RESEARCH_MONOMIAL_IDEAL.md) — what the local CM/PR codebase does and does not provide for the monomial-ideal step

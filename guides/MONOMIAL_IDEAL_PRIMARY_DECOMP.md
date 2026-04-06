@@ -55,10 +55,36 @@ So the primary packet is now down to one remaining substantial gap:
 
 - the converse direction of the primary iff
 
-The blocker is narrower than before. It no longer concerns powers; it concerns products.
-The missing algebra appears to be a leading-term / antidiagonal argument for products
-that can control the lex-maximal contribution in `a * b` and rule out coefficient
-cancellation in the relevant monomial.
+## Current state after the fourth round
+
+The forward primary package now includes all of the following in
+`toMathlib/MonomialIdeal.lean` with no `sorry`s:
+
+- `Ideal.IsMonomial.span_X_image`
+- `Ideal.isPrimary_monomial_criterion`
+- `coeff_pow_lexMax`
+- `Ideal.IsMonomial.radical_isMonomial`
+- `Ideal.IsMonomial.isPrimary_radical_eq_span_X`
+
+So the remaining gap is still exactly:
+
+- the converse direction of the primary iff
+
+Important update: the first attempted route for the converse has now been diagnosed as
+false. In particular, do **not** try to prove a general `coeff_mul_lexMax_left`.
+That route fails because lower terms of the left factor can pair with higher terms of
+the right factor to hit the same exponent.
+
+The live restart packet for this converse is now:
+
+- [ANSWER_18_PRIMARY_CONVERSE_DECOMPOSITION.md](ANSWER_18_PRIMARY_CONVERSE_DECOMPOSITION.md)
+
+Use that guide as the operational next step. The right decomposition is:
+
+1. prove the “add exponents outside `s` iff membership is unchanged” lemma;
+2. prove monomial membership depends only on the `s`-part;
+3. package the ideal as coming from the `s`-variables;
+4. only then revisit the converse.
 
 
 ## Current repo / mathlib status
@@ -211,7 +237,8 @@ The reverse inclusion is immediate from the definition of `s`.
 
 ## Primary monomial ideals: mathematical characterization
 
-This is now the live next target.
+This remains the live next target, but the converse should now be attacked through the
+decomposition guide above rather than through another global leading-term lemma.
 
 Yes, there is a clean characterization, but it is a bit more delicate to package
 cleanly in Lean than the prime case.
