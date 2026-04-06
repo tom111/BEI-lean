@@ -76,8 +76,9 @@ faithfully the current Lean statements match the paper.
 | Prime monomial ideals classification | `Ideal.IsMonomial.isPrime_iff_eq_span_X_image` | `toMathlib/MonomialIdeal.lean` | proved | Prime monomial ideals are exactly variable-generated ideals |
 | Variable-generated ideals are monomial | `Ideal.IsMonomial.span_X_image` | `toMathlib/MonomialIdeal.lean` | proved | Basic API for the primary case |
 | Forward primary monomial criterion | `Ideal.isPrimary_monomial_criterion` | `toMathlib/MonomialIdeal.lean` | proved | From `IsPrimary` plus `radical = span (X '' s)` to the outside-the-radical nonmembership criterion |
-| Radical is monomial | `Ideal.IsMonomial.radical_isMonomial` | `toMathlib/MonomialIdeal.lean` | open | Currently blocked on a leading-term / monomial-order argument for powers |
-| Full primary monomial classification | `Ideal.IsMonomial.isPrimary_iff` | `toMathlib/MonomialIdeal.lean` | partial | Forward direction packaged; converse still blocked on the same leading-term machinery |
+| Radical is monomial | `Ideal.IsMonomial.radical_isMonomial` | `toMathlib/MonomialIdeal.lean` | proved | Uses lex-max leading-term extraction; requires `[LinearOrder σ]` |
+| Forward primary characterization | `Ideal.IsMonomial.isPrimary_radical_eq_span_X` | `toMathlib/MonomialIdeal.lean` | proved | Primary monomial → radical is variable-generated ∧ criterion |
+| Full primary iff (converse) | — | — | open | Converse (criterion → primary) still needs leading-term argument for products |
 
 ## Current File Split Notes
 

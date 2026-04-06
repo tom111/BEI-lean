@@ -63,11 +63,8 @@ Recently completed CM groundwork includes:
 - `BEI/CohenMacaulay.lean`: `rename_yPredVar_monomialInitialIdeal`
 - `BEI/PrimeDecompositionDimension.lean`: `path_is_CM`
 - `BEI/PrimeDecompositionDimension.lean`: quotient-dimension and equidimensionality helpers
-- `toMathlib/MonomialIdeal.lean`: `Ideal.IsMonomial`, `MvPolynomial.isPrime_span_X_image_set`,
-  `Ideal.exists_variable_mem_of_monomial_mem_prime`,
-  `Ideal.IsMonomial.isPrime_iff_eq_span_X_image`,
-  `Ideal.IsMonomial.span_X_image`,
-  `Ideal.isPrimary_monomial_criterion`
+- `toMathlib/MonomialIdeal.lean`: prime classification, `radical_isMonomial`,
+  `isPrimary_radical_eq_span_X` (forward primary characterization)
 
 For Proposition 1.6 specifically, the remaining gap is now algebraic rather than graph-theoretic:
 - Herzog–Hibi CM theorem for the associated bipartite graph
