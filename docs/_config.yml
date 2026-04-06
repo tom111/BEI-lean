@@ -1,5 +1,5 @@
-title: BEI Blueprint
-description: Blueprint for the Lean formalization of Herzog et al. (2010)
+title: BEI Formalization
+description: Lean formalization of Herzog et al. (2010)
 theme: minima
 markdown: kramdown
 header_pages:

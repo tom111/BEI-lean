@@ -1,14 +1,12 @@
 ---
-title: BEI Blueprint
+title: Binomial Edge Ideals
 ---
-
-# Binomial Edge Ideals
 
 <div class="landing-hero landing-hero--clean">
   <div class="landing-hero__main">
-    <div class="landing-hero__eyebrow">Lean project for Herzog–Hibi–Hreinsdóttir–Kahle–Rauh (2010)</div>
+    <div class="landing-hero__eyebrow">Formalization of Herzog–Hibi–Hreinsdóttir–Kahle–Rauh (2010)</div>
     <p class="landing-hero__lede">
-      This blueprint tracks the Lean formalization of
+      This site tracks the Lean formalization of
       <em>Binomial edge ideals and conditional independence statements</em>.
       The Gröbner-basis backbone, the Section 3 prime-decomposition results, and the
       current Section 4 CI-ideal layer are in place. One main theorem is still unfinished.
