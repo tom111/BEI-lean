@@ -7,12 +7,11 @@ title: BEI Blueprint
 <div class="landing-hero landing-hero--clean">
   <div class="landing-hero__main">
     <div class="landing-hero__eyebrow">Lean project for Herzog–Hibi–Hreinsdóttir–Kahle–Rauh (2010)</div>
-    <h2 class="landing-hero__title">A clear map of what has already been formalized</h2>
     <p class="landing-hero__lede">
       This blueprint tracks the Lean formalization of
       <em>Binomial edge ideals and conditional independence statements</em>.
       The Gröbner-basis backbone, the Section 3 prime-decomposition results, and the
-      current Section 4 CI-ideal layer are in place. One paper endpoint remains open.
+      current Section 4 CI-ideal layer are in place. One main theorem is still unfinished.
     </p>
     <div class="quick-links quick-links--hero">
       <a href="{{ '/overview.html' | relative_url }}">Overview</a>
@@ -41,35 +40,35 @@ title: BEI Blueprint
 
 <div class="result-board">
   <div class="result-item result-item--done">
-    <span class="result-item__icon">&#10003;</span>
+    <span class="result-item__icon" data-icon="&#10003;"></span>
     <div>
       <strong>Section 1 backbone</strong>
       <span>Theorem 1.1, Propositions 1.2, 1.4, 1.5, and Corollary 1.3 are formalized.</span>
     </div>
   </div>
   <div class="result-item result-item--done">
-    <span class="result-item__icon">&#10003;</span>
+    <span class="result-item__icon" data-icon="&#10003;"></span>
     <div>
       <strong>Section 2 complete</strong>
       <span>The Gröbner basis theorem and radicality consequence are both in place.</span>
     </div>
   </div>
   <div class="result-item result-item--done">
-    <span class="result-item__icon">&#10003;</span>
+    <span class="result-item__icon" data-icon="&#10003;"></span>
     <div>
       <strong>Section 3 complete</strong>
       <span>Prime decomposition, dimension, minimal primes, and the cycle-graph CM consequence are formalized.</span>
     </div>
   </div>
   <div class="result-item result-item--done">
-    <span class="result-item__icon">&#10003;</span>
+    <span class="result-item__icon" data-icon="&#10003;"></span>
     <div>
       <strong>Section 4 is in place</strong>
       <span>The conditional-independence side is connected to binomial edge ideals, including radicality, prime decomposition, and minimal-prime results.</span>
     </div>
   </div>
   <div class="result-item result-item--open">
-    <span class="result-item__icon">&#9675;</span>
+    <span class="result-item__icon" data-icon="&#9675;"></span>
     <div>
       <strong>One main theorem remains</strong>
       <span>Proposition 1.6 still needs the final Cohen–Macaulay step.</span>

@@ -68,13 +68,6 @@ p, li {
   min-width: 0;
 }
 
-.landing-hero__title {
-  color: #fff;
-  font-size: 2.15rem;
-  line-height: 1.08;
-  margin: 0;
-}
-
 .landing-hero__eyebrow {
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -87,7 +80,7 @@ p, li {
 .landing-hero__lede {
   color: rgba(247, 251, 255, 0.92);
   max-width: 42rem;
-  margin: 0.95rem 0 0 0;
+  margin: 0;
   font-size: 1.02rem;
 }
 
@@ -246,14 +239,19 @@ p, li {
   width: 2.25rem;
   height: 2.25rem;
   border-radius: 999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
+  place-self: start;
+}
+
+.result-item__icon::before {
+  content: attr(data-icon);
+  display: block;
   font-size: 1rem;
   font-weight: 800;
   line-height: 1;
   text-align: center;
-  place-self: start;
+  transform: translateY(-0.02em);
 }
 
 .result-item--done {
@@ -332,10 +330,6 @@ blockquote {
   .result-board,
   .section-grid {
     grid-template-columns: 1fr;
-  }
-
-  .landing-hero__title {
-    font-size: 1.7rem;
   }
 
   .landing-hero {
