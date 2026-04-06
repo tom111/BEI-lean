@@ -14,7 +14,7 @@ Completed guides (deleted):
 ## Immediate Work Packets
 
 - [PROP_1_6_COHEN_MACAULAY.md](PROP_1_6_COHEN_MACAULAY.md) — primary remaining paper endpoint: Proposition 1.6 CM branch and its remaining external algebraic inputs
-- [MONOMIAL_IDEAL_PRIMARY_DECOMP.md](MONOMIAL_IDEAL_PRIMARY_DECOMP.md) — supporting `toMathlib` packet: the prime classification is now proved; next target is the primary monomial ideal characterization for the monomial-edge-ideal route
+- [MONOMIAL_IDEAL_PRIMARY_DECOMP.md](MONOMIAL_IDEAL_PRIMARY_DECOMP.md) — supporting `toMathlib` packet: the forward primary theorem is now proved; next target is the radical-is-monomial lemma and the converse direction
 
 ## Longer-Horizon CM Packet
 

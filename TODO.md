@@ -42,7 +42,7 @@
 
 Active CM work lives in:
 - `BEI/CohenMacaulay.lean`
-- `toMathlib/MonomialIdeal.lean` — `Ideal.IsMonomial`, `isPrime_span_X_image_set`, prime classification
+- `toMathlib/MonomialIdeal.lean` — `Ideal.IsMonomial`, prime classification, variable-generated ideals are monomial, forward primary criterion
 - `guides/PROP_1_6_COHEN_MACAULAY.md`
 - `guides/ANSWER_05_COHEN_MACAULAY_FOUNDATION.md`
 - `guides/ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md`
@@ -65,14 +65,21 @@ Recently completed CM groundwork includes:
 - `BEI/PrimeDecompositionDimension.lean`: quotient-dimension and equidimensionality helpers
 - `toMathlib/MonomialIdeal.lean`: `Ideal.IsMonomial`, `MvPolynomial.isPrime_span_X_image_set`,
   `Ideal.exists_variable_mem_of_monomial_mem_prime`,
-  `Ideal.IsMonomial.isPrime_iff_eq_span_X_image`
+  `Ideal.IsMonomial.isPrime_iff_eq_span_X_image`,
+  `Ideal.IsMonomial.span_X_image`,
+  `Ideal.isPrimary_monomial_criterion`
 
 For Proposition 1.6 specifically, the remaining gap is now algebraic rather than graph-theoretic:
 - Herzog–Hibi CM theorem for the associated bipartite graph
 - transfer from `S / in_<(J_G)` to `S / J_G`
 
-The next supporting `toMathlib` target on this branch is the primary monomial ideal
+The next supporting `toMathlib` target on this branch is the full primary monomial ideal
 characterization from `guides/MONOMIAL_IDEAL_PRIMARY_DECOMP.md`.
+
+The current blocker on that packet is no longer the forward direction:
+- `Ideal.isPrimary_monomial_criterion` is proved
+- the remaining work is `IsMonomial.radical_isMonomial` and the converse direction
+- both appear to require a leading-term / monomial-order argument for powers
 
 This branch is no longer blocked on a missing definition, but it still needs honest
 proofs and should not be overclaimed.
@@ -102,7 +109,7 @@ The minimal-prime transfer assumes a connected union graph, mirroring `corollary
 - `BEI/CIIdeals.lean` carries the Section 4 binary-output setup, the single-statement and specification-level CI ideal = BEI bridges, and the transferred radicality / prime-decomposition / minimal-prime theorems.
 - `BEI/CohenMacaulay.lean` carries Proposition 1.6 and the complete-graph CM example.
 - `toMathlib/CohenMacaulay/Defs.lean` carries the local working CM definition used by the current CM branch.
-- `toMathlib/MonomialIdeal.lean` carries `Ideal.IsMonomial`, the `Set σ` version of `isPrime_span_X_image`, and the prime classification theorem for monomial ideals.
+- `toMathlib/MonomialIdeal.lean` carries `Ideal.IsMonomial`, the `Set σ` version of `isPrime_span_X_image`, the prime classification theorem for monomial ideals, `Ideal.IsMonomial.span_X_image`, and the forward primary monomial criterion.
 
 Some of these splits still need cleanup, but these are the current live locations.
 
