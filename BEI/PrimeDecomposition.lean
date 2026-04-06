@@ -381,11 +381,6 @@ theorem corollary_3_7 (G : SimpleGraph V) (hCyc : IsCycleGraph G)
     exact le_antisymm (aux hAdj) hn
 
 -- Corollary 3.7 unmixed branch (a↔b↔c) is in MinimalPrimes.lean to avoid import cycle.
-
-theorem corollary_3_7_CM (G : SimpleGraph V) (hCyc : IsCycleGraph G)
-    (hn : 3 ≤ Fintype.card V) :
-    IsCohenMacaulay (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) ↔
-    (binomialEdgeIdeal (K := K) G).IsPrime := by
-  sorry
+-- Corollary 3.7 CM branch (a↔d) is in PrimeDecompositionDimension.lean to avoid import cycle.
 
 end

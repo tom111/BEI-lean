@@ -9,12 +9,11 @@ Completed guides (deleted):
 - Unmixed for Cor 3.7 (Q6) — `corollary_3_7_unmixed` fully proved
 - Section 4 minimal primes — `ciIdealSpec_minimalPrimes` fully proved
 - Corollary 3.4 — `corollary_3_4` fully proved
+- Corollary 3.7 CM — `corollary_3_7_CM` fully proved
 
 ## Immediate Work Packets
 
-These are the most concrete remaining theorem tasks and the recommended order for Claude.
-
-1. [COR_3_7_CM_BRANCH.md](COR_3_7_CM_BRANCH.md) — finish the remaining CM branch of Corollary 3.7 after Corollary 3.4 is in place
+No immediate theorem work packets remain. The next targets are the longer-horizon CM items below.
 
 ## Longer-Horizon CM Packet
 
@@ -29,6 +28,7 @@ These are not first-line work packets, but they contain important strategic cont
 - [ANSWER_05_COHEN_MACAULAY_FOUNDATION.md](ANSWER_05_COHEN_MACAULAY_FOUNDATION.md) — CM foundations and honest scope
 - [ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md](ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md) — backup direct route for Proposition 1.6
 - [ANSWER_17_PROP_1_6_STRATEGY.md](ANSWER_17_PROP_1_6_STRATEGY.md) — why the paper route should still be preferred
+- [CM_CODEBASE_RESEARCH_MONOMIAL_IDEAL.md](CM_CODEBASE_RESEARCH_MONOMIAL_IDEAL.md) — what the local CM/PR codebase does and does not provide for the monomial-ideal step
 - [cm_pr_26218/](cm_pr_26218/) — Mathlib CM PR backport / import plan
 
 ## Dormant / Background

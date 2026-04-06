@@ -40,7 +40,7 @@ faithfully the current Lean statements match the paper.
 | Corollary 3.3 (lower bound) | `corollary_3_3_lower_bound` | `BEI/PrimeDecompositionDimension.lean` | Exact | `dim ≥ |V| + c(G)` |
 | Corollary 3.4 | `corollary_3_4` | `BEI/PrimeDecompositionDimension.lean` | Exact | CM + `P_∅` minimal prime + equidimensionality |
 | Proposition 3.6 | `prop_3_6` | `BEI/PrimeDecomposition.lean` | Equivalent | Completeness of components phrased via reachability |
-| Corollary 3.7 | `corollary_3_7`, `corollary_3_7_unmixed`, `corollary_3_7_CM` | `BEI/PrimeDecomposition.lean`, `BEI/MinimalPrimes.lean` | Partial | Prime branch and unmixed branch are proved; the remaining CM branch is still open |
+| Corollary 3.7 | `corollary_3_7`, `corollary_3_7_unmixed`, `corollary_3_7_CM` | `BEI/PrimeDecomposition.lean`, `BEI/MinimalPrimes.lean`, `BEI/PrimeDecompositionDimension.lean` | Exact | All four equivalences proved (prime, unmixed, CM, |V|=3) |
 | Proposition 3.8 | `prop_3_8` | `BEI/MinimalPrimes.lean` | Equivalent | Rephrased using `SameComponent` |
 | Corollary 3.9 | `corollary_3_9` | `BEI/MinimalPrimes.lean` | Equivalent | Rephrased via `IsCutVertexRelative` |
 
@@ -63,7 +63,7 @@ faithfully the current Lean statements match the paper.
 |---|---|
 | Proposition 1.6 | BEI-side reduction packaged end-to-end; remaining gap is the external Herzog–Hibi theorem plus CM transfer from the initial ideal |
 | Corollary 3.4 | **proved** |
-| Corollary 3.7 | prime and unmixed branches are proved; the CM branch is still `sorry` |
+| Corollary 3.7 | **proved** (all branches) |
 | Section 4 | complete: bridges, radicality, prime decomposition, and minimal-prime transfer all proved |
 
 ## Current File Split Notes
