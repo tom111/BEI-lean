@@ -12,6 +12,11 @@
   border-bottom: 1px solid #d7dee5;
 }
 
+.site-footer {
+  border-top: 1px solid #d7dee5;
+  padding: 22px 0 26px 0;
+}
+
 .site-title,
 .site-title:visited {
   color: #17324d;
@@ -325,6 +330,35 @@ blockquote {
   border-left: 4px solid #d1dce8;
   background: #fafcff;
   padding: 0.55rem 1rem;
+}
+
+.footer-minimal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem 1.25rem;
+  color: #4d647a;
+  font-size: 0.95rem;
+}
+
+.footer-brand {
+  color: #17324d;
+  font-weight: 700;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.footer-links a {
+  color: #1f5f8b;
+  text-decoration: none;
+}
+
+.footer-links a:hover {
+  text-decoration: underline;
 }
 
 @media (max-width: 820px) {
