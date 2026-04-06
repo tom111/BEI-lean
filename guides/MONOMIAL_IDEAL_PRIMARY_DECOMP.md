@@ -75,16 +75,23 @@ false. In particular, do **not** try to prove a general `coeff_mul_lexMax_left`.
 That route fails because lower terms of the left factor can pair with higher terms of
 the right factor to hit the same exponent.
 
-The live restart packet for this converse is now:
+## Current state after the fifth round
 
-- [ANSWER_18_PRIMARY_CONVERSE_DECOMPOSITION.md](ANSWER_18_PRIMARY_CONVERSE_DECOMPOSITION.md)
+The structural reduction for the converse is now landed in
+`toMathlib/MonomialIdeal.lean` with no `sorry`s:
 
-Use that guide as the operational next step. The right decomposition is:
+- `Ideal.monomial_notMem_add_outside` — iterated non-membership for exponents outside `s`
+- `Ideal.monomial_mem_iff_add_outside` — the iff version
+- `Ideal.monomial_mem_iff_filter` — membership determined by `d.filter (· ∈ s)`
 
-1. prove the “add exponents outside `s` iff membership is unchanged” lemma;
-2. prove monomial membership depends only on the `s`-part;
-3. package the ideal as coming from the `s`-variables;
-4. only then revisit the converse.
+These lemmas only assume `[CommRing R]` (no `IsDomain` or `LinearOrder`). They take the
+primary monomial criterion as a hypothesis, not `IsPrimary` itself.
+
+The remaining gap is still the full converse direction of the primary iff. The next step
+is Packet 3 (extension/restriction packaging) or a direct attack on the converse using the
+now-available structural lemmas. See
+[ANSWER_18_PRIMARY_CONVERSE_DECOMPOSITION.md](ANSWER_18_PRIMARY_CONVERSE_DECOMPOSITION.md)
+for the working order.
 
 
 ## Current repo / mathlib status

@@ -77,38 +77,35 @@ That is the structural simplification you want before doing any more product alg
 
 ## Concrete subgoals
 
-### Packet 1: make the criterion bidirectional
+### Packet 1: make the criterion bidirectional — DONE
 
-Prove a clean contrapositive wrapper around `criterion_buildUp`.
-
-Suggested target shape:
+Proved as `Ideal.monomial_mem_iff_add_outside` in `toMathlib/MonomialIdeal.lean`:
 
 ```lean
-theorem monomial_mem_iff_add_outside_mem
-    (hcrit : ...)
-    {d e : σ →₀ ℕ}
-    (he : ∀ i ∈ s, e i = 0 := ...) :
-    MvPolynomial.monomial d 1 ∈ I ↔
-      MvPolynomial.monomial (d + e) 1 ∈ I
+theorem monomial_mem_iff_add_outside
+    {I : Ideal (MvPolynomial σ R)} {s : Set σ}
+    (hcrit : ∀ d : σ →₀ ℕ, monomial d (1 : R) ∉ I →
+      ∀ j, j ∉ s → monomial (d + single j 1) (1 : R) ∉ I)
+    {d e : σ →₀ ℕ} (he : ∀ i ∈ s, e i = 0) :
+    monomial d (1 : R) ∈ I ↔ monomial (d + e) (1 : R) ∈ I
 ```
 
-You may package the support condition however is Lean-convenient, e.g.
-`e.support ⊆ sᶜ`.
+Supporting lemma: `Ideal.monomial_notMem_add_outside` (the non-membership direction,
+proved via `Finsupp.induction` and a private `monomial_notMem_add_single` helper).
 
-This is the most important missing local lemma.
+### Packet 2: prove “membership depends only on the `s`-part” — DONE
 
-### Packet 2: prove “membership depends only on the `s`-part”
+Proved as `Ideal.monomial_mem_iff_filter` in `toMathlib/MonomialIdeal.lean`:
 
-Define the projection of an exponent to the coordinates in `s`, or an equivalent
-normal form that deletes the coordinates outside `s`.
-
-Then prove:
-
-```text
-monomial membership in I is determined by that projected exponent
+```lean
+theorem monomial_mem_iff_filter
+    {I : Ideal (MvPolynomial σ R)} {s : Set σ} [DecidablePred (· ∈ s)]
+    (hcrit : ...) (d : σ →₀ ℕ) :
+    monomial d (1 : R) ∈ I ↔ monomial (d.filter (· ∈ s)) (1 : R) ∈ I
 ```
 
-Do not over-engineer the API. A BEI-specific finite-support helper is enough.
+Coordinates outside `s` can be zeroed out via `Finsupp.filter` without changing
+membership.
 
 ### Packet 3: split off the outside variables
 
