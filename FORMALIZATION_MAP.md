@@ -66,6 +66,15 @@ faithfully the current Lean statements match the paper.
 | Corollary 3.7 | **proved** (all branches) |
 | Section 4 | complete: bridges, radicality, prime decomposition, and minimal-prime transfer all proved |
 
+## Supporting `toMathlib` Progress
+
+| Supporting result | Lean name | File | Status | Notes |
+|---|---|---|---|---|
+| Monomial ideal predicate | `Ideal.IsMonomial` | `toMathlib/MonomialIdeal.lean` | proved | Monomial ideals in `MvPolynomial` |
+| Variable ideal prime, set version | `MvPolynomial.isPrime_span_X_image_set` | `toMathlib/MonomialIdeal.lean` | proved | Generalizes the local `Finset` version to `Set σ` |
+| Variable factor in prime monomial membership | `Ideal.exists_variable_mem_of_monomial_mem_prime` | `toMathlib/MonomialIdeal.lean` | proved | Extracts a variable from a monomial lying in a prime ideal |
+| Prime monomial ideals classification | `Ideal.IsMonomial.isPrime_iff_eq_span_X_image` | `toMathlib/MonomialIdeal.lean` | proved | Prime monomial ideals are exactly variable-generated ideals |
+
 ## Current File Split Notes
 
 - `BEI/GroebnerBasisSPolynomial.lean` now carries the long S-polynomial proof of Theorem 2.1.
