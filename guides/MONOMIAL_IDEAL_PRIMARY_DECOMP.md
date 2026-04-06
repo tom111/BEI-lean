@@ -42,6 +42,24 @@ roughly, if `d_max` is a lex-maximal support monomial of `p`, then the coefficie
 That infrastructure does not appear to be a one-lemma cleanup; it likely needs a full
 round on coefficients of products / powers.
 
+## Current state after the third round
+
+The power-level algebra and the full forward direction have now landed in
+`toMathlib/MonomialIdeal.lean` with no `sorry`s:
+
+- `coeff_pow_lexMax`
+- `Ideal.IsMonomial.radical_isMonomial`
+- `Ideal.IsMonomial.isPrimary_radical_eq_span_X`
+
+So the primary packet is now down to one remaining substantial gap:
+
+- the converse direction of the primary iff
+
+The blocker is narrower than before. It no longer concerns powers; it concerns products.
+The missing algebra appears to be a leading-term / antidiagonal argument for products
+that can control the lex-maximal contribution in `a * b` and rule out coefficient
+cancellation in the relevant monomial.
+
 
 ## Current repo / mathlib status
 
@@ -254,13 +272,14 @@ all associated primes at once.
 ## Primary case: implementation plan
 
 Status:
-- Phase 1 is still open.
+- Phase 1 is now done.
 - Phase 2 is now done as `Ideal.isPrimary_monomial_criterion`.
-- Phase 3 remains open and is blocked on the same leading-term machinery as Phase 1.
+- Phase 3 remains open and is now the only missing part of the primary-iff theorem.
 
 ### Phase 1: prove radicals of prime monomial ideals are variable ideals
 
-This becomes immediate once the prime classification theorem above is in place.
+Status: done in `toMathlib/MonomialIdeal.lean` as
+`Ideal.IsMonomial.radical_isMonomial`, using `coeff_pow_lexMax`.
 
 ### Phase 2: prove `I.IsPrimary ->` monomial criterion
 
@@ -304,19 +323,17 @@ in the support of `a * b`.
 
 Current blocker:
 
-- The needed leading-term statement also seems to be what blocks
-  `Ideal.IsMonomial.radical_isMonomial`.
-- Concretely, the missing algebra is about coefficients in powers:
-  for a lex-maximal support monomial `d_max` of `p`, one wants to isolate the
-  coefficient of `n • d_max` in `p^n` and show it is `(p.coeff d_max)^n`.
-- That appears to require infrastructure around `coeff_mul`, `Finset.antidiagonal`,
-  and induction on powers, rather than a short BEI-specific shortcut.
+- The power case is now handled by `coeff_pow_lexMax`.
+- The remaining missing algebra is the analogous product-level statement:
+  one needs to isolate the lex-maximal contribution in `a * b`, with more delicate
+  `Finset.antidiagonal` bookkeeping than in the power case.
+- The obstacle is no longer `radical_isMonomial`; it is only the converse direction.
 
 Recommended next packet:
 
-1. isolate and prove the leading-term coefficient lemma for powers in `MvPolynomial`;
-2. use it to prove `Ideal.IsMonomial.radical_isMonomial`;
-3. return to the converse direction of the primary iff.
+1. isolate and prove the leading-term coefficient lemma for products in `MvPolynomial`;
+2. use it to finish the converse direction of the primary iff;
+3. only after that, move on to the squarefree minimal-primes / vertex-cover packet.
 
 
 ## Primary decomposition target

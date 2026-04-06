@@ -76,6 +76,7 @@ faithfully the current Lean statements match the paper.
 | Prime monomial ideals classification | `Ideal.IsMonomial.isPrime_iff_eq_span_X_image` | `toMathlib/MonomialIdeal.lean` | proved | Prime monomial ideals are exactly variable-generated ideals |
 | Variable-generated ideals are monomial | `Ideal.IsMonomial.span_X_image` | `toMathlib/MonomialIdeal.lean` | proved | Basic API for the primary case |
 | Forward primary monomial criterion | `Ideal.isPrimary_monomial_criterion` | `toMathlib/MonomialIdeal.lean` | proved | From `IsPrimary` plus `radical = span (X '' s)` to the outside-the-radical nonmembership criterion |
+| Leading coefficient in powers | `coeff_pow_lexMax` | `toMathlib/MonomialIdeal.lean` | proved | Isolates the lex-maximal support contribution in `p ^ n` |
 | Radical is monomial | `Ideal.IsMonomial.radical_isMonomial` | `toMathlib/MonomialIdeal.lean` | proved | Uses lex-max leading-term extraction; requires `[LinearOrder σ]` |
 | Forward primary characterization | `Ideal.IsMonomial.isPrimary_radical_eq_span_X` | `toMathlib/MonomialIdeal.lean` | proved | Primary monomial → radical is variable-generated ∧ criterion |
 | Full primary iff (converse) | — | — | open | Converse (criterion → primary) still needs leading-term argument for products |
@@ -89,6 +90,6 @@ faithfully the current Lean statements match the paper.
 - `BEI/CIIdeals.lean` carries the Section 4 binary-output setup, both bridge theorems, and the transferred radicality / prime-decomposition / minimal-prime theorems.
 - `BEI/CohenMacaulay.lean` carries Proposition 1.6 and the complete-graph CM example.
 - `toMathlib/CohenMacaulay/Defs.lean` carries the local working CM definition currently used in the project.
-- `toMathlib/MonomialIdeal.lean` carries `Ideal.IsMonomial`, `MvPolynomial.isPrime_span_X_image_set` (Set version), `Ideal.exists_variable_mem_of_monomial_mem_prime`, `Ideal.IsMonomial.isPrime_iff_eq_span_X_image` (prime monomial ideals = variable ideals), `Ideal.IsMonomial.span_X_image`, and the forward primary monomial criterion `Ideal.isPrimary_monomial_criterion`.
+- `toMathlib/MonomialIdeal.lean` carries `Ideal.IsMonomial`, `MvPolynomial.isPrime_span_X_image_set` (Set version), `Ideal.exists_variable_mem_of_monomial_mem_prime`, `Ideal.IsMonomial.isPrime_iff_eq_span_X_image` (prime monomial ideals = variable ideals), `Ideal.IsMonomial.span_X_image`, `coeff_pow_lexMax`, `Ideal.IsMonomial.radical_isMonomial`, `Ideal.isPrimary_monomial_criterion`, and `Ideal.IsMonomial.isPrimary_radical_eq_span_X`.
 
 These split points should be reflected in status docs whenever the structure changes again.

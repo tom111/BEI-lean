@@ -14,7 +14,8 @@ Completed guides (deleted):
 ## Immediate Work Packets
 
 - [PROP_1_6_COHEN_MACAULAY.md](PROP_1_6_COHEN_MACAULAY.md) — primary remaining paper endpoint: Proposition 1.6 CM branch and its remaining external algebraic inputs
-- [MONOMIAL_IDEAL_PRIMARY_DECOMP.md](MONOMIAL_IDEAL_PRIMARY_DECOMP.md) — supporting `toMathlib` packet: the forward primary theorem is now proved; next target is the radical-is-monomial lemma and the converse direction
+- [MONOMIAL_IDEAL_PRIMARY_DECOMP.md](MONOMIAL_IDEAL_PRIMARY_DECOMP.md) — supporting `toMathlib` packet: the forward primary theorem is now proved; remaining target is the converse direction via a product leading-term argument
+- [SQUAREFREE_MONOMIAL_MINIMAL_PRIMES.md](SQUAREFREE_MONOMIAL_MINIMAL_PRIMES.md) — next supporting packet: minimal primes of squarefree monomial ideals via minimal vertex covers
 
 ## Longer-Horizon CM Packet
 
