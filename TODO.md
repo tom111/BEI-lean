@@ -32,7 +32,7 @@
 | **§4 Spec bridge** (robustness specification) | `BEI/CIIdeals.lean` | `[x]` proved |
 | **§4 Radical** (CI ideal is radical) | `BEI/CIIdeals.lean` | `[x]` proved |
 | **§4 Primes** (CI prime decomposition) | `BEI/CIIdeals.lean` | `[x]` proved |
-| **§4 Minimal primes** (CI minimal prime characterization) | not yet started | `[ ]` pending |
+| **§4 Minimal primes** (CI minimal prime characterization) | `BEI/CIIdeals.lean` | `[x]` proved (connected graphs) |
 
 ---
 
@@ -73,11 +73,11 @@ proofs and should not be overclaimed.
 
 ### Priority 2: Section 4
 
-Section 4 is largely complete in `BEI/CIIdeals.lean`. Proved:
+Section 4 is complete in `BEI/CIIdeals.lean`. All transfers proved:
 - Single-statement and specification-level bridge theorems
-- Radicality transfer (Cor 2.2) and prime decomposition transfer (Thm 3.2)
+- Radicality (Cor 2.2), prime decomposition (Thm 3.2), minimal primes (Cor 3.9)
 
-Remaining: minimal-prime characterization transfer (Cor 3.9)
+The minimal-prime transfer assumes a connected union graph, mirroring `corollary_3_9`.
 
 ### Background / dormant
 
@@ -93,7 +93,7 @@ Remaining: minimal-prime characterization transfer (Cor 3.9)
 - `BEI/GroebnerBasis.lean` carries reducedness and the paper-facing wrapper.
 - `BEI/PrimeDecomposition.lean` carries Theorem 3.2, Proposition 3.6, and the CM/cycle endpoints.
 - `BEI/PrimeDecompositionDimension.lean` carries Corollary 3.3, Corollary 3.4, the path CM example, and supporting quotient-dimension / equidimensionality lemmas.
-- `BEI/CIIdeals.lean` carries the Section 4 binary-output definitions and the single-statement CI ideal = BEI bridge.
+- `BEI/CIIdeals.lean` carries the Section 4 binary-output setup, the single-statement and specification-level CI ideal = BEI bridges, and the transferred radicality / prime-decomposition theorems.
 - `BEI/CohenMacaulay.lean` carries Proposition 1.6 and the complete-graph CM example.
 - `toMathlib/CohenMacaulay/Defs.lean` carries the local working CM definition used by the current CM branch.
 

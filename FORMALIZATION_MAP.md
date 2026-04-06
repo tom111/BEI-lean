@@ -55,6 +55,7 @@ faithfully the current Lean statements match the paper.
 | Specification bridge | `ciIdealSpec_eq_binomialEdgeIdeal` | `BEI/CIIdeals.lean` | Exact | CI ideal of specification = BEI of union graph |
 | CI radicality | `ciIdealSpec_isRadical` | `BEI/CIIdeals.lean` | Exact | Transferred from Corollary 2.2 |
 | CI prime decomposition | `ciIdealSpec_primeDecomposition` | `BEI/CIIdeals.lean` | Exact | Transferred from Theorem 3.2 |
+| CI minimal primes | `ciIdealSpec_minimalPrimes` | `BEI/CIIdeals.lean` | Exact | Transferred from Corollary 3.9; requires connected union graph |
 
 ## Current Open Endpoints
 
@@ -63,7 +64,7 @@ faithfully the current Lean statements match the paper.
 | Proposition 1.6 | BEI-side reduction packaged end-to-end; remaining gap is the external Herzog–Hibi theorem plus CM transfer from the initial ideal |
 | Corollary 3.4 | statement present, proof still `sorry` |
 | Corollary 3.7 | prime and unmixed branches are proved; the CM branch is still `sorry` |
-| Section 4 | specification bridge, radicality, and prime decomposition proved; minimal-prime transfer not yet done |
+| Section 4 | complete: bridges, radicality, prime decomposition, and minimal-prime transfer all proved |
 
 ## Current File Split Notes
 
@@ -71,7 +72,7 @@ faithfully the current Lean statements match the paper.
 - `BEI/GroebnerBasis.lean` carries reducedness and the paper-facing wrapper.
 - `BEI/PrimeDecompositionDimension.lean` carries Corollary 3.3, Corollary 3.4, the path CM example, and supporting equidimensionality lemmas.
 - `BEI/PrimeDecomposition.lean` carries Theorem 3.2, Proposition 3.6, and the remaining CM endpoint for Corollary 3.7.
-- `BEI/CIIdeals.lean` carries the Section 4 binary-output setup and the single-statement bridge theorem.
+- `BEI/CIIdeals.lean` carries the Section 4 binary-output setup, both bridge theorems, and the transferred radicality / prime-decomposition theorems.
 - `BEI/CohenMacaulay.lean` carries Proposition 1.6 and the complete-graph CM example.
 - `toMathlib/CohenMacaulay/Defs.lean` carries the local working CM definition currently used in the project.
 

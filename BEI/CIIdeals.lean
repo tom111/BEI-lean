@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import BEI.Radical
 import BEI.PrimeDecomposition
+import BEI.MinimalPrimes
 
 /-!
 # CI Ideals — Section 4, Binary Output Case
@@ -36,6 +37,8 @@ the identification p_{1,w} <-> x_w, p_{2,w} <-> y_w.
   is radical (transferred from Corollary 2.2).
 * `ciIdealSpec_primeDecomposition` -- prime decomposition of the CI
   ideal (transferred from Theorem 3.2).
+* `ciIdealSpec_minimalPrimes` -- minimal-prime characterization for
+  connected CI graphs (transferred from Corollary 3.9).
 -/
 
 variable {K : Type*} [Field K]
@@ -180,3 +183,18 @@ theorem ciIdealSpec_primeDecomposition [Finite Ω] (stmt : ι → CIStatement Ω
   cases nonempty_fintype Ω
   rw [ciIdealSpec_eq_binomialEdgeIdeal]
   exact theorem_3_2 (ciGraphSpec stmt)
+
+/-- Minimal-prime characterization for the CI ideal of a robustness
+specification with connected union graph. `primeComponent G S` is a
+minimal prime of the CI ideal iff `S = ∅` or every vertex of `S` is a
+cut vertex relative to `S` in the union graph.
+Transferred from Corollary 3.9 via the bridge theorem; the
+connectedness hypothesis mirrors the one in `corollary_3_9`. -/
+theorem ciIdealSpec_minimalPrimes [Finite Ω] (stmt : ι → CIStatement Ω)
+    (S : Finset Ω) (hConn : (ciGraphSpec stmt).Connected) :
+    primeComponent (K := K) (ciGraphSpec stmt) S ∈
+      (ciIdealSpec (K := K) stmt).minimalPrimes ↔
+    S = ∅ ∨ ∀ i ∈ S, IsCutVertexRelative (ciGraphSpec stmt) S i := by
+  cases nonempty_fintype Ω
+  rw [ciIdealSpec_eq_binomialEdgeIdeal]
+  exact corollary_3_9 (ciGraphSpec stmt) S hConn
