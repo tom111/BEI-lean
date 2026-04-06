@@ -365,6 +365,41 @@ private theorem coeff_pow_lexMax (p : MvPolynomial σ R) (hp : p ≠ 0) (n : ℕ
     · -- (n • d, d) ∉ antidiagonal is impossible
       simp [Finset.mem_antidiagonal]
 
+/-- The coefficient of `d_max + e_max` in `p * q` equals
+`coeff d_max p * coeff e_max q` where these are the respective lex-maximal
+support elements. No cancellation occurs at the leading position. -/
+private theorem coeff_mul_lexMax (p q : MvPolynomial σ R) (hp : p ≠ 0) (hq : q ≠ 0) :
+    (p * q).coeff (lexMaxSupport p hp + lexMaxSupport q hq) =
+      p.coeff (lexMaxSupport p hp) * q.coeff (lexMaxSupport q hq) := by
+  classical
+  set d := lexMaxSupport p hp; set e := lexMaxSupport q hq
+  rw [coeff_mul, Finset.sum_eq_single (d, e)]
+  · rintro ⟨a, b⟩ hab hne
+    rw [Finset.mem_antidiagonal] at hab
+    by_cases hbs : b ∈ q.support
+    · have hble := lexMaxSupport_le q hq b hbs
+      by_cases hbd : b = e
+      · subst hbd
+        exact absurd
+          (show (a, e) = (d, e) from Prod.ext (add_right_cancel hab) rfl) hne
+      · have hblt := lt_of_le_of_ne hble (fun h => hbd (toLex.injective h))
+        by_cases has : a ∈ p.support
+        · have hlt := add_lt_add_of_le_of_lt (lexMaxSupport_le p hp a has) hblt
+          change toLex (a + b) < toLex (d + e) at hlt
+          rw [hab] at hlt; exact absurd hlt (lt_irrefl _)
+        · rw [MvPolynomial.notMem_support_iff.mp has, zero_mul]
+    · rw [MvPolynomial.notMem_support_iff.mp hbs, mul_zero]
+  · simp [Finset.mem_antidiagonal]
+
+/-- The sum of lex-maximal exponents lies in the support of the product. -/
+private theorem lexMax_add_mem_mul_support
+    (p q : MvPolynomial σ R) (hp : p ≠ 0) (hq : q ≠ 0) :
+    lexMaxSupport p hp + lexMaxSupport q hq ∈ (p * q).support := by
+  rw [MvPolynomial.mem_support_iff, coeff_mul_lexMax]
+  exact mul_ne_zero
+    (MvPolynomial.mem_support_iff.mp (lexMaxSupport_mem_support p hp))
+    (MvPolynomial.mem_support_iff.mp (lexMaxSupport_mem_support q hq))
+
 namespace Ideal
 
 /-- The radical of a monomial ideal is monomial. -/
@@ -577,5 +612,111 @@ theorem monomial_mem_iff_filter
 end Ideal
 
 end PrimaryConverseHelpers
+
+/-! ### Primary monomial ideal: converse direction -/
+
+section PrimaryConverse
+
+variable {R : Type*} [CommRing R] [IsDomain R] {σ : Type*} [LinearOrder σ]
+
+open MvPolynomial Finsupp
+
+namespace Ideal
+
+/-- If `I` is monomial and `p ∉ I`, some support monomial of `p` is not in `I`. -/
+theorem IsMonomial.not_mem_exists_monomial_notMem
+    {I : Ideal (MvPolynomial σ R)} (hI : I.IsMonomial)
+    {p : MvPolynomial σ R} (hp : p ∉ I) :
+    ∃ d ∈ p.support, monomial d (1 : R) ∉ I := by
+  by_contra h; push_neg at h; apply hp
+  conv => rw [p.as_sum]
+  exact Submodule.sum_mem I fun d hd => by
+    rw [show monomial d (coeff d p) = C (coeff d p) * monomial d 1 from by
+      rw [C_mul_monomial, mul_one]]
+    exact I.mul_mem_left _ (h d hd)
+
+/-- If `x * y ∈ I` and the lex-max support element of `y` is outside `s`,
+then `x ∈ I`. This is proved by peeling off the leading term of `x`
+using the structural invariance lemma. -/
+private theorem mem_of_mul_mem_of_lexMax_outside
+    {I : Ideal (MvPolynomial σ R)} (hI : I.IsMonomial)
+    {s : Set σ}
+    (hcrit : ∀ d : σ →₀ ℕ, monomial d (1 : R) ∉ I →
+      ∀ j, j ∉ s → monomial (d + single j 1) (1 : R) ∉ I)
+    {x y : MvPolynomial σ R} (hxy : x * y ∈ I) (hy0 : y ≠ 0)
+    (hm_out : ∀ j ∈ s, (lexMaxSupport y hy0) j = 0) :
+    x ∈ I := by
+  by_cases hx0 : x = 0
+  · exact hx0 ▸ I.zero_mem
+  -- Strong induction on x.support.card
+  suffices ∀ (n : ℕ) (x : MvPolynomial σ R), x.support.card ≤ n →
+      x ≠ 0 → x * y ∈ I → x ∈ I from
+    this x.support.card x le_rfl hx0 hxy
+  intro n
+  induction n with
+  | zero =>
+    intro x hx hx0
+    exact absurd (MvPolynomial.support_eq_empty.mp
+      (Finset.card_eq_zero.mp (Nat.le_zero.mp hx))) hx0
+  | succ k ih =>
+    intro x hcard hx0 hxy_mem
+    set e := lexMaxSupport y hy0
+    set d := lexMaxSupport x hx0
+    -- d + e ∈ (x * y).support by coeff_mul_lexMax
+    have hde_I : monomial (d + e) (1 : R) ∈ I :=
+      hI _ hxy_mem _ (lexMax_add_mem_mul_support x y hx0 hy0)
+    -- Since e is outside s, monomial d 1 ∈ I
+    have hd_I : monomial d (1 : R) ∈ I :=
+      (monomial_mem_iff_add_outside hcrit hm_out).mpr hde_I
+    -- Subtract leading term
+    set c := coeff d x
+    set lt := monomial d c
+    have hlt_I : lt ∈ I := by
+      show monomial d c ∈ I
+      rw [show monomial d c = C c * monomial d 1 from by rw [C_mul_monomial, mul_one]]
+      exact I.mul_mem_left _ hd_I
+    set x' := x - lt
+    have hx'_mem : x' * y ∈ I := by
+      have : x' * y = x * y - lt * y := by ring
+      rw [this]; exact I.sub_mem hxy_mem (I.mul_mem_right y hlt_I)
+    -- x' has smaller support
+    have hd_not_x' : d ∉ x'.support := by
+      rw [MvPolynomial.mem_support_iff, not_not]; simp [x', lt, c]
+    have hx'_sub : x'.support ⊆ x.support.erase d := by
+      intro e' he'
+      rw [Finset.mem_erase]; constructor
+      · intro heq; exact hd_not_x' (heq ▸ he')
+      · rw [MvPolynomial.mem_support_iff] at he' ⊢; intro h; apply he'
+        simp only [x', lt, MvPolynomial.coeff_sub, MvPolynomial.coeff_monomial]
+        split_ifs with heq
+        · subst heq; simp [c]
+        · simp [h]
+    have hx'_card : x'.support.card ≤ k := by
+      calc x'.support.card
+          ≤ (x.support.erase d).card := Finset.card_le_card hx'_sub
+        _ = x.support.card - 1 :=
+            Finset.card_erase_of_mem (lexMaxSupport_mem_support x hx0)
+        _ ≤ k := by omega
+    by_cases hx'0 : x' = 0
+    · -- x = lt ∈ I
+      have : x = lt := sub_eq_zero.mp hx'0
+      rw [this]; exact hlt_I
+    · -- By IH, x' ∈ I, so x = x' + lt ∈ I
+      have hx'_I := ih x' hx'_card hx'0 hx'_mem
+      have : x = x' + lt := by simp [x', lt]
+      rw [this]; exact I.add_mem hx'_I hlt_I
+
+/-- The converse direction: the monomial criterion implies primary. -/
+theorem IsMonomial.isPrimary_of_criterion
+    {I : Ideal (MvPolynomial σ R)} (hI : I.IsMonomial) (hne : I ≠ ⊤)
+    {s : Set σ} (hrad : I.radical = Ideal.span (X '' s))
+    (hcrit : ∀ d : σ →₀ ℕ, monomial d (1 : R) ∉ I →
+      ∀ j, j ∉ s → monomial (d + single j 1) (1 : R) ∉ I) :
+    I.IsPrimary := by
+  sorry
+
+end Ideal
+
+end PrimaryConverse
 
 end
