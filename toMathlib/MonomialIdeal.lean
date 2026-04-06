@@ -260,4 +260,198 @@ theorem isPrimary_monomial_criterion
 
 end Ideal
 
+/-! ### Radical of a monomial ideal is monomial -/
+
+section RadicalMonomial
+
+open MvPolynomial Finsupp
+
+variable {R : Type*} [CommRing R] [IsDomain R] {σ : Type*} [LinearOrder σ]
+
+/-- Auxiliary: the lex-maximal exponent in the support of a nonzero polynomial,
+viewed in `Lex (σ →₀ ℕ)`. -/
+private noncomputable def lexMaxSupport (p : MvPolynomial σ R) (hp : p ≠ 0) : σ →₀ ℕ :=
+  ofLex ((p.support.image toLex).max' (by
+    rw [Finset.image_nonempty]
+    exact MvPolynomial.support_nonempty.mpr hp))
+
+omit [IsDomain R] in
+private theorem lexMaxSupport_mem_support (p : MvPolynomial σ R) (hp : p ≠ 0) :
+    lexMaxSupport p hp ∈ p.support := by
+  simp only [lexMaxSupport]
+  have hne : (p.support.image toLex).Nonempty := by
+    rw [Finset.image_nonempty]; exact MvPolynomial.support_nonempty.mpr hp
+  have hmem := (p.support.image toLex).max'_mem hne
+  rw [Finset.mem_image] at hmem
+  obtain ⟨d, hd, hdeq⟩ := hmem
+  convert hd
+  change ofLex ((p.support.image toLex).max' hne) = d
+  rw [← hdeq, ofLex_toLex]
+
+omit [IsDomain R] in
+private theorem lexMaxSupport_le (p : MvPolynomial σ R) (hp : p ≠ 0) (d : σ →₀ ℕ)
+    (hd : d ∈ p.support) : toLex d ≤ toLex (lexMaxSupport p hp) := by
+  simp only [lexMaxSupport, toLex_ofLex]
+  exact Finset.le_max' _ _ (Finset.mem_image.mpr ⟨d, hd, rfl⟩)
+
+omit [IsDomain R] in
+/-- All elements of `(p ^ n).support` are lex-bounded by `n • d` where `d` is the
+lex-maximum of `p.support`. -/
+private theorem support_pow_le_lex (p : MvPolynomial σ R) (hp : p ≠ 0) (n : ℕ)
+    (e : σ →₀ ℕ) (he : e ∈ (p ^ n).support) :
+    toLex e ≤ toLex (n • lexMaxSupport p hp) := by
+  classical
+  set d := lexMaxSupport p hp
+  induction n generalizing e with
+  | zero =>
+    simp only [pow_zero, zero_smul] at he ⊢
+    have h1 : (1 : MvPolynomial σ R) = MvPolynomial.monomial 0 1 := by
+      rw [MvPolynomial.monomial_zero', map_one]
+    rw [h1, MvPolynomial.mem_support_iff, MvPolynomial.coeff_monomial] at he
+    split_ifs at he with heq
+    · rw [heq]
+    · exact absurd rfl he
+  | succ n ihn =>
+    rw [pow_succ] at he
+    have hsub := MvPolynomial.support_mul (p ^ n) p
+    have he' := Finset.mem_of_subset hsub he
+    rw [Finset.mem_add] at he'
+    obtain ⟨u, hu, v, hv, huv⟩ := he'
+    rw [show (n + 1) • d = n • d + d from by rw [add_smul, one_smul], ← huv]
+    exact add_le_add (ihn u hu) (lexMaxSupport_le p hp v hv)
+
+/-- Key lemma: for a nonzero polynomial over a domain with `d_max` the lex-maximal
+exponent in the support, we have `coeff (n • d_max) (p ^ n) = (coeff d_max p) ^ n`.
+
+This is essentially `MonomialOrder.coeff_pow_nsmul_degree` but proved directly
+from the lex order without requiring `WellFoundedGT`. -/
+private theorem coeff_pow_lexMax (p : MvPolynomial σ R) (hp : p ≠ 0) (n : ℕ) :
+    (p ^ n).coeff (n • lexMaxSupport p hp) = (p.coeff (lexMaxSupport p hp)) ^ n := by
+  classical
+  set d := lexMaxSupport p hp with hd_def
+  induction n with
+  | zero => simp
+  | succ n ih =>
+    rw [pow_succ, add_smul, one_smul, coeff_mul]
+    -- The only contributing antidiagonal term is (n • d, d)
+    rw [Finset.sum_eq_single (n • d, d)]
+    · rw [ih, pow_succ]
+    · -- Other terms contribute 0
+      rintro ⟨a, b⟩ hab hne
+      rw [Finset.mem_antidiagonal] at hab
+      by_cases hbs : b ∈ p.support
+      · -- b is in support, so toLex b ≤ toLex d; if b ≠ d then toLex b < toLex d
+        have hble : toLex b ≤ toLex d := lexMaxSupport_le p hp b hbs
+        by_cases hbd : b = d
+        · -- b = d, so a = n • d, and the pair is (n • d, d) — contradicts hne
+          subst hbd
+          have ha_eq : a = n • d := add_right_cancel hab
+          exact absurd (by rw [ha_eq] : (a, d) = (n • d, d)) hne
+        · -- b ≠ d so toLex b < toLex d
+          have hblt : toLex b < toLex d := lt_of_le_of_ne hble (fun h => hbd (toLex.injective h))
+          -- Then a + b = (n+1) • d implies a > n • d, so coeff a (p^n) = 0
+          -- because all elements of (p^n).support are ≤ n • d (in lex)
+          suffices ha : a ∉ (p ^ n).support by
+            rw [MvPolynomial.notMem_support_iff.mp ha, zero_mul]
+          intro ha_mem
+          have hale : toLex a ≤ toLex (n • d) := support_pow_le_lex p hp n a ha_mem
+          have hlt : toLex a + toLex b < toLex (n • d) + toLex d :=
+            add_lt_add_of_le_of_lt hale hblt
+          change toLex (a + b) < toLex (n • d + d) at hlt
+          rw [hab] at hlt
+          exact lt_irrefl _ hlt
+      · -- b ∉ p.support means coeff b p = 0
+        rw [MvPolynomial.notMem_support_iff.mp hbs, mul_zero]
+    · -- (n • d, d) ∉ antidiagonal is impossible
+      simp [Finset.mem_antidiagonal]
+
+namespace Ideal
+
+/-- The radical of a monomial ideal is monomial. -/
+theorem IsMonomial.radical_isMonomial
+    {I : Ideal (MvPolynomial σ R)} (hI : I.IsMonomial) :
+    I.radical.IsMonomial := by
+  classical
+  intro p hp
+  -- Strong induction on the support size
+  suffices ∀ k (q : MvPolynomial σ R), q ∈ I.radical → q.support.card ≤ k →
+      ∀ d ∈ q.support, MvPolynomial.monomial d 1 ∈ I.radical by
+    exact this p.support.card p hp le_rfl
+  intro k
+  induction k with
+  | zero =>
+    intro q _ hq d hd
+    simp only [Nat.le_zero, Finset.card_eq_zero] at hq
+    simp [hq] at hd
+  | succ k ih =>
+    intro q hq hcard d hd
+    by_cases hq0 : q = 0
+    · exact absurd (hq0 ▸ hd) (by simp)
+    -- Get d_max = lex maximum of q.support
+    set d_max := lexMaxSupport q hq0
+    -- Step 1: Show monomial d_max 1 ∈ I.radical
+    have hd_max_rad : MvPolynomial.monomial d_max 1 ∈ I.radical := by
+      rw [mem_radical_iff] at hq ⊢
+      obtain ⟨n, hn⟩ := hq
+      refine ⟨n, ?_⟩
+      rw [MvPolynomial.monomial_pow, one_pow]
+      -- n • d_max ∈ (q^n).support because coeff is nonzero
+      have hcoeff := coeff_pow_lexMax q hq0 n
+      have hcoeff_ne : q.coeff d_max ≠ 0 :=
+        MvPolynomial.mem_support_iff.mp (lexMaxSupport_mem_support q hq0)
+      have hpow_ne : (q.coeff d_max) ^ n ≠ 0 := pow_ne_zero n hcoeff_ne
+      have hcoeff_ne' : (q ^ n).coeff (n • d_max) ≠ 0 := by rw [hcoeff]; exact hpow_ne
+      have hmem : n • d_max ∈ (q ^ n).support := MvPolynomial.mem_support_iff.mpr hcoeff_ne'
+      exact hI (q ^ n) hn (n • d_max) hmem
+    -- Step 2: q' = q - monomial d_max (coeff d_max q) ∈ I.radical
+    set c := q.coeff d_max
+    set lt := MvPolynomial.monomial d_max c with hlt_def
+    have hlt_rad : lt ∈ I.radical := by
+      rw [hlt_def]
+      have : MvPolynomial.monomial d_max c =
+          MvPolynomial.C c * MvPolynomial.monomial d_max 1 := by
+        rw [MvPolynomial.C_mul_monomial, mul_one]
+      rw [this]
+      exact I.radical.mul_mem_left _ hd_max_rad
+    set q' := q - lt
+    have hq'_rad : q' ∈ I.radical := I.radical.sub_mem hq hlt_rad
+    -- Step 3: q'.support.card < q.support.card (since d_max is removed)
+    have hd_max_not_supp : d_max ∉ q'.support := by
+      rw [MvPolynomial.mem_support_iff, not_not]
+      simp only [q', lt]
+      simp [c]
+    have hq'_sub : q'.support ⊆ q.support.erase d_max := by
+      intro e he
+      rw [Finset.mem_erase]
+      constructor
+      · intro heq
+        exact hd_max_not_supp (heq ▸ he)
+      · rw [MvPolynomial.mem_support_iff] at he ⊢
+        intro heq
+        apply he
+        simp only [q', lt, MvPolynomial.coeff_sub, MvPolynomial.coeff_monomial]
+        split_ifs with h
+        · simp [c, ← h]
+        · simp [heq]
+    have hq'_card : q'.support.card ≤ k := by
+      calc q'.support.card
+          ≤ (q.support.erase d_max).card := Finset.card_le_card hq'_sub
+        _ = q.support.card - 1 := Finset.card_erase_of_mem (lexMaxSupport_mem_support q hq0)
+        _ ≤ k := by omega
+    -- Step 4: By induction, all monomials of q' are in I.radical
+    -- Now handle d: either d = d_max or d ∈ q'.support
+    by_cases hdd : d = d_max
+    · exact hdd ▸ hd_max_rad
+    · -- d ≠ d_max, so d ∈ q'.support
+      have hd_q' : d ∈ q'.support := by
+        rw [MvPolynomial.mem_support_iff] at hd ⊢
+        simp only [q', lt, MvPolynomial.coeff_sub, MvPolynomial.coeff_monomial,
+          if_neg (Ne.symm hdd), sub_zero]
+        exact hd
+      exact ih q' hq'_rad hq'_card d hd_q'
+
+end Ideal
+
+end RadicalMonomial
+
 end
