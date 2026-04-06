@@ -483,4 +483,99 @@ end Ideal
 
 end PrimaryForward
 
+/-! ### Primary converse helpers: exponent-outside-radical invariance
+
+These lemmas show that, given the monomial criterion from the primary
+characterization, monomial membership depends only on the `s`-part
+of the exponent. -/
+
+section PrimaryConverseHelpers
+
+variable {R : Type*} [CommRing R] {σ : Type*}
+
+open MvPolynomial Finsupp
+
+namespace Ideal
+
+/-- Adding `single i n` for `i ∉ s` preserves monomial non-membership,
+by iterating the single-step primary criterion. -/
+private theorem monomial_notMem_add_single
+    {I : Ideal (MvPolynomial σ R)} {s : Set σ}
+    (hcrit : ∀ d : σ →₀ ℕ, monomial d (1 : R) ∉ I →
+      ∀ j, j ∉ s → monomial (d + single j 1) (1 : R) ∉ I)
+    {d : σ →₀ ℕ} {i : σ} (hi : i ∉ s)
+    (n : ℕ) (hd : monomial d (1 : R) ∉ I) :
+    monomial (d + single i n) (1 : R) ∉ I := by
+  induction n with
+  | zero => simpa [single_zero] using hd
+  | succ k ih =>
+    rw [Finsupp.single_add, ← add_assoc]
+    exact hcrit _ ih i hi
+
+/-- Adding any exponent supported outside `s` preserves monomial non-membership.
+Iterates the single-step primary criterion over `Finsupp.induction`. -/
+theorem monomial_notMem_add_outside
+    {I : Ideal (MvPolynomial σ R)} {s : Set σ}
+    (hcrit : ∀ d : σ →₀ ℕ, monomial d (1 : R) ∉ I →
+      ∀ j, j ∉ s → monomial (d + single j 1) (1 : R) ∉ I)
+    {d e : σ →₀ ℕ} (he : ∀ i ∈ s, e i = 0)
+    (hd : monomial d (1 : R) ∉ I) :
+    monomial (d + e) (1 : R) ∉ I := by
+  suffices ∀ (e d : σ →₀ ℕ),
+      (∀ i ∈ s, e i = 0) → monomial d (1 : R) ∉ I →
+        monomial (d + e) (1 : R) ∉ I from this e d he hd
+  intro e
+  induction e using Finsupp.induction with
+  | zero => intro d _ hd'; simpa
+  | single_add a b f haf hb ih =>
+    intro d he' hd'
+    have ha_s : a ∉ s := fun has => hb <| by
+      have := he' a has
+      rw [Finsupp.add_apply, Finsupp.single_eq_same,
+        Finsupp.notMem_support_iff.mp haf, add_zero] at this
+      exact this
+    have hf_s : ∀ i ∈ s, f i = 0 := by
+      intro i his
+      have := he' i his
+      rw [Finsupp.add_apply,
+        Finsupp.single_eq_of_ne' (show a ≠ i from fun h => ha_s (h ▸ his)),
+        zero_add] at this
+      exact this
+    rw [add_comm (Finsupp.single a b) f, ← add_assoc]
+    exact monomial_notMem_add_single hcrit ha_s b (ih d hf_s hd')
+
+/-- Monomial membership is invariant under adding exponents outside `s`. -/
+theorem monomial_mem_iff_add_outside
+    {I : Ideal (MvPolynomial σ R)} {s : Set σ}
+    (hcrit : ∀ d : σ →₀ ℕ, monomial d (1 : R) ∉ I →
+      ∀ j, j ∉ s → monomial (d + single j 1) (1 : R) ∉ I)
+    {d e : σ →₀ ℕ} (he : ∀ i ∈ s, e i = 0) :
+    monomial d (1 : R) ∈ I ↔ monomial (d + e) (1 : R) ∈ I := by
+  constructor
+  · intro h
+    have hmul : monomial e (1 : R) * monomial d 1 ∈ I := I.mul_mem_left _ h
+    rwa [monomial_mul, one_mul, add_comm e d] at hmul
+  · exact fun h => by_contra fun hd => monomial_notMem_add_outside hcrit he hd h
+
+/-- Monomial membership depends only on the `s`-part of the exponent:
+coordinates outside `s` can be zeroed out without changing membership. -/
+theorem monomial_mem_iff_filter
+    {I : Ideal (MvPolynomial σ R)} {s : Set σ} [DecidablePred (· ∈ s)]
+    (hcrit : ∀ d : σ →₀ ℕ, monomial d (1 : R) ∉ I →
+      ∀ j, j ∉ s → monomial (d + single j 1) (1 : R) ∉ I)
+    (d : σ →₀ ℕ) :
+    monomial d (1 : R) ∈ I ↔
+      monomial (d.filter (· ∈ s)) (1 : R) ∈ I := by
+  have hdecomp : d = d.filter (· ∈ s) + d.filter (fun i => ¬ i ∈ s) := by
+    ext i; simp only [Finsupp.add_apply, Finsupp.filter_apply]
+    split_ifs <;> omega
+  have he : ∀ i ∈ s, (d.filter (fun i => ¬ i ∈ s)) i = 0 := fun i his => by
+    simp [his]
+  conv_lhs => rw [hdecomp]
+  exact (monomial_mem_iff_add_outside hcrit he).symm
+
+end Ideal
+
+end PrimaryConverseHelpers
+
 end
