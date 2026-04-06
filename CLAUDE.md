@@ -44,6 +44,7 @@ There is no test suite — correctness is enforced by Lean's type checker. A suc
 - `BEI/MinimalPrimes.lean` — Proposition 3.8, Corollary 3.9; minimal prime characterization
 - `BEI/PrimeDecomposition.lean` — Theorem 3.2, Proposition 3.6, and the remaining cycle / CM endpoints
 - `BEI/PrimeDecompositionDimension.lean` — Corollary 3.3 (dimension formula)
+- `BEI/CIIdeals.lean` — Section 4: `ciGraph`, `ciIdeal`, single-statement bridge theorem (fully proved)
 - `BEI/CohenMacaulay.lean` — CM-dependent paper results (currently over a local working CM definition)
 - `toMathlib/CohenMacaulay/Defs.lean` — local backport / working definition for the CM branch
 - `BEI.lean` — Root library entry point

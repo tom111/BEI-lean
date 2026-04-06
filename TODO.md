@@ -28,7 +28,8 @@
 | **§3 Cor 3.7** (cycle equivalences) | `BEI/PrimeDecomposition.lean`, `BEI/MinimalPrimes.lean` | `[~]` partial: prime and unmixed branches done, CM branch still open |
 | **§3 Prop 3.8** (`P_T ⊆ P_S` characterization) | `BEI/MinimalPrimes.lean` | `[x]` proved |
 | **§3 Cor 3.9** (minimal primes via cut-point sets) | `BEI/MinimalPrimes.lean` | `[x]` proved |
-| **§4** (CI-ideal applications) | not yet started | `[ ]` pending |
+| **§4 Bridge** (CI ideal = BEI, single statement) | `BEI/CIIdeals.lean` | `[x]` proved |
+| **§4 Multi** (robustness specification, corollaries) | not yet started | `[ ]` pending |
 
 ---
 
@@ -69,8 +70,11 @@ proofs and should not be overclaimed.
 
 ### Priority 2: Section 4
 
-Section 4 has not started. It should wait until the Section 3 backbone and CM story
-are stable enough that the final statements can be phrased cleanly.
+Section 4 has begun in `BEI/CIIdeals.lean`. The single-statement bridge theorem
+(`ciIdeal_single_eq_binomialEdgeIdeal`) is proved. Remaining work:
+- Multi-statement robustness specifications (union of CI graphs)
+- Corollaries transferring radicality (Cor 2.2) and minimal prime characterization
+  (Section 3) to CI ideals via the bridge
 
 ### Background / dormant
 

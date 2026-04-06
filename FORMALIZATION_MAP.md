@@ -46,9 +46,13 @@ faithfully the current Lean statements match the paper.
 
 ## Section 4: Conditional Independence Ideals
 
-| Paper result | Status | Notes |
-|---|---|---|
-| Section 4 applications | Not started | The algebraic backbone is largely in place, but the CI-ideal layer has not been formalized yet |
+| Paper result | Lean name | File | Fidelity | Notes |
+|---|---|---|---|---|
+| CI graph (binary output) | `ciGraph` | `BEI/CIIdeals.lean` | Exact | Graph on Omega with edges = same T-projection |
+| CI ideal (binary output) | `ciIdeal` | `BEI/CIIdeals.lean` | Exact | 2x2 minors of the probability matrix |
+| Single-statement bridge | `ciIdeal_single_eq_binomialEdgeIdeal` | `BEI/CIIdeals.lean` | Exact | CI ideal = BEI of the associated graph |
+| Robustness specification | | | Not started | Multi-statement union of CI graphs |
+| Corollaries (radical, minimal primes for CI) | | | Not started | Follow from Sections 2-3 via the bridge |
 
 ## Current Open Endpoints
 
@@ -57,7 +61,7 @@ faithfully the current Lean statements match the paper.
 | Proposition 1.6 | BEI-side reduction packaged end-to-end; remaining gap is the external Herzog–Hibi theorem plus CM transfer from the initial ideal |
 | Corollary 3.4 | statement present, proof still `sorry` |
 | Corollary 3.7 | prime and unmixed branches are proved; the CM branch is still `sorry` |
-| Section 4 | not started |
+| Section 4 | single-statement bridge proved; multi-statement and corollaries not started |
 
 ## Current File Split Notes
 
