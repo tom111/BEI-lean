@@ -51,6 +51,7 @@ The branch has nevertheless moved materially:
 - `path_is_CM` is proved in `BEI/PrimeDecompositionDimension.lean`
 - `prop_1_6_herzogHibi` isolates the graph-combinatorial reduction from the paper
 - the initial ideal, variable shift, and bipartite edge monomial ideal are now packaged in `BEI/CohenMacaulay.lean`
+- `rename_yPredVar_monomialInitialIdeal` proves the ideal-level transport to the shifted bipartite edge ideal
 - quotient-dimension and equidimensionality lemmas now exist for the local CM route
 
 ### Working discipline
@@ -123,6 +124,6 @@ Once that is true, the natural next stage is:
 If choosing the next task today:
 
 1. continue the CM branch from the new local CM definition;
-2. focus first on the remaining ideal-level transport and external algebraic inputs for `prop_1_6`, since Corollary 3.4 and Corollary 3.7 CM both sit downstream of the same story;
+2. focus first on the two remaining external algebraic inputs for `prop_1_6`, since Corollary 3.4 and Corollary 3.7 CM both sit downstream of the same story;
 3. keep the status files and blueprint aligned as the code changes;
 4. start Section 4 only once the CM branch is honestly scoped.

@@ -120,9 +120,8 @@ the Herzog–Hibi conditions.
 
 The BEI-side reduction is now fully packaged. What remains is:
 
-1. the ideal-level transport statement;
-2. the external CM theorem for the bipartite edge ideal;
-3. the CM transfer back from `in_<(J_G)` to `J_G`.
+1. the external CM theorem for the bipartite edge ideal;
+2. the CM transfer back from `in_<(J_G)` to `J_G`.
 
 ### Route B: direct equidimensionality on minimal primes
 

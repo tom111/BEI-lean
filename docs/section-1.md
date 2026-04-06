@@ -43,6 +43,7 @@ The supporting Cohen–Macaulay examples from Section 1 are now partly formalize
 ### Proposition 1.6
 
 The graph-combinatorial reduction from the paper is now formalized in
-`prop_1_6_herzogHibi`. The remaining gap is algebraic: the Herzog–Hibi
-Cohen–Macaulay theorem for the associated bipartite graph, together with the transfer
-from the initial ideal back to `J_G`.
+`prop_1_6_herzogHibi`, and the initial-ideal / variable-shift side is also packaged.
+The remaining gap is now exactly two external algebraic inputs: the Herzog–Hibi
+Cohen–Macaulay theorem for the associated bipartite graph, and the transfer from the
+initial ideal back to `J_G`.
