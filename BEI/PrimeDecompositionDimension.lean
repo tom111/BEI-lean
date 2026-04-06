@@ -534,43 +534,7 @@ theorem corollary_3_3_lower_bound (G : SimpleGraph V) :
     _ ≤ ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) :=
         ringKrullDim_quotient_anti (binomialEdgeIdeal_le_primeComponent G ∅)
 
-/-! ## Corollary 3.4: Cohen-Macaulay implies dimension equality -/
-
-/--
-**Corollary 3.4** (Herzog et al. 2010): If `K[x,y]/J_G` is Cohen-Macaulay, then
-  `dim(K[x,y]/J_G) = |V| + c(G)`
-where `c(G)` is the number of connected components of G.
-
-Reference: Herzog et al. (2010), Corollary 3.4.
--/
-theorem corollary_3_4 (G : SimpleGraph V)
-    (hCM : IsCohenMacaulay (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G)) :
-    ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) =
-    Fintype.card V + componentCount G ∅ := by
-  set J := binomialEdgeIdeal (K := K) G
-  -- Step 1: CM equidimensionality → all minimal primes of J_G have equal dim(R/P)
-  have hequal : ∀ P Q : Ideal (MvPolynomial (BinomialEdgeVars V) K),
-      P ∈ J.minimalPrimes → Q ∈ J.minimalPrimes →
-      ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ P) =
-      ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ Q) := by
-    intro P Q hP hQ
-    rw [Ideal.minimalPrimes_eq_comap] at hP hQ
-    obtain ⟨P', hP'min, rfl⟩ := hP
-    obtain ⟨Q', hQ'min, rfl⟩ := hQ
-    have hcm := hCM.equidimensional P' Q' hP'min hQ'min
-    -- Third isomorphism: (R/J)/P' ≃+* R/(comap(mk J) P')
-    have hiso := fun (X : Ideal (MvPolynomial (BinomialEdgeVars V) K ⧸ J)) =>
-      (Ideal.quotEquivOfEq (Ideal.Quotient.factor_ker
-        (Ideal.comap_mono (bot_le (a := X))))).symm.trans
-      (RingHom.quotientKerEquivOfSurjective
-        (Ideal.Quotient.factor_surjective (Ideal.comap_mono (bot_le (a := X)))))
-    rw [ringKrullDim_eq_of_ringEquiv (hiso P').symm,
-        ringKrullDim_eq_of_ringEquiv (hiso Q').symm, hcm]
-  -- Step 2: dim(R/J_G) = |V| + c(G). By Cor 3.3 and equidimensionality.
-  -- All minimal primes have dim = dim(R/P_∅) = |V| + c(G).
-  sorry
-
-/-! ## CM from equidimensional minimal primes -/
+/-! ## Third isomorphism for quotient dimensions -/
 
 /-- Third isomorphism for quotient dimensions:
 `dim((R/J)/P') = dim(R/(comap(mk J) P'))`. -/
@@ -590,6 +554,53 @@ private theorem ringKrullDim_quotQuot_eq
     Ideal.map_comap_of_surjective _ Ideal.Quotient.mk_surjective P'
   rw [← hmap_eq]
   exact ringKrullDim_eq_of_ringEquiv (DoubleQuot.quotQuotEquivQuotOfLE hJQ)
+
+/-! ## Corollary 3.4: Cohen-Macaulay implies dimension equality -/
+
+/--
+**Corollary 3.4** (Herzog et al. 2010): If `K[x,y]/J_G` is Cohen-Macaulay, then
+  `dim(K[x,y]/J_G) = |V| + c(G)`
+where `c(G)` is the number of connected components of G.
+
+Reference: Herzog et al. (2010), Corollary 3.4.
+-/
+theorem corollary_3_4 (G : SimpleGraph V)
+    (hCM : IsCohenMacaulay (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G)) :
+    ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) =
+    Fintype.card V + componentCount G ∅ := by
+  set J := binomialEdgeIdeal (K := K) G
+  -- Step 1: CM equidimensionality → all minimal primes have equal quotient dimension
+  have hequal : ∀ P Q : Ideal (MvPolynomial (BinomialEdgeVars V) K),
+      P ∈ J.minimalPrimes → Q ∈ J.minimalPrimes →
+      ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ P) =
+      ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ Q) := by
+    intro P Q hP hQ
+    rw [Ideal.minimalPrimes_eq_comap] at hP hQ
+    obtain ⟨P', hP'min, rfl⟩ := hP
+    obtain ⟨Q', hQ'min, rfl⟩ := hQ
+    rw [← ringKrullDim_quotQuot_eq J P', ← ringKrullDim_quotQuot_eq J Q']
+    exact hCM.equidimensional P' Q' hP'min hQ'min
+  -- Step 2: P_∅ is a minimal prime (T ≤ ∅ forces T = ∅ by prop_3_8)
+  have hP0_min : primeComponent (K := K) G ∅ ∈ J.minimalPrimes := by
+    rw [minimalPrimes_characterization]
+    exact ⟨∅, rfl, fun T hT =>
+      (Finset.subset_empty.mp ((prop_3_8 (K := K) G ∅ T).mp hT).1) ▸ le_refl _⟩
+  -- Step 3: dim(R/P_∅) = |V| + c(G)
+  have hdim0 : ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸
+      primeComponent (K := K) G ∅) = ↑(Fintype.card V + componentCount G ∅) := by
+    rw [ringKrullDim_quot_primeComponent]; simp
+  -- Step 4: All minimal primes have the same quotient dimension
+  have hall : ∀ P ∈ J.minimalPrimes,
+      ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ P) =
+      ↑(Fintype.card V + componentCount G ∅) := fun P hP =>
+    (hequal P _ hP hP0_min).trans hdim0
+  -- Step 5: dim(R/J) = sup over minimal primes = |V| + c(G)
+  rw [ringKrullDim_quotient_radical _ (corollary_2_2 (K := K) G)]
+  exact le_antisymm
+    (iSup₂_le fun P hP => (hall P hP).le)
+    (le_iSup₂_of_le _ hP0_min hdim0.ge)
+
+/-! ## CM from equidimensional minimal primes -/
 
 /-- If all `Ideal.minimalPrimes` of `J` have the same quotient dimension, then `R ⧸ J`
 is Cohen–Macaulay (under the equidimensionality definition). -/

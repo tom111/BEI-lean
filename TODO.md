@@ -23,7 +23,7 @@
 | **§3 Lem 3.1** (height formula for `P_S`) | `BEI/PrimeIdeals.lean` | `[x]` proved |
 | **§3 Thm 3.2** (`J_G = ⋂ P_S`) | `BEI/PrimeDecomposition.lean` | `[x]` proved |
 | **§3 Cor 3.3** (dimension formula) | `BEI/PrimeDecompositionDimension.lean` | `[x]` proved |
-| **§3 Cor 3.4** (CM implies `dim = n + c`) | `BEI/PrimeDecompositionDimension.lean` | `[~]` statement present, proof still open |
+| **§3 Cor 3.4** (CM implies `dim = n + c`) | `BEI/PrimeDecompositionDimension.lean` | `[x]` proved |
 | **§3 Prop 3.6** (prime iff components complete) | `BEI/PrimeDecomposition.lean` | `[x]` proved |
 | **§3 Cor 3.7** (cycle equivalences) | `BEI/PrimeDecomposition.lean`, `BEI/MinimalPrimes.lean` | `[~]` partial: prime and unmixed branches done, CM branch still open |
 | **§3 Prop 3.8** (`P_T ⊆ P_S` characterization) | `BEI/MinimalPrimes.lean` | `[x]` proved |
@@ -107,10 +107,9 @@ Some of these splits still need cleanup, but these are the current live location
 |---|---:|---|
 | `BEI/CohenMacaulay.lean` | 1 | `prop_1_6` |
 | `BEI/PrimeDecomposition.lean` | 1 | `corollary_3_7_CM` |
-| `BEI/PrimeDecompositionDimension.lean` | 1 | `corollary_3_4` |
 | `toMathlib/HeightAdditivity.lean` | 2 | dormant infrastructure |
 | `BEI/RauhApproach.lean` | 2 | archived, not on main path |
-| **Active total** | **5** | excluding archived `RauhApproach` |
+| **Active total** | **4** | excluding archived `RauhApproach` |
 
 ---
 

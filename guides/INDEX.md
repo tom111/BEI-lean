@@ -8,13 +8,13 @@ Completed guides (deleted):
 - Cycle componentCount combinatorics (Q9, Q13, Q14, Q15) — all resolved
 - Unmixed for Cor 3.7 (Q6) — `corollary_3_7_unmixed` fully proved
 - Section 4 minimal primes — `ciIdealSpec_minimalPrimes` fully proved
+- Corollary 3.4 — `corollary_3_4` fully proved
 
 ## Immediate Work Packets
 
 These are the most concrete remaining theorem tasks and the recommended order for Claude.
 
-1. [COR_3_4_CM_DIMENSION.md](COR_3_4_CM_DIMENSION.md) — finish `corollary_3_4` from the already-written equidimensionality step
-2. [COR_3_7_CM_BRANCH.md](COR_3_7_CM_BRANCH.md) — finish the remaining CM branch of Corollary 3.7 after Corollary 3.4 is in place
+1. [COR_3_7_CM_BRANCH.md](COR_3_7_CM_BRANCH.md) — finish the remaining CM branch of Corollary 3.7 after Corollary 3.4 is in place
 
 ## Longer-Horizon CM Packet
 
