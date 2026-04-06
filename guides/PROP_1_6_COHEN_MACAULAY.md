@@ -82,8 +82,10 @@ Status: done as `initialIdeal_closed_eq`.
 Represent the cyclic variable permutation as a ring equivalence of multivariate
 polynomial rings and prove that it transports the initial ideal to the bipartite edge ideal.
 
-Status: the variable map and generator-level transport are now packaged; the remaining
-work is the ideal-level transport statement.
+Status: done. The ideal-level transport is proved as `rename_yPredVar_monomialInitialIdeal`:
+`Ideal.map (rename (yPredVar n hn)) (monomialInitialIdeal G) = bipartiteEdgeMonomialIdeal G`.
+The definition of `bipartiteEdgeMonomialIdeal` includes the `i ≤ j` constraint (HH condition (ii)),
+which is automatic from the construction.
 
 #### Subgoal 3: define the bipartite graph `Gamma`
 
@@ -95,11 +97,11 @@ Create the graph used in the paper's reduction and prove it satisfies:
 
 These are purely graph-combinatorial.
 
-Status:
+Status: done.
 
-- the Herzog–Hibi conditions are packaged;
-- the bipartite edge monomial ideal is defined;
-- the missing part is the ideal-level algebraic identification and the external CM input.
+- the Herzog–Hibi conditions are packaged (`prop_1_6_herzogHibi`);
+- the bipartite edge monomial ideal is defined with the `i ≤ j` constraint;
+- the ideal-level transport is proved (`rename_yPredVar_monomialInitialIdeal`).
 
 
 ## Part 2: decide the CM foundation
@@ -179,12 +181,13 @@ This guide is successful when the repo contains:
 2. a clear statement of the exact CM/equidimensional theorem still needed for the final step;
 3. no stale text implying that the local CM definition is still a placeholder.
 
-Current state (2026-04-05):
+Current state (2026-04-06):
 
 - item 1 is done: `initialIdeal_closed_eq` proves the initial ideal description,
-  `yPredVar` and `rename_yPredVar_generator` formalize the variable shift,
-  `bipartiteEdgeMonomialIdeal` defines the shifted ideal, and
-  `prop_1_6_herzogHibi` packages the HH conditions on Γ.
+  `rename_yPredVar_monomialInitialIdeal` proves the ideal-level transport from
+  the monomial initial ideal to `bipartiteEdgeMonomialIdeal`, and
+  `prop_1_6_herzogHibi` packages the HH conditions on Γ. The definition of
+  `bipartiteEdgeMonomialIdeal` now includes the `i ≤ j` constraint (HH condition (ii)).
 - item 2 is done: the two remaining external inputs are clearly stated in the
   docstring of `prop_1_6` — the Herzog–Hibi CM theorem and the initial ideal
   CM transfer.
