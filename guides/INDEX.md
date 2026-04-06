@@ -26,6 +26,7 @@ The Proposition 1.6 branch is still larger than a one-lemma task. The reference 
 These are not first-line work packets, but they contain important strategic context.
 
 - [ANSWER_05_COHEN_MACAULAY_FOUNDATION.md](ANSWER_05_COHEN_MACAULAY_FOUNDATION.md) — CM foundations and honest scope
+- [ANSWER_18_PRIMARY_CONVERSE_DECOMPOSITION.md](ANSWER_18_PRIMARY_CONVERSE_DECOMPOSITION.md) — break the primary converse into smaller structural lemmas; avoid the false `coeff_mul_lexMax_left` route
 - [ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md](ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md) — backup direct route for Proposition 1.6
 - [ANSWER_17_PROP_1_6_STRATEGY.md](ANSWER_17_PROP_1_6_STRATEGY.md) — why the paper route should still be preferred
 - [CM_CODEBASE_RESEARCH_MONOMIAL_IDEAL.md](CM_CODEBASE_RESEARCH_MONOMIAL_IDEAL.md) — what the local CM/PR codebase does and does not provide for the monomial-ideal step
