@@ -35,6 +35,7 @@ The core development lives in:
 - [BEI/PrimeDecomposition.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecomposition.lean)
 - [BEI/PrimeDecompositionDimension.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecompositionDimension.lean)
 - [BEI/MinimalPrimes.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/MinimalPrimes.lean)
+- [BEI/CIIdeals.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/CIIdeals.lean)
 - [BEI/CohenMacaulay.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/CohenMacaulay.lean)
 
 Supporting generic lemmas intended for possible upstreaming live in:
@@ -47,9 +48,10 @@ Supporting generic lemmas intended for possible upstreaming live in:
 - Section 1 covers closed graphs and the quadratic Gröbner basis criterion.
 - Section 2 covers the reduced Gröbner basis and radicality.
 - Section 3 covers prime components, minimal primes, and dimension statements.
-- The remaining CM endpoints for Section 3 are split between `PrimeDecomposition.lean`
-  and `PrimeDecompositionDimension.lean`.
-- Section 4 concerns the conditional-independence interpretation.
+- The Section 3 CM consequences now live in `PrimeDecompositionDimension.lean`.
+- Section 4 concerns the conditional-independence interpretation; `CIIdeals.lean`
+  now contains the binary-output single-statement bridge, specification bridge, and
+  transferred radicality / prime decomposition / minimal-prime theorems.
 
 ## How to use this site
 

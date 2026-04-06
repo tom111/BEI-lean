@@ -43,18 +43,17 @@
 Active CM work lives in:
 - `BEI/CohenMacaulay.lean`
 - `guides/PROP_1_6_COHEN_MACAULAY.md`
-- `guides/COR_3_4_CM_DIMENSION.md`
 - `guides/ANSWER_05_COHEN_MACAULAY_FOUNDATION.md`
 - `guides/ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md`
+- `guides/MONOMIAL_IDEAL_PRIMARY_DECOMP.md`
+- `guides/CM_CODEBASE_RESEARCH_MONOMIAL_IDEAL.md`
 - `guides/cm_pr_26218/`
 
 `IsCohenMacaulay` now has a real local working definition (equidimensionality, adapted
 from mathlib PR #26218) in `toMathlib/CohenMacaulay/Defs.lean`.
 
-The remaining CM endpoints are:
+The remaining CM paper endpoint is:
 - `BEI/CohenMacaulay.lean`: `prop_1_6`
-- `BEI/PrimeDecompositionDimension.lean`: `corollary_3_4`
-- `BEI/PrimeDecomposition.lean`: `corollary_3_7_CM`
 
 Recently completed CM groundwork includes:
 - `BEI/CohenMacaulay.lean`: `complete_is_CM`
@@ -91,9 +90,9 @@ The minimal-prime transfer assumes a connected union graph, mirroring `corollary
 
 - `BEI/GroebnerBasisSPolynomial.lean` carries the Buchberger / S-polynomial proof of Theorem 2.1.
 - `BEI/GroebnerBasis.lean` carries reducedness and the paper-facing wrapper.
-- `BEI/PrimeDecomposition.lean` carries Theorem 3.2, Proposition 3.6, and the CM/cycle endpoints.
-- `BEI/PrimeDecompositionDimension.lean` carries Corollary 3.3, Corollary 3.4, the path CM example, and supporting quotient-dimension / equidimensionality lemmas.
-- `BEI/CIIdeals.lean` carries the Section 4 binary-output setup, the single-statement and specification-level CI ideal = BEI bridges, and the transferred radicality / prime-decomposition theorems.
+- `BEI/PrimeDecomposition.lean` carries Theorem 3.2 and Proposition 3.6.
+- `BEI/PrimeDecompositionDimension.lean` carries Corollary 3.3, Corollary 3.4, `corollary_3_7_CM`, the path CM example, and supporting quotient-dimension / equidimensionality lemmas.
+- `BEI/CIIdeals.lean` carries the Section 4 binary-output setup, the single-statement and specification-level CI ideal = BEI bridges, and the transferred radicality / prime-decomposition / minimal-prime theorems.
 - `BEI/CohenMacaulay.lean` carries Proposition 1.6 and the complete-graph CM example.
 - `toMathlib/CohenMacaulay/Defs.lean` carries the local working CM definition used by the current CM branch.
 

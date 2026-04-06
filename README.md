@@ -7,9 +7,11 @@ This is an attempt to formalize the paper "Binomial edge ideals and conditional 
 
 The current development covers the main Gröbner-basis and prime-decomposition backbone
 of the paper, including Theorems 1.1, 2.1, 3.2, the Section 3 dimension formula, and
-the minimal-prime description. The main remaining gaps are the Cohen–Macaulay branch
-(Proposition 1.6, Corollary 3.4, and the CM direction of Corollary 3.7) and the
-Section 4 CI-ideal applications.
+the minimal-prime description. It also includes the binary-output Section 4
+single-statement bridge, specification bridge, and transferred radicality / prime
+decomposition / minimal-prime results for CI ideals. The main remaining paper gap is
+the Cohen–Macaulay branch of Proposition 1.6. The Section 3 CM corollaries and the
+Section 4 CI-ideal transfers are now formalized.
 
 Documentation and blueprint scaffold:
 

@@ -42,9 +42,9 @@ There is no test suite — correctness is enforced by Lean's type checker. A suc
 - `BEI/Radical.lean` — Corollary 2.2 (`J_G` is radical)
 - `BEI/PrimeIdeals.lean` — `primeComponent`, `componentCount`; Section 3 prime ideal properties
 - `BEI/MinimalPrimes.lean` — Proposition 3.8, Corollary 3.9; minimal prime characterization
-- `BEI/PrimeDecomposition.lean` — Theorem 3.2, Proposition 3.6, and the remaining cycle / CM endpoints
-- `BEI/PrimeDecompositionDimension.lean` — Corollary 3.3 (dimension formula)
-- `BEI/CIIdeals.lean` — Section 4: `ciGraph`, `ciIdeal`, single-statement bridge theorem (fully proved)
+- `BEI/PrimeDecomposition.lean` — Theorem 3.2 and Proposition 3.6
+- `BEI/PrimeDecompositionDimension.lean` — Corollaries 3.3 and 3.4, `corollary_3_7_CM`, plus quotient-dimension / CM support lemmas
+- `BEI/CIIdeals.lean` — Section 4: `CIStatement`, `ciGraph`, `ciIdeal`, `ciGraphSpec`, `ciIdealSpec`, the single-statement and specification bridge theorems, and transferred radicality / prime decomposition / minimal-prime theorems
 - `BEI/CohenMacaulay.lean` — CM-dependent paper results (currently over a local working CM definition)
 - `toMathlib/CohenMacaulay/Defs.lean` — local backport / working definition for the CM branch
 - `BEI.lean` — Root library entry point
@@ -72,7 +72,8 @@ There is no test suite — correctness is enforced by Lean's type checker. A suc
 
 - Treat `BEI.tex` and the Lean files as the source of truth.
 - If a theorem is finished, moved, split across files, or downgraded from an earlier claim, update `TODO.md` and `FORMALIZATION_MAP.md` in the same round.
-- `IsCohenMacaulay` now has a real local working definition (equidimensionality) in `toMathlib/CohenMacaulay/Defs.lean`, but the CM-dependent theorems (Prop 1.6, Cor 3.4, Cor 3.7 CM) still need proofs.
+- `IsCohenMacaulay` now has a real local working definition (equidimensionality) in `toMathlib/CohenMacaulay/Defs.lean`. The Section 3 CM consequences `corollary_3_4` and `corollary_3_7_CM` are proved; Proposition 1.6 remains the active CM endpoint.
+- Section 4 is fully landed in `BEI/CIIdeals.lean` at the current paper-facing level: the single-statement bridge, specification bridge, and transferred radicality / prime decomposition / minimal-prime theorems are all proved. The minimal-prime transfer keeps the connectedness hypothesis from `corollary_3_9`.
 - `OVERVIEW.md`, `NEXT_STEPS_PLAN.md`, and the public `docs/` pages should stay reader-facing; avoid turning them into internal blocker logs.
 
 ## Worker Routine

@@ -13,13 +13,12 @@ Completed guides (deleted):
 
 ## Immediate Work Packets
 
-No immediate theorem work packets remain. The next targets are the longer-horizon CM items below.
+- [PROP_1_6_COHEN_MACAULAY.md](PROP_1_6_COHEN_MACAULAY.md) — primary remaining paper endpoint: Proposition 1.6 CM branch and its remaining external algebraic inputs
+- [MONOMIAL_IDEAL_PRIMARY_DECOMP.md](MONOMIAL_IDEAL_PRIMARY_DECOMP.md) — supporting `toMathlib` packet: monomial ideals prime / primary classification for the monomial-edge-ideal route
 
 ## Longer-Horizon CM Packet
 
-This is still important, but it is a larger program than the three tasks above.
-
-- [PROP_1_6_COHEN_MACAULAY.md](PROP_1_6_COHEN_MACAULAY.md) — Proposition 1.6 CM branch and its remaining external algebraic inputs
+The Proposition 1.6 branch is still larger than a one-lemma task. The reference notes below record the main strategic splits inside that program.
 
 ## CM Reference Notes
 

@@ -12,17 +12,19 @@ The project already formalizes the main algebraic backbone of the paper:
 - Corollary 2.2 on radicality
 - Lemma 3.1 and Theorem 3.2 on the prime components `P_S(G)`
 - Corollary 3.3 on the Krull-dimension formula
+- Corollary 3.4 on the Cohen–Macaulay dimension consequence
 - Proposition 3.8 and Corollary 3.9 on minimal primes
+- Corollary 3.7, including the CM branch for cycle graphs
+- the Section 4 binary-output CI ideal = BEI bridges and transferred radicality / prime decomposition / minimal-prime results
 
 It also now contains the basic Cohen–Macaulay examples from the paper:
 
 - the complete graph case
 - the path graph case
 
-The remaining paper endpoints are concentrated in:
+The remaining paper endpoint is concentrated in:
 
-- the Cohen–Macaulay branch (Proposition 1.6, Corollary 3.4, Corollary 3.7 CM)
-- Section 4 on CI-ideals
+- the Cohen–Macaulay sufficient-condition theorem of Proposition 1.6
 
 
 ## Mathematical Setup
@@ -48,9 +50,10 @@ The main mathematical files are now split roughly as follows:
 - `BEI/GroebnerBasis.lean` — reducedness and paper-facing Theorem 2.1 wrapper
 - `BEI/Radical.lean` — Corollary 2.2
 - `BEI/PrimeIdeals.lean` — prime components and the height formula
-- `BEI/PrimeDecomposition.lean` — Theorem 3.2, Proposition 3.6, Corollary 3.7 prime / CM branch
-- `BEI/PrimeDecompositionDimension.lean` — Corollaries 3.3 and 3.4
+- `BEI/PrimeDecomposition.lean` — Theorem 3.2 and Proposition 3.6
+- `BEI/PrimeDecompositionDimension.lean` — Corollaries 3.3, 3.4, and the CM branch of Corollary 3.7
 - `BEI/MinimalPrimes.lean` — Proposition 3.8, Corollary 3.9, and Corollary 3.7 unmixed branch
+- `BEI/CIIdeals.lean` — Section 4 binary-output CI ideals, both bridge theorems, and transferred radicality / prime decomposition / minimal-prime theorems
 - `BEI/CohenMacaulay.lean` — Proposition 1.6 and the CM examples
 
 Generic or backported infrastructure lives in `toMathlib/`, including
@@ -65,8 +68,9 @@ how to finish the remaining paper endpoints cleanly and document them accurately
 At the time of this summary:
 
 - the non-CM Section 3 backbone is in place, including the unmixed branch of Corollary 3.7;
-- the CM branch uses a real local working definition, and the complete / path examples are proved, but the remaining CM-dependent theorems still contain `sorry`;
-- Section 4 has not yet been formalized as a theorem layer.
+- the Section 3 CM consequences `corollary_3_4` and `corollary_3_7_CM` are proved over the local equidimensionality-style definition;
+- Section 4 now has the binary-output single-statement bridge, specification bridge, and transferred radicality / prime decomposition / minimal-prime theorems in `BEI/CIIdeals.lean`;
+- the only active paper endpoint still depending on `sorry` is Proposition 1.6.
 
 
 ## Where To Look Next

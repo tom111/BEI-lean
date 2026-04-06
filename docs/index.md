@@ -64,5 +64,6 @@ It is intended as a reader-facing map of the project:
 - Section 1 is largely formalized, including Theorem 1.1.
 - Section 2 is largely formalized, including the reduced Gröbner basis and radicality results.
 - Section 3 now includes the prime decomposition, minimal-prime results, and the dimension formula.
-- The main remaining Section 3 gaps are the Cohen–Macaulay endpoints of Corollary 3.7 and Corollary 3.4.
-- Section 4 is not yet formalized as a theorem layer.
+- Section 3 now also includes Corollary 3.4 and the CM branch of Corollary 3.7.
+- Section 4 now includes the binary-output single-statement bridge, specification bridge, and transferred radicality / prime decomposition / minimal-prime results in `BEI/CIIdeals.lean`.
+- The main remaining paper endpoint is Proposition 1.6.
