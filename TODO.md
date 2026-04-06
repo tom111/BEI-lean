@@ -42,6 +42,7 @@
 
 Active CM work lives in:
 - `BEI/CohenMacaulay.lean`
+- `toMathlib/MonomialIdeal.lean` — `Ideal.IsMonomial`, `isPrime_span_X_image_set`, prime classification
 - `guides/PROP_1_6_COHEN_MACAULAY.md`
 - `guides/ANSWER_05_COHEN_MACAULAY_FOUNDATION.md`
 - `guides/ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md`
@@ -95,6 +96,7 @@ The minimal-prime transfer assumes a connected union graph, mirroring `corollary
 - `BEI/CIIdeals.lean` carries the Section 4 binary-output setup, the single-statement and specification-level CI ideal = BEI bridges, and the transferred radicality / prime-decomposition / minimal-prime theorems.
 - `BEI/CohenMacaulay.lean` carries Proposition 1.6 and the complete-graph CM example.
 - `toMathlib/CohenMacaulay/Defs.lean` carries the local working CM definition used by the current CM branch.
+- `toMathlib/MonomialIdeal.lean` carries `Ideal.IsMonomial`, the `Set σ` version of `isPrime_span_X_image`, and the prime classification theorem for monomial ideals.
 
 Some of these splits still need cleanup, but these are the current live locations.
 
