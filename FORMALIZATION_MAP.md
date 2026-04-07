@@ -21,7 +21,7 @@ faithfully the current Lean statements match the paper.
 | Corollary 1.3 | `cor_1_3`, `cor_1_3_connected_forward`, `pathGraph_isClosedGraph` | `BEI/GraphProperties.lean` | Exact | Formalized in the connected-graph form implicit in the paper |
 | Proposition 1.4 | `prop_1_4` | `BEI/GraphProperties.lean` | Equivalent | Directed shortest-path formulation |
 | Proposition 1.5 | `prop_1_5` | `BEI/GraphProperties.lean` | Exact | Unique minimal closed supergraph |
-| Proposition 1.6 | `prop_1_6`, `prop_1_6_herzogHibi`, `initialIdeal_closed_eq`, `rename_yPredVar_monomialInitialIdeal` | `BEI/CohenMacaulay.lean` | Sorry | The BEI-side reduction chain is now fully packaged; the remaining gap is exactly the external Herzog–Hibi theorem and CM transfer from the initial ideal |
+| Proposition 1.6 | `prop_1_6`, `prop_1_6_herzogHibi`, `initialIdeal_closed_eq`, `rename_yPredVar_monomialInitialIdeal` | `BEI/CohenMacaulay.lean` | Sorry | The BEI-side reduction chain is packaged. The next internal step is to identify `bipartiteEdgeMonomialIdeal` with a variable-pair ideal and transport the new minimal-prime / vertex-cover results; the remaining external gap is the Herzog–Hibi CM/equidimensionality theorem plus CM transfer from the initial ideal |
 
 ## Section 2: Reduced Gröbner Basis and Radicality
 
@@ -61,7 +61,7 @@ faithfully the current Lean statements match the paper.
 
 | Paper endpoint | Current state |
 |---|---|
-| Proposition 1.6 | BEI-side reduction packaged end-to-end; remaining gap is the external Herzog–Hibi theorem plus CM transfer from the initial ideal |
+| Proposition 1.6 | BEI-side reduction packaged; variable-pair / vertex-cover support is now in place. Remaining gap: bridge `bipartiteEdgeMonomialIdeal` to the new edge-ideal API, then finish the Herzog–Hibi CM/equidimensionality step and transfer back from the initial ideal |
 | Corollary 3.4 | **proved** |
 | Corollary 3.7 | **proved** (all branches) |
 | Section 4 | complete: bridges, radicality, prime decomposition, and minimal-prime transfer all proved |
@@ -79,10 +79,21 @@ faithfully the current Lean statements match the paper.
 | Leading coefficient in powers | `coeff_pow_lexMax` | `toMathlib/MonomialIdeal.lean` | proved | Isolates the lex-maximal support contribution in `p ^ n` |
 | Radical is monomial | `Ideal.IsMonomial.radical_isMonomial` | `toMathlib/MonomialIdeal.lean` | proved | Uses lex-max leading-term extraction; requires `[LinearOrder σ]` |
 | Outside-`s` structural invariance | `Ideal.monomial_mem_iff_add_outside`, `Ideal.monomial_mem_iff_filter` | `toMathlib/MonomialIdeal.lean` | proved | Adding exponents outside the radical-variable set does not change monomial membership |
-| Converse helpers | `Ideal.IsMonomial.not_mem_exists_monomial_notMem`, `Ideal.mem_of_mul_mem_of_lexMax_outside` | `toMathlib/MonomialIdeal.lean` | proved | Support infrastructure for the primary converse |
+| Support extraction | `Ideal.not_mem_exists_monomial_notMem` | `toMathlib/MonomialIdeal.lean` | proved | General: if `p ∉ I`, some support monomial is not in `I` (only needs `CommRing`) |
+| Converse helpers | `Ideal.mem_of_mul_mem_of_lexMax_outside` | `toMathlib/MonomialIdeal.lean` | proved | Leading-term peeling for the primary converse |
 | Forward primary characterization | `Ideal.IsMonomial.isPrimary_radical_eq_span_X` | `toMathlib/MonomialIdeal.lean` | proved | Primary monomial → radical is variable-generated ∧ criterion |
 | Converse primary characterization | `Ideal.IsMonomial.isPrimary_of_criterion` | `toMathlib/MonomialIdeal.lean` | proved | Criterion + radical = span(X '' s) → primary; minimal bad s-exponent + primality of span(X '' s) |
 | Full primary iff | `Ideal.IsMonomial.isPrimary_iff` | `toMathlib/MonomialIdeal.lean` | proved | Complete characterization of primary monomial ideals |
+
+### Squarefree monomial primes (`toMathlib/SquarefreeMonomialPrimes.lean`)
+
+| Result | Lean name(s) | File | Status | Notes |
+|--------|-------------|------|--------|-------|
+| Variable membership | `MvPolynomial.X_mem_span_X_image_iff` | `toMathlib/SquarefreeMonomialPrimes.lean` | proved | `X i ∈ span(X '' S) ↔ i ∈ S`; only needs `Nontrivial R` |
+| Containment ↔ vertex cover | `MvPolynomial.variablePairIdeal_le_span_X_iff` | `toMathlib/SquarefreeMonomialPrimes.lean` | proved | Edge ideal ≤ variable ideal iff vertex cover |
+| Minimal prime → minimal cover | `MvPolynomial.minimalPrime_variablePairIdeal_eq_span` | `toMathlib/SquarefreeMonomialPrimes.lean` | proved | Forward direction |
+| Minimal cover → minimal prime | `MvPolynomial.span_minimalVertexCover_minimalPrime` | `toMathlib/SquarefreeMonomialPrimes.lean` | proved | Backward direction |
+| Full iff | `MvPolynomial.minimalPrime_variablePairIdeal_iff` | `toMathlib/SquarefreeMonomialPrimes.lean` | proved | Complete characterization |
 
 ## Current File Split Notes
 
@@ -93,6 +104,8 @@ faithfully the current Lean statements match the paper.
 - `BEI/CIIdeals.lean` carries the Section 4 binary-output setup, both bridge theorems, and the transferred radicality / prime-decomposition / minimal-prime theorems.
 - `BEI/CohenMacaulay.lean` carries Proposition 1.6 and the complete-graph CM example.
 - `toMathlib/CohenMacaulay/Defs.lean` carries the local working CM definition currently used in the project.
-- `toMathlib/MonomialIdeal.lean` carries `Ideal.IsMonomial`, `MvPolynomial.isPrime_span_X_image_set` (Set version), `Ideal.exists_variable_mem_of_monomial_mem_prime`, `Ideal.IsMonomial.isPrime_iff_eq_span_X_image` (prime monomial ideals = variable ideals), `Ideal.IsMonomial.span_X_image`, `coeff_pow_lexMax`, `Ideal.IsMonomial.radical_isMonomial`, `Ideal.isPrimary_monomial_criterion`, `Ideal.IsMonomial.isPrimary_radical_eq_span_X`, the structural outside-`s` membership lemmas, and the partial converse infrastructure around `Ideal.mem_of_mul_mem_of_lexMax_outside`.
+- `toMathlib/MonomialIdeal.lean` carries `Ideal.IsMonomial`, `MvPolynomial.isPrime_span_X_image_set` (Set version), `Ideal.exists_variable_mem_of_monomial_mem_prime`, `Ideal.IsMonomial.isPrime_iff_eq_span_X_image` (prime monomial ideals = variable ideals), `Ideal.IsMonomial.span_X_image`, `coeff_pow_lexMax`, `Ideal.IsMonomial.radical_isMonomial`, `Ideal.isPrimary_monomial_criterion`, `Ideal.IsMonomial.isPrimary_radical_eq_span_X`, the structural outside-`s` membership lemmas, the general support-extraction lemma `Ideal.not_mem_exists_monomial_notMem`, the converse helper `Ideal.mem_of_mul_mem_of_lexMax_outside`, and the full primary iff `Ideal.IsMonomial.isPrimary_iff`.
+
+- `toMathlib/SquarefreeMonomialPrimes.lean` carries `variablePairIdeal`, `IsVertexCover`, `IsMinimalVertexCover`, and the complete minimal prime ↔ minimal vertex cover characterization for edge ideals.
 
 These split points should be reflected in status docs whenever the structure changes again.

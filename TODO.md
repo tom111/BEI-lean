@@ -43,10 +43,11 @@
 Active CM work lives in:
 - `BEI/CohenMacaulay.lean`
 - `toMathlib/MonomialIdeal.lean` — `Ideal.IsMonomial`, prime classification, radical-is-monomial, full primary iff characterization
+- `toMathlib/SquarefreeMonomialPrimes.lean` — variable-pair ideals, vertex covers, and minimal prime ↔ minimal vertex cover
 - `guides/PROP_1_6_COHEN_MACAULAY.md`
+- `guides/PROP_1_6_VARIABLE_PAIR_BRIDGE.md`
 - `guides/ANSWER_05_COHEN_MACAULAY_FOUNDATION.md`
 - `guides/ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md`
-- `guides/SQUAREFREE_MONOMIAL_MINIMAL_PRIMES.md`
 - `guides/CM_CODEBASE_RESEARCH_MONOMIAL_IDEAL.md`
 - `guides/cm_pr_26218/`
 
@@ -75,9 +76,19 @@ For Proposition 1.6 specifically, the remaining gap is now algebraic rather than
 - Herzog–Hibi CM theorem for the associated bipartite graph
 - transfer from `S / in_<(J_G)` to `S / J_G`
 
-The next supporting `toMathlib` target on this branch is:
-- minimal primes of squarefree monomial ideals via minimal vertex covers from
-  `guides/SQUAREFREE_MONOMIAL_MINIMAL_PRIMES.md`
+The minimal-primes-via-vertex-covers correspondence is now proved in
+`toMathlib/SquarefreeMonomialPrimes.lean`:
+- `MvPolynomial.variablePairIdeal_le_span_X_iff` (containment ↔ vertex cover)
+- `MvPolynomial.minimalPrime_variablePairIdeal_iff` (minimal primes = minimal vertex covers)
+
+The next concrete step for Proposition 1.6 is:
+- connect `bipartiteEdgeMonomialIdeal` to `MvPolynomial.variablePairIdeal` for the
+  Herzog–Hibi bipartite graph encoded by `G`
+- transport the squarefree minimal-prime / vertex-cover classification to that ideal
+
+After that, the remaining algebraic gap is to use the Herzog–Hibi conditions to show
+all relevant minimal vertex covers have equal size (equidimensionality), and then
+finish the CM transfer from `S / in_<(J_G)` back to `S / J_G`.
 
 ### Priority 2: Section 4
 
@@ -104,7 +115,8 @@ The minimal-prime transfer assumes a connected union graph, mirroring `corollary
 - `BEI/CIIdeals.lean` carries the Section 4 binary-output setup, the single-statement and specification-level CI ideal = BEI bridges, and the transferred radicality / prime-decomposition / minimal-prime theorems.
 - `BEI/CohenMacaulay.lean` carries Proposition 1.6 and the complete-graph CM example.
 - `toMathlib/CohenMacaulay/Defs.lean` carries the local working CM definition used by the current CM branch.
-- `toMathlib/MonomialIdeal.lean` carries `Ideal.IsMonomial`, the `Set σ` version of `isPrime_span_X_image`, the prime classification theorem for monomial ideals, `Ideal.IsMonomial.span_X_image`, `coeff_pow_lexMax`, `Ideal.IsMonomial.radical_isMonomial`, `Ideal.isPrimary_monomial_criterion`, `Ideal.IsMonomial.isPrimary_radical_eq_span_X`, the structural lemmas `Ideal.monomial_mem_iff_add_outside` / `Ideal.monomial_mem_iff_filter`, and partial converse infrastructure including `Ideal.IsMonomial.not_mem_exists_monomial_notMem` and `Ideal.mem_of_mul_mem_of_lexMax_outside`.
+- `toMathlib/MonomialIdeal.lean` carries `Ideal.IsMonomial`, the `Set σ` version of `isPrime_span_X_image`, the prime classification theorem for monomial ideals, `Ideal.IsMonomial.span_X_image`, `coeff_pow_lexMax`, `Ideal.IsMonomial.radical_isMonomial`, `Ideal.isPrimary_monomial_criterion`, `Ideal.IsMonomial.isPrimary_radical_eq_span_X`, the structural lemmas `Ideal.monomial_mem_iff_add_outside` / `Ideal.monomial_mem_iff_filter`, the general support-extraction lemma `Ideal.not_mem_exists_monomial_notMem`, the converse helper `Ideal.mem_of_mul_mem_of_lexMax_outside`, and the full primary iff `Ideal.IsMonomial.isPrimary_iff`.
+- `toMathlib/SquarefreeMonomialPrimes.lean` carries `MvPolynomial.variablePairIdeal`, `MvPolynomial.IsVertexCover`, `MvPolynomial.IsMinimalVertexCover`, the containment-iff-vertex-cover theorem, and the complete minimal prime ↔ minimal vertex cover characterization.
 
 Some of these splits still need cleanup, but these are the current live locations.
 

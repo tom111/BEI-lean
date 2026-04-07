@@ -48,6 +48,7 @@ There is no test suite — correctness is enforced by Lean's type checker. A suc
 - `BEI/CohenMacaulay.lean` — CM-dependent paper results (currently over a local working CM definition)
 - `toMathlib/CohenMacaulay/Defs.lean` — local backport / working definition for the CM branch
 - `toMathlib/MonomialIdeal.lean` — monomial ideals in `MvPolynomial`, variable-generated prime ideals, the prime classification for monomial ideals, `coeff_pow_lexMax`, `radical_isMonomial`, the full primary monomial ideal characterization (`isPrimary_iff`), and supporting structural lemmas
+- `toMathlib/SquarefreeMonomialPrimes.lean` — variable-pair ideals (edge ideals), vertex covers, and minimal prime ↔ minimal vertex cover classification
 - `BEI.lean` — Root library entry point
 - `BEI.tex` — Reference paper with the mathematical content being formalized
 - `TODO.md` / `FORMALIZATION_MAP.md` — human-facing status docs that must be updated whenever theorem status or file layout changes

@@ -16,6 +16,8 @@ also contains each of the polynomial's support monomials (with coefficient 1).
 
 ## Main results
 
+* `Ideal.not_mem_exists_monomial_notMem`: if `p ∉ I`, some support monomial
+  of `p` (with coefficient 1) is not in `I` — a general support extraction fact
 * `Ideal.IsMonomial`: predicate for monomial ideals
 * `MvPolynomial.isPrime_span_X_image_set`: the ideal `span (X '' s)` is prime
   for any `s : Set σ`
@@ -229,6 +231,30 @@ theorem IsMonomial.span_X_image (s : Set σ) :
   have hm_eq : m = d :=
     Finset.mem_singleton.mp (MvPolynomial.support_monomial_subset hm)
   exact hm_eq ▸ hp d hd
+
+/-! ### Support extraction lemma
+
+If a polynomial does not belong to an ideal, then at least one of its support
+monomials (with coefficient 1) is not in the ideal. This is the contrapositive of
+the fact that any polynomial equals `∑ d in p.support, C (coeff d p) * monomial d 1`,
+so if every such monomial were in `I`, the polynomial would be too.
+
+This requires only `CommRing R` — no domain, ordering, or monomial-ideal hypotheses. -/
+
+open MvPolynomial in
+omit [IsDomain R] in
+/-- If a polynomial `p` is not in an ideal `I`, then some support monomial of `p`
+(with coefficient 1) is not in `I`. -/
+lemma not_mem_exists_monomial_notMem
+    {I : Ideal (MvPolynomial σ R)}
+    {p : MvPolynomial σ R} (hp : p ∉ I) :
+    ∃ d ∈ p.support, monomial d (1 : R) ∉ I := by
+  by_contra h; push_neg at h; apply hp
+  conv => rw [p.as_sum]
+  exact Submodule.sum_mem I fun d hd => by
+    rw [show monomial d (coeff d p) = C (coeff d p) * monomial d 1 from by
+      rw [C_mul_monomial, mul_one]]
+    exact I.mul_mem_left _ (h d hd)
 
 /-! ### Primary monomial ideal criterion -/
 
@@ -622,24 +648,6 @@ variable {R : Type*} [CommRing R] [IsDomain R] {σ : Type*} [LinearOrder σ]
 open MvPolynomial Finsupp
 
 namespace Ideal
-
-section
-
-variable {R : Type*} [CommRing R] {σ : Type*}
-
-/-- If `p ∉ I`, some support monomial of `p` is not in `I`. -/
-lemma not_mem_exists_monomial_notMem
-    {I : Ideal (MvPolynomial σ R)}
-    {p : MvPolynomial σ R} (hp : p ∉ I) :
-    ∃ d ∈ p.support, monomial d (1 : R) ∉ I := by
-  by_contra h; push_neg at h; apply hp
-  conv => rw [p.as_sum]
-  exact Submodule.sum_mem I fun d hd => by
-    rw [show monomial d (coeff d p) = C (coeff d p) * monomial d 1 from by
-      rw [C_mul_monomial, mul_one]]
-    exact I.mul_mem_left _ (h d hd)
-
-end
 
 /-- If `x * y ∈ I` and the lex-max support element of `y` is outside `s`,
 then `x ∈ I`. This is proved by peeling off the leading term of `x`

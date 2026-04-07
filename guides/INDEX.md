@@ -12,11 +12,13 @@ Completed guides (deleted):
 - Corollary 3.7 CM — `corollary_3_7_CM` fully proved
 - Primary converse (ANSWER_18) — `isPrimary_of_criterion` and `isPrimary_iff` fully proved
 - Monomial ideal primary decomp guide — primary iff fully proved
+- Support-monomial cleanup — `Ideal.not_mem_exists_monomial_notMem` relocated as a general lemma before monomial-ideal specializations
+- Squarefree monomial minimal primes — `minimalPrime_variablePairIdeal_iff` fully proved
 
 ## Immediate Work Packets
 
+- [PROP_1_6_VARIABLE_PAIR_BRIDGE.md](PROP_1_6_VARIABLE_PAIR_BRIDGE.md) — next Proposition 1.6 packet: connect `bipartiteEdgeMonomialIdeal` to `variablePairIdeal` and transport the new minimal-prime / vertex-cover API
 - [PROP_1_6_COHEN_MACAULAY.md](PROP_1_6_COHEN_MACAULAY.md) — primary remaining paper endpoint: Proposition 1.6 CM branch and its remaining external algebraic inputs
-- [SQUAREFREE_MONOMIAL_MINIMAL_PRIMES.md](SQUAREFREE_MONOMIAL_MINIMAL_PRIMES.md) — next supporting packet: minimal primes of squarefree monomial ideals via minimal vertex covers
 
 ## Longer-Horizon CM Packet
 
@@ -30,6 +32,7 @@ These are not first-line work packets, but they contain important strategic cont
 - [ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md](ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md) — backup direct route for Proposition 1.6
 - [ANSWER_17_PROP_1_6_STRATEGY.md](ANSWER_17_PROP_1_6_STRATEGY.md) — why the paper route should still be preferred
 - [CM_CODEBASE_RESEARCH_MONOMIAL_IDEAL.md](CM_CODEBASE_RESEARCH_MONOMIAL_IDEAL.md) — what the local CM/PR codebase does and does not provide for the monomial-ideal step
+- ~~SQUAREFREE_MONOMIAL_MINIMAL_PRIMES~~ — done: `minimalPrime_variablePairIdeal_iff` fully proved in `toMathlib/SquarefreeMonomialPrimes.lean`
 - [cm_pr_26218/](cm_pr_26218/) — Mathlib CM PR backport / import plan
 
 ## Dormant / Background
@@ -38,7 +41,6 @@ These are not first-line work packets, but they contain important strategic cont
 
 ## Cleanup / Refactor References
 
-- [MONOMIAL_SUPPORT_LEMMA_GENERALIZATION.md](MONOMIAL_SUPPORT_LEMMA_GENERALIZATION.md) — check that the support-monomial non-membership fact is presented in the right general-to-special order, then beautify the API/story
 - [INFRA_LINTER_PACKET_01.md](INFRA_LINTER_PACKET_01.md) — concrete cleanup packet for `PrimeIdeals`, `GraphProperties`, and `CoveredWalks` after the code-review sweep
 - [PROOF_CLEANUP_INDEX.md](PROOF_CLEANUP_INDEX.md) — index of proof-cleanup guides
 - [PUBLIC_THEOREM_LAYER.md](PUBLIC_THEOREM_LAYER.md)
