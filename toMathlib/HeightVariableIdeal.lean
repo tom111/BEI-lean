@@ -7,6 +7,9 @@ import Mathlib.RingTheory.Ideal.KrullsHeightTheorem
 import Mathlib.RingTheory.MvPolynomial.Basic
 import Mathlib.Algebra.MvPolynomial.Rename
 import Mathlib.RingTheory.MvPolynomial.Ideal
+import Mathlib.RingTheory.Ideal.Quotient.Operations
+import Mathlib.RingTheory.KrullDimension.Polynomial
+import Mathlib.RingTheory.KrullDimension.Field
 
 /-!
 # Height of variable-generated ideals in MvPolynomial
@@ -271,5 +274,54 @@ height equal to `|s|`. -/
 theorem MvPolynomial.height_span_X_image (s : Finset σ) :
     (Ideal.span ((↑s : Set σ).image (X : σ → MvPolynomial σ K))).height = s.card := by
   exact le_antisymm (MvPolynomial.height_span_X_le s) (MvPolynomial.height_span_X_ge s)
+
+/-! ### Quotient dimension for variable ideals -/
+
+/-- The kernel of `killS s` is exactly `span(X '' s)`. -/
+private lemma ker_killS_eq_span_X_image (s : Finset σ) :
+    RingHom.ker (killS (K := K) s).toRingHom =
+      Ideal.span ((↑s : Set σ).image (X : σ → MvPolynomial σ K)) := by
+  apply le_antisymm
+  · intro p hp
+    rw [RingHom.mem_ker] at hp
+    by_contra hne
+    exact killS_ne_zero_of_not_mem_span s p hne hp
+  · exact span_X_le_ker_killS s
+
+/-- `killS s` is surjective: `rename Subtype.val` provides a right inverse. -/
+private lemma killS_surjective (s : Finset σ) :
+    Function.Surjective (killS (K := K) s).toRingHom :=
+  fun q => ⟨rename Subtype.val q, killCompl_rename_app Subtype.val_injective q⟩
+
+/-- The quotient `MvPolynomial σ K ⧸ span(X '' s)` is isomorphic to `MvPolynomial {j // j ∉ s} K`,
+the polynomial ring in the remaining variables. -/
+private noncomputable def quotientSpanXEquiv (s : Finset σ) :
+    MvPolynomial σ K ⧸ Ideal.span ((↑s : Set σ).image (X : σ → MvPolynomial σ K)) ≃+*
+    MvPolynomial {j : σ // j ∉ s} K :=
+  (Ideal.quotEquivOfEq (ker_killS_eq_span_X_image s).symm).trans
+    (RingHom.quotientKerEquivOfSurjective (killS_surjective s))
+
+/-- The Krull dimension of the quotient by a variable ideal `⟨X i : i ∈ s⟩` equals the
+number of remaining variables. -/
+theorem MvPolynomial.ringKrullDim_quotient_span_X_image (s : Finset σ) :
+    ringKrullDim (MvPolynomial σ K ⧸
+      Ideal.span ((↑s : Set σ).image (X : σ → MvPolynomial σ K))) =
+    Nat.card {j : σ // j ∉ s} := by
+  rw [ringKrullDim_eq_of_ringEquiv (quotientSpanXEquiv s),
+      MvPolynomial.ringKrullDim_of_isNoetherianRing,
+      ringKrullDim_eq_zero_of_field K, zero_add]
+
+/-- Two variable ideals with the same number of generators yield quotients of equal
+Krull dimension. -/
+theorem MvPolynomial.ringKrullDim_quotient_span_X_eq_of_card_eq (s t : Finset σ)
+    (h : s.card = t.card) :
+    ringKrullDim (MvPolynomial σ K ⧸
+      Ideal.span ((↑s : Set σ).image (X : σ → MvPolynomial σ K))) =
+    ringKrullDim (MvPolynomial σ K ⧸
+      Ideal.span ((↑t : Set σ).image (X : σ → MvPolynomial σ K))) := by
+  simp only [MvPolynomial.ringKrullDim_quotient_span_X_image]
+  congr 1
+  simp only [Nat.card_eq_fintype_card, Fintype.card_subtype_compl, Fintype.card_coe]
+  omega
 
 end

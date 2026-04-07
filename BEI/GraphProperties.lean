@@ -751,11 +751,11 @@ def IsAdmissiblePath (G : SimpleGraph V) (i j : V) (π : List V) : Prop :=
   π.getLast? = some j ∧
   π.Nodup ∧
   (∀ v ∈ π, v = i ∨ v = j ∨ v < i ∨ j < v) ∧
-  π.Chain' (fun a b => G.Adj a b) ∧
+  π.IsChain (fun a b => G.Adj a b) ∧
   ∀ (π' : List V),
     π'.Sublist π → π' ≠ π →
     π'.head? = some i → π'.getLast? = some j →
-    π'.Chain' (fun a b => G.Adj a b) →
+    π'.IsChain (fun a b => G.Adj a b) →
     ¬ (∀ v ∈ π', v = i ∨ v = j ∨ v < i ∨ j < v)
 
 /-- Every edge {i,j} with i < j yields the trivial admissible path [i, j]. -/
@@ -769,7 +769,7 @@ theorem edge_is_admissible (G : SimpleGraph V) {i j : V}
     rcases hv with rfl | rfl
     · exact Or.inl rfl
     · exact Or.inr (Or.inl rfl)
-  · simp [List.Chain', h]
+  · simp [h]
   · intro π' hSub hNe hHead hLast _ _
     have hij_ne : i ≠ j := G.ne_of_adj h
     apply hNe
