@@ -623,9 +623,13 @@ open MvPolynomial Finsupp
 
 namespace Ideal
 
-/-- If `I` is monomial and `p ∉ I`, some support monomial of `p` is not in `I`. -/
-theorem IsMonomial.not_mem_exists_monomial_notMem
-    {I : Ideal (MvPolynomial σ R)} (hI : I.IsMonomial)
+section
+
+variable {R : Type*} [CommRing R] {σ : Type*}
+
+/-- If `p ∉ I`, some support monomial of `p` is not in `I`. -/
+lemma not_mem_exists_monomial_notMem
+    {I : Ideal (MvPolynomial σ R)}
     {p : MvPolynomial σ R} (hp : p ∉ I) :
     ∃ d ∈ p.support, monomial d (1 : R) ∉ I := by
   by_contra h; push_neg at h; apply hp
@@ -634,6 +638,8 @@ theorem IsMonomial.not_mem_exists_monomial_notMem
     rw [show monomial d (coeff d p) = C (coeff d p) * monomial d 1 from by
       rw [C_mul_monomial, mul_one]]
     exact I.mul_mem_left _ (h d hd)
+
+end
 
 /-- If `x * y ∈ I` and the lex-max support element of `y` is outside `s`,
 then `x ∈ I`. This is proved by peeling off the leading term of `x`
@@ -672,7 +678,7 @@ private theorem mem_of_mul_mem_of_lexMax_outside
     set c := coeff d x
     set lt := monomial d c
     have hlt_I : lt ∈ I := by
-      show monomial d c ∈ I
+      change monomial d c ∈ I
       rw [show monomial d c = C c * monomial d 1 from by rw [C_mul_monomial, mul_one]]
       exact I.mul_mem_left _ hd_I
     set x' := x - lt
@@ -776,7 +782,7 @@ theorem IsMonomial.isPrimary_of_criterion
       -- Derive contradiction from a ∉ I
       by_contra ha_nI
       -- a ∉ I → ∃ bad monomial
-      obtain ⟨d₀, hd₀_supp, hd₀_nI⟩ := hI.not_mem_exists_monomial_notMem ha_nI
+      obtain ⟨d₀, hd₀_supp, hd₀_nI⟩ := Ideal.not_mem_exists_monomial_notMem ha_nI
       -- d₀.filter (· ∈ s) ≠ 0 since a ∈ span(X '' s)
       have hd₀_filt_ne : d₀.filter (· ∈ s) ≠ 0 := by
         rw [MvPolynomial.mem_ideal_span_X_image] at ha_s

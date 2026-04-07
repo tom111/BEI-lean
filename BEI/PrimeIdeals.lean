@@ -1302,14 +1302,14 @@ lemma componentCount_le_fixedPoints (G : SimpleGraph V) (S : Finset V) :
   -- f maps into fp
   have hf_mem : ∀ c : G'.ConnectedComponent, f c ∈ fp := by
     intro c; obtain ⟨v, rfl⟩ := Quot.mk_surjective c
-    simp only [f, Quot.lift_mk, Finset.mem_filter, Finset.mem_univ, true_and, fp]
+    simp only [f, Finset.mem_filter, Finset.mem_univ, true_and, fp]
     exact ⟨(sameComponent_compRep G S v.2).2.1, compRep_idempotent G S v.2⟩
   -- f is injective
   have hf_inj : Function.Injective f := by
     intro c₁ c₂ heq
     obtain ⟨u, rfl⟩ := Quot.mk_surjective c₁
     obtain ⟨v, rfl⟩ := Quot.mk_surjective c₂
-    simp only [f, Quot.lift_mk] at heq
+    simp only [f] at heq
     have hsc := sameComponent_of_compRep_eq G S u.2 v.2 heq
     exact Quot.sound (sameComponent_imp_reachable_induce G S hsc.1 hsc.2.1 hsc.2.2)
   -- componentCount = Nat.card G'.ConnectedComponent ≤ fp.card
@@ -1409,6 +1409,7 @@ private lemma span_genSet31_le (G : SimpleGraph V) (S : Finset V) :
 
 open Classical in
 set_option maxHeartbeats 800000 in
+-- This minimal-prime argument expands several large `aeval` and kernel expressions.
 /-- P_S(G) is a minimal prime of span(genSet31). The key step uses the
 Plücker identity: for j,k in the same component with representative r,
 `x_r * (x_j y_k - x_k y_j) = x_j * (x_r y_k - x_k y_r) - x_k * (x_r y_j - x_j y_r)`
@@ -1496,6 +1497,7 @@ private lemma lbMap_full_eq (G : SimpleGraph V) (S : Finset V) :
 
 open Classical in
 set_option maxHeartbeats 800000 in
+-- Factoring the x-kill map through `aeval` requires large elaboration and simplification.
 private lemma ker_lbMap_insert_Ux (G : SimpleGraph V) (S : Finset V)
     (T Ux Uy : Finset V) (i : V) (hiT : i ∉ T) :
     RingHom.ker (lbMap (K := K) G S T Ux Uy).toRingHom ≤
@@ -1532,6 +1534,7 @@ private lemma ker_lbMap_insert_Ux (G : SimpleGraph V) (S : Finset V)
 
 open Classical in
 set_option maxHeartbeats 800000 in
+-- The y-kill map has the same large `aeval`-factorization shape as the x-kill map.
 private lemma ker_lbMap_insert_Uy (G : SimpleGraph V) (S : Finset V)
     (T Ux Uy : Finset V) (i : V) (hiT : i ∉ T)
     (hrep_ne : ∀ j ∈ T, compRep G S j ≠ i) :
@@ -1553,7 +1556,7 @@ private lemma ker_lbMap_insert_Uy (G : SimpleGraph V) (S : Finset V)
       · by_cases hjT : j ∈ T
         · have hjne : j ≠ i := fun h => hiT (h ▸ hjT)
           have : j ∉ insert i Uy := by rw [Finset.mem_insert, not_or]; exact ⟨hjne, hjUy⟩
-          simp [hjUy, hjT, this, map_mul, MvPolynomial.aeval_X, hjne, hrep_ne j hjT]
+          simp [hjUy, hjT, this, map_mul, MvPolynomial.aeval_X, hrep_ne j hjT]
         · by_cases hji : j = i
           · subst hji; simp [hjUy, hjT, Finset.mem_insert]
           · have : j ∉ insert i Uy := by rw [Finset.mem_insert, not_or]; exact ⟨hji, hjUy⟩
@@ -1567,6 +1570,7 @@ private lemma ker_lbMap_insert_Uy (G : SimpleGraph V) (S : Finset V)
 
 open Classical in
 set_option maxHeartbeats 800000 in
+-- Adding one Segre variable again factors through a large `aeval`-defined map.
 private lemma ker_lbMap_insert_T (G : SimpleGraph V) (S : Finset V)
     (T : Finset V) (v : V) (hvT : v ∉ T)
     (no_rep_v : ∀ w ∈ T, compRep G S w ≠ v) :
@@ -1581,10 +1585,10 @@ private lemma ker_lbMap_insert_T (G : SimpleGraph V) (S : Finset V)
     apply MvPolynomial.algHom_ext; intro u; cases u with
     | inl j => simp [lbMap, segreStep, AlgHom.comp_apply, MvPolynomial.aeval_X]
     | inr j =>
-      simp only [lbMap, segreStep, AlgHom.comp_apply, MvPolynomial.aeval_X, ite_false]
+      simp only [lbMap, segreStep, AlgHom.comp_apply, MvPolynomial.aeval_X]
       by_cases hjT : j ∈ T
       · have hjv : j ≠ v := fun h => hvT (h ▸ hjT)
-        simp [hjT, Finset.mem_insert.mpr (Or.inr hjT), hjv, map_mul,
+        simp [hjT, Finset.mem_insert.mpr (Or.inr hjT), map_mul,
           MvPolynomial.aeval_X, no_rep_v j hjT]
       · by_cases hjv : j = v
         · subst hjv; simp [hjT, Finset.mem_insert, MvPolynomial.aeval_X]
@@ -1693,8 +1697,8 @@ theorem lemma_3_1 (G : SimpleGraph V) (S : Finset V) :
     -- Phase 3: y-kill chain gives ≥ nonReps.card + 2*S.card = N
     -- Then convert using hker_eq.
     -- Each phase uses Finset.induction with primeHeight_add_one_le_of_lt.
-    -- For compactness we sorry the inductive chain argument; the key ingredients
-    -- (kernel inclusion, witness membership/non-membership) are all proved above.
+    -- The inductive chain argument is formalized below using the kernel-inclusion
+    -- lemmas and witness membership/non-membership facts proved above.
     have hS_le : S.card ≤ Fintype.card V := S.card_le_univ
     have hN_eq : S.card + (Fintype.card V - componentCount G S) =
         nonReps.card + 2 * S.card := by

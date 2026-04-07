@@ -38,6 +38,7 @@ These are not first-line work packets, but they contain important strategic cont
 
 ## Cleanup / Refactor References
 
+- [INFRA_LINTER_PACKET_01.md](INFRA_LINTER_PACKET_01.md) — concrete cleanup packet for `PrimeIdeals`, `GraphProperties`, and `CoveredWalks` after the code-review sweep
 - [PROOF_CLEANUP_INDEX.md](PROOF_CLEANUP_INDEX.md) — index of proof-cleanup guides
 - [PUBLIC_THEOREM_LAYER.md](PUBLIC_THEOREM_LAYER.md)
 - [EVALUATION_MAP_API.md](EVALUATION_MAP_API.md)

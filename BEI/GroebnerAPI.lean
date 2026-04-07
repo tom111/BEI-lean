@@ -375,7 +375,8 @@ theorem isGroebnerBasis_iff_sPolynomial_isRemainder {R : Type*} [Field R]
           -- If k = 0, all terms have degree < D. Take c' = c0.
           by_cases hk0 : k = 0
           · exact ⟨c0, hc0G, hc0f, fun b hb => by
-              have hcard_zero : (c0.support.filter (fun b => m.toSyn (m.degree (c0 b * b)) = D)).card = 0 :=
+              have hcard_zero :
+                  (c0.support.filter (fun b => m.toSyn (m.degree (c0 b * b)) = D)).card = 0 :=
                 hc0card ▸ hk0
               have : b ∉ c0.support.filter (fun b => m.toSyn (m.degree (c0 b * b)) = D) := by
                 rw [Finset.card_eq_zero.mp hcard_zero]
@@ -588,7 +589,6 @@ theorem isGroebnerBasis_iff_sPolynomial_isRemainder {R : Type*} [Field R]
             mt (m.leadingTerm_eq_zero_iff _).mp hcb2_ne
           have hf1_ne : f1 ≠ 0 := mul_ne_zero hlt1_ne hb1_ne
           have hf2_ne : f2 ≠ 0 := mul_ne_zero hlt2_ne hb2_ne
-
           -- Both f1 and f2 have degree alpha
           have halpha_def : m.degree (c0 b1 * b1) =
               m.degree (c0 b1) + m.degree b1 :=
@@ -603,16 +603,13 @@ theorem isGroebnerBasis_iff_sPolynomial_isRemainder {R : Type*} [Field R]
           have halpha_eq : m.degree f1 = m.degree f2 := by
             rw [hf1_deg, hf2_deg]
             exact m.toSyn.injective (hb1_D.trans hb2_D.symm)
-
           -- S-polynomial: S(f1, f2) = C(lc f2)*f1 - C(lc f1)*f2
           -- when deg(f1) = deg(f2)
           -- And S(f1, f2) = mono * S(b1, b2)
           -- So: C(lc f1)*f2 = C(lc f2)*f1 - mono * S(b1, b2)
           -- i.e.: f2 = (lc f2 / lc f1) • f1 - (1/lc f1) • mono * S(b1, b2)
-
           -- Now, S(b1, b2) = h12.sum (fun g q => q • g.val) [from hSP]
           -- And mono * S(b1, b2) = h12.sum (fun g q => (mono * q) • g.val)
-
           -- Define the scaled hSP Finsupp on MvPoly
           set scale_poly := MvPolynomial.C (m.leadingCoeff f1)⁻¹ *
             monomial (m.degree f1 ⊔ m.degree f2 - m.degree b1 ⊔ m.degree b2)
@@ -622,7 +619,6 @@ theorem isGroebnerBasis_iff_sPolynomial_isRemainder {R : Type*} [Field R]
           set h12_lifted := Finsupp.mapDomain Subtype.val h12_scaled
             with hh12_lifted_def
           set ratio := m.leadingCoeff f2 * (m.leadingCoeff f1)⁻¹ with hratio_def
-
           -- Build c1 = c0 + single(b1, C(ratio) * leadingTerm(c0 b1))
           --           - single(b2, leadingTerm(c0 b2))
           --           - h12_lifted
@@ -631,7 +627,6 @@ theorem isGroebnerBasis_iff_sPolynomial_isRemainder {R : Type*} [Field R]
           set adj_b2 := Finsupp.single b2
             (m.leadingTerm (c0 b2)) with hadj_b2_def
           set c1 := c0 + adj_b1 - adj_b2 - h12_lifted with hc1_def
-
           -- Apply ihk with k' = card of filtered c1.support
           set k' := (c1.support.filter
             (fun b => m.toSyn (m.degree (c1 b * b)) = D)).card
