@@ -21,10 +21,11 @@ The question is whether the direct equidimensionality route should now be prefer
 
 ## Short answer
 
-No.
+Not automatically.
 
-The direct equidimensionality route is still a legitimate fallback, but it should not be
-the preferred route now that the paper-side reduction has been fully packaged.
+The paper-faithful route is still the better match to `BEI.tex`, but the direct
+equidimensionality route is now a legitimate live fallback because the repo’s local
+`IsCohenMacaulayRing` is only an equidimensional surrogate.
 
 ## Why this is the right decision
 
@@ -58,7 +59,7 @@ The right current description of Proposition 1.6 is:
 
 - graph reduction: done;
 - algebraic packaging: mostly done;
-- remaining gap: external algebraic CM inputs.
+- remaining gap on the paper-style route: external algebraic CM inputs.
 
 That is a healthy and honest project state. The repo should preserve that clarity.
 
@@ -84,23 +85,29 @@ That distinction matters in this repository.
 
 ### 3. Or should Proposition 1.6 remain `sorry` until HH + transfer are available?
 
-Yes, by default.
+Not necessarily.
 
-Unless the user explicitly wants the alternative equidimensionality theorem program, the
-project should keep Proposition 1.6 on the paper route and leave the theorem open only
-at the remaining algebraic inputs.
+If the goal is to finish Proposition 1.6 under the repo’s current local surrogate, then
+the direct equidimensionality route is now an acceptable alternative.
+
+If the goal is to stay maximally close to the paper’s proof, then the paper route should
+remain primary.
 
 ## Practical recommendation for Claude
 
 The next worker on Proposition 1.6 should:
 
-1. stay on the paper-faithful route;
-2. avoid switching to the direct equidimensionality route in this round;
-3. focus on the remaining algebraic packaging and the exact external theorem statements
-   still needed.
+1. first decide which endpoint is intended:
+   - finish the local surrogate theorem, or
+   - fully formalize the paper’s CM statement;
+2. if the target is the local surrogate theorem, the direct equidimensionality route is
+   fair game;
+3. if the target is the paper-faithful CM statement, stay on the transfer/backport path.
 
 ## Bottom line
 
-The direct equidimensionality route remains a backup plan.
+The direct equidimensionality route is no longer just a theoretical backup.
 
-It is not the preferred route now that the paper reduction has already been formalized.
+It is a real option for finishing the current local theorem layer, but it should still be
+described honestly as a surrogate-level completion unless the full CM theory is also in
+place.

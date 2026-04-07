@@ -2,7 +2,7 @@
 
 ## Task
 
-This is the final remaining packet for Proposition 1.6.
+This is the remaining paper-faithful algebra packet for Proposition 1.6.
 
 Everything internal to the BEI reduction is now proved:
 
@@ -14,7 +14,8 @@ Everything internal to the BEI reduction is now proved:
 - the dimension step;
 - the local Cohen–Macaulay / equidimensionality statement for the bipartite edge ideal.
 
-The only remaining gap is the standard Gröbner-basis transfer theorem
+The only remaining gap on the current paper-style code path is the standard
+Gröbner-basis transfer theorem
 
 - `S / in_<(I)` Cohen–Macaulay → `S / I` Cohen–Macaulay.
 
@@ -58,13 +59,21 @@ For the current project, it is acceptable if the theorem is stated only in the s
 actually needed for `prop_1_6`, rather than as the most general possible upstream
 result, provided the statement is mathematically honest.
 
+Important scope note:
+
+- proving this theorem would close the current paper-style reduction in code;
+- but because the repo currently uses a local equidimensional surrogate for
+  Cohen-Macaulayness, that still does **not** by itself mean the paper’s full
+  depth-based CM statement has been formalized.
+
 
 ## Recommended strategy
 
 ### Step 1: inspect what the local CM definition really needs
 
-Because local `IsCohenMacaulay` is an equidimensionality-style condition, the transfer
-theorem may not need the full classical depth machinery as stated in textbooks.
+Because local `IsCohenMacaulay` is an equidimensionality-style condition, you must first
+check whether the intended transfer statement is even true for the local surrogate.
+Do not assume Eisenbud 15.17 transfers this weaker notion automatically.
 
 Read:
 
@@ -78,7 +87,8 @@ The ideal theorem may need to be narrower than the classical statement. Good out
 
 - a theorem directly for polynomial quotients under the monomial order already used in
   this project;
-- a theorem formulated for the local equidimensionality-style CM notion;
+- a theorem formulated for the local equidimensionality-style CM notion, if it is
+  genuinely true;
 - or, if necessary, a theorem reducing the transfer to a more standard known algebraic
   result that can be isolated clearly.
 
@@ -87,7 +97,7 @@ setting.
 
 ### Step 3: close `prop_1_6`
 
-Once the transfer theorem is available, use the already-proved
+Once a truthful transfer theorem is available, use the already-proved
 
 - `initialIdeal_closed_eq`
 - `rename_yPredVar_monomialInitialIdeal`
@@ -111,7 +121,7 @@ to finish `prop_1_6`.
 Best outcome:
 
 - a usable CM transfer theorem from `in_<(I)` to `I`;
-- `prop_1_6` fully proved.
+- `prop_1_6` fully proved along the current paper-style code path.
 
 Minimum acceptable outcome:
 
@@ -122,9 +132,11 @@ Minimum acceptable outcome:
 
 ## Status docs
 
-If `prop_1_6` lands, update:
+If this route lands, update:
 
 - `TODO.md`
 - `FORMALIZATION_MAP.md`
 - `CLAUDE.md`
-- public `docs/` pages that still say one theorem remains open
+- public `docs/` pages to distinguish clearly between:
+  - finishing Proposition 1.6 under the local surrogate, and
+  - fully formalizing the paper’s depth-based CM statement

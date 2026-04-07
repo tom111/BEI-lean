@@ -20,14 +20,24 @@ Completed guides (deleted):
 
 ## Immediate Work Packets
 
-- [PROP_1_6_CM_TRANSFER.md](PROP_1_6_CM_TRANSFER.md) — final active packet: isolate or prove the Gröbner CM transfer theorem `S/in_<(I)` CM → `S/I` CM
+- [PROP_1_6_DIRECT_EQUIDIMENSIONALITY.md](PROP_1_6_DIRECT_EQUIDIMENSIONALITY.md) — direct fallback route: finish Proposition 1.6 under the repo’s local equidimensional surrogate by showing all minimal primes have the same quotient dimension
+- [PROP_1_6_CM_TRANSFER.md](PROP_1_6_CM_TRANSFER.md) — longer algebra packet: isolate or prove the Gröbner CM transfer theorem `S/in_<(I)` CM → `S/I` CM
 - [PROP_1_6_COHEN_MACAULAY.md](PROP_1_6_COHEN_MACAULAY.md) — broad reference packet for the now nearly-complete Proposition 1.6 branch
 
 ## Remaining CM Gap
 
-The only remaining sorry in the Proposition 1.6 chain is `cm_transfer_initialIdeal` in
-`BEI/CohenMacaulay.lean`: the Gröbner flat degeneration theorem `S/in_<(I)` CM → `S/I` CM.
-This is a standard result in Gröbner basis theory (Eisenbud, Thm 15.17) not yet in Mathlib v4.28.0.
+The only remaining sorry in the current Proposition 1.6 code path is
+`cm_transfer_initialIdeal` in `BEI/CohenMacaulay.lean`: the Gröbner flat degeneration
+theorem `S/in_<(I)` CM → `S/I` CM.
+
+However, the repo’s local `IsCohenMacaulayRing` is only an equidimensional surrogate.
+So there are now two distinct goals:
+
+- finish Proposition 1.6 under that local surrogate;
+- import or backport the full depth-based CM theory needed to count the paper’s CM
+  statement as fully formalized.
+
+Do not blur those two endpoints.
 
 ## CM Reference Notes
 

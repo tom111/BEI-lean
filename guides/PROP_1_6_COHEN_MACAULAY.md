@@ -19,7 +19,9 @@ It also now has the paper-side graph reduction:
 
 - `prop_1_6_herzogHibi`
 
-What remains open is the final algebraic step of Proposition 1.6.
+What remains open is the final step needed to finish Proposition 1.6 under the current
+local CM setup, together with the broader unresolved question of how to recover the
+paper’s full depth-based CM statement.
 
 
 ## First decision: what counts as "proved in Lean" here?
@@ -27,7 +29,7 @@ What remains open is the final algebraic step of Proposition 1.6.
 This project now has a usable local CM foundation. The real decision is not whether CM
 exists at all, but how to reach Proposition 1.6 from the current infrastructure.
 
-There are two serious routes:
+There are two serious routes to the current local theorem:
 
 1. a paper-faithful reduction through the initial ideal and Herzog–Hibi bipartite graph;
 2. a direct equidimensionality proof using the local definition.
@@ -35,7 +37,7 @@ There are two serious routes:
 
 ## Recommended strategy
 
-Do not treat Proposition 1.6 as a one-lemma cleanup. It is now the main CM bottleneck.
+Do not treat Proposition 1.6 as a one-lemma cleanup. It is still the main CM bottleneck.
 
 Split the problem into:
 
@@ -108,7 +110,7 @@ Status: done.
 
 ### Route A: paper-faithful reduction first
 
-This remains the most defensible route.
+This remains the most paper-faithful route.
 
 Prove the remaining reduction theorem:
 
@@ -126,8 +128,8 @@ The BEI-side reduction is now fully packaged. What remains is:
 ### Route B: direct equidimensionality on minimal primes
 
 This route became more plausible once `path_is_CM` and the local equidimensionality API
-were proved. But it is not the paper’s route, and it risks inventing a new theorem of
-independent graph-combinatorial difficulty.
+were proved. It is still not the paper’s route, but it may be the more realistic way to
+finish the current local theorem layer if the Gröbner transfer theorem is too large.
 
 If pursuing it, read:
 
@@ -159,6 +161,15 @@ S / in_<(J_G) is Cohen–Macaulay -> S / J_G is Cohen–Macaulay
 This is another nontrivial theorem not currently present.
 Treat it as a separate infrastructure theorem, not as a tiny closing step.
 
+## Important scope distinction
+
+Finishing Proposition 1.6 under the repo’s local equidimensionality-style
+`IsCohenMacaulayRing` is not the same as fully formalizing the paper’s
+Cohen-Macaulay statement.
+
+The paper should only be counted as fully formalized once the full depth-based CM theory
+is available through a newer Mathlib or a local backport.
+
 
 ## Practical recommendation for Claude
 
@@ -177,8 +188,8 @@ This guide is successful when the repo contains:
 
 1. a precise reduction theorem from Proposition 1.6 assumptions to the associated
    Herzog–Hibi bipartite setup;
-2. a clear statement of the exact CM/equidimensional theorem still needed for the final step;
-3. no stale text implying that the local CM definition is still a placeholder.
+2. a clear statement of the exact local CM/equidimensional theorem still needed for the current theorem layer;
+3. no stale text implying that finishing the local surrogate automatically finishes the paper’s full CM statement.
 
 Current state (2026-04-06):
 
@@ -187,13 +198,15 @@ Current state (2026-04-06):
   the monomial initial ideal to `bipartiteEdgeMonomialIdeal`, and
   `prop_1_6_herzogHibi` packages the HH conditions on Γ. The definition of
   `bipartiteEdgeMonomialIdeal` now includes the `i ≤ j` constraint (HH condition (ii)).
-- item 2 is done: the two remaining external inputs are clearly stated in the
-  docstring of `prop_1_6` — the Herzog–Hibi CM theorem and the initial ideal
-  CM transfer.
+- item 2 is partly done: the remaining external inputs on the paper-style route are
+  clearly stated, but the repo must still distinguish those from the broader full-CM
+  backport/import task.
 - item 3 is done.
 
 Consequent strategy:
 
-- do not switch to the direct equidimensionality route by default;
-- treat [ANSWER_17_PROP_1_6_STRATEGY.md](/home/tom/BEI-lean/guides/ANSWER_17_PROP_1_6_STRATEGY.md)
-  as the standing answer on why the paper route should remain primary.
+- keep both routes visible:
+  - paper-faithful transfer as the better match to `BEI.tex`,
+  - direct equidimensionality as the realistic fallback for the current local surrogate;
+- do not describe either route as fully finishing the paper unless the full CM theory is
+  also imported or backported.
