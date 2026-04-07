@@ -47,7 +47,7 @@ There is no test suite — correctness is enforced by Lean's type checker. A suc
 - `BEI/CIIdeals.lean` — Section 4: `CIStatement`, `ciGraph`, `ciIdeal`, `ciGraphSpec`, `ciIdealSpec`, the single-statement and specification bridge theorems, and transferred radicality / prime decomposition / minimal-prime theorems
 - `BEI/CohenMacaulay.lean` — CM-dependent paper results (currently over a local working CM definition)
 - `toMathlib/CohenMacaulay/Defs.lean` — local backport / working definition for the CM branch
-- `toMathlib/MonomialIdeal.lean` — monomial ideals in `MvPolynomial`, variable-generated prime ideals, the prime classification for monomial ideals, `coeff_pow_lexMax`, `radical_isMonomial`, and the forward primary monomial characterization
+- `toMathlib/MonomialIdeal.lean` — monomial ideals in `MvPolynomial`, variable-generated prime ideals, the prime classification for monomial ideals, `coeff_pow_lexMax`, `radical_isMonomial`, the forward primary monomial characterization, the outside-`s` structural lemmas, and partial converse infrastructure for the primary iff
 - `BEI.lean` — Root library entry point
 - `BEI.tex` — Reference paper with the mathematical content being formalized
 - `TODO.md` / `FORMALIZATION_MAP.md` — human-facing status docs that must be updated whenever theorem status or file layout changes

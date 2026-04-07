@@ -42,7 +42,7 @@
 
 Active CM work lives in:
 - `BEI/CohenMacaulay.lean`
-- `toMathlib/MonomialIdeal.lean` — `Ideal.IsMonomial`, prime classification, radical-is-monomial, forward primary characterization
+- `toMathlib/MonomialIdeal.lean` — `Ideal.IsMonomial`, prime classification, radical-is-monomial, forward primary characterization, and partial converse infrastructure
 - `guides/PROP_1_6_COHEN_MACAULAY.md`
 - `guides/ANSWER_05_COHEN_MACAULAY_FOUNDATION.md`
 - `guides/ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md`
@@ -66,7 +66,11 @@ Recently completed CM groundwork includes:
 - `BEI/PrimeDecompositionDimension.lean`: quotient-dimension and equidimensionality helpers
 - `toMathlib/MonomialIdeal.lean`: `coeff_pow_lexMax`, prime classification,
   `Ideal.IsMonomial.radical_isMonomial`,
-  `Ideal.IsMonomial.isPrimary_radical_eq_span_X`
+  `Ideal.IsMonomial.isPrimary_radical_eq_span_X`,
+  `Ideal.monomial_mem_iff_add_outside`,
+  `Ideal.monomial_mem_iff_filter`,
+  `Ideal.IsMonomial.not_mem_exists_monomial_notMem`,
+  `Ideal.mem_of_mul_mem_of_lexMax_outside`
 
 For Proposition 1.6 specifically, the remaining gap is now algebraic rather than graph-theoretic:
 - Herzog–Hibi CM theorem for the associated bipartite graph
@@ -82,8 +86,13 @@ The current blocker on that packet is no longer the forward direction:
 - `Ideal.IsMonomial.radical_isMonomial` is proved
 - `Ideal.IsMonomial.isPrimary_radical_eq_span_X` is proved
 - the remaining work is the converse direction
-- the apparent missing algebra is now a leading-term / antidiagonal argument for
-  products, not powers
+- the outside-`s` structural lemmas are now proved
+- `Ideal.mem_of_mul_mem_of_lexMax_outside` handles the case where `lexMaxSupport y`
+  lies outside the radical-variable set
+- the remaining hard case is when the leading monomial of `y` already uses a variable
+  from the radical set `s`
+- the likely next route is to reduce to the `s`-variable ring, or otherwise avoid
+  peeling arbitrary leading terms of `y`
 
 This branch is no longer blocked on a missing definition, but it still needs honest
 proofs and should not be overclaimed.
@@ -113,7 +122,7 @@ The minimal-prime transfer assumes a connected union graph, mirroring `corollary
 - `BEI/CIIdeals.lean` carries the Section 4 binary-output setup, the single-statement and specification-level CI ideal = BEI bridges, and the transferred radicality / prime-decomposition / minimal-prime theorems.
 - `BEI/CohenMacaulay.lean` carries Proposition 1.6 and the complete-graph CM example.
 - `toMathlib/CohenMacaulay/Defs.lean` carries the local working CM definition used by the current CM branch.
-- `toMathlib/MonomialIdeal.lean` carries `Ideal.IsMonomial`, the `Set σ` version of `isPrime_span_X_image`, the prime classification theorem for monomial ideals, `Ideal.IsMonomial.span_X_image`, `coeff_pow_lexMax`, `Ideal.IsMonomial.radical_isMonomial`, `Ideal.isPrimary_monomial_criterion`, and `Ideal.IsMonomial.isPrimary_radical_eq_span_X`.
+- `toMathlib/MonomialIdeal.lean` carries `Ideal.IsMonomial`, the `Set σ` version of `isPrime_span_X_image`, the prime classification theorem for monomial ideals, `Ideal.IsMonomial.span_X_image`, `coeff_pow_lexMax`, `Ideal.IsMonomial.radical_isMonomial`, `Ideal.isPrimary_monomial_criterion`, `Ideal.IsMonomial.isPrimary_radical_eq_span_X`, the structural lemmas `Ideal.monomial_mem_iff_add_outside` / `Ideal.monomial_mem_iff_filter`, and partial converse infrastructure including `Ideal.IsMonomial.not_mem_exists_monomial_notMem` and `Ideal.mem_of_mul_mem_of_lexMax_outside`.
 
 Some of these splits still need cleanup, but these are the current live locations.
 

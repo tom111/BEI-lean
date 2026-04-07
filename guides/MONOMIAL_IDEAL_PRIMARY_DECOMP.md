@@ -93,6 +93,38 @@ now-available structural lemmas. See
 [ANSWER_18_PRIMARY_CONVERSE_DECOMPOSITION.md](ANSWER_18_PRIMARY_CONVERSE_DECOMPOSITION.md)
 for the working order.
 
+## Current state after the sixth round
+
+The converse packet now has one more real partial result in
+`toMathlib/MonomialIdeal.lean`:
+
+- `coeff_mul_lexMax`
+- `lexMax_add_mem_mul_support`
+- `Ideal.IsMonomial.not_mem_exists_monomial_notMem`
+- `Ideal.mem_of_mul_mem_of_lexMax_outside`
+
+The last theorem is important. It shows:
+
+```text
+if x * y ∈ I and the lex-maximal monomial of y is supported outside s,
+then x ∈ I
+```
+
+So the “outside `s`” case is no longer the blocker.
+
+The remaining hard case for `Ideal.IsMonomial.isPrimary_of_criterion` is now:
+
+```text
+the lex-maximal monomial of y already uses a variable from s
+```
+
+This shifts the recommended next route again:
+
+1. do not keep peeling arbitrary leading terms of `y` on the full ring;
+2. reduce to the `s`-variable ring, or prove an equivalent extension/restriction
+   statement that removes the outside variables entirely;
+3. only then revisit the converse in the reduced setting.
+
 
 ## Current repo / mathlib status
 

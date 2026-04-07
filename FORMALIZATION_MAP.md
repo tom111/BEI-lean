@@ -78,8 +78,10 @@ faithfully the current Lean statements match the paper.
 | Forward primary monomial criterion | `Ideal.isPrimary_monomial_criterion` | `toMathlib/MonomialIdeal.lean` | proved | From `IsPrimary` plus `radical = span (X '' s)` to the outside-the-radical nonmembership criterion |
 | Leading coefficient in powers | `coeff_pow_lexMax` | `toMathlib/MonomialIdeal.lean` | proved | Isolates the lex-maximal support contribution in `p ^ n` |
 | Radical is monomial | `Ideal.IsMonomial.radical_isMonomial` | `toMathlib/MonomialIdeal.lean` | proved | Uses lex-max leading-term extraction; requires `[LinearOrder σ]` |
+| Outside-`s` structural invariance | `Ideal.monomial_mem_iff_add_outside`, `Ideal.monomial_mem_iff_filter` | `toMathlib/MonomialIdeal.lean` | proved | Adding exponents outside the radical-variable set does not change monomial membership |
+| Partial converse infrastructure | `Ideal.IsMonomial.not_mem_exists_monomial_notMem`, `Ideal.mem_of_mul_mem_of_lexMax_outside` | `toMathlib/MonomialIdeal.lean` | partial | Handles the case where the lex-maximal monomial of `y` lies outside the radical-variable set |
 | Forward primary characterization | `Ideal.IsMonomial.isPrimary_radical_eq_span_X` | `toMathlib/MonomialIdeal.lean` | proved | Primary monomial → radical is variable-generated ∧ criterion |
-| Full primary iff (converse) | — | — | open | Converse (criterion → primary) still needs leading-term argument for products |
+| Full primary iff (converse) | `Ideal.IsMonomial.isPrimary_of_criterion` | `toMathlib/MonomialIdeal.lean` | open | Remaining hard case is when the leading monomial of `y` already lies in the radical-variable set; likely next route is reduction to the `s`-variable ring |
 
 ## Current File Split Notes
 
@@ -90,6 +92,6 @@ faithfully the current Lean statements match the paper.
 - `BEI/CIIdeals.lean` carries the Section 4 binary-output setup, both bridge theorems, and the transferred radicality / prime-decomposition / minimal-prime theorems.
 - `BEI/CohenMacaulay.lean` carries Proposition 1.6 and the complete-graph CM example.
 - `toMathlib/CohenMacaulay/Defs.lean` carries the local working CM definition currently used in the project.
-- `toMathlib/MonomialIdeal.lean` carries `Ideal.IsMonomial`, `MvPolynomial.isPrime_span_X_image_set` (Set version), `Ideal.exists_variable_mem_of_monomial_mem_prime`, `Ideal.IsMonomial.isPrime_iff_eq_span_X_image` (prime monomial ideals = variable ideals), `Ideal.IsMonomial.span_X_image`, `coeff_pow_lexMax`, `Ideal.IsMonomial.radical_isMonomial`, `Ideal.isPrimary_monomial_criterion`, and `Ideal.IsMonomial.isPrimary_radical_eq_span_X`.
+- `toMathlib/MonomialIdeal.lean` carries `Ideal.IsMonomial`, `MvPolynomial.isPrime_span_X_image_set` (Set version), `Ideal.exists_variable_mem_of_monomial_mem_prime`, `Ideal.IsMonomial.isPrime_iff_eq_span_X_image` (prime monomial ideals = variable ideals), `Ideal.IsMonomial.span_X_image`, `coeff_pow_lexMax`, `Ideal.IsMonomial.radical_isMonomial`, `Ideal.isPrimary_monomial_criterion`, `Ideal.IsMonomial.isPrimary_radical_eq_span_X`, the structural outside-`s` membership lemmas, and the partial converse infrastructure around `Ideal.mem_of_mul_mem_of_lexMax_outside`.
 
 These split points should be reflected in status docs whenever the structure changes again.

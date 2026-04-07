@@ -21,11 +21,16 @@ That diagnosis is correct. Do not keep pushing on `coeff_mul_lexMax_left`.
 Already proved in `toMathlib/MonomialIdeal.lean`:
 
 - `coeff_mul_lexMax`
-- `Ideal.IsMonomial.exists_monomial_notMem`
+- `lexMax_add_mem_mul_support`
+- `Ideal.IsMonomial.not_mem_exists_monomial_notMem`
 - `criterion_buildUp`
 - `coeff_pow_lexMax`
 - `Ideal.IsMonomial.radical_isMonomial`
 - `Ideal.IsMonomial.isPrimary_radical_eq_span_X`
+- `Ideal.monomial_notMem_add_outside`
+- `Ideal.monomial_mem_iff_add_outside`
+- `Ideal.monomial_mem_iff_filter`
+- `Ideal.mem_of_mul_mem_of_lexMax_outside`
 
 Still open:
 
@@ -40,13 +45,17 @@ Current false route:
 Do not attack `isPrimary_of_criterion` directly as one theorem.
 Break it into smaller pieces that remove the outside-variable noise first.
 
-The best next route is:
+The best next route is now narrower than before:
 
-1. prove that monomial membership in `I` depends only on the exponents on `s`;
-2. repackage `I` as an extension of a monomial ideal in the `s`-variables;
-3. only then revisit the converse in that reduced setting.
+1. use the already-proved outside-`s` invariance to reduce the problem to the
+   `s`-variable part;
+2. repackage `I` as an extension of a monomial ideal in the `s`-variables, or prove an
+   equivalent reduction lemma that is sufficient for the converse;
+3. only then revisit the remaining case of `isPrimary_of_criterion`, namely when the
+   lex-maximal monomial of `y` already lies in the radical-variable set `s`.
 
-This is a better decomposition than fighting general cancellation in `x * y` immediately.
+This is a better decomposition than fighting general cancellation in `x * y`
+immediately.
 
 ## Why this route is better
 
@@ -107,9 +116,10 @@ theorem monomial_mem_iff_filter
 Coordinates outside `s` can be zeroed out via `Finsupp.filter` without changing
 membership.
 
-### Packet 3: split off the outside variables
+### Packet 3: split off the outside variables — NOW THE ACTIVE STEP
 
-Once Packet 2 lands, prove an extension/restriction statement:
+Packets 1 and 2 are done. The next active step is to prove an extension/restriction
+statement:
 
 ```text
 I is the extension of a monomial ideal in the variables from s
@@ -125,8 +135,22 @@ cross-cancellation patterns that are defeating the current proof attempt.
 
 After the reduction above, re-open the converse.
 
-If the reduced setting still needs a leading-term lemma for products, it should now be
-for a smaller and cleaner target than the full original theorem.
+The latest partial theorem
+
+```lean
+Ideal.mem_of_mul_mem_of_lexMax_outside
+```
+
+already handles the case where `lexMaxSupport y` is supported outside `s`.
+
+So the remaining hard case is specifically:
+
+```text
+the lex-maximal monomial of y already uses a variable from s
+```
+
+If the reduced setting still needs a product lemma, it should now be for that smaller
+case only, not for arbitrary leading-term peeling on the full ring.
 
 ## What not to do
 
@@ -138,14 +162,15 @@ for a smaller and cleaner target than the full original theorem.
 
 ## Suggested next working order
 
-1. prove the contrapositive / iff version of `criterion_buildUp`;
-2. prove that monomial membership depends only on the `s`-part;
-3. package `I` as an extension from the `s`-variables;
-4. reassess the converse in the reduced setting;
-5. only if still necessary, isolate a smaller product leading-term lemma there.
+1. use `Ideal.monomial_mem_iff_filter` as the structural reduction point;
+2. package `I` as an extension from the `s`-variables, or prove an equivalent usable
+   replacement;
+3. re-open `Ideal.IsMonomial.isPrimary_of_criterion` only in the remaining `s`-variable
+   case;
+4. only if still necessary, isolate a smaller reduced-setting product lemma there.
 
 ## Definition of done for this guide
 
-This guide has done its job if the next round does **not** start with
-`coeff_mul_lexMax_left`, and instead starts with the structural “outside variables do not
-matter for monomial membership” lemma.
+This guide has done its job if the next round does **not** restart another global
+leading-term proof, but instead starts from the already-proved structural reduction and
+focuses on the remaining `s`-variable case.
