@@ -8,7 +8,7 @@ title: Binomial Edge Ideals
     <p class="landing-hero__lede">
       This site tracks the Lean formalization of
       <em>Binomial edge ideals and conditional independence statements</em>.
-      Sections 2, 3, and 4 are formalized. In Section 1, one theorem remains open:
+      Sections 2, 3, and 4 are formalized. Section 1 is still open at
       Proposition 1.6.
     </p>
     <div class="quick-links quick-links--hero">
@@ -34,7 +34,10 @@ title: Binomial Edge Ideals
       <span class="landing-summary__label">main theorem still open</span>
     </div>
     <div class="landing-summary__note">
-      <strong>Still open:</strong> Proposition 1.6, the Cohen–Macaulay theorem for a special class of closed graphs.
+      <strong>Current status:</strong> The Proposition 1.6 branch uses a temporary
+      equidimensional stand-in for Cohen-Macaulayness, but even that branch is not yet
+      finished. The paper is not counted as fully formalized until the remaining
+      Proposition 1.6 gap and the full Cohen-Macaulay theory are both in place.
     </div>
   </div>
 </div>
@@ -73,8 +76,8 @@ title: Binomial Edge Ideals
   <div class="result-item result-item--open">
     <span class="result-item__icon" data-icon="&#9675;"></span>
     <div>
-      <strong>One main theorem remains</strong>
-      <span>Proposition 1.6 still needs the final Cohen–Macaulay step.</span>
+      <strong>One remaining paper-level gap</strong>
+      <span>Proposition 1.6 is still open. The current Lean development uses an equidimensional stand-in for Cohen-Macaulayness, and the full depth-based theory is still missing.</span>
     </div>
   </div>
 </div>

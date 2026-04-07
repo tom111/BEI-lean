@@ -16,6 +16,13 @@ The formalization aims to stay as close as possible to the original paper in
 [BEI.tex](https://github.com/tom111/BEI-lean/blob/master/BEI.tex), while still making
 good use of Lean and Mathlib.
 
+One important qualification: the current project uses a local equidimensional surrogate
+for Cohen-Macaulayness in the Proposition 1.6 branch. That is enough for the current
+Lean development to state intermediate results, but that branch is still unfinished, and
+it is not the full depth-based theory from commutative algebra. So the project does not
+count the paper as completely formalized until both the remaining Proposition 1.6 gap
+and the full Cohen-Macaulay theory are in place.
+
 This means the blueprint should be read on two levels:
 
 1. the **paper level**: what theorem is being formalized;

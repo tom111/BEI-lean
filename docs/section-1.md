@@ -13,7 +13,7 @@ title: Section 1
 | Corollary 1.3 | `cor_1_3` and related wrappers | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Exact |
 | Proposition 1.4 | `prop_1_4` | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Equivalent |
 | Proposition 1.5 | `prop_1_5` | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Exact |
-| Proposition 1.6 | `prop_1_6` | [CohenMacaulay.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/CohenMacaulay.lean) | Sorry |
+| Proposition 1.6 | `prop_1_6`, `cm_transfer_initialIdeal` | [CohenMacaulay.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/CohenMacaulay.lean) | Partial |
 
 ## Notes
 
@@ -42,8 +42,25 @@ The supporting Cohen–Macaulay examples from Section 1 are now partly formalize
 
 ### Proposition 1.6
 
-The graph-combinatorial reduction from the paper is now formalized in
-`prop_1_6_herzogHibi`, and the initial-ideal / variable-shift side is also packaged.
-The remaining gap is now exactly two external algebraic inputs: the Herzog–Hibi
-Cohen–Macaulay theorem for the associated bipartite graph, and the transfer from the
-initial ideal back to `J_G`.
+The Proposition 1.6 branch is now formalized up to the limit of the current local
+definition of Cohen-Macaulayness.
+The reduction chain is in place, but the theorem is still not finished.
+
+What is already in place:
+
+- the graph-combinatorial reduction from the paper;
+- the monomial initial ideal and variable-shift reduction;
+- the Herzog-Hibi bipartite-graph side;
+- and a local equidimensional surrogate for Cohen-Macaulayness.
+
+What is still missing:
+
+- the last unfinished step in the current Proposition 1.6 branch;
+- the full depth-based Cohen-Macaulay theory needed to count the paper as fully
+  formalized;
+- in the current code, this missing step is isolated in
+  `cm_transfer_initialIdeal`.
+
+So the Lean theorem layer is very close to complete, but this page does not claim that
+either the current Proposition 1.6 branch or the paper's full Cohen-Macaulay statement
+has been finished yet.
