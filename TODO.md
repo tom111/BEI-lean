@@ -45,7 +45,7 @@ Active CM work lives in:
 - `toMathlib/MonomialIdeal.lean` — `Ideal.IsMonomial`, prime classification, radical-is-monomial, full primary iff characterization
 - `toMathlib/SquarefreeMonomialPrimes.lean` — variable-pair ideals, vertex covers, and minimal prime ↔ minimal vertex cover
 - `guides/PROP_1_6_COHEN_MACAULAY.md`
-- `guides/PROP_1_6_VARIABLE_PAIR_BRIDGE.md`
+- `guides/PROP_1_6_HH_EQUIDIMENSIONALITY.md`
 - `guides/ANSWER_05_COHEN_MACAULAY_FOUNDATION.md`
 - `guides/ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md`
 - `guides/CM_CODEBASE_RESEARCH_MONOMIAL_IDEAL.md`
@@ -81,14 +81,15 @@ The minimal-primes-via-vertex-covers correspondence is now proved in
 - `MvPolynomial.variablePairIdeal_le_span_X_iff` (containment ↔ vertex cover)
 - `MvPolynomial.minimalPrime_variablePairIdeal_iff` (minimal primes = minimal vertex covers)
 
-The next concrete step for Proposition 1.6 is:
-- connect `bipartiteEdgeMonomialIdeal` to `MvPolynomial.variablePairIdeal` for the
-  Herzog–Hibi bipartite graph encoded by `G`
-- transport the squarefree minimal-prime / vertex-cover classification to that ideal
+The variable-pair bridge and minimal-prime transport are now proved in
+`BEI/CohenMacaulay.lean`:
+- `bipartiteEdgeMonomialIdeal_eq_variablePairIdeal` (ideal equality)
+- `minimalPrime_bipartiteEdgeMonomialIdeal_iff` (minimal primes = minimal vertex covers)
 
-After that, the remaining algebraic gap is to use the Herzog–Hibi conditions to show
-all relevant minimal vertex covers have equal size (equidimensionality), and then
-finish the CM transfer from `S / in_<(J_G)` back to `S / J_G`.
+The remaining algebraic gap for Proposition 1.6 is:
+- use the Herzog–Hibi conditions to show all minimal vertex covers of `hhEdgeSet G`
+  have equal size (equidimensionality)
+- finish the CM transfer from `S / in_<(J_G)` back to `S / J_G`
 
 ### Priority 2: Section 4
 

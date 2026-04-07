@@ -14,10 +14,11 @@ Completed guides (deleted):
 - Monomial ideal primary decomp guide — primary iff fully proved
 - Support-monomial cleanup — `Ideal.not_mem_exists_monomial_notMem` relocated as a general lemma before monomial-ideal specializations
 - Squarefree monomial minimal primes — `minimalPrime_variablePairIdeal_iff` fully proved
+- Variable-pair bridge — `bipartiteEdgeMonomialIdeal_eq_variablePairIdeal` and minimal-prime transport proved
 
 ## Immediate Work Packets
 
-- [PROP_1_6_VARIABLE_PAIR_BRIDGE.md](PROP_1_6_VARIABLE_PAIR_BRIDGE.md) — next Proposition 1.6 packet: connect `bipartiteEdgeMonomialIdeal` to `variablePairIdeal` and transport the new minimal-prime / vertex-cover API
+- [PROP_1_6_HH_EQUIDIMENSIONALITY.md](PROP_1_6_HH_EQUIDIMENSIONALITY.md) — next Proposition 1.6 packet: use the HH conditions to show all minimal vertex covers of `hhEdgeSet G` have equal size, then package the equidimensionality step
 - [PROP_1_6_COHEN_MACAULAY.md](PROP_1_6_COHEN_MACAULAY.md) — primary remaining paper endpoint: Proposition 1.6 CM branch and its remaining external algebraic inputs
 
 ## Longer-Horizon CM Packet
@@ -41,6 +42,7 @@ These are not first-line work packets, but they contain important strategic cont
 
 ## Cleanup / Refactor References
 
+- [ADMISSIBLE_PATHS_REFACTOR.md](ADMISSIBLE_PATHS_REFACTOR.md) — reduce duplicated split-path machinery in `BEI/AdmissiblePaths.lean` without changing the mathematics
 - [INFRA_LINTER_PACKET_01.md](INFRA_LINTER_PACKET_01.md) — concrete cleanup packet for `PrimeIdeals`, `GraphProperties`, and `CoveredWalks` after the code-review sweep
 - [PROOF_CLEANUP_INDEX.md](PROOF_CLEANUP_INDEX.md) — index of proof-cleanup guides
 - [PUBLIC_THEOREM_LAYER.md](PUBLIC_THEOREM_LAYER.md)
