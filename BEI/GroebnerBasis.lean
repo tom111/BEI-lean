@@ -553,20 +553,8 @@ private lemma prod_X_image_squarefree {σ R : Type*} [CommSemiring R] [NoZeroDiv
     [Nontrivial R] [DecidableEq σ] (f : V → σ) (hf : Function.Injective f) (l : List V)
     (hnd : l.Nodup) (m : MonomialOrder σ) (v : σ) :
     m.degree ((l.map (fun w => (X (f w) : MvPolynomial σ R))).prod) v ≤ 1 := by
-  induction l with
-  | nil => simp [degree_one]
-  | cons a t ih =>
-    simp only [List.map_cons, List.prod_cons]
-    rw [degree_mul (X_ne_zero _) (List.prod_ne_zero (by simp [X_ne_zero]))]
-    simp only [Finsupp.add_apply, degree_X, Finsupp.single_apply]
-    split_ifs with h
-    · have ha_not_t : a ∉ t := (List.nodup_cons.mp hnd).1
-      have hv_not_t : v ∉ t.map f := by
-        intro hmem
-        obtain ⟨b, hb_t, hb_eq⟩ := List.mem_map.mp hmem
-        exact ha_not_t ((hf (h.trans hb_eq.symm)) ▸ hb_t)
-      simp [prod_X_image_degree_zero' f t m v hv_not_t]
-    · simp [ih (List.Nodup.of_cons hnd)]
+  rw [prod_X_image_degree_eq' (R := R) f hf l hnd m v]
+  split_ifs <;> simp
 
 /-! ## Paper-faithful wrapper: Theorem 2.1 (reduced Groebner basis)
 
