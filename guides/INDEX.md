@@ -16,15 +16,16 @@ Completed guides (deleted):
 - Squarefree monomial minimal primes — `minimalPrime_variablePairIdeal_iff` fully proved
 - Variable-pair bridge — `bipartiteEdgeMonomialIdeal_eq_variablePairIdeal` and minimal-prime transport proved
 - HH equidimensionality — `minimalVertexCover_exactlyOne` and `minimalVertexCover_ncard_eq` proved
+- Dimension step — `bipartiteEdgeMonomialIdeal_equidimensional` and `bipartiteEdgeMonomialIdeal_isCohenMacaulay` proved; `ringKrullDim_quotient_span_X_image` and `ringKrullDim_quotient_span_X_eq_of_card_eq` added to `toMathlib/HeightVariableIdeal.lean`
 
 ## Immediate Work Packets
 
-- [PROP_1_6_DIMENSION_STEP.md](PROP_1_6_DIMENSION_STEP.md) — next Proposition 1.6 packet: convert equal-cardinality of HH minimal vertex covers into equal quotient dimensions for the corresponding minimal primes
-- [PROP_1_6_COHEN_MACAULAY.md](PROP_1_6_COHEN_MACAULAY.md) — primary remaining paper endpoint: Proposition 1.6 CM branch and its remaining external algebraic inputs
+- [PROP_1_6_CM_TRANSFER.md](PROP_1_6_CM_TRANSFER.md) — final Proposition 1.6 packet: formalize the CM transfer theorem `S/in_<(I)` CM → `S/I` CM strongly enough to close `prop_1_6`
+- [PROP_1_6_COHEN_MACAULAY.md](PROP_1_6_COHEN_MACAULAY.md) — broad reference packet for the now nearly-complete Proposition 1.6 branch
 
 ## Longer-Horizon CM Packet
 
-The Proposition 1.6 branch is still larger than a one-lemma task. The reference notes below record the main strategic splits inside that program.
+The Proposition 1.6 branch now has only the CM transfer step remaining.
 
 ## CM Reference Notes
 

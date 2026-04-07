@@ -49,6 +49,7 @@ There is no test suite — correctness is enforced by Lean's type checker. A suc
 - `toMathlib/CohenMacaulay/Defs.lean` — local backport / working definition for the CM branch
 - `toMathlib/MonomialIdeal.lean` — monomial ideals in `MvPolynomial`, variable-generated prime ideals, the prime classification for monomial ideals, `coeff_pow_lexMax`, `radical_isMonomial`, the full primary monomial ideal characterization (`isPrimary_iff`), and supporting structural lemmas
 - `toMathlib/SquarefreeMonomialPrimes.lean` — variable-pair ideals (edge ideals), vertex covers, and minimal prime ↔ minimal vertex cover classification
+- `toMathlib/HeightVariableIdeal.lean` — quotients by variable ideals, quotient equivalences, and Krull-dimension formulas used in the Proposition 1.6 CM branch
 - `BEI.lean` — Root library entry point
 - `BEI.tex` — Reference paper with the mathematical content being formalized
 - `TODO.md` / `FORMALIZATION_MAP.md` — human-facing status docs that must be updated whenever theorem status or file layout changes
@@ -74,7 +75,7 @@ There is no test suite — correctness is enforced by Lean's type checker. A suc
 
 - Treat `BEI.tex` and the Lean files as the source of truth.
 - If a theorem is finished, moved, split across files, or downgraded from an earlier claim, update `TODO.md` and `FORMALIZATION_MAP.md` in the same round.
-- `IsCohenMacaulay` now has a real local working definition (equidimensionality) in `toMathlib/CohenMacaulay/Defs.lean`. The Section 3 CM consequences `corollary_3_4` and `corollary_3_7_CM` are proved; Proposition 1.6 remains the active CM endpoint.
+- `IsCohenMacaulay` now has a real local working definition (equidimensionality) in `toMathlib/CohenMacaulay/Defs.lean`. The Section 3 CM consequences `corollary_3_4` and `corollary_3_7_CM` are proved, and the Proposition 1.6 branch is reduced to the final CM-transfer theorem `S / in_<(I)` CM → `S / I` CM.
 - Section 4 is fully landed in `BEI/CIIdeals.lean` at the current paper-facing level: the single-statement bridge, specification bridge, and transferred radicality / prime decomposition / minimal-prime theorems are all proved. The minimal-prime transfer keeps the connectedness hypothesis from `corollary_3_9`.
 - `OVERVIEW.md`, `NEXT_STEPS_PLAN.md`, and the public `docs/` pages should stay reader-facing; avoid turning them into internal blocker logs.
 

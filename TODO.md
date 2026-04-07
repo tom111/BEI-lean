@@ -17,7 +17,7 @@
 | **§1 Cor 1.3** (bipartite closed graphs / line graphs) | `BEI/GraphProperties.lean` | `[x]` paper-faithful version proved |
 | **§1 Prop 1.4** (shortest paths directed) | `BEI/GraphProperties.lean` | `[x]` proved |
 | **§1 Prop 1.5** (closure exists) | `BEI/GraphProperties.lean` | `[x]` proved |
-| **§1 Prop 1.6** (CM sufficient condition) | `BEI/CohenMacaulay.lean` | `[~]` graph-combinatorial reduction done; final algebraic CM step still open |
+| **§1 Prop 1.6** (CM sufficient condition) | `BEI/CohenMacaulay.lean` | `[~]` equidimensionality proved; only CM transfer `S/in_<(I)` CM → `S/I` CM remains |
 | **§2 Thm 2.1** (reduced Gröbner basis) | `BEI/GroebnerBasisSPolynomial.lean`, `BEI/GroebnerBasis.lean` | `[x]` proved |
 | **§2 Cor 2.2** (`J_G` radical) | `BEI/Radical.lean` | `[x]` proved |
 | **§3 Lem 3.1** (height formula for `P_S`) | `BEI/PrimeIdeals.lean` | `[x]` proved |
@@ -44,8 +44,9 @@ Active CM work lives in:
 - `BEI/CohenMacaulay.lean`
 - `toMathlib/MonomialIdeal.lean` — `Ideal.IsMonomial`, prime classification, radical-is-monomial, full primary iff characterization
 - `toMathlib/SquarefreeMonomialPrimes.lean` — variable-pair ideals, vertex covers, and minimal prime ↔ minimal vertex cover
+- `toMathlib/HeightVariableIdeal.lean` — quotients by variable ideals, quotient equivalences, and dimension formulas
 - `guides/PROP_1_6_COHEN_MACAULAY.md`
-- `guides/PROP_1_6_DIMENSION_STEP.md`
+- `guides/PROP_1_6_CM_TRANSFER.md`
 - `guides/ANSWER_05_COHEN_MACAULAY_FOUNDATION.md`
 - `guides/ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md`
 - `guides/CM_CODEBASE_RESEARCH_MONOMIAL_IDEAL.md`
@@ -72,30 +73,14 @@ Recently completed CM groundwork includes:
 
 The primary monomial ideal characterization is now complete (both directions).
 
-For Proposition 1.6 specifically, the remaining gap is now algebraic rather than graph-theoretic:
-- Herzog–Hibi CM theorem for the associated bipartite graph
-- transfer from `S / in_<(J_G)` to `S / J_G`
+For Proposition 1.6, the full chain from graph combinatorics through equidimensionality is proved:
+- HH combinatorial step: `minimalVertexCover_ncard_eq` (equal cover sizes)
+- Dimension step: `bipartiteEdgeMonomialIdeal_equidimensional` (equal quotient dimensions)
+- CM packaging: `bipartiteEdgeMonomialIdeal_isCohenMacaulay` (equidimensional quotient)
+- Variable-ideal dimension: `MvPolynomial.ringKrullDim_quotient_span_X_image` (in `toMathlib/HeightVariableIdeal.lean`)
 
-The minimal-primes-via-vertex-covers correspondence is now proved in
-`toMathlib/SquarefreeMonomialPrimes.lean`:
-- `MvPolynomial.variablePairIdeal_le_span_X_iff` (containment ↔ vertex cover)
-- `MvPolynomial.minimalPrime_variablePairIdeal_iff` (minimal primes = minimal vertex covers)
-
-The variable-pair bridge and minimal-prime transport are now proved in
-`BEI/CohenMacaulay.lean`:
-- `bipartiteEdgeMonomialIdeal_eq_variablePairIdeal` (ideal equality)
-- `minimalPrime_bipartiteEdgeMonomialIdeal_iff` (minimal primes = minimal vertex covers)
-
-The HH combinatorial step is now proved in `BEI/CohenMacaulay.lean`:
-- `hhEdgeSet_diagonal` (diagonal edges in the HH graph)
-- `minimalVertexCover_exactlyOne` (exactly-one from each diagonal pair)
-- `minimalVertexCover_subset_active` (covers lie on active indices)
-- `minimalVertexCover_ncard_eq` (all minimal covers have the same cardinality)
-
-The remaining gap for Proposition 1.6 is:
-- convert equal cardinality of covers to `ringKrullDim(R/P) = ringKrullDim(R/Q)` for
-  all minimal primes P, Q (dimension step)
-- finish the CM transfer from `S / in_<(J_G)` back to `S / J_G`
+The **only remaining gap** is:
+- CM transfer: `S / in_<(J_G)` CM → `S / J_G` CM (standard Gröbner basis theory, not in Mathlib)
 
 ### Priority 2: Section 4
 
@@ -124,6 +109,7 @@ The minimal-prime transfer assumes a connected union graph, mirroring `corollary
 - `toMathlib/CohenMacaulay/Defs.lean` carries the local working CM definition used by the current CM branch.
 - `toMathlib/MonomialIdeal.lean` carries `Ideal.IsMonomial`, the `Set σ` version of `isPrime_span_X_image`, the prime classification theorem for monomial ideals, `Ideal.IsMonomial.span_X_image`, `coeff_pow_lexMax`, `Ideal.IsMonomial.radical_isMonomial`, `Ideal.isPrimary_monomial_criterion`, `Ideal.IsMonomial.isPrimary_radical_eq_span_X`, the structural lemmas `Ideal.monomial_mem_iff_add_outside` / `Ideal.monomial_mem_iff_filter`, the general support-extraction lemma `Ideal.not_mem_exists_monomial_notMem`, the converse helper `Ideal.mem_of_mul_mem_of_lexMax_outside`, and the full primary iff `Ideal.IsMonomial.isPrimary_iff`.
 - `toMathlib/SquarefreeMonomialPrimes.lean` carries `MvPolynomial.variablePairIdeal`, `MvPolynomial.IsVertexCover`, `MvPolynomial.IsMinimalVertexCover`, the containment-iff-vertex-cover theorem, and the complete minimal prime ↔ minimal vertex cover characterization.
+- `toMathlib/HeightVariableIdeal.lean` carries the variable-killing quotient map, the quotient-by-variable-ideal equivalence, and the quotient-dimension formulas for variable ideals.
 
 Some of these splits still need cleanup, but these are the current live locations.
 
@@ -137,7 +123,7 @@ Some of these splits still need cleanup, but these are the current live location
 | `BEI/PrimeDecomposition.lean` | 0 | |
 | `toMathlib/HeightAdditivity.lean` | 2 | dormant infrastructure |
 | `BEI/RauhApproach.lean` | 2 | archived, not on main path |
-| **Active total** | **3** | excluding archived `RauhApproach` |
+| **Active total** | **1** | excluding dormant `HeightAdditivity` and archived `RauhApproach` |
 
 ---
 

@@ -21,7 +21,7 @@ faithfully the current Lean statements match the paper.
 | Corollary 1.3 | `cor_1_3`, `cor_1_3_connected_forward`, `pathGraph_isClosedGraph` | `BEI/GraphProperties.lean` | Exact | Formalized in the connected-graph form implicit in the paper |
 | Proposition 1.4 | `prop_1_4` | `BEI/GraphProperties.lean` | Equivalent | Directed shortest-path formulation |
 | Proposition 1.5 | `prop_1_5` | `BEI/GraphProperties.lean` | Exact | Unique minimal closed supergraph |
-| Proposition 1.6 | `prop_1_6`, `prop_1_6_herzogHibi`, `initialIdeal_closed_eq`, `rename_yPredVar_monomialInitialIdeal`, `bipartiteEdgeMonomialIdeal_eq_variablePairIdeal`, `minimalPrime_bipartiteEdgeMonomialIdeal_iff`, `hhEdgeSet_diagonal`, `minimalVertexCover_exactlyOne`, `minimalVertexCover_subset_active`, `minimalVertexCover_ncard_eq` | `BEI/CohenMacaulay.lean` | Sorry | Full reduction chain and HH combinatorics proved. Remaining gap: dimension step (equal cover size → equal quotient dim) and CM transfer from initial ideal |
+| Proposition 1.6 | `prop_1_6`, `prop_1_6_herzogHibi`, `initialIdeal_closed_eq`, `rename_yPredVar_monomialInitialIdeal`, `bipartiteEdgeMonomialIdeal_equidimensional`, `bipartiteEdgeMonomialIdeal_isCohenMacaulay`, `minimalVertexCover_ncard_eq` | `BEI/CohenMacaulay.lean`, `toMathlib/HeightVariableIdeal.lean` | Sorry | Full chain through equidimensionality proved. Only remaining gap: CM transfer `S/in_<(I)` CM → `S/I` CM |
 
 ## Section 2: Reduced Gröbner Basis and Radicality
 
@@ -61,7 +61,7 @@ faithfully the current Lean statements match the paper.
 
 | Paper endpoint | Current state |
 |---|---|
-| Proposition 1.6 | Full reduction chain, minimal-prime/vertex-cover bridge, and HH equal-cardinality of covers all proved. Remaining gap: dimension step (equal cover size → equal quotient dim) and CM transfer from initial ideal |
+| Proposition 1.6 | Full chain through equidimensionality proved (dimension step landed). Only remaining gap: CM transfer `S/in_<(I)` CM → `S/I` CM |
 | Corollary 3.4 | **proved** |
 | Corollary 3.7 | **proved** (all branches) |
 | Section 4 | complete: bridges, radicality, prime decomposition, and minimal-prime transfer all proved |
@@ -85,6 +85,16 @@ faithfully the current Lean statements match the paper.
 | Converse primary characterization | `Ideal.IsMonomial.isPrimary_of_criterion` | `toMathlib/MonomialIdeal.lean` | proved | Criterion + radical = span(X '' s) → primary; minimal bad s-exponent + primality of span(X '' s) |
 | Full primary iff | `Ideal.IsMonomial.isPrimary_iff` | `toMathlib/MonomialIdeal.lean` | proved | Complete characterization of primary monomial ideals |
 
+### Variable ideal dimension (`toMathlib/HeightVariableIdeal.lean`)
+
+| Result | Lean name(s) | File | Status | Notes |
+|--------|-------------|------|--------|-------|
+| Kernel = variable ideal | `ker_killS_eq_span_X_image` | `toMathlib/HeightVariableIdeal.lean` | proved | The kernel of the variable-killing map is exactly the variable ideal |
+| Surjectivity | `killS_surjective` | `toMathlib/HeightVariableIdeal.lean` | proved | The variable-killing map hits every polynomial in the remaining variables |
+| Quotient equivalence | `quotientSpanXEquiv` | `toMathlib/HeightVariableIdeal.lean` | proved | `MvPolynomial σ K ⧸ ⟨X_i : i ∈ s⟩ ≃+* MvPolynomial {j // j ∉ s} K` |
+| Quotient dimension formula | `MvPolynomial.ringKrullDim_quotient_span_X_image` | `toMathlib/HeightVariableIdeal.lean` | proved | `dim(K[x₁,…,xₙ]/⟨xᵢ : i ∈ s⟩) = |{j ∉ s}|` |
+| Dimension comparison | `MvPolynomial.ringKrullDim_quotient_span_X_eq_of_card_eq` | `toMathlib/HeightVariableIdeal.lean` | proved | Equal generator counts → equal quotient dims |
+
 ### Squarefree monomial primes (`toMathlib/SquarefreeMonomialPrimes.lean`)
 
 | Result | Lean name(s) | File | Status | Notes |
@@ -105,7 +115,7 @@ faithfully the current Lean statements match the paper.
 - `BEI/CohenMacaulay.lean` carries Proposition 1.6 and the complete-graph CM example.
 - `toMathlib/CohenMacaulay/Defs.lean` carries the local working CM definition currently used in the project.
 - `toMathlib/MonomialIdeal.lean` carries `Ideal.IsMonomial`, `MvPolynomial.isPrime_span_X_image_set` (Set version), `Ideal.exists_variable_mem_of_monomial_mem_prime`, `Ideal.IsMonomial.isPrime_iff_eq_span_X_image` (prime monomial ideals = variable ideals), `Ideal.IsMonomial.span_X_image`, `coeff_pow_lexMax`, `Ideal.IsMonomial.radical_isMonomial`, `Ideal.isPrimary_monomial_criterion`, `Ideal.IsMonomial.isPrimary_radical_eq_span_X`, the structural outside-`s` membership lemmas, the general support-extraction lemma `Ideal.not_mem_exists_monomial_notMem`, the converse helper `Ideal.mem_of_mul_mem_of_lexMax_outside`, and the full primary iff `Ideal.IsMonomial.isPrimary_iff`.
-
 - `toMathlib/SquarefreeMonomialPrimes.lean` carries `variablePairIdeal`, `IsVertexCover`, `IsMinimalVertexCover`, and the complete minimal prime ↔ minimal vertex cover characterization for edge ideals.
+- `toMathlib/HeightVariableIdeal.lean` carries the variable-killing map, the quotient equivalence for variable ideals, and the resulting quotient-dimension formulas.
 
 These split points should be reflected in status docs whenever the structure changes again.
