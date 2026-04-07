@@ -863,8 +863,13 @@ private lemma subwalk_props_above (G : SimpleGraph V) (π : List V) (v₀ i j : 
     simp only [α', List.reverse_reverse]
     exact List.IsChain.take hπW' (k + 1)
 
+section
+
+variable {K : Type*} [Field K]
+variable {V : Type*} [LinearOrder V]
+
 /-- Core membership lemma by strong induction on walk length. -/
-private theorem groebnerElem_mem_aux (G : SimpleGraph V) :
+private lemma groebnerElem_mem_aux (G : SimpleGraph V) :
     ∀ (n : ℕ) (i j : V) (π : List V),
     π.length = n → i < j →
     π.head? = some i → π.getLast? = some j →
@@ -872,6 +877,7 @@ private theorem groebnerElem_mem_aux (G : SimpleGraph V) :
     (∀ v ∈ π, v = i ∨ v = j ∨ v < i ∨ j < v) →
     π.IsChain (fun a b => G.Adj a b) →
     pathMonomial (K := K) i j π * (x i * y j - x j * y i) ∈ binomialEdgeIdeal G := by
+  classical
   intro n
   induction n using Nat.strong_induction_on with
   | _ n ih =>
@@ -886,7 +892,7 @@ private theorem groebnerElem_mem_aux (G : SimpleGraph V) :
   | [a, b], hH, hL, hW, _, _, _ =>
     simp only [List.head?_cons, Option.some.injEq] at hH
     simp only [List.getLast?_cons_cons, List.getLast?_singleton, Option.some.injEq] at hL
-    have hAdj : G.Adj a b := by simp [List.IsChain] at hW; exact hW
+    have hAdj : G.Adj a b := by simpa using hW
     have hpm : pathMonomial (K := K) i j [a, b] = 1 := by
       rw [← hH, ← hL]; exact pathMonomial_pair a b
     rw [hpm, one_mul]
@@ -1043,8 +1049,11 @@ Reference: Herzog et al. (2010), proof of Theorem 2.1, Step 1.
 theorem groebnerElement_mem (G : SimpleGraph V) (i j : V) (π : List V)
     (hπ : IsAdmissiblePath G i j π) :
     groebnerElement (K := K) i j π ∈ binomialEdgeIdeal G := by
+  classical
   obtain ⟨hij, hHead, hLast, hNodup, hInternal, hWalk, _⟩ := hπ
   exact groebnerElem_mem_aux G π.length i j π rfl hij hHead hLast hNodup hInternal hWalk
+
+end
 
 omit [DecidableEq V] in
 /-- Every generator `f_{ij}` (for edges {i,j} ∈ E(G), i < j) is in the Gröbner basis set. -/
