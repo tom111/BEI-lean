@@ -17,7 +17,7 @@
 | **§1 Cor 1.3** (bipartite closed graphs / line graphs) | `BEI/GraphProperties.lean` | `[x]` paper-faithful version proved |
 | **§1 Prop 1.4** (shortest paths directed) | `BEI/GraphProperties.lean` | `[x]` proved |
 | **§1 Prop 1.5** (closure exists) | `BEI/GraphProperties.lean` | `[x]` proved |
-| **§1 Prop 1.6** (CM sufficient condition) | `BEI/CohenMacaulay.lean` | `[~]` equidimensionality proved; only CM transfer `S/in_<(I)` CM → `S/I` CM remains |
+| **§1 Prop 1.6** (CM sufficient condition) | `BEI/CohenMacaulay.lean` | `[~]` `prop_1_6` is fully assembled; the only remaining sorry is the isolated transfer theorem `cm_transfer_initialIdeal` |
 | **§2 Thm 2.1** (reduced Gröbner basis) | `BEI/GroebnerBasisSPolynomial.lean`, `BEI/GroebnerBasis.lean` | `[x]` proved |
 | **§2 Cor 2.2** (`J_G` radical) | `BEI/Radical.lean` | `[x]` proved |
 | **§3 Lem 3.1** (height formula for `P_S`) | `BEI/PrimeIdeals.lean` | `[x]` proved |
@@ -55,32 +55,21 @@ Active CM work lives in:
 `IsCohenMacaulay` now has a real local working definition (equidimensionality, adapted
 from mathlib PR #26218) in `toMathlib/CohenMacaulay/Defs.lean`.
 
-The remaining CM paper endpoint is:
-- `BEI/CohenMacaulay.lean`: `prop_1_6`
+`prop_1_6` is now a clean wrapper theorem. The only remaining sorry in this branch is
+the isolated transfer lemma `cm_transfer_initialIdeal`. The proof chain is:
+1. `bipartiteEdgeMonomialIdeal_isCohenMacaulay` — bipartite edge ideal quotient is CM
+2. `monomialInitialIdeal_isCohenMacaulay` — monomial initial ideal quotient is CM (via `yPredEquiv` ring isomorphism)
+3. `cm_transfer_initialIdeal` — Gröbner CM transfer from `in_<(J_G)` to `J_G` (**1 sorry**)
 
-Recently completed CM groundwork includes:
-- `BEI/CohenMacaulay.lean`: `complete_is_CM`
-- `BEI/CohenMacaulay.lean`: `prop_1_6_herzogHibi`
-- `BEI/CohenMacaulay.lean`: `initialIdeal_closed_eq`, `yPredVar`, `rename_yPredVar_generator`, `bipartiteEdgeMonomialIdeal`
-- `BEI/CohenMacaulay.lean`: `rename_yPredVar_monomialInitialIdeal`
-- `BEI/PrimeDecompositionDimension.lean`: `path_is_CM`
-- `BEI/PrimeDecompositionDimension.lean`: quotient-dimension and equidimensionality helpers
-- `toMathlib/MonomialIdeal.lean`: `coeff_pow_lexMax`, prime classification,
-  `Ideal.IsMonomial.radical_isMonomial`,
-  `Ideal.IsMonomial.isPrimary_radical_eq_span_X`,
-  `Ideal.IsMonomial.isPrimary_of_criterion`,
-  `Ideal.IsMonomial.isPrimary_iff`
-
-The primary monomial ideal characterization is now complete (both directions).
-
-For Proposition 1.6, the full chain from graph combinatorics through equidimensionality is proved:
-- HH combinatorial step: `minimalVertexCover_ncard_eq` (equal cover sizes)
-- Dimension step: `bipartiteEdgeMonomialIdeal_equidimensional` (equal quotient dimensions)
-- CM packaging: `bipartiteEdgeMonomialIdeal_isCohenMacaulay` (equidimensional quotient)
-- Variable-ideal dimension: `MvPolynomial.ringKrullDim_quotient_span_X_image` (in `toMathlib/HeightVariableIdeal.lean`)
+New theorems in this round:
+- `isCohenMacaulay_of_ringEquiv` — CM transfers through ring isomorphisms (fully proved)
+- `yPredEquiv` — y-predecessor variable equivalence (fully proved)
+- `monomialInitialIdeal_isCohenMacaulay` — CM of the monomial initial ideal quotient (fully proved)
+- `cm_transfer_initialIdeal` — Gröbner CM transfer (sorry; standard result not in Mathlib v4.28.0)
 
 The **only remaining gap** is:
-- CM transfer: `S / in_<(J_G)` CM → `S / J_G` CM (standard Gröbner basis theory, not in Mathlib)
+- `cm_transfer_initialIdeal`: `S / in_<(J_G)` CM → `S / J_G` CM
+  (standard Gröbner degeneration theorem; Eisenbud, Thm 15.17)
 
 ### Priority 2: Section 4
 
@@ -119,7 +108,7 @@ Some of these splits still need cleanup, but these are the current live location
 
 | File | Sorries | Notes |
 |---|---:|---|
-| `BEI/CohenMacaulay.lean` | 1 | `prop_1_6` |
+| `BEI/CohenMacaulay.lean` | 1 | `cm_transfer_initialIdeal` (Gröbner CM transfer) |
 | `BEI/PrimeDecomposition.lean` | 0 | |
 | `toMathlib/HeightAdditivity.lean` | 2 | dormant infrastructure |
 | `BEI/RauhApproach.lean` | 2 | archived, not on main path |

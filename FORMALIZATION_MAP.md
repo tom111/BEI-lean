@@ -21,7 +21,7 @@ faithfully the current Lean statements match the paper.
 | Corollary 1.3 | `cor_1_3`, `cor_1_3_connected_forward`, `pathGraph_isClosedGraph` | `BEI/GraphProperties.lean` | Exact | Formalized in the connected-graph form implicit in the paper |
 | Proposition 1.4 | `prop_1_4` | `BEI/GraphProperties.lean` | Equivalent | Directed shortest-path formulation |
 | Proposition 1.5 | `prop_1_5` | `BEI/GraphProperties.lean` | Exact | Unique minimal closed supergraph |
-| Proposition 1.6 | `prop_1_6`, `prop_1_6_herzogHibi`, `initialIdeal_closed_eq`, `rename_yPredVar_monomialInitialIdeal`, `bipartiteEdgeMonomialIdeal_equidimensional`, `bipartiteEdgeMonomialIdeal_isCohenMacaulay`, `minimalVertexCover_ncard_eq` | `BEI/CohenMacaulay.lean`, `toMathlib/HeightVariableIdeal.lean` | Sorry | Full chain through equidimensionality proved. Only remaining gap: CM transfer `S/in_<(I)` CM → `S/I` CM |
+| Proposition 1.6 | `prop_1_6`, `cm_transfer_initialIdeal`, `monomialInitialIdeal_isCohenMacaulay`, `isCohenMacaulay_of_ringEquiv`, `yPredEquiv`, `bipartiteEdgeMonomialIdeal_isCohenMacaulay`, `minimalVertexCover_ncard_eq` | `BEI/CohenMacaulay.lean`, `toMathlib/HeightVariableIdeal.lean` | Sorry | `prop_1_6` itself is fully assembled; the only remaining sorry is the isolated Gröbner CM transfer theorem `cm_transfer_initialIdeal` |
 
 ## Section 2: Reduced Gröbner Basis and Radicality
 
@@ -61,7 +61,7 @@ faithfully the current Lean statements match the paper.
 
 | Paper endpoint | Current state |
 |---|---|
-| Proposition 1.6 | Full chain through equidimensionality proved (dimension step landed). Only remaining gap: CM transfer `S/in_<(I)` CM → `S/I` CM |
+| Proposition 1.6 | `prop_1_6` is fully assembled. The only remaining gap is the isolated theorem `cm_transfer_initialIdeal` (1 sorry) |
 | Corollary 3.4 | **proved** |
 | Corollary 3.7 | **proved** (all branches) |
 | Section 4 | complete: bridges, radicality, prime decomposition, and minimal-prime transfer all proved |

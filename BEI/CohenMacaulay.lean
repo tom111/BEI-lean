@@ -588,6 +588,143 @@ theorem rename_yPredVar_monomialInitialIdeal {n : ℕ} (hn : 0 < n)
     refine ⟨X (Sum.inl i) * X (Sum.inr j'), ⟨i, j', hadj, hij', rfl⟩, ?_⟩
     rw [rename_yPredVar_generator hn i j' hij', hj'_eq]
 
+/-! ## CM transfer through ring isomorphism -/
+
+/-- Cohen–Macaulayness (equidimensionality) transfers across ring isomorphisms. -/
+theorem isCohenMacaulay_of_ringEquiv {R S : Type*} [CommRing R] [CommRing S]
+    (e : R ≃+* S) (hCM : IsCohenMacaulayRing R) : IsCohenMacaulayRing S where
+  equidimensional P Q hP hQ := by
+    -- Pull back minimal primes of S to minimal primes of R
+    have hP' : Ideal.comap e.toRingHom P ∈ minimalPrimes R := by
+      have h := Ideal.minimal_primes_comap_of_surjective (f := e.toRingHom)
+        e.surjective (I := ⊥) hP
+      rwa [Ideal.comap_bot_of_injective e.toRingHom e.injective] at h
+    have hQ' : Ideal.comap e.toRingHom Q ∈ minimalPrimes R := by
+      have h := Ideal.minimal_primes_comap_of_surjective (f := e.toRingHom)
+        e.surjective (I := ⊥) hQ
+      rwa [Ideal.comap_bot_of_injective e.toRingHom e.injective] at h
+    -- Quotient dimensions are preserved by the isomorphism
+    have hPe : ringKrullDim (R ⧸ Ideal.comap e.toRingHom P) = ringKrullDim (S ⧸ P) :=
+      ringKrullDim_eq_of_ringEquiv
+        (Ideal.quotientEquiv _ P e
+          (Ideal.map_comap_of_surjective e.toRingHom e.surjective P).symm)
+    have hQe : ringKrullDim (R ⧸ Ideal.comap e.toRingHom Q) = ringKrullDim (S ⧸ Q) :=
+      ringKrullDim_eq_of_ringEquiv
+        (Ideal.quotientEquiv _ Q e
+          (Ideal.map_comap_of_surjective e.toRingHom e.surjective Q).symm)
+    rw [← hPe, ← hQe]
+    exact hCM.equidimensional _ _ hP' hQ'
+
+/-! ## The y-predecessor variable equivalence -/
+
+/-- The y-successor on BEI variables: inverse of `yPredVar`.
+`x_i ↦ x_i`, `y_j ↦ y_{(j+1) mod n}`. -/
+private def ySuccVar (n : ℕ) (hn : 0 < n) :
+    BinomialEdgeVars (Fin n) → BinomialEdgeVars (Fin n)
+  | Sum.inl i => Sum.inl i
+  | Sum.inr j => Sum.inr ⟨(j.val + 1) % n, Nat.mod_lt _ hn⟩
+
+private lemma ySucc_yPred (n : ℕ) (hn : 0 < n) (v : BinomialEdgeVars (Fin n)) :
+    ySuccVar n hn (yPredVar n hn v) = v := by
+  cases v with
+  | inl i => rfl
+  | inr j =>
+    simp only [yPredVar, ySuccVar]
+    congr 1; ext; simp only
+    have hj := j.isLt
+    by_cases hj0 : j.val = 0
+    · -- j = 0: pred = n-1, succ of that = n % n = 0
+      rw [hj0, show 0 + n - 1 = n - 1 from by omega,
+          Nat.mod_eq_of_lt (by omega : n - 1 < n),
+          show (n - 1 + 1) = n from by omega, Nat.mod_self]
+    · -- j > 0: pred = j-1, succ of that = j
+      rw [show j.val + n - 1 = (j.val - 1) + 1 * n from by omega,
+          Nat.add_mul_mod_self_right,
+          Nat.mod_eq_of_lt (by omega : j.val - 1 < n),
+          show j.val - 1 + 1 = j.val from by omega,
+          Nat.mod_eq_of_lt hj]
+
+private lemma yPred_ySucc (n : ℕ) (hn : 0 < n) (v : BinomialEdgeVars (Fin n)) :
+    yPredVar n hn (ySuccVar n hn v) = v := by
+  cases v with
+  | inl i => rfl
+  | inr j =>
+    simp only [ySuccVar, yPredVar]
+    congr 1; ext; simp only
+    have hj := j.isLt
+    by_cases hjn : j.val + 1 < n
+    · -- j+1 < n: succ = j+1, pred of that = j
+      rw [Nat.mod_eq_of_lt hjn]
+      rw [show (j.val + 1 + n - 1) = j.val + 1 * n from by omega,
+          Nat.add_mul_mod_self_right, Nat.mod_eq_of_lt hj]
+    · -- j = n-1: succ = 0, pred of that = n-1
+      have hjeq : j.val = n - 1 := by omega
+      rw [show j.val + 1 = n from by omega, Nat.mod_self]
+      rw [show (0 + n - 1) = n - 1 from by omega, Nat.mod_eq_of_lt (by omega)]
+      exact hjeq.symm
+
+/-- The y-predecessor shift as an equivalence on BEI variables.
+`x_i ↦ x_i`, `y_j ↦ y_{(j-1) mod n}`, with inverse `y_j ↦ y_{(j+1) mod n}`. -/
+def yPredEquiv (n : ℕ) (hn : 0 < n) :
+    BinomialEdgeVars (Fin n) ≃ BinomialEdgeVars (Fin n) where
+  toFun := yPredVar n hn
+  invFun := ySuccVar n hn
+  left_inv := ySucc_yPred n hn
+  right_inv := yPred_ySucc n hn
+
+/-! ## CM of the monomial initial ideal quotient -/
+
+/-- Under HH conditions, `S / monomialInitialIdeal G` is Cohen–Macaulay.
+
+Proof: the y-predecessor shift `φ` gives a ring isomorphism
+`S / monomialInitialIdeal G ≃+* S / bipartiteEdgeMonomialIdeal G`,
+and the bipartite edge ideal quotient is CM by `bipartiteEdgeMonomialIdeal_isCohenMacaulay`. -/
+theorem monomialInitialIdeal_isCohenMacaulay {n : ℕ} (hn : 0 < n)
+    {G : SimpleGraph (Fin n)} (hHH : HerzogHibiConditions n G) :
+    IsCohenMacaulayRing
+      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G) := by
+  -- Build the ring equivalence from yPredEquiv
+  set φ := (MvPolynomial.renameEquiv K (yPredEquiv n hn)).toRingEquiv
+  -- Show φ maps monomialInitialIdeal to bipartiteEdgeMonomialIdeal
+  have hmap : bipartiteEdgeMonomialIdeal (K := K) G =
+      Ideal.map φ (monomialInitialIdeal (K := K) G) := by
+    -- φ.toRingHom and rename (yPredVar n hn) act the same on generators
+    have hfun : ⇑φ = ⇑(rename (yPredVar n hn) : MvPolynomial _ K →ₐ[K] MvPolynomial _ K) := by
+      funext p; exact (MvPolynomial.renameEquiv_apply K (yPredEquiv n hn) p).symm
+    change _ = Ideal.map φ.toRingHom _
+    conv_rhs => rw [show φ.toRingHom = (rename (yPredVar n hn) :
+        MvPolynomial _ K →ₐ[K] MvPolynomial _ K).toRingHom from RingHom.ext (fun x => by
+      change φ x = rename (yPredVar n hn) x; exact congr_fun hfun x)]
+    exact (rename_yPredVar_monomialInitialIdeal (K := K) hn G).symm
+  -- Build the quotient isomorphism
+  have e : MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G ≃+*
+      MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ bipartiteEdgeMonomialIdeal (K := K) G :=
+    Ideal.quotientEquiv _ _ φ hmap
+  exact isCohenMacaulay_of_ringEquiv e.symm
+    (bipartiteEdgeMonomialIdeal_isCohenMacaulay (K := K) hHH)
+
+/-! ## Gröbner CM transfer -/
+
+omit [DecidableEq V] [Fintype V] in
+/-- **Gröbner CM transfer**: if the quotient by the monomial initial ideal
+`in_<(J_G)` is Cohen–Macaulay, then `S/J_G` is Cohen–Macaulay.
+
+This is a standard result in Gröbner basis theory: the flat degeneration family
+`S[t]/(tI + (1-t)·in_<(I))` connects `S/I` to `S/in_<(I)`, and CM is preserved
+under flat deformation (Eisenbud, *Commutative Algebra*, Theorem 15.17).
+Not yet formalized in Mathlib v4.28.0; see Herzog et al. (2010), proof of Prop. 1.6.
+
+The closedness hypothesis is used to identify `monomialInitialIdeal G` with the
+actual leading-term ideal of `J_G` (via `initialIdeal_closed_eq`). -/
+theorem cm_transfer_initialIdeal
+    (G : SimpleGraph V)
+    (hClosed : IsClosedGraph G)
+    (hCM : IsCohenMacaulayRing
+      (MvPolynomial (BinomialEdgeVars V) K ⧸ monomialInitialIdeal (K := K) G)) :
+    IsCohenMacaulayRing
+      (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) := by
+  sorry
+
 /-! ## Proposition 1.6 -/
 
 /--
@@ -599,19 +736,13 @@ the interval condition, then S/J_G is Cohen-Macaulay.
 1. **Initial ideal** (`initialIdeal_closed_eq`): For closed G, `in_<(J_G)` is generated
    by the monomials `{xᵢ yⱼ : {i,j} ∈ E(G), i < j}`.
 
-2. **Variable shift** (`rename_yPredVar_monomialInitialIdeal`): The automorphism
+2. **Variable shift** (`monomialInitialIdeal_isCohenMacaulay`): The automorphism
    `φ: yⱼ ↦ y_{j-1}` transports the monomial initial ideal to the bipartite edge
-   ideal of the graph Γ (`bipartiteEdgeMonomialIdeal`).
+   ideal Γ, and the quotient by Γ is CM (`bipartiteEdgeMonomialIdeal_isCohenMacaulay`).
+   By the ring isomorphism, the monomial initial ideal quotient is also CM.
 
-3. **HH conditions** (`prop_1_6_herzogHibi`): Γ satisfies the three conditions of
-   the Herzog–Hibi CM criterion (diagonal, upper-triangularity, transitivity).
-
-4. **Equidimensionality** (`bipartiteEdgeMonomialIdeal_isCohenMacaulay`): Under HH
-   conditions, all minimal vertex covers of Γ have the same size, so the quotient
-   by the bipartite edge monomial ideal is equidimensional (CM in the local sense).
-
-**Remaining gap**: CM transfer from initial ideal (`S/in_<(I)` CM → `S/I` CM).
-This is a standard result in Gröbner basis theory (not yet in Mathlib).
+3. **CM transfer** (`cm_transfer_initialIdeal`): The flat Gröbner degeneration
+   preserves CM from `S/in_<(J_G)` to `S/J_G`.
 
 Reference: Herzog et al. (2010), Proposition 1.6.
 -/
@@ -621,16 +752,11 @@ theorem prop_1_6 (n : ℕ) (hn : 0 < n) (G : SimpleGraph (Fin n))
     (hCond : SatisfiesProp1_6Condition n G) :
     IsCohenMacaulay
       (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ binomialEdgeIdeal G) := by
-  -- Step 1: Initial ideal of J_G for closed graphs
-  have _hInit := initialIdeal_closed_eq (K := K) G hClosed
-  -- Step 2: Variable shift transports monomial initial ideal to bipartite edge ideal
-  have _hTransport := rename_yPredVar_monomialInitialIdeal (K := K) hn G
-  -- Step 3: HH conditions on the bipartite graph Γ
+  -- Step 1: HH conditions on the bipartite graph Γ
   have hHH := prop_1_6_herzogHibi n G hConn hClosed hCond
-  -- Step 4: The bipartite edge ideal quotient is CM (equidimensional)
-  have _hCM := bipartiteEdgeMonomialIdeal_isCohenMacaulay (K := K) hHH
-  -- Remaining gap: CM transfer from initial ideal to original ideal
-  -- S/in_<(J_G) CM → S/J_G CM (standard Gröbner basis theory result)
-  sorry
+  -- Step 2: The monomial initial ideal quotient is CM (via rename isomorphism)
+  have hCM := monomialInitialIdeal_isCohenMacaulay (K := K) hn hHH
+  -- Step 3: CM transfers from in_<(J_G) to J_G
+  exact cm_transfer_initialIdeal G hClosed hCM
 
 end

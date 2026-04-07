@@ -20,12 +20,14 @@ Completed guides (deleted):
 
 ## Immediate Work Packets
 
-- [PROP_1_6_CM_TRANSFER.md](PROP_1_6_CM_TRANSFER.md) — final Proposition 1.6 packet: formalize the CM transfer theorem `S/in_<(I)` CM → `S/I` CM strongly enough to close `prop_1_6`
+- [PROP_1_6_CM_TRANSFER.md](PROP_1_6_CM_TRANSFER.md) — final active packet: isolate or prove the Gröbner CM transfer theorem `S/in_<(I)` CM → `S/I` CM
 - [PROP_1_6_COHEN_MACAULAY.md](PROP_1_6_COHEN_MACAULAY.md) — broad reference packet for the now nearly-complete Proposition 1.6 branch
 
-## Longer-Horizon CM Packet
+## Remaining CM Gap
 
-The Proposition 1.6 branch now has only the CM transfer step remaining.
+The only remaining sorry in the Proposition 1.6 chain is `cm_transfer_initialIdeal` in
+`BEI/CohenMacaulay.lean`: the Gröbner flat degeneration theorem `S/in_<(I)` CM → `S/I` CM.
+This is a standard result in Gröbner basis theory (Eisenbud, Thm 15.17) not yet in Mathlib v4.28.0.
 
 ## CM Reference Notes
 
