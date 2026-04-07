@@ -67,7 +67,7 @@ title: Binomial Edge Ideals
     <span class="result-item__icon" data-icon="&#10003;"></span>
     <div>
       <strong>Section 4 complete</strong>
-      <span>The conditional-independence results are connected to binomial edge ideals, including radicality, prime decomposition, and minimal-prime statements.</span>
+      <span>Conditional independence ideals are linked to binomial edge ideals, with bridge theorems, radicality, prime decomposition, and minimal-prime results.</span>
     </div>
   </div>
   <div class="result-item result-item--open">
@@ -99,7 +99,7 @@ title: Binomial Edge Ideals
   </a>
   <a class="section-card" href="{{ '/section-4.html' | relative_url }}">
     <span class="section-card__kicker">Section 4</span>
-    <strong>CI ideals and robustness specifications</strong>
-    <span class="section-card__meta">complete at the current binary-output level</span>
+    <strong>Conditional independence ideals and robustness</strong>
+    <span class="section-card__meta">bridge theorems and the main binary-output results are complete</span>
   </a>
 </div>
