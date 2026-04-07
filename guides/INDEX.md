@@ -15,10 +15,11 @@ Completed guides (deleted):
 - Support-monomial cleanup — `Ideal.not_mem_exists_monomial_notMem` relocated as a general lemma before monomial-ideal specializations
 - Squarefree monomial minimal primes — `minimalPrime_variablePairIdeal_iff` fully proved
 - Variable-pair bridge — `bipartiteEdgeMonomialIdeal_eq_variablePairIdeal` and minimal-prime transport proved
+- HH equidimensionality — `minimalVertexCover_exactlyOne` and `minimalVertexCover_ncard_eq` proved
 
 ## Immediate Work Packets
 
-- [PROP_1_6_HH_EQUIDIMENSIONALITY.md](PROP_1_6_HH_EQUIDIMENSIONALITY.md) — next Proposition 1.6 packet: use the HH conditions to show all minimal vertex covers of `hhEdgeSet G` have equal size, then package the equidimensionality step
+- [PROP_1_6_DIMENSION_STEP.md](PROP_1_6_DIMENSION_STEP.md) — next Proposition 1.6 packet: convert equal-cardinality of HH minimal vertex covers into equal quotient dimensions for the corresponding minimal primes
 - [PROP_1_6_COHEN_MACAULAY.md](PROP_1_6_COHEN_MACAULAY.md) — primary remaining paper endpoint: Proposition 1.6 CM branch and its remaining external algebraic inputs
 
 ## Longer-Horizon CM Packet

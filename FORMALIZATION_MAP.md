@@ -21,7 +21,7 @@ faithfully the current Lean statements match the paper.
 | Corollary 1.3 | `cor_1_3`, `cor_1_3_connected_forward`, `pathGraph_isClosedGraph` | `BEI/GraphProperties.lean` | Exact | Formalized in the connected-graph form implicit in the paper |
 | Proposition 1.4 | `prop_1_4` | `BEI/GraphProperties.lean` | Equivalent | Directed shortest-path formulation |
 | Proposition 1.5 | `prop_1_5` | `BEI/GraphProperties.lean` | Exact | Unique minimal closed supergraph |
-| Proposition 1.6 | `prop_1_6`, `prop_1_6_herzogHibi`, `initialIdeal_closed_eq`, `rename_yPredVar_monomialInitialIdeal`, `bipartiteEdgeMonomialIdeal_eq_variablePairIdeal`, `minimalPrime_bipartiteEdgeMonomialIdeal_iff` | `BEI/CohenMacaulay.lean` | Sorry | The BEI-side reduction chain is packaged and the minimal-prime/vertex-cover bridge is proved. The remaining gap is to use the Herzog–Hibi conditions to show all minimal vertex covers have equal size (equidimensionality), then finish the CM transfer from the initial ideal |
+| Proposition 1.6 | `prop_1_6`, `prop_1_6_herzogHibi`, `initialIdeal_closed_eq`, `rename_yPredVar_monomialInitialIdeal`, `bipartiteEdgeMonomialIdeal_eq_variablePairIdeal`, `minimalPrime_bipartiteEdgeMonomialIdeal_iff`, `hhEdgeSet_diagonal`, `minimalVertexCover_exactlyOne`, `minimalVertexCover_subset_active`, `minimalVertexCover_ncard_eq` | `BEI/CohenMacaulay.lean` | Sorry | Full reduction chain and HH combinatorics proved. Remaining gap: dimension step (equal cover size → equal quotient dim) and CM transfer from initial ideal |
 
 ## Section 2: Reduced Gröbner Basis and Radicality
 
@@ -61,7 +61,7 @@ faithfully the current Lean statements match the paper.
 
 | Paper endpoint | Current state |
 |---|---|
-| Proposition 1.6 | BEI-side reduction packaged; variable-pair bridge and minimal-prime/vertex-cover transport proved. Remaining gap: use HH conditions to show all minimal vertex covers have equal size (equidimensionality), then CM transfer from initial ideal |
+| Proposition 1.6 | Full reduction chain, minimal-prime/vertex-cover bridge, and HH equal-cardinality of covers all proved. Remaining gap: dimension step (equal cover size → equal quotient dim) and CM transfer from initial ideal |
 | Corollary 3.4 | **proved** |
 | Corollary 3.7 | **proved** (all branches) |
 | Section 4 | complete: bridges, radicality, prime decomposition, and minimal-prime transfer all proved |

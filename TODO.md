@@ -45,7 +45,7 @@ Active CM work lives in:
 - `toMathlib/MonomialIdeal.lean` — `Ideal.IsMonomial`, prime classification, radical-is-monomial, full primary iff characterization
 - `toMathlib/SquarefreeMonomialPrimes.lean` — variable-pair ideals, vertex covers, and minimal prime ↔ minimal vertex cover
 - `guides/PROP_1_6_COHEN_MACAULAY.md`
-- `guides/PROP_1_6_HH_EQUIDIMENSIONALITY.md`
+- `guides/PROP_1_6_DIMENSION_STEP.md`
 - `guides/ANSWER_05_COHEN_MACAULAY_FOUNDATION.md`
 - `guides/ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md`
 - `guides/CM_CODEBASE_RESEARCH_MONOMIAL_IDEAL.md`
@@ -86,9 +86,15 @@ The variable-pair bridge and minimal-prime transport are now proved in
 - `bipartiteEdgeMonomialIdeal_eq_variablePairIdeal` (ideal equality)
 - `minimalPrime_bipartiteEdgeMonomialIdeal_iff` (minimal primes = minimal vertex covers)
 
-The remaining algebraic gap for Proposition 1.6 is:
-- use the Herzog–Hibi conditions to show all minimal vertex covers of `hhEdgeSet G`
-  have equal size (equidimensionality)
+The HH combinatorial step is now proved in `BEI/CohenMacaulay.lean`:
+- `hhEdgeSet_diagonal` (diagonal edges in the HH graph)
+- `minimalVertexCover_exactlyOne` (exactly-one from each diagonal pair)
+- `minimalVertexCover_subset_active` (covers lie on active indices)
+- `minimalVertexCover_ncard_eq` (all minimal covers have the same cardinality)
+
+The remaining gap for Proposition 1.6 is:
+- convert equal cardinality of covers to `ringKrullDim(R/P) = ringKrullDim(R/Q)` for
+  all minimal primes P, Q (dimension step)
 - finish the CM transfer from `S / in_<(J_G)` back to `S / J_G`
 
 ### Priority 2: Section 4
