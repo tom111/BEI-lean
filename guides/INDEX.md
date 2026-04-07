@@ -10,12 +10,12 @@ Completed guides (deleted):
 - Section 4 minimal primes — `ciIdealSpec_minimalPrimes` fully proved
 - Corollary 3.4 — `corollary_3_4` fully proved
 - Corollary 3.7 CM — `corollary_3_7_CM` fully proved
+- Primary converse (ANSWER_18) — `isPrimary_of_criterion` and `isPrimary_iff` fully proved
+- Monomial ideal primary decomp guide — primary iff fully proved
 
 ## Immediate Work Packets
 
-- [ANSWER_18_PRIMARY_CONVERSE_DECOMPOSITION.md](ANSWER_18_PRIMARY_CONVERSE_DECOMPOSITION.md) — immediate restart packet for the primary converse: prove that outside-radical variables do not affect monomial membership, and do not return to the false `coeff_mul_lexMax_left` route
 - [PROP_1_6_COHEN_MACAULAY.md](PROP_1_6_COHEN_MACAULAY.md) — primary remaining paper endpoint: Proposition 1.6 CM branch and its remaining external algebraic inputs
-- [MONOMIAL_IDEAL_PRIMARY_DECOMP.md](MONOMIAL_IDEAL_PRIMARY_DECOMP.md) — supporting `toMathlib` packet: prime classification and forward primary theory are done; use this for theorem context, but start the converse from the decomposition guide above
 - [SQUAREFREE_MONOMIAL_MINIMAL_PRIMES.md](SQUAREFREE_MONOMIAL_MINIMAL_PRIMES.md) — next supporting packet: minimal primes of squarefree monomial ideals via minimal vertex covers
 
 ## Longer-Horizon CM Packet

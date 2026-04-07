@@ -3,8 +3,8 @@ Copyright (c) 2026 Thomas Kahle. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Thomas Kahle
 -/
+import Mathlib.RingTheory.Ideal.IsPrimary
 import Mathlib.RingTheory.Ideal.Maps
-import Mathlib.RingTheory.IsPrimary
 import Mathlib.RingTheory.MvPolynomial.Ideal
 import Mathlib.Algebra.MvPolynomial.Rename
 
@@ -706,6 +706,52 @@ private theorem mem_of_mul_mem_of_lexMax_outside
       have : x = x' + lt := by simp [x', lt]
       rw [this]; exact I.add_mem hx'_I hlt_I
 
+omit [LinearOrder σ] in
+/-- Auxiliary: filter of sum equals sum of filters. -/
+private lemma filter_add_eq {s : Set σ} [DecidablePred (· ∈ s)]
+    (u v : σ →₀ ℕ) (hv : ∀ i ∈ s, v i = 0) :
+    (u + v).filter (· ∈ s) = u.filter (· ∈ s) := by
+  ext i
+  simp only [Finsupp.filter_apply, Finsupp.add_apply]
+  split_ifs with hi
+  · rw [hv i hi, add_zero]
+  · rfl
+
+omit [LinearOrder σ] in
+/-- Auxiliary: if u_s + v_s = γ then u_s ≤ γ (componentwise). -/
+private lemma filter_le_of_add_filter_eq {s : Set σ} [DecidablePred (· ∈ s)]
+    {u v : σ →₀ ℕ} {γ : σ →₀ ℕ}
+    (hfilt : (u + v).filter (· ∈ s) = γ) :
+    u.filter (· ∈ s) ≤ γ := by
+  rw [← hfilt, Finsupp.filter_add]
+  exact le_add_right le_rfl
+
+omit [IsDomain R] in
+/-- Coefficient of a filtered monomial sum: extract one term by matching exponent. -/
+private lemma coeff_filtered_sum {S : Finset (σ →₀ ℕ)} {P : (σ →₀ ℕ) → Prop}
+    [DecidablePred P] {c : (σ →₀ ℕ) → R} {u : σ →₀ ℕ} :
+    coeff u (S.sum fun d => if P d then monomial d (c d) else 0) =
+      if P u ∧ u ∈ S then c u else 0 := by
+  trans ∑ d ∈ S, coeff u (if P d then monomial d (c d) else 0)
+  · exact MvPolynomial.coeff_sum S _ u
+  split_ifs with h
+  · obtain ⟨hp, hu⟩ := h
+    rw [Finset.sum_eq_single u]
+    · simp [hp]
+    · intro d _ hne; split_ifs with hp'
+      · rw [coeff_monomial, if_neg hne]
+      · simp
+    · intro h; exact absurd hu h
+  · push_neg at h
+    apply Finset.sum_eq_zero
+    intro d hd
+    by_cases hp : P d
+    · simp only [if_pos hp, coeff_monomial]
+      split_ifs with heq
+      · subst heq; exact absurd hd (h hp)
+      · rfl
+    · rw [if_neg hp]; simp
+
 /-- The converse direction: the monomial criterion implies primary. -/
 theorem IsMonomial.isPrimary_of_criterion
     {I : Ideal (MvPolynomial σ R)} (hI : I.IsMonomial) (hne : I ≠ ⊤)
@@ -713,7 +759,217 @@ theorem IsMonomial.isPrimary_of_criterion
     (hcrit : ∀ d : σ →₀ ℕ, monomial d (1 : R) ∉ I →
       ∀ j, j ∉ s → monomial (d + single j 1) (1 : R) ∉ I) :
     I.IsPrimary := by
-  sorry
+  classical
+  rw [Ideal.isPrimary_iff]
+  refine ⟨hne, fun {a b} hab => ?_⟩
+  -- Goal: a * b ∈ I → a ∈ I ∨ b ∈ I.radical
+  -- Reduce via primality of span(X '' s)
+  have hs_prime := MvPolynomial.isPrime_span_X_image_set (R := R) s
+  have hab_rad : a * b ∈ span (X '' s) := hrad ▸ Ideal.le_radical hab
+  -- If b ∈ span(X '' s) = I.radical, we're done
+  rcases hs_prime.mem_or_mem hab_rad with ha_s | hb_s
+  · -- a ∈ span(X '' s), need a ∈ I ∨ b ∈ I.radical
+    by_cases hb_s' : b ∈ span (X '' s)
+    · exact Or.inr (hrad ▸ hb_s')
+    · -- b ∉ span(X '' s), must show a ∈ I
+      left
+      -- Derive contradiction from a ∉ I
+      by_contra ha_nI
+      -- a ∉ I → ∃ bad monomial
+      obtain ⟨d₀, hd₀_supp, hd₀_nI⟩ := hI.not_mem_exists_monomial_notMem ha_nI
+      -- d₀.filter (· ∈ s) ≠ 0 since a ∈ span(X '' s)
+      have hd₀_filt_ne : d₀.filter (· ∈ s) ≠ 0 := by
+        rw [MvPolynomial.mem_ideal_span_X_image] at ha_s
+        obtain ⟨i, hi, hdi⟩ := ha_s d₀ hd₀_supp
+        intro h
+        have : (d₀.filter (· ∈ s)) i = 0 := by
+          rw [h]; simp
+        rw [Finsupp.filter_apply_pos (· ∈ s) d₀ hi] at this
+        exact hdi this
+      -- The set of "bad s-exponents" is nonempty
+      let badExps : Set (σ →₀ ℕ) :=
+        {γ | ∃ d ∈ a.support, d.filter (· ∈ s) = γ ∧ monomial d (1 : R) ∉ I}
+      have hbad_ne : badExps.Nonempty :=
+        ⟨d₀.filter (· ∈ s), ⟨d₀, hd₀_supp, rfl, hd₀_nI⟩⟩
+      -- Choose γ minimal in componentwise order (wellFoundedLT on σ →₀ ℕ)
+      have hwf : WellFounded ((· < ·) : (σ →₀ ℕ) → (σ →₀ ℕ) → Prop) :=
+        IsWellFounded.wf
+      set γ := hwf.min badExps hbad_ne
+      have hγ_mem : γ ∈ badExps := hwf.min_mem badExps hbad_ne
+      obtain ⟨d₁, hd₁_supp, hd₁_eq, hd₁_nI⟩ := hγ_mem
+      have hγ_nI : monomial γ (1 : R) ∉ I := by
+        rwa [← hd₁_eq, ← monomial_mem_iff_filter hcrit d₁]
+      -- Minimality: no bad s-exponent is strictly less than γ
+      have hγ_min : ∀ γ' ∈ badExps, ¬(γ' < γ) :=
+        fun γ' hγ' => hwf.not_lt_min badExps hbad_ne hγ'
+      -- Key: any d ∈ a.support with d.filter(·∈s) < γ has monomial d 1 ∈ I
+      have hsmall_in_I : ∀ d ∈ a.support, d.filter (· ∈ s) < γ →
+          monomial d (1 : R) ∈ I := by
+        intro d hd hlt
+        by_contra hd_nI
+        exact hγ_min (d.filter (· ∈ s)) ⟨d, hd, rfl, hd_nI⟩ hlt
+      -- b ∉ span(X '' s): some monomial of b is entirely outside s
+      rw [MvPolynomial.mem_ideal_span_X_image] at hb_s'
+      push_neg at hb_s'
+      obtain ⟨e₀, he₀_supp, he₀_s⟩ := hb_s'
+      -- Define sub-polynomials:
+      -- a_γ: monomials of a with s-part = γ
+      -- a_small: monomials of a with s-part < γ (componentwise)
+      -- b_out: monomials of b entirely outside s
+      set a_γ : MvPolynomial σ R := a.support.sum fun d =>
+        if d.filter (· ∈ s) = γ then monomial d (coeff d a) else 0
+      set a_small : MvPolynomial σ R := a.support.sum fun d =>
+        if d.filter (· ∈ s) < γ then monomial d (coeff d a) else 0
+      set b_out : MvPolynomial σ R := b.support.sum fun d =>
+        if d.filter (· ∈ s) = 0 then monomial d (coeff d b) else 0
+      -- a_small ∈ I (by minimality, each contributing monomial is in I)
+      have ha_small_I : a_small ∈ I := by
+        apply Submodule.sum_mem
+        intro d hd
+        split_ifs with h
+        · have := hsmall_in_I d hd h
+          rw [show monomial d (coeff d a) = C (coeff d a) * monomial d 1 from
+            by rw [C_mul_monomial, mul_one]]
+          exact I.mul_mem_left _ this
+        · exact I.zero_mem
+      -- a_γ ≠ 0 (contains d₁)
+      have ha_γ_ne : a_γ ≠ 0 := by
+        intro h
+        have : coeff d₁ a_γ = 0 := by rw [h]; simp
+        rw [coeff_filtered_sum, if_pos ⟨hd₁_eq, hd₁_supp⟩] at this
+        exact MvPolynomial.mem_support_iff.mp hd₁_supp this
+      -- b_out ≠ 0 (contains e₀)
+      have he₀_filt : e₀.filter (· ∈ s) = 0 := by
+        ext i; simp only [Finsupp.filter_apply, Finsupp.zero_apply]
+        split_ifs with hi
+        · exact he₀_s i hi
+        · rfl
+      have hb_out_ne : b_out ≠ 0 := by
+        intro h
+        have : coeff e₀ b_out = 0 := by rw [h]; simp
+        rw [coeff_filtered_sum, if_pos ⟨he₀_filt, he₀_supp⟩] at this
+        exact MvPolynomial.mem_support_iff.mp he₀_supp this
+      -- Show a_γ * b_out = 0 (contradiction with domain since both ≠ 0)
+      -- Strategy: show every coefficient of a_γ * b_out is zero
+      suffices h_zero : a_γ * b_out = 0 from
+        absurd h_zero (mul_ne_zero ha_γ_ne hb_out_ne)
+      ext f
+      simp only [coeff_zero]
+      -- Show coeff f (a_γ * b_out) = 0
+      -- Case 1: f.filter (· ∈ s) ≠ γ
+      -- Every contributing pair (u,v) to a_γ * b_out has u_s = γ and v_s = 0,
+      -- so f_s = γ. If f_s ≠ γ, no pair contributes.
+      -- Case 2: f.filter (· ∈ s) = γ
+      -- coeff f (a_γ * b_out) = coeff f (a*b - a_small*b) - coeff f (R)
+      -- where R = a*b - a_small*b - a_γ*b_out has no γ-slice contribution.
+      -- And a*b - a_small*b ∈ I, so its γ-slice coefficients are 0.
+      -- We prove: coeff f (a_γ * b_out) = coeff f (a*b) - coeff f (a_small * b)
+      -- by showing the remaining terms contribute 0 at f_s = γ.
+      -- Combined proof: coeff f (a_γ * b_out) = coeff f (a*b - a_small * b)
+      -- for f with f_s = γ; and coeff f (a*b - a_small * b) = 0 since p ∈ I is monomial.
+      -- For f with f_s ≠ γ: the sum over antidiagonal is directly 0.
+      -- Coefficient-level argument: show ∀ f, coeff f (a_γ * b_out) = 0
+      -- For (u,v) in antidiag f with coeff u a_γ ≠ 0 and coeff v b_out ≠ 0:
+      --   u_s = γ and v_s = 0, hence f_s = γ and monomial f 1 ∉ I.
+      -- Then coeff f (a*b) = coeff f (a_small*b) + coeff f (a_γ*b_out) (pairwise).
+      -- Since a*b - a_small*b ∈ I and monomial f 1 ∉ I: coeff f (a*b - a_small*b) = 0.
+      -- Hence coeff f (a_γ * b_out) = 0.
+      -- Split into two cases based on f_s = γ or not.
+      rw [MvPolynomial.coeff_mul]
+      simp only [a_γ, b_out]
+      simp_rw [coeff_filtered_sum]
+      -- Case 1: f_s ≠ γ → every antidiag summand is 0
+      -- Case 2: f_s = γ → relate to coeff f (a*b - a_small*b) = 0
+      by_cases hf_eq : f.filter (· ∈ s) = γ; swap
+      · -- f_s ≠ γ: every summand is 0
+        apply Finset.sum_eq_zero
+        intro ⟨u', v'⟩ huv'
+        rw [Finset.mem_antidiagonal] at huv'
+        -- If either condition in the `if` fails, the product is 0
+        by_cases h₁ : u'.filter (· ∈ s) = γ ∧ u' ∈ a.support <;>
+          by_cases h₂ : v'.filter (· ∈ s) = 0 ∧ v' ∈ b.support
+        · -- Both conditions hold → f_s = γ, contradiction
+          obtain ⟨hu'_eq, _⟩ := h₁
+          obtain ⟨hv'_zero, _⟩ := h₂
+          have hv'_s : ∀ i ∈ s, v' i = 0 := by
+            intro i hi
+            have := congr_fun (congr_arg DFunLike.coe hv'_zero) i
+            simp only [Finsupp.filter_apply, if_pos hi, Finsupp.zero_apply] at this
+            exact this
+          exact absurd (show f.filter (· ∈ s) = γ by
+            rw [← huv', filter_add_eq u' v' hv'_s, hu'_eq]) hf_eq
+        · rw [if_pos h₁, if_neg h₂, mul_zero]
+        · rw [if_neg h₁, zero_mul]
+        · rw [if_neg h₁, zero_mul]
+      · -- f_s = γ: show coeff f (a_γ * b_out) = 0
+        have hf_nI : monomial f (1 : R) ∉ I := by
+          rwa [monomial_mem_iff_filter hcrit f, hf_eq]
+        have hab_sm_I : a * b - a_small * b ∈ I :=
+          I.sub_mem hab (I.mul_mem_right b ha_small_I)
+        have hcoeff_zero : coeff f (a * b - a_small * b) = 0 := by
+          by_contra h
+          exact hf_nI (hI _ hab_sm_I f (MvPolynomial.mem_support_iff.mpr h))
+        -- The sum equals coeff f (a*b) - coeff f (a_small * b) = 0
+        -- To show this, we prove the pairwise equality for (u',v') ∈ antidiag f.
+        -- Key: since f_s = γ, for each (u',v'), u'_s + v'_s = γ, so u'_s ≤ γ.
+        -- Either u'_s = γ (then v'_s = 0, a_small coeff = 0, matching) or
+        -- u'_s < γ (then a_γ coeff = 0, a_small coeff = coeff u' a, matching).
+        -- First show: sum = coeff f (a*b) - coeff f (a_small*b)
+        suffices hrel : ∑ x ∈ Finset.antidiagonal f,
+            (if x.1.filter (· ∈ s) = γ ∧ x.1 ∈ a.support then coeff x.1 a else 0) *
+            (if x.2.filter (· ∈ s) = 0 ∧ x.2 ∈ b.support then coeff x.2 b else 0) =
+            coeff f (a * b) - coeff f (a_small * b) by
+          rw [hrel, ← MvPolynomial.coeff_sub]; exact hcoeff_zero
+        rw [MvPolynomial.coeff_mul]
+        conv_rhs => rw [MvPolynomial.coeff_mul]
+        simp only [a_small]; simp_rw [coeff_filtered_sum]
+        rw [← Finset.sum_sub_distrib]
+        apply Finset.sum_congr rfl
+        intro ⟨u', v'⟩ huv'
+        rw [Finset.mem_antidiagonal] at huv'
+        have hu'_le : u'.filter (· ∈ s) ≤ γ :=
+          filter_le_of_add_filter_eq (huv' ▸ hf_eq)
+        by_cases hu'_eq : u'.filter (· ∈ s) = γ
+        · -- u'_s = γ
+          have hv'_filt : v'.filter (· ∈ s) = 0 := by
+            have h := huv' ▸ hf_eq; rw [Finsupp.filter_add] at h; ext i
+            have hi := congr_fun (congr_arg DFunLike.coe h) i
+            have hj := congr_fun (congr_arg DFunLike.coe hu'_eq) i
+            simp only [Finsupp.add_apply, Finsupp.zero_apply] at hi hj ⊢; omega
+          have hlt_neg : ¬(u'.filter (· ∈ s) < γ) := by rw [hu'_eq]; exact lt_irrefl _
+          by_cases hu_supp : u' ∈ a.support <;> by_cases hv_supp : v' ∈ b.support
+          · rw [if_pos ⟨hu'_eq, hu_supp⟩, if_pos ⟨hv'_filt, hv_supp⟩,
+                if_neg (not_and_of_not_left _ hlt_neg), zero_mul, sub_zero]
+          · simp [MvPolynomial.notMem_support_iff.mp hv_supp, hv_supp]
+          · simp [MvPolynomial.notMem_support_iff.mp hu_supp, hu_supp]
+          · simp [MvPolynomial.notMem_support_iff.mp hu_supp, hu_supp]
+        · -- u'_s < γ
+          have hu'_lt := lt_of_le_of_ne hu'_le hu'_eq
+          rw [if_neg (not_and_of_not_left _ hu'_eq)]
+          by_cases hu_supp : u' ∈ a.support
+          · simp only [zero_mul]
+            split_ifs with h
+            · ring
+            · exact absurd ⟨hu'_lt, hu_supp⟩ h
+          · simp [MvPolynomial.notMem_support_iff.mp hu_supp, hu_supp]
+  · -- b ∈ span(X '' s) = I.radical
+    exact Or.inr (hrad ▸ hb_s)
+
+/-- A monomial ideal in `MvPolynomial σ R` (with `R` a domain) is primary if and
+only if its radical is generated by a set of variables and the monomial
+non-zero-divisor criterion holds outside that set. -/
+theorem IsMonomial.isPrimary_iff
+    {I : Ideal (MvPolynomial σ R)} (hI : I.IsMonomial) (hne : I ≠ ⊤) :
+    I.IsPrimary ↔
+      ∃ s : Set σ,
+        I.radical = span (MvPolynomial.X '' s) ∧
+        ∀ d : σ →₀ ℕ, MvPolynomial.monomial d (1 : R) ∉ I →
+          ∀ i, i ∉ s →
+            MvPolynomial.monomial (d + Finsupp.single i 1) (1 : R) ∉ I := by
+  constructor
+  · exact hI.isPrimary_radical_eq_span_X
+  · rintro ⟨s, hrad, hcrit⟩
+    exact hI.isPrimary_of_criterion hne hrad hcrit
 
 end Ideal
 

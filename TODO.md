@@ -42,7 +42,7 @@
 
 Active CM work lives in:
 - `BEI/CohenMacaulay.lean`
-- `toMathlib/MonomialIdeal.lean` — `Ideal.IsMonomial`, prime classification, radical-is-monomial, forward primary characterization, and partial converse infrastructure
+- `toMathlib/MonomialIdeal.lean` — `Ideal.IsMonomial`, prime classification, radical-is-monomial, full primary iff characterization
 - `guides/PROP_1_6_COHEN_MACAULAY.md`
 - `guides/ANSWER_05_COHEN_MACAULAY_FOUNDATION.md`
 - `guides/ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md`
@@ -67,35 +67,18 @@ Recently completed CM groundwork includes:
 - `toMathlib/MonomialIdeal.lean`: `coeff_pow_lexMax`, prime classification,
   `Ideal.IsMonomial.radical_isMonomial`,
   `Ideal.IsMonomial.isPrimary_radical_eq_span_X`,
-  `Ideal.monomial_mem_iff_add_outside`,
-  `Ideal.monomial_mem_iff_filter`,
-  `Ideal.IsMonomial.not_mem_exists_monomial_notMem`,
-  `Ideal.mem_of_mul_mem_of_lexMax_outside`
+  `Ideal.IsMonomial.isPrimary_of_criterion`,
+  `Ideal.IsMonomial.isPrimary_iff`
+
+The primary monomial ideal characterization is now complete (both directions).
 
 For Proposition 1.6 specifically, the remaining gap is now algebraic rather than graph-theoretic:
 - Herzog–Hibi CM theorem for the associated bipartite graph
 - transfer from `S / in_<(J_G)` to `S / J_G`
 
-The next supporting `toMathlib` targets on this branch are:
-- the converse direction of the full primary monomial ideal characterization from
-  `guides/MONOMIAL_IDEAL_PRIMARY_DECOMP.md`
+The next supporting `toMathlib` target on this branch is:
 - minimal primes of squarefree monomial ideals via minimal vertex covers from
   `guides/SQUAREFREE_MONOMIAL_MINIMAL_PRIMES.md`
-
-The current blocker on that packet is no longer the forward direction:
-- `Ideal.IsMonomial.radical_isMonomial` is proved
-- `Ideal.IsMonomial.isPrimary_radical_eq_span_X` is proved
-- the remaining work is the converse direction
-- the outside-`s` structural lemmas are now proved
-- `Ideal.mem_of_mul_mem_of_lexMax_outside` handles the case where `lexMaxSupport y`
-  lies outside the radical-variable set
-- the remaining hard case is when the leading monomial of `y` already uses a variable
-  from the radical set `s`
-- the likely next route is to reduce to the `s`-variable ring, or otherwise avoid
-  peeling arbitrary leading terms of `y`
-
-This branch is no longer blocked on a missing definition, but it still needs honest
-proofs and should not be overclaimed.
 
 ### Priority 2: Section 4
 

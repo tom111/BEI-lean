@@ -79,9 +79,10 @@ faithfully the current Lean statements match the paper.
 | Leading coefficient in powers | `coeff_pow_lexMax` | `toMathlib/MonomialIdeal.lean` | proved | Isolates the lex-maximal support contribution in `p ^ n` |
 | Radical is monomial | `Ideal.IsMonomial.radical_isMonomial` | `toMathlib/MonomialIdeal.lean` | proved | Uses lex-max leading-term extraction; requires `[LinearOrder σ]` |
 | Outside-`s` structural invariance | `Ideal.monomial_mem_iff_add_outside`, `Ideal.monomial_mem_iff_filter` | `toMathlib/MonomialIdeal.lean` | proved | Adding exponents outside the radical-variable set does not change monomial membership |
-| Partial converse infrastructure | `Ideal.IsMonomial.not_mem_exists_monomial_notMem`, `Ideal.mem_of_mul_mem_of_lexMax_outside` | `toMathlib/MonomialIdeal.lean` | partial | Handles the case where the lex-maximal monomial of `y` lies outside the radical-variable set |
+| Converse helpers | `Ideal.IsMonomial.not_mem_exists_monomial_notMem`, `Ideal.mem_of_mul_mem_of_lexMax_outside` | `toMathlib/MonomialIdeal.lean` | proved | Support infrastructure for the primary converse |
 | Forward primary characterization | `Ideal.IsMonomial.isPrimary_radical_eq_span_X` | `toMathlib/MonomialIdeal.lean` | proved | Primary monomial → radical is variable-generated ∧ criterion |
-| Full primary iff (converse) | `Ideal.IsMonomial.isPrimary_of_criterion` | `toMathlib/MonomialIdeal.lean` | open | Remaining hard case is when the leading monomial of `y` already lies in the radical-variable set; likely next route is reduction to the `s`-variable ring |
+| Converse primary characterization | `Ideal.IsMonomial.isPrimary_of_criterion` | `toMathlib/MonomialIdeal.lean` | proved | Criterion + radical = span(X '' s) → primary; minimal bad s-exponent + primality of span(X '' s) |
+| Full primary iff | `Ideal.IsMonomial.isPrimary_iff` | `toMathlib/MonomialIdeal.lean` | proved | Complete characterization of primary monomial ideals |
 
 ## Current File Split Notes
 
