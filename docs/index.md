@@ -21,7 +21,6 @@ title: Binomial Edge Ideals
     <div class="reference-strip">
       <a href="https://doi.org/10.1016/j.aam.2010.01.003">Published paper</a>
       <a href="https://arxiv.org/abs/0909.4717">arXiv</a>
-      <a href="https://github.com/leanprover-community/mathlib4/pull/26218">Mathlib CM PR #26218</a>
       <a href="https://github.com/tom111/BEI-lean/blob/master/FORMALIZATION_MAP.md">Detailed status</a>
     </div>
   </div>
@@ -35,12 +34,8 @@ title: Binomial Edge Ideals
       <span class="landing-summary__label">main theorem still open</span>
     </div>
     <div class="landing-summary__note">
-      <strong>Current status:</strong> The remaining open branch is Proposition 1.6.
-      The current Lean code uses an equidimensional stand-in for Cohen-Macaulayness,
-      not the full depth-based notion from commutative algebra. Even that stand-in
-      proof is still unfinished, and the paper will not be counted as fully formalized
-      until the missing Proposition 1.6 step and the full Cohen-Macaulay theory are
-      both in place.
+      <strong>Current status:</strong> 20 of the paper's 21 main results are
+      formalized. The remaining open theorem is Proposition 1.6 in Section 1.
     </div>
   </div>
 </div>
@@ -80,7 +75,7 @@ title: Binomial Edge Ideals
     <span class="result-item__icon" data-icon="&#9675;"></span>
     <div>
       <strong>One remaining paper-level gap</strong>
-      <span>Proposition 1.6 is still open. The active route proves an equidimensional variant first; the full Cohen-Macaulay statement still depends on later Mathlib or backported theory.</span>
+      <span>Proposition 1.6 is still open.</span>
     </div>
   </div>
 </div>

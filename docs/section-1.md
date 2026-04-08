@@ -44,9 +44,17 @@ The supporting Cohen–Macaulay examples from Section 1 are now partly formalize
 
 The Proposition 1.6 branch is still unfinished.
 
-The current Lean development does **not** yet formalize the full depth-based
-Cohen-Macaulay notion used in the paper. Instead, the current code uses a temporary
-equidimensional stand-in from
+The current state is as follows.
+
+The theorem from the paper is not yet fully formalized.
+
+The full depth-based Cohen-Macaulay theory used in the paper is not available in the
+pinned Mathlib version for this project. Relevant upstream work exists, and the main
+reference for this repository is Mathlib PR
+[`#26218`](https://github.com/leanprover-community/mathlib4/pull/26218).
+
+As a partial substitute, the current code also studies an equidimensional variant,
+implemented via the temporary local definition in
 `toMathlib/CohenMacaulay/Defs.lean`.
 
 What is already in place:
