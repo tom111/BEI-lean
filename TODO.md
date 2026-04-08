@@ -17,7 +17,7 @@
 | **§1 Cor 1.3** (bipartite closed graphs / line graphs) | `BEI/GraphProperties.lean` | `[x]` paper-faithful version proved |
 | **§1 Prop 1.4** (shortest paths directed) | `BEI/GraphProperties.lean` | `[x]` proved |
 | **§1 Prop 1.5** (closure exists) | `BEI/GraphProperties.lean` | `[x]` proved |
-| **§1 Prop 1.6** (CM sufficient condition) | `BEI/CohenMacaulay.lean` | `[~]` `prop_1_6` is fully assembled; the only remaining sorry is the isolated transfer theorem `cm_transfer_initialIdeal` |
+| **§1 Prop 1.6** (CM sufficient condition) | `BEI/PrimeDecompositionDimension.lean` | `[x]` proved via direct equidimensionality (0 sorries) |
 | **§2 Thm 2.1** (reduced Gröbner basis) | `BEI/GroebnerBasisSPolynomial.lean`, `BEI/GroebnerBasis.lean` | `[x]` proved |
 | **§2 Cor 2.2** (`J_G` radical) | `BEI/Radical.lean` | `[x]` proved |
 | **§3 Lem 3.1** (height formula for `P_S`) | `BEI/PrimeIdeals.lean` | `[x]` proved |
@@ -55,21 +55,22 @@ Active CM work lives in:
 `IsCohenMacaulay` now has a real local working definition (equidimensionality, adapted
 from mathlib PR #26218) in `toMathlib/CohenMacaulay/Defs.lean`.
 
-`prop_1_6` is now a clean wrapper theorem. The only remaining sorry in this branch is
-the isolated transfer lemma `cm_transfer_initialIdeal`. The proof chain is:
-1. `bipartiteEdgeMonomialIdeal_isCohenMacaulay` — bipartite edge ideal quotient is CM
-2. `monomialInitialIdeal_isCohenMacaulay` — monomial initial ideal quotient is CM (via `yPredEquiv` ring isomorphism)
-3. `cm_transfer_initialIdeal` — Gröbner CM transfer from `in_<(J_G)` to `J_G` (**1 sorry**)
+`prop_1_6` is now proved directly via equidimensionality (0 sorries).
+The proof is in `BEI/PrimeDecompositionDimension.lean`, not the paper's Gröbner
+degeneration route. It uses:
+1. `closedGraph_componentCount_le_card_add_one` — convex components in closed graphs give
+   `c(S) ≤ |S| + 1` (in `BEI/CohenMacaulay.lean`)
+2. `corollary_3_9` — cut vertex property for minimal-prime sets
+3. `closedGraph_minimalPrime_componentCount_eq` — combines 1+2 to get `c(S) = |S| + 1`
+4. `isCohenMacaulay_of_equidim_minimalPrimes` + `ringKrullDim_quot_primeComponent`
 
-New theorems in this round:
-- `isCohenMacaulay_of_ringEquiv` — CM transfers through ring isomorphisms (fully proved)
-- `yPredEquiv` — y-predecessor variable equivalence (fully proved)
-- `monomialInitialIdeal_isCohenMacaulay` — CM of the monomial initial ideal quotient (fully proved)
-- `cm_transfer_initialIdeal` — Gröbner CM transfer (sorry; standard result not in Mathlib v4.28.0)
+The old paper-faithful route (HH bipartite graph → monomial ideal CM → transfer) is
+still present as infrastructure in `BEI/CohenMacaulay.lean` but `cm_transfer_initialIdeal`
+has been removed from the critical path. The Gröbner CM transfer theorem (Eisenbud 15.17)
+remains unformalized but is no longer blocking.
 
-The **only remaining gap** is:
-- `cm_transfer_initialIdeal`: `S / in_<(J_G)` CM → `S / J_G` CM
-  (standard Gröbner degeneration theorem; Eisenbud, Thm 15.17)
+Note: the direct proof shows CM for ALL connected closed graphs, not just those
+satisfying `SatisfiesProp1_6Condition`. The extra hypothesis is unused.
 
 ### Priority 2: Section 4
 

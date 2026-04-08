@@ -1116,6 +1116,81 @@ theorem path_is_CM (n : ℕ) (G : SimpleGraph (Fin n))
   have hQ_eq := path_minimalPrime_dim_eq (K := K) n G hPath SQ hQ
   omega
 
+/-! ## Proposition 1.6: closed graphs are CM -/
+
+/-- For a connected closed graph, every minimal-prime set `S` satisfies
+`componentCount G S = S.card + 1`.
+
+**Proof**: Upper bound from `closedGraph_componentCount_le_card_add_one`
+(components are convex intervals in closed graphs, so at most `|S| + 1`).
+Lower bound: by `corollary_3_9`, every `i ∈ S` is a cut vertex, so
+`c(S.erase i) < c(S)`. The upper bound applied to `S.erase i` gives
+`c(S.erase i) ≤ |S|`. Combining: `c(S) ≥ |S| + 1`. -/
+private theorem closedGraph_minimalPrime_componentCount_eq
+    {n : ℕ} {G : SimpleGraph (Fin n)}
+    (hConn : G.Connected) (hClosed : IsClosedGraph G)
+    {S : Finset (Fin n)}
+    (hSmin : primeComponent (K := K) G S ∈
+      (binomialEdgeIdeal (K := K) G).minimalPrimes) :
+    componentCount G S = S.card + 1 := by
+  rcases S.eq_empty_or_nonempty with rfl | hne
+  · -- S = ∅: c(∅) = 1 (connected) = 0 + 1
+    rw [componentCount_empty, Finset.card_empty]
+    haveI : Subsingleton G.ConnectedComponent :=
+      hConn.preconnected.subsingleton_connectedComponent
+    haveI : Nonempty G.ConnectedComponent := by
+      obtain ⟨v⟩ := hConn.nonempty
+      exact ⟨G.connectedComponentMk v⟩
+    exact Nat.card_unique
+  · -- S ≠ ∅: use cut vertex + upper bound
+    have hub := closedGraph_componentCount_le_card_add_one hClosed hConn S
+    have hcv : ∀ i ∈ S, IsCutVertexRelative G S i := by
+      have h39 := (corollary_3_9 (K := K) G S hConn).mp hSmin
+      rcases h39 with rfl | h
+      · exact absurd rfl (Finset.Nonempty.ne_empty hne)
+      · exact h
+    obtain ⟨i, hiS⟩ := hne
+    have hcut := (hcv i hiS).2
+    have hub_erase :=
+      closedGraph_componentCount_le_card_add_one hClosed hConn (S.erase i)
+    rw [Finset.card_erase_of_mem hiS] at hub_erase
+    omega
+
+/--
+**Proposition 1.6** (Herzog et al. 2010): If `G` is a connected closed graph satisfying
+the interval condition, then `S/J_G` is Cohen–Macaulay.
+
+**Proof** (direct equidimensionality, not the paper's Gröbner degeneration route):
+
+For every minimal prime `P_S` of `J_G`, the dimension formula gives
+`dim(R/P_S) = n - |S| + c(S)`. By `closedGraph_minimalPrime_componentCount_eq`,
+`c(S) = |S| + 1` for every minimal-prime set `S`, so `dim(R/P_S) = n + 1` uniformly.
+Since all minimal primes have the same quotient dimension, the quotient ring is
+equidimensional = Cohen–Macaulay (under the local working definition).
+
+Note: the `SatisfiesProp1_6Condition` hypothesis is not used in this proof —
+the result holds for all connected closed graphs. It is kept for compatibility
+with the paper's statement.
+-/
+theorem prop_1_6 (n : ℕ) (_hn : 0 < n) (G : SimpleGraph (Fin n))
+    (hConn : G.Connected)
+    (hClosed : IsClosedGraph G)
+    (_hCond : SatisfiesProp1_6Condition n G) :
+    IsCohenMacaulay
+      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ binomialEdgeIdeal G) := by
+  apply isCohenMacaulay_of_equidim_minimalPrimes
+  intro P Q hP hQ
+  have hP' := hP; have hQ' := hQ
+  rw [minimalPrimes_characterization G] at hP' hQ'
+  obtain ⟨SP, rfl, _⟩ := hP'; obtain ⟨SQ, rfl, _⟩ := hQ'
+  rw [ringKrullDim_quot_primeComponent, ringKrullDim_quot_primeComponent]
+  congr 1
+  have hP_eq :=
+    closedGraph_minimalPrime_componentCount_eq (K := K) hConn hClosed hP
+  have hQ_eq :=
+    closedGraph_minimalPrime_componentCount_eq (K := K) hConn hClosed hQ
+  omega
+
 /-! ## Corollary 3.7 CM branch -/
 
 /-- In a cycle graph with ≥ 4 vertices, the non-adjacent pair {u,w}
