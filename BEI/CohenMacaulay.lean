@@ -708,7 +708,7 @@ theorem monomialInitialIdeal_isCohenMacaulay {n : ℕ} (hn : 0 < n)
 /-- In a connected closed graph, edges span intervals: if `G.Adj a b` with `a < b`,
 then `G.Adj a c` for all `a < c ≤ b`. This follows from the closedness condition (2)
 and consecutive adjacency, by induction on `b - c`. -/
-private lemma closedGraph_adj_between {n : ℕ} {G : SimpleGraph (Fin n)}
+lemma closedGraph_adj_between {n : ℕ} {G : SimpleGraph (Fin n)}
     (hClosed : IsClosedGraph G) (hConn : G.Connected)
     {a b : Fin n} (hab : G.Adj a b) (ha_lt_b : a < b) :
     ∀ c : Fin n, a < c → c ≤ b → G.Adj a c := by
@@ -732,7 +732,7 @@ private lemma closedGraph_adj_between {n : ℕ} {G : SimpleGraph (Fin n)}
 in the same component and `u < w < v` with `w ∉ S`, then `w` is in the same component
 as `u`. The key is that any edge `{x, y}` with `x < w < y` on the path gives
 `G.Adj x w` by `closedGraph_adj_between`. -/
-private lemma reflTransGen_convex_closed {n : ℕ} {G : SimpleGraph (Fin n)}
+lemma reflTransGen_convex_closed {n : ℕ} {G : SimpleGraph (Fin n)}
     (hClosed : IsClosedGraph G) (hConn : G.Connected)
     {S : Finset (Fin n)} {u v w : Fin n}
     (_huS : u ∉ S) (hwS : w ∉ S)
@@ -763,7 +763,7 @@ then by `closedGraph_adj_consecutive`, `G.Adj m(c) (m(c)+1)`, so `m(c)+1` is in 
 same component, contradicting maximality. Hence `m(c)+1 ∈ S`. Map `c ↦ some ⟨m(c)+1, _⟩`.
 If `m(c)` is the last vertex, map `c ↦ none`. This map is injective because two distinct
 components have distinct max vertices. -/
-private theorem closedGraph_componentCount_le_card_add_one {n : ℕ} {G : SimpleGraph (Fin n)}
+theorem closedGraph_componentCount_le_card_add_one {n : ℕ} {G : SimpleGraph (Fin n)}
     (hClosed : IsClosedGraph G) (hConn : G.Connected)
     (S : Finset (Fin n)) :
     componentCount G S ≤ S.card + 1 := by

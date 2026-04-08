@@ -1118,17 +1118,183 @@ theorem path_is_CM (n : ℕ) (G : SimpleGraph (Fin n))
 
 /-! ## Proposition 1.6: closed graphs are CM -/
 
-/-- For a connected closed graph, every minimal-prime set `S` satisfies
-`componentCount G S = S.card + 1`.
+/-- If `a, b ∉ T`, `SameComponent G (T.erase j) a b`, and `¬ SameComponent G T a b`,
+then `componentCount G (T.erase j) < componentCount G T`.
 
-**Proof**: Upper bound from `closedGraph_componentCount_le_card_add_one`
-(components are convex intervals in closed graphs, so at most `|S| + 1`).
-Lower bound: by `corollary_3_9`, every `i ∈ S` is a cut vertex, so
-`c(S.erase i) < c(S)`. The upper bound applied to `S.erase i` gives
-`c(S.erase i) ≤ |S|`. Combining: `c(S) ≥ |S| + 1`. -/
+Proof: the inclusion `V \ T ⊆ V \ (T.erase j)` induces a map `f` on connected
+components. `f` is surjective (every CC of `G[V \ (T.erase j)]` contains a
+vertex of `V \ T`, because if `j`'s CC were `{j}` alone then `a, b` would be
+connected in `G[V \ T]`, contradicting the hypothesis). `f` is not injective
+(`a` and `b` are in different CCs of `V \ T` but mapped to the same CC).
+By `Fintype.card_lt_of_surjective_not_injective`, the result follows. -/
+private lemma componentCount_lt_of_merged
+    (G : SimpleGraph V) (T : Finset V) (j : V) (hjT : j ∈ T)
+    {a b : V} (haT : a ∉ T) (hbT : b ∉ T)
+    (hsc : SameComponent G (T.erase j) a b) (hnotsc : ¬SameComponent G T a b) :
+    componentCount G (T.erase j) < componentCount G T := by
+  classical
+  unfold componentCount
+  haveI : Fintype (G.induce {v : V | v ∉ T.erase j}).ConnectedComponent := Fintype.ofFinite _
+  haveI : Fintype (G.induce {v : V | v ∉ T}).ConnectedComponent := Fintype.ofFinite _
+  rw [Nat.card_eq_fintype_card, Nat.card_eq_fintype_card]
+  have hincl : ({w : V | w ∉ T} : Set V) ⊆ {w | w ∉ T.erase j} :=
+    fun w hw h => hw (Finset.erase_subset j T h)
+  let ι := SimpleGraph.induceHomOfLE G hincl
+  let f := SimpleGraph.ConnectedComponent.map ι.toHom
+  -- We show: card(CCs of G[V\T]) > card(CCs of G[V\(T.erase j)])
+  -- The inclusion V\T ⊆ V\(T.erase j) induces f on CCs.
+  -- f is surjective + not injective → strict inequality.
+  -- First establish that j is reachable from a in G[V\(T.erase j)].
+  -- If not, the walk from a to b avoids j and lifts to G[V\T], contradiction.
+  have haTe : a ∉ T.erase j := fun h => haT (Finset.erase_subset j T h)
+  have hbTe : b ∉ T.erase j := fun h => hbT (Finset.erase_subset j T h)
+  have hjTe : (j : V) ∉ T.erase j := Finset.notMem_erase j T
+  -- j and a are in the same CC of G[V\(T.erase j)].
+  -- Proof: if not, the SC path from a to b avoids j and lifts to G[V\T].
+  have hja_same : (G.induce {w | w ∉ T.erase j}).Reachable
+      ⟨j, hjTe⟩ ⟨a, haTe⟩ := by
+    by_contra hja_diff
+    apply hnotsc
+    obtain ⟨_, _, hpath⟩ := hsc
+    refine ⟨haT, hbT, ?_⟩
+    -- Lift hpath from G[V\(T.erase j)] to G[V\T] by showing it avoids j.
+    -- Strategy: prove simultaneously that (1) the path lifts and (2) j is not visited.
+    -- We strengthen the induction: for any z reachable from a in G[V\(T.erase j)],
+    -- z ≠ j and z is reachable from a in G[V\T].
+    suffices ∀ (z : V),
+        Relation.ReflTransGen (fun p q => G.Adj p q ∧ p ∉ T.erase j ∧ q ∉ T.erase j) a z →
+        z ≠ j ∧ Relation.ReflTransGen (fun p q => G.Adj p q ∧ p ∉ T ∧ q ∉ T) a z from
+      (this b hpath).2
+    intro z haz
+    induction haz with
+    | refl =>
+      exact ⟨fun haj => haT (haj ▸ hjT), .refl⟩
+    | @tail x y hax_path hxy ih =>
+      obtain ⟨hx_ne_j, hax_lifted⟩ := ih
+      have hy_ne_j : y ≠ j := by
+        intro hyj; apply hja_diff
+        exact (sameComponent_to_reachable G (T.erase j) a j haTe hjTe
+          ⟨haTe, hjTe, hax_path.tail (hyj ▸ hxy)⟩).symm
+      obtain ⟨hadj, hxTe, hyTe⟩ := hxy
+      exact ⟨hy_ne_j, hax_lifted.tail ⟨hadj,
+        fun hxT => hxTe (Finset.mem_erase.mpr ⟨hx_ne_j, hxT⟩),
+        fun hyT => hyTe (Finset.mem_erase.mpr ⟨hy_ne_j, hyT⟩)⟩⟩
+  apply Fintype.card_lt_of_surjective_not_injective f
+  · -- Surjective
+    intro cc
+    induction cc using SimpleGraph.ConnectedComponent.ind with | h v =>
+    by_cases hvj : v.val = j
+    · -- v's CC contains j, which is in a's CC. Use a as preimage.
+      refine ⟨(G.induce {w | w ∉ T}).connectedComponentMk ⟨a, haT⟩, ?_⟩
+      simp only [f, SimpleGraph.ConnectedComponent.map_mk]
+      -- Goal: CC of ι(a) = CC of v, where v.val = j
+      -- ι.toHom ⟨a, haT⟩ = ⟨a, haTe⟩ (by Subtype.ext rfl)
+      -- CC of ⟨a, haTe⟩ = CC of ⟨j, hjTe⟩ (by hja_same)
+      -- v = ⟨j, hjTe⟩ (by hvj)
+      have hιa : ι.toHom ⟨a, haT⟩ = ⟨a, haTe⟩ := Subtype.ext rfl
+      rw [hιa, SimpleGraph.ConnectedComponent.eq]
+      have hv_eq : v = ⟨j, hjTe⟩ := Subtype.ext hvj
+      rw [hv_eq]
+      exact hja_same.symm
+    · -- v ≠ j, so v ∈ V\T
+      have hvT : v.val ∉ T := fun h =>
+        v.prop (Finset.mem_erase.mpr ⟨fun hh => hvj hh, h⟩)
+      refine ⟨(G.induce {w | w ∉ T}).connectedComponentMk ⟨v.val, hvT⟩, ?_⟩
+      have : ι.toHom ⟨v.val, hvT⟩ = v := Subtype.ext rfl
+      rw [show f ((G.induce {w | w ∉ T}).connectedComponentMk ⟨v.val, hvT⟩) =
+               (G.induce {w | w ∉ T.erase j}).connectedComponentMk (ι.toHom ⟨v.val, hvT⟩) from
+           SimpleGraph.ConnectedComponent.map_mk ι.toHom ⟨v.val, hvT⟩, this]
+  · -- Not injective
+    intro hinj
+    have hCab : (G.induce {w | w ∉ T}).connectedComponentMk ⟨a, haT⟩ ≠
+                (G.induce {w | w ∉ T}).connectedComponentMk ⟨b, hbT⟩ := by
+      rw [ne_eq, SimpleGraph.ConnectedComponent.eq]
+      rintro ⟨walk⟩
+      exact hnotsc (reachable_induce_imp_sameComponent G T ⟨walk⟩)
+    apply hCab; apply hinj
+    simp only [f, SimpleGraph.ConnectedComponent.map_mk]
+    rw [SimpleGraph.ConnectedComponent.eq]
+    exact sameComponent_to_reachable G (T.erase j) a b haTe hbTe hsc
+
+/-- Under `SatisfiesProp1_6Condition`, if `j` is a cut vertex relative to `S` and
+`i ≠ j` is in `S`, then `j` is a cut vertex relative to `S.erase i`.
+
+The idea: from `exists_merged_of_cutVertex G S j` we get witnesses `a, b` with
+`SameComponent G (S.erase j) a b` and `¬ SameComponent G S a b`.
+By monotonicity, `SameComponent G ((S.erase i).erase j) a b`.
+The key step is `¬ SameComponent G (S.erase i) a b`: if they WERE connected in
+`G[V \ (S \ {i})]`, the path must go through `i` (since `a, b` are not connected
+in `G[V \ S]`). In a closed graph, both `i` and `j` lie in S-gaps between
+convex components of `G[V \ S]`. Prop 1.6 forbids having two gap elements in
+the same gap (the transitivity condition forces an edge between component
+endpoints, contradicting separation). So `i` and `j` are in different gaps.
+But a path from `a` to `b` through `i` must cross `j`'s gap without using `j`,
+which is impossible since the gap consists entirely of S-elements. -/
+private lemma closedGraph_cutVertex_preserved_of_erase
+    {n : ℕ} {G : SimpleGraph (Fin n)}
+    (hClosed : IsClosedGraph G) (hConn : G.Connected)
+    (hCond : SatisfiesProp1_6Condition n G)
+    (S : Finset (Fin n)) (i j : Fin n)
+    (hjSi : j ∈ S.erase i)
+    (hcutj : IsCutVertexRelative G S j) :
+    IsCutVertexRelative G (S.erase i) j := by
+  have hjS : j ∈ S := Finset.mem_of_mem_erase hjSi
+  have hij : j ≠ i := (Finset.mem_erase.mp hjSi).1
+  constructor
+  · exact hjSi
+  · -- Need: componentCount G ((S.erase i).erase j) < componentCount G (S.erase i)
+    -- Get witnesses a, b separated by j
+    obtain ⟨a, b, haS, hbS, hsc_ej, hnotsc_S⟩ :=
+      exists_merged_of_cutVertex G S j hcutj
+    -- a, b ∉ S.erase i (since a, b ∉ S and S.erase i ⊆ S)
+    have haSi : a ∉ S.erase i := fun h => haS (Finset.erase_subset i S h)
+    have hbSi : b ∉ S.erase i := fun h => hbS (Finset.erase_subset i S h)
+    -- SameComponent G ((S.erase i).erase j) a b (by monotonicity)
+    have herase_sub : (S.erase i).erase j ≤ S.erase j := by
+      intro x hx
+      rw [Finset.mem_erase] at hx ⊢
+      exact ⟨hx.1, Finset.mem_of_mem_erase hx.2⟩
+    have hsc_eij : SameComponent G ((S.erase i).erase j) a b :=
+      SameComponent_mono G herase_sub hsc_ej
+    -- Key: ¬ SameComponent G (S.erase i) a b
+    -- This is where `SatisfiesProp1_6Condition` enters. The argument:
+    -- Assume SC G (S.erase i) a b. The path from a to b in G[(V\S)∪{i}] must go
+    -- through i (since ¬SC G S a b). By convexity of components in closed graphs,
+    -- i and j must both lie in the single gap between a's and b's components.
+    -- But the path through i avoids j, and the path through j avoids i.
+    -- Having two S-elements in the same gap, both bridging the gap, combined with
+    -- SatisfiesProp1_6Condition and closedGraph_adj_between, forces an edge between
+    -- the component endpoints, contradicting them being in different components.
+    have hnotsc_Si : ¬SameComponent G (S.erase i) a b := by
+      -- The proof requires `hCond` (SatisfiesProp1_6Condition). Outline:
+      -- 1. Assume SC(S.erase i) a b (for contradiction).
+      -- 2. Both paths (through i and through j) bridge a's and b's components.
+      --    Extract V\S-neighbors u₁, v₁ of j and u₂, v₂ of i on these paths.
+      -- 3. By closedGraph_adj_between and SatisfiesProp1_6Condition, derive a
+      --    direct G-edge between a V\S neighbor of a's component and one of b's
+      --    component. This gives SC G S a b, contradicting hnotsc_S.
+      -- The full formalization requires extracting adjacency witnesses from
+      -- ReflTransGen paths and applying the closedness + Prop 1.6 gap analysis.
+      sorry
+    -- Apply the general componentCount lemma
+    exact componentCount_lt_of_merged G (S.erase i) j hjSi haSi hbSi hsc_eij hnotsc_Si
+
+/-- For a connected closed graph satisfying `SatisfiesProp1_6Condition`, every
+minimal-prime set `S` satisfies `componentCount G S = S.card + 1`.
+
+The theorem is false without `SatisfiesProp1_6Condition` (counterexample: the
+closed graph on Fin 5 with edges making a "fan" has a minimal-prime set S
+with c(S) < |S| + 1).
+
+**Proof**: By strong induction on `|S|`. Base `S = ∅`: c(∅) = 1 = 0 + 1.
+Step `|S| ≥ 1`: pick `i ∈ S`. By `corollary_3_9`, `i` is a cut vertex, so
+`c(S) > c(S.erase i)`. Under `SatisfiesProp1_6Condition`, `S.erase i` is also
+a minimal-prime set (`closedGraph_cutVertex_preserved_of_erase`). The IH gives
+`c(S.erase i) = |S|`. Combined with `c(S) ≤ |S| + 1`: `c(S) = |S| + 1`. -/
 private theorem closedGraph_minimalPrime_componentCount_eq
     {n : ℕ} {G : SimpleGraph (Fin n)}
     (hConn : G.Connected) (hClosed : IsClosedGraph G)
+    (hCond : SatisfiesProp1_6Condition n G)
     {S : Finset (Fin n)}
     (hSmin : primeComponent (K := K) G S ∈
       (binomialEdgeIdeal (K := K) G).minimalPrimes) :
@@ -1142,7 +1308,7 @@ private theorem closedGraph_minimalPrime_componentCount_eq
       obtain ⟨v⟩ := hConn.nonempty
       exact ⟨G.connectedComponentMk v⟩
     exact Nat.card_unique
-  · -- S ≠ ∅: use cut vertex + upper bound
+  · -- S ≠ ∅: strong induction on |S|
     have hub := closedGraph_componentCount_le_card_add_one hClosed hConn S
     have hcv : ∀ i ∈ S, IsCutVertexRelative G S i := by
       have h39 := (corollary_3_9 (K := K) G S hConn).mp hSmin
@@ -1150,11 +1316,25 @@ private theorem closedGraph_minimalPrime_componentCount_eq
       · exact absurd rfl (Finset.Nonempty.ne_empty hne)
       · exact h
     obtain ⟨i, hiS⟩ := hne
-    have hcut := (hcv i hiS).2
-    have hub_erase :=
-      closedGraph_componentCount_le_card_add_one hClosed hConn (S.erase i)
-    rw [Finset.card_erase_of_mem hiS] at hub_erase
+    have hcut_lt := (hcv i hiS).2  -- c(S.erase i) < c(S)
+    -- P_{S.erase i} is also a minimal prime (cut vertex preservation under Prop 1.6)
+    have hmin_erase : primeComponent (K := K) G (S.erase i) ∈
+        (binomialEdgeIdeal (K := K) G).minimalPrimes := by
+      rw [corollary_3_9 (K := K) G (S.erase i) hConn]
+      rcases (S.erase i).eq_empty_or_nonempty with heq | _
+      · exact Or.inl heq
+      · right; intro j hjSi
+        exact closedGraph_cutVertex_preserved_of_erase hClosed hConn hCond S i j hjSi
+          (hcv j (Finset.mem_of_mem_erase hjSi))
+    -- IH on S.erase i
+    have ih := closedGraph_minimalPrime_componentCount_eq hConn hClosed hCond hmin_erase
+    have hcard_erase := Finset.card_erase_of_mem hiS
+    -- ih: c(S.erase i) = (S.erase i).card + 1 = S.card
+    -- hcut_lt: c(S.erase i) < c(S)
+    -- hub: c(S) ≤ S.card + 1
     omega
+  termination_by S.card
+  decreasing_by exact Finset.card_erase_lt_of_mem hiS
 
 /--
 **Proposition 1.6** (Herzog et al. 2010): If `G` is a connected closed graph satisfying
@@ -1167,15 +1347,11 @@ For every minimal prime `P_S` of `J_G`, the dimension formula gives
 `c(S) = |S| + 1` for every minimal-prime set `S`, so `dim(R/P_S) = n + 1` uniformly.
 Since all minimal primes have the same quotient dimension, the quotient ring is
 equidimensional = Cohen–Macaulay (under the local working definition).
-
-Note: the `SatisfiesProp1_6Condition` hypothesis is not used in this proof —
-the result holds for all connected closed graphs. It is kept for compatibility
-with the paper's statement.
 -/
 theorem prop_1_6 (n : ℕ) (_hn : 0 < n) (G : SimpleGraph (Fin n))
     (hConn : G.Connected)
     (hClosed : IsClosedGraph G)
-    (_hCond : SatisfiesProp1_6Condition n G) :
+    (hCond : SatisfiesProp1_6Condition n G) :
     IsCohenMacaulay
       (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ binomialEdgeIdeal G) := by
   apply isCohenMacaulay_of_equidim_minimalPrimes
@@ -1186,9 +1362,13 @@ theorem prop_1_6 (n : ℕ) (_hn : 0 < n) (G : SimpleGraph (Fin n))
   rw [ringKrullDim_quot_primeComponent, ringKrullDim_quot_primeComponent]
   congr 1
   have hP_eq :=
-    closedGraph_minimalPrime_componentCount_eq (K := K) hConn hClosed hP
+    closedGraph_minimalPrime_componentCount_eq (K := K) hConn hClosed hCond hP
   have hQ_eq :=
-    closedGraph_minimalPrime_componentCount_eq (K := K) hConn hClosed hQ
+    closedGraph_minimalPrime_componentCount_eq (K := K) hConn hClosed hCond hQ
+  have hSP : SP.card ≤ Fintype.card (Fin n) :=
+    SP.card_le_univ.trans (by simp)
+  have hSQ : SQ.card ≤ Fintype.card (Fin n) :=
+    SQ.card_le_univ.trans (by simp)
   omega
 
 /-! ## Corollary 3.7 CM branch -/
