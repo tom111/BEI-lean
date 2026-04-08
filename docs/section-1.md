@@ -42,25 +42,32 @@ The supporting Cohen–Macaulay examples from Section 1 are now partly formalize
 
 ### Proposition 1.6
 
-The Proposition 1.6 branch is now formalized up to the limit of the current local
-definition of Cohen-Macaulayness.
-The reduction chain is in place, but the theorem is still not finished.
+The Proposition 1.6 branch is still unfinished.
+
+The current Lean development does **not** yet formalize the full depth-based
+Cohen-Macaulay notion used in the paper. Instead, the current code uses a temporary
+equidimensional stand-in from
+`toMathlib/CohenMacaulay/Defs.lean`.
 
 What is already in place:
 
 - the graph-combinatorial reduction from the paper;
 - the monomial initial ideal and variable-shift reduction;
 - the Herzog-Hibi bipartite-graph side;
-- and a local equidimensional surrogate for Cohen-Macaulayness.
+- and the local equidimensional stand-in.
 
 What is still missing:
 
-- the last unfinished step in the current Proposition 1.6 branch;
-- the full depth-based Cohen-Macaulay theory needed to count the paper as fully
-  formalized;
-- in the current code, this missing step is isolated in
-  `cm_transfer_initialIdeal`.
+- the last unfinished step in the current direct equidimensional proof route;
+- the separate paper-faithful transfer route through `cm_transfer_initialIdeal`;
+- and the full depth-based Cohen-Macaulay theory needed to count the paper as fully
+  formalized.
 
-So the Lean theorem layer is very close to complete, but this page does not claim that
-either the current Proposition 1.6 branch or the paper's full Cohen-Macaulay statement
-has been finished yet.
+So there are currently two distinct goals:
+
+- finish Proposition 1.6 under the present equidimensional stand-in;
+- later replace that stand-in with a real Cohen-Macaulay formalization, likely via
+  newer Mathlib or a backport from Mathlib PR `#26218`.
+
+This page therefore does not claim that either Proposition 1.6 itself or the paper's
+full Cohen-Macaulay statement has been completed yet.
