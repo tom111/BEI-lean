@@ -20,8 +20,8 @@ Completed guides (deleted):
 
 ## Immediate Work Packets
 
-- [PROP_1_6_EQUIDIM_BLOCKER.md](PROP_1_6_EQUIDIM_BLOCKER.md) — current active theorem packet: finish the remaining direct equidimensionality blocker in `BEI/PrimeDecompositionDimension.lean`
-- [PROP_1_6_DIRECT_EQUIDIMENSIONALITY.md](PROP_1_6_DIRECT_EQUIDIMENSIONALITY.md) — track overview for finishing Proposition 1.6 under the repo’s local equidimensional surrogate
+- [ANSWER_CUTVERTEX_PRESERVED_SORRY.md](ANSWER_CUTVERTEX_PRESERVED_SORRY.md) — current active packet: helper-first plan for the `closedGraph_cutVertex_preserved_of_erase` sorry
+- [PROP_1_6_EQUIDIM_BLOCKER.md](PROP_1_6_EQUIDIM_BLOCKER.md) — broader blocker context for the direct equidimensionality route
 - [PROP_1_6_CM_TRANSFER.md](PROP_1_6_CM_TRANSFER.md) — secondary paper-faithful algebra track; not the active next packet unless explicitly chosen
 
 ## Current Proposition 1.6 State
@@ -47,6 +47,7 @@ Do not blur those two endpoints.
 These are not first-line work packets.
 
 - [ANSWER_05_COHEN_MACAULAY_FOUNDATION.md](ANSWER_05_COHEN_MACAULAY_FOUNDATION.md) — CM foundations and honest scope
+- [PROP_1_6_DIRECT_EQUIDIMENSIONALITY.md](PROP_1_6_DIRECT_EQUIDIMENSIONALITY.md) — track overview for the direct surrogate route
 - [CM_CODEBASE_RESEARCH_MONOMIAL_IDEAL.md](CM_CODEBASE_RESEARCH_MONOMIAL_IDEAL.md) — what the local CM/PR codebase does and does not provide for the monomial-ideal step
 - ~~SQUAREFREE_MONOMIAL_MINIMAL_PRIMES~~ — done: `minimalPrime_variablePairIdeal_iff` fully proved in `toMathlib/SquarefreeMonomialPrimes.lean`
 - [cm_pr_26218/](cm_pr_26218/) — Mathlib CM PR backport / import plan
