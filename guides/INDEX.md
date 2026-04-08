@@ -20,32 +20,33 @@ Completed guides (deleted):
 
 ## Immediate Work Packets
 
-- [PROP_1_6_DIRECT_EQUIDIMENSIONALITY.md](PROP_1_6_DIRECT_EQUIDIMENSIONALITY.md) — direct fallback route: finish Proposition 1.6 under the repo’s local equidimensional surrogate by showing all minimal primes have the same quotient dimension
-- [PROP_1_6_CM_TRANSFER.md](PROP_1_6_CM_TRANSFER.md) — longer algebra packet: isolate or prove the Gröbner CM transfer theorem `S/in_<(I)` CM → `S/I` CM
-- [PROP_1_6_COHEN_MACAULAY.md](PROP_1_6_COHEN_MACAULAY.md) — broad reference packet for the now nearly-complete Proposition 1.6 branch
+- [PROP_1_6_EQUIDIM_BLOCKER.md](PROP_1_6_EQUIDIM_BLOCKER.md) — current active theorem packet: finish the remaining direct equidimensionality blocker in `BEI/PrimeDecompositionDimension.lean`
+- [PROP_1_6_DIRECT_EQUIDIMENSIONALITY.md](PROP_1_6_DIRECT_EQUIDIMENSIONALITY.md) — track overview for finishing Proposition 1.6 under the repo’s local equidimensional surrogate
+- [PROP_1_6_CM_TRANSFER.md](PROP_1_6_CM_TRANSFER.md) — secondary paper-faithful algebra track; not the active next packet unless explicitly chosen
 
-## Remaining CM Gap
+## Current Proposition 1.6 State
 
-The only remaining sorry in the current Proposition 1.6 code path is
-`cm_transfer_initialIdeal` in `BEI/CohenMacaulay.lean`: the Gröbner flat degeneration
-theorem `S/in_<(I)` CM → `S/I` CM.
+There are now two distinct unfinished tracks:
 
-However, the repo’s local `IsCohenMacaulayRing` is only an equidimensional surrogate.
-So there are now two distinct goals:
+- direct equidimensional surrogate route:
+  `closedGraph_cutVertex_preserved_of_erase` in `BEI/PrimeDecompositionDimension.lean`
+- paper-faithful CM-transfer route:
+  `cm_transfer_initialIdeal` in `BEI/CohenMacaulay.lean`
 
-- finish Proposition 1.6 under that local surrogate;
-- import or backport the full depth-based CM theory needed to count the paper’s CM
-  statement as fully formalized.
+The current plan is:
+
+- first finish Proposition 1.6 under the repo’s local equidimensional surrogate;
+- then refactor names/docs so the repo stops overclaiming depth-based
+  Cohen-Macaulayness;
+- separately keep the paper-faithful CM track visible as future work.
 
 Do not blur those two endpoints.
 
 ## CM Reference Notes
 
-These are not first-line work packets, but they contain important strategic context.
+These are not first-line work packets.
 
 - [ANSWER_05_COHEN_MACAULAY_FOUNDATION.md](ANSWER_05_COHEN_MACAULAY_FOUNDATION.md) — CM foundations and honest scope
-- [ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md](ANSWER_16_PROP_1_6_EQUIDIMENSIONALITY.md) — backup direct route for Proposition 1.6
-- [ANSWER_17_PROP_1_6_STRATEGY.md](ANSWER_17_PROP_1_6_STRATEGY.md) — why the paper route should still be preferred
 - [CM_CODEBASE_RESEARCH_MONOMIAL_IDEAL.md](CM_CODEBASE_RESEARCH_MONOMIAL_IDEAL.md) — what the local CM/PR codebase does and does not provide for the monomial-ideal step
 - ~~SQUAREFREE_MONOMIAL_MINIMAL_PRIMES~~ — done: `minimalPrime_variablePairIdeal_iff` fully proved in `toMathlib/SquarefreeMonomialPrimes.lean`
 - [cm_pr_26218/](cm_pr_26218/) — Mathlib CM PR backport / import plan

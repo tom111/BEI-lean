@@ -1,32 +1,38 @@
 # Proposition 1.6 via Direct Equidimensionality
 
+## Purpose
+
+This guide is the track overview for the direct equidimensional route.
+
+It is no longer the best packet for the next Claude round. The active next packet is:
+
+- [PROP_1_6_EQUIDIM_BLOCKER.md](PROP_1_6_EQUIDIM_BLOCKER.md)
+
+Use this file for the big picture only.
+
+
 ## Preserved context
-
-Current live state in `BEI/CohenMacaulay.lean`:
-
-- `prop_1_6` is stated and reduced to a single sorry:
-  `cm_transfer_initialIdeal`
-- the paper-faithful reduction through the monomial initial ideal and the
-  Herzog–Hibi bipartite graph is already formalized
-- the monomial-side CM statement
-  `monomialInitialIdeal_isCohenMacaulay`
-  is already proved
 
 Current local CM definition:
 
 - in `toMathlib/CohenMacaulay/Defs.lean`, `IsCohenMacaulayRing` means
   equidimensionality of minimal primes, not the full depth-based definition
 
-This matters because the standard Gröbner theorem used in the paper transfers
-genuine Cohen–Macaulayness under flat deformation. It does **not** automatically
-transfer the weaker local surrogate “all minimal primes have equal quotient
-dimension”.
-
 So this guide is the direct fallback route:
 
 - do **not** try to formalize the full Gröbner flat-deformation theorem
 - instead, finish Proposition 1.6 directly under the repo’s current local CM
   definition
+
+Current live code state:
+
+- the direct route now lives in
+  `/home/tom/BEI-lean/BEI/PrimeDecompositionDimension.lean`
+- its active blocker is
+  `closedGraph_cutVertex_preserved_of_erase`
+- the paper-faithful transfer route in
+  `/home/tom/BEI-lean/BEI/CohenMacaulay.lean`
+  remains a separate secondary track
 
 
 ## Task
@@ -110,6 +116,16 @@ Instead:
 
 
 ## Decomposition into subgoals
+
+### Historical note
+
+The earlier HH-based bridge program described below is still mathematically useful, but
+it is no longer the shortest description of the current live proof state. The direct
+route has now advanced further inside `BEI/PrimeDecompositionDimension.lean`.
+
+For current implementation work, start from the blocker guide instead of trying to
+rebuild the whole route from this overview.
+
 
 ### Step 1. Find the right bridge from BEI minimal primes to HH data
 

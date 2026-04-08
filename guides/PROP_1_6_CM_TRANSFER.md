@@ -1,5 +1,14 @@
 # Guide: Proposition 1.6 CM Transfer Step
 
+## Status
+
+This is the secondary paper-faithful track.
+
+It is not the active next packet while the direct equidimensional route still has a live
+unfinished theorem in `BEI/PrimeDecompositionDimension.lean`.
+
+Only work on this guide if explicitly assigned to the transfer/backport route.
+
 ## Task
 
 This is the remaining paper-faithful algebra packet for Proposition 1.6.
@@ -14,7 +23,7 @@ Everything internal to the BEI reduction is now proved:
 - the dimension step;
 - the local Cohen–Macaulay / equidimensionality statement for the bipartite edge ideal.
 
-The only remaining gap on the current paper-style code path is the standard
+The remaining gap on the paper-style code path is the standard
 Gröbner-basis transfer theorem
 
 - `S / in_<(I)` Cohen–Macaulay → `S / I` Cohen–Macaulay.
@@ -29,6 +38,10 @@ The theorem
 - `bipartiteEdgeMonomialIdeal_isCohenMacaulay`
 
 is proved, and `prop_1_6` is now reduced to the final transfer step.
+
+However, the direct equidimensional route now exists separately in
+`BEI/PrimeDecompositionDimension.lean`, so this file is no longer the sole active
+Prop. 1.6 blocker.
 
 ### In `toMathlib/HeightVariableIdeal.lean`
 
