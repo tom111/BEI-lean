@@ -274,8 +274,8 @@ lemma isRemainder_sub_mul
 
 /-! ### Coprime degree bound helpers -/
 
-omit [DecidableEq V] in
-lemma fij_ne_zero (a b : V) (hab : a < b) :
+omit [DecidableEq V] [Fintype V] in
+lemma fij_ne_zero [Finite V] (a b : V) (hab : a < b) :
     fij (K := K) a b ≠ 0 := by
   intro h
   have := fij_leadingCoeff_isUnit (K := K) a b hab
@@ -354,6 +354,7 @@ lemma degree_bounds_of_sub
 
 set_option maxHeartbeats 800000 in
 -- Buchberger case analysis requires extra heartbeats for ring normalization
+omit [DecidableEq V] in
 /-- Forward direction of Theorem 1.1: closed graph → Gröbner basis.
 
 Applies the Buchberger criterion and performs case analysis on the four possible
@@ -365,6 +366,7 @@ configurations of two generators `f_{i₁,j₁}` and `f_{i₂,j₂}`:
 theorem closed_implies_groebner (G : SimpleGraph V) (h : IsClosedGraph G) :
     binomialEdgeMonomialOrder.IsGroebnerBasis (generatorSet (K := K) G)
       (binomialEdgeIdeal (K := K) G) := by
+  classical
   -- All generators have unit leading coefficients
   have hGenUnit : ∀ g ∈ generatorSet (K := K) G,
       IsUnit (binomialEdgeMonomialOrder.leadingCoeff g) := by
@@ -454,11 +456,13 @@ theorem closed_implies_groebner (G : SimpleGraph V) (h : IsClosedGraph G) :
 
 set_option maxHeartbeats 800000 in
 -- Large case analysis needs extra heartbeats
+omit [DecidableEq V] in
 /-- Backward direction of Theorem 1.1: Gröbner basis → closed graph. -/
 theorem groebner_implies_closed (G : SimpleGraph V)
     (h : binomialEdgeMonomialOrder.IsGroebnerBasis (generatorSet (K := K) G)
       (binomialEdgeIdeal (K := K) G)) :
     IsClosedGraph G := by
+  classical
   -- All generators of generatorSet G have unit leading coefficients
   have hGenUnit : ∀ g ∈ generatorSet (K := K) G,
       IsUnit (binomialEdgeMonomialOrder.leadingCoeff g) := by
@@ -983,6 +987,7 @@ theorem groebner_implies_closed (G : SimpleGraph V)
         · exact hnotadj hadj_ab.symm
         · exact absurd hab (not_lt.mpr hik.le)
 
+omit [DecidableEq V] in
 /--
 **Theorem 1.1** (Herzog et al. 2010): The quadratic generators of `J_G` form a
 Gröbner basis with respect to the lex order iff G is a closed graph.

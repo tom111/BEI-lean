@@ -1173,15 +1173,16 @@ private lemma ker_primeComponentMap_le (G : SimpleGraph V) (S : Finset V) :
 
 end ker_helpers
 
-omit [DecidableEq V] in
+omit [DecidableEq V] [Fintype V] in
 open Classical in
 /-- `P_S(G)` is a prime ideal.
 
 The proof constructs a ring homomorphism `φ : K[x,y] → K[x,y]` (see `primeComponentMap`)
 with `ker(φ) = P_S(G)`. Since the target `K[x,y]` is an integral domain,
 `ker(φ)` is prime by `RingHom.ker_isPrime`. -/
-theorem primeComponent_isPrime (G : SimpleGraph V) (S : Finset V) :
+theorem primeComponent_isPrime [Finite V] (G : SimpleGraph V) (S : Finset V) :
     (primeComponent (K := K) G S).IsPrime := by
+  haveI : Fintype V := Fintype.ofFinite V
   have heq : primeComponent (K := K) G S =
       RingHom.ker (primeComponentMap (K := K) G S).toRingHom := by
     exact le_antisymm (primeComponent_le_ker G S) (ker_primeComponentMap_le G S)
@@ -1232,13 +1233,14 @@ theorem binomialEdgeIdeal_le_primeComponent (G : SimpleGraph V) (S : Finset V) :
 
 /-! ## Variable non-membership lemmas for P_S(G) -/
 
-omit [DecidableEq V] in
+omit [DecidableEq V] [Fintype V] in
 open Classical in
 /-- `x_v ∉ P_S(G)` when `v ∉ S`. This follows because `primeComponentMap` sends
 `X(inl v)` to `X(inl v) ≠ 0`, so `X(inl v) ∉ ker(primeComponentMap) = P_S`. -/
-theorem X_inl_not_mem_primeComponent (G : SimpleGraph V) (S : Finset V)
-    {v : V} (hv : v ∉ S) :
+theorem X_inl_not_mem_primeComponent [Finite V] (G : SimpleGraph V)
+    (S : Finset V) {v : V} (hv : v ∉ S) :
     (X (Sum.inl v) : MvPolynomial (BinomialEdgeVars V) K) ∉ primeComponent G S := by
+  haveI : Fintype V := Fintype.ofFinite V
   intro h
   have hle := primeComponent_le_ker (K := K) G S
   have hker : (primeComponentMap (K := K) G S).toRingHom (X (Sum.inl v)) = 0 :=
@@ -1247,13 +1249,14 @@ theorem X_inl_not_mem_primeComponent (G : SimpleGraph V) (S : Finset V)
     primeComponentMap, aeval_X, hv, ite_false] at hker
   exact X_ne_zero _ hker
 
-omit [DecidableEq V] in
+omit [DecidableEq V] [Fintype V] in
 open Classical in
 /-- `y_v ∉ P_S(G)` when `v ∉ S`. This follows because `primeComponentMap` sends
 `X(inr v)` to `X(inl v) * X(inr (compRep G S v)) ≠ 0`. -/
-theorem X_inr_not_mem_primeComponent (G : SimpleGraph V) (S : Finset V)
-    {v : V} (hv : v ∉ S) :
+theorem X_inr_not_mem_primeComponent [Finite V] (G : SimpleGraph V)
+    (S : Finset V) {v : V} (hv : v ∉ S) :
     (X (Sum.inr v) : MvPolynomial (BinomialEdgeVars V) K) ∉ primeComponent G S := by
+  haveI : Fintype V := Fintype.ofFinite V
   intro h
   have hle := primeComponent_le_ker (K := K) G S
   have hker : (primeComponentMap (K := K) G S).toRingHom (X (Sum.inr v)) = 0 :=

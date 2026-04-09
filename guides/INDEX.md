@@ -12,11 +12,6 @@ This directory is the current todo list.
    Concrete subtask for track 1: inspect PR `#26218`, identify the smallest usable
    real CM slice, and backport/import it cleanly.
 
-## Cleanup Packets
-
-- [INFRA_LINTER_PACKET_01.md](INFRA_LINTER_PACKET_01.md)
-  Remaining warning cleanup, now mainly in `ClosedGraphs.lean` with a small residue in `PrimeIdeals.lean`.
-
 ## Dormant / Optional
 
 - [ANSWER_04_HEIGHT_ADDITIVITY_REPAIR.md](ANSWER_04_HEIGHT_ADDITIVITY_REPAIR.md)
