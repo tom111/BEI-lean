@@ -83,6 +83,54 @@ private lemma chain'_reverse (G : SimpleGraph V) (π : List V)
   rw [List.isChain_reverse]
   exact List.IsChain.imp (fun _ _ h => G.symm h) (hW : List.IsChain _ π)
 
+/-- The internal-vertex list splits as `rev(internals α') ++ [v₀] ++ internals β`
+when we cut a nodup walk π at an internal vertex v₀. Used by both the below-
+and above-case factorization lemmas. -/
+private lemma internalVertices_split_eq (π : List V) (v₀ : V)
+    (hk_pos : 0 < π.idxOf v₀) (hk_lt : π.idxOf v₀ < π.length)
+    (hk_lt_pred : π.idxOf v₀ < π.length - 1) :
+    let k := π.idxOf v₀
+    let β := π.drop k
+    let α' := (π.take (k + 1)).reverse
+    internalVertices π =
+      (internalVertices α').reverse ++ [v₀] ++ internalVertices β := by
+  intro k β α'
+  have hπk : π[k] = v₀ := List.getElem_idxOf hk_lt
+  have hne : π ≠ [] := by intro h; simp [h] at hk_lt
+  simp only [internalVertices]
+  have htake_ne : π.take k ≠ [] := by
+    rw [ne_eq, List.take_eq_nil_iff]; push_neg; exact ⟨hk_pos.ne', hne⟩
+  have hdrop_ne : π.drop (k + 1) ≠ [] := by
+    intro h; simp [List.drop_eq_nil_iff] at h; omega
+  have hrev_tail :
+      ((π.take (k + 1)).reverse).tail = (π.take k).reverse := by
+    rw [List.take_add_one, List.getElem?_eq_getElem hk_lt, Option.toList_some,
+        List.reverse_append, List.reverse_singleton]; rfl
+  have hint_α'_rev :
+      (((π.take (k + 1)).reverse).tail.dropLast).reverse =
+        (π.take k).tail := by
+    rw [hrev_tail, List.dropLast_reverse, List.reverse_reverse]
+  have hβ_tail : (π.drop k).tail = π.drop (k + 1) := by
+    rw [← List.getElem_cons_drop hk_lt, List.tail_cons]
+  have htail_cons :
+      π.tail = (π.take k).tail ++ (π[k] :: π.drop (k + 1)) := by
+    have h1 : π.drop k = π[k] :: π.drop (k + 1) :=
+      (List.getElem_cons_drop hk_lt).symm
+    have h2 : π = π.take k ++ (π[k] :: π.drop (k + 1)) := by
+      have := List.take_append_drop k π; rw [h1] at this
+      exact this.symm
+    rw [congrArg List.tail h2,
+        List.tail_append_of_ne_nil htake_ne]
+  have htail_dl : π.tail.dropLast =
+      (π.take k).tail ++ [π[k]] ++ (π.drop (k + 1)).dropLast := by
+    rw [congrArg List.dropLast htail_cons,
+        List.dropLast_append_of_ne_nil (List.cons_ne_nil _ _),
+        List.dropLast_cons_of_ne_nil hdrop_ne]
+    simp [List.append_assoc]
+  rw [hint_α'_rev]
+  rw [← hβ_tail, hπk] at htail_dl
+  exact htail_dl
+
 /--
 Path monomial factorization at a below-i internal vertex v₀ (Case A).
 
@@ -138,35 +186,11 @@ private lemma pathMonomial_split_below (_G : SimpleGraph V) (i j v₀ : V)
         have h3 : π[k]? = π[π.length - 1]? := by congr 1
         exact Option.some.inj (h1.symm.trans (h3.trans h2))
       exact absurd heq (ne_of_lt (lt_trans hv₀i hij))
-  -- Step 2: list equality for internalVertices
+  -- Step 2: list equality for internalVertices (via shared helper)
   have hintEq : internalVertices π =
       (internalVertices α').reverse ++ [v₀] ++ internalVertices β := by
-    simp only [internalVertices]
-    rw [hα', hβ]
-    have htake_ne : π.take k ≠ [] := by simp [List.take_eq_nil_iff, hk_pos.ne', hne]
-    have hdrop_ne : π.drop (k + 1) ≠ [] := by
-      intro h; simp [List.drop_eq_nil_iff] at h; omega
-    have hrev_tail : ((π.take (k + 1)).reverse).tail = (π.take k).reverse := by
-      rw [List.take_add_one, List.getElem?_eq_getElem hk_lt, Option.toList_some,
-          List.reverse_append, List.reverse_singleton]; rfl
-    have hint_α'_rev : (((π.take (k + 1)).reverse).tail.dropLast).reverse = (π.take k).tail := by
-      rw [hrev_tail, List.dropLast_reverse, List.reverse_reverse]
-    have hβ_tail : (π.drop k).tail = π.drop (k + 1) := by
-      rw [← List.getElem_cons_drop hk_lt, List.tail_cons]
-    have htail_cons : π.tail = (π.take k).tail ++ (π[k] :: π.drop (k + 1)) := by
-      have h1 : π.drop k = π[k] :: π.drop (k + 1) := (List.getElem_cons_drop hk_lt).symm
-      have h2 : π = π.take k ++ (π[k] :: π.drop (k + 1)) := by
-        have := List.take_append_drop k π; rw [h1] at this; exact this.symm
-      rw [congrArg List.tail h2, List.tail_append_of_ne_nil htake_ne]
-    have htail_dl : π.tail.dropLast =
-        (π.take k).tail ++ [π[k]] ++ (π.drop (k + 1)).dropLast := by
-      rw [congrArg List.dropLast htail_cons,
-          List.dropLast_append_of_ne_nil (List.cons_ne_nil _ _),
-          List.dropLast_cons_of_ne_nil hdrop_ne]
-      simp [List.append_assoc]
-    rw [hint_α'_rev]
-    rw [← hβ_tail, hπk] at htail_dl
-    exact htail_dl
+    have := internalVertices_split_eq π v₀ hk_pos hk_lt hk_lt_pred
+    simp only [← hα', ← hβ] at this; exact this
   -- Step 3: non-membership / Nodup facts
   have hint_nd : (internalVertices π).Nodup :=
     (hπND.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
@@ -180,10 +204,12 @@ private lemma pathMonomial_split_below (_G : SimpleGraph V) (i j v₀ : V)
   have hj_not_int : j ∉ internalVertices π := by
     simp only [internalVertices]; intro h
     have hj_last : π.getLast hne = j :=
-      Option.some.inj ((List.getLast?_eq_some_getLast hne).symm.trans hπLast)
+      Option.some.inj
+        ((List.getLast?_eq_some_getLast hne).symm.trans hπLast)
     have hj_count : π.count j = 1 :=
       List.nodup_iff_count_le_one.mp hπND |> fun hle =>
-        Nat.le_antisymm (hle _) (List.count_pos_iff.mpr (hj_last ▸ List.getLast_mem hne))
+        Nat.le_antisymm (hle _)
+          (List.count_pos_iff.mpr (hj_last ▸ List.getLast_mem hne))
     have hmem_dl : j ∈ π.dropLast := by
       cases π with
       | nil => exact absurd rfl hne
@@ -191,11 +217,15 @@ private lemma pathMonomial_split_below (_G : SimpleGraph V) (i j v₀ : V)
         simp only [List.tail_cons] at h; cases rest with
         | nil => simp at h
         | cons b rest2 =>
-          rw [List.dropLast_cons_of_ne_nil (List.cons_ne_nil b rest2)]
+          rw [List.dropLast_cons_of_ne_nil
+            (List.cons_ne_nil b rest2)]
           exact List.mem_cons_of_mem a h
-    have hpos : 0 < π.dropLast.count j := List.count_pos_iff.mpr hmem_dl
-    have heq := congrArg (List.count j) (List.dropLast_append_getLast hne)
-    simp only [List.count_append, hj_last, List.count_singleton_self] at heq
+    have hpos : 0 < π.dropLast.count j :=
+      List.count_pos_iff.mpr hmem_dl
+    have heq := congrArg (List.count j)
+      (List.dropLast_append_getLast hne)
+    simp only [List.count_append, hj_last,
+      List.count_singleton_self] at heq
     omega
   have hv₀_not_int_α' : v₀ ∉ internalVertices α' := by
     intro h
@@ -330,35 +360,11 @@ private lemma pathMonomial_split_above (_G : SimpleGraph V) (i j v₀ : V)
         have h3 : π[k]? = π[π.length - 1]? := by congr 1
         exact Option.some.inj (h1.symm.trans (h3.trans h2))
       exact absurd heq (ne_of_gt hv₀j)
-  -- Step 2: list equality for internalVertices (identical to split_below)
+  -- Step 2: list equality for internalVertices (via shared helper)
   have hintEq : internalVertices π =
       (internalVertices α').reverse ++ [v₀] ++ internalVertices β := by
-    simp only [internalVertices]
-    rw [hα', hβ]
-    have htake_ne : π.take k ≠ [] := by simp [List.take_eq_nil_iff, hk_pos.ne', hne]
-    have hdrop_ne : π.drop (k + 1) ≠ [] := by
-      intro h; simp [List.drop_eq_nil_iff] at h; omega
-    have hrev_tail : ((π.take (k + 1)).reverse).tail = (π.take k).reverse := by
-      rw [List.take_add_one, List.getElem?_eq_getElem hk_lt, Option.toList_some,
-          List.reverse_append, List.reverse_singleton]; rfl
-    have hint_α'_rev : (((π.take (k + 1)).reverse).tail.dropLast).reverse = (π.take k).tail := by
-      rw [hrev_tail, List.dropLast_reverse, List.reverse_reverse]
-    have hβ_tail : (π.drop k).tail = π.drop (k + 1) := by
-      rw [← List.getElem_cons_drop hk_lt, List.tail_cons]
-    have htail_cons : π.tail = (π.take k).tail ++ (π[k] :: π.drop (k + 1)) := by
-      have h1 : π.drop k = π[k] :: π.drop (k + 1) := (List.getElem_cons_drop hk_lt).symm
-      have h2 : π = π.take k ++ (π[k] :: π.drop (k + 1)) := by
-        have := List.take_append_drop k π; rw [h1] at this; exact this.symm
-      rw [congrArg List.tail h2, List.tail_append_of_ne_nil htake_ne]
-    have htail_dl : π.tail.dropLast =
-        (π.take k).tail ++ [π[k]] ++ (π.drop (k + 1)).dropLast := by
-      rw [congrArg List.dropLast htail_cons,
-          List.dropLast_append_of_ne_nil (List.cons_ne_nil _ _),
-          List.dropLast_cons_of_ne_nil hdrop_ne]
-      simp [List.append_assoc]
-    rw [hint_α'_rev]
-    rw [← hβ_tail, hπk] at htail_dl
-    exact htail_dl
+    have := internalVertices_split_eq π v₀ hk_pos hk_lt hk_lt_pred
+    simp only [← hα', ← hβ] at this; exact this
   -- Step 3: non-membership / Nodup facts
   have hint_nd : (internalVertices π).Nodup :=
     (hπND.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)

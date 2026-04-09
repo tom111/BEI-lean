@@ -43,7 +43,7 @@ private lemma prod_X_list_exponent_zero {σ : Type*} {R : Type*} [CommSemiring R
   classical
   induction l generalizing d with
   | nil =>
-    simp [List.map_nil, List.prod_nil] at hd
+    simp only [List.map_nil, List.prod_nil] at hd
     have heq := monomial_left_injective (one_ne_zero (α := R)) hd
     simp [← heq]
   | cons a l ih =>
@@ -286,7 +286,8 @@ private lemma isRemainder_monomial_mul'
         exact add_le_add_right (hdeg b) _
   · intro c' hc'; simp at hc'
 
-/-- `IsRemainder (-f) G 0` follows from `IsRemainder f G 0`. -/
+/-- `IsRemainder (-f) G 0` follows from
+`IsRemainder f G 0`. -/
 lemma isRemainder_neg'
     (f : MvPolynomial (BinomialEdgeVars V) K)
     (G : Set (MvPolynomial (BinomialEdgeVars V) K))
@@ -404,7 +405,7 @@ private lemma internal_of_drop (τ : List V) (k : ℕ) (a b : V)
     rw [heq]
     cases τ with
     | nil => exact absurd rfl hne
-    | cons w rest => simp at hHead; subst hHead; simp
+    | cons w rest => simp only [List.head?_cons, Option.some.injEq] at hHead; subst hHead; simp
   have hu_ne_b : u ≠ b := by
     intro heq
     have hlast : (τ.drop k).getLast hne_drop = b := by
@@ -422,7 +423,8 @@ private lemma internal_of_drop (τ : List V) (k : ℕ) (a b : V)
     have hrest_ne : rest ≠ [] := List.ne_nil_of_mem hu_rest
     refine List.mem_dropLast_of_mem_of_ne_getLast hu_rest (fun heq => hu_ne_b ?_)
     rw [heq, ← List.getLast_cons hrest_ne (a := w)]
-    exact Option.some.inj ((List.getLast?_eq_some_getLast (List.cons_ne_nil w rest)).symm.trans hLast)
+    exact Option.some.inj
+      ((List.getLast?_eq_some_getLast (List.cons_ne_nil w rest)).symm.trans hLast)
 
 omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- Internal vertices of `τ.take (k+1)` are internal vertices of `τ`. -/
@@ -441,7 +443,8 @@ private lemma internal_of_take (τ : List V) (k : ℕ) (a b : V)
       rw [ht] at hu; simp only [List.tail_cons] at hu
       have hwa : w = a := by
         have := congr_arg List.head? ht.symm
-        rw [List.head?_take, if_neg (by omega), hHead] at this; simp at this; exact this
+        rw [List.head?_take, if_neg (by omega), hHead] at this
+        simp only [List.head?_cons, Option.some.injEq] at this; exact this
       subst hwa
       exact ((List.nodup_cons.mp (ht ▸ (List.take_sublist (k + 1) τ).nodup hND)).1)
         ((List.dropLast_sublist _).mem hu)
@@ -466,12 +469,14 @@ private lemma internal_of_take (τ : List V) (k : ℕ) (a b : V)
     have hrest_ne : rest ≠ [] := List.ne_nil_of_mem hu_rest
     refine List.mem_dropLast_of_mem_of_ne_getLast hu_rest (fun heq => hu_ne_b ?_)
     rw [heq, ← List.getLast_cons hrest_ne (a := w)]
-    exact Option.some.inj ((List.getLast?_eq_some_getLast (List.cons_ne_nil w rest)).symm.trans hLast)
+    exact Option.some.inj
+      ((List.getLast?_eq_some_getLast (List.cons_ne_nil w rest)).symm.trans hLast)
 
 /-! ## General IsRemainder lemma for fij via walk decomposition -/
 
-/-- **Core lemma**: If there is a nodup walk `τ` from `a` to `b` in `G`, and the monomial
-`q = monomial d_q 1` "covers" every internal vertex of `τ` (i.e., `d_q` has `y_v` for `v < a`,
+/-- **Core lemma**: If there is a nodup walk `τ` from `a` to `b` in `G`,
+and the monomial `q = monomial d_q 1` "covers" every internal vertex of
+`τ` (i.e., `d_q` has `y_v` for `v < a`,
 `x_v` for `v > b`, and `x_v` for "bad" vertices `a < v < b`), then `q * f_{ab}` has
 `IsRemainder 0` modulo the Gröbner basis set.
 
@@ -504,19 +509,31 @@ theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
     · -- Bad vertex case: telescope split at minimum v₀ ∈ (a, b)
       -- Choose v₀ as the minimum bad vertex for coverage transfer
       obtain ⟨v₀_raw, hv₀_raw_int, hav₀_raw, hv₀_rawb⟩ := hBad
-      have hBadSet : ((internalVertices τ).filter (fun v => decide (a < v) && decide (v < b))).toFinset.Nonempty := by
-        refine ⟨v₀_raw, List.mem_toFinset.mpr (List.mem_filter.mpr ⟨hv₀_raw_int, by simp [hav₀_raw, hv₀_rawb]⟩)⟩
-      set v₀ := ((internalVertices τ).filter (fun v => decide (a < v) && decide (v < b))).toFinset.min' hBadSet
-      have hv₀_filt : v₀ ∈ (internalVertices τ).filter (fun v => decide (a < v) && decide (v < b)) := by
+      have hBadSet :
+          ((internalVertices τ).filter
+            (fun v => decide (a < v) && decide (v < b))).toFinset.Nonempty := by
+        refine ⟨v₀_raw, List.mem_toFinset.mpr
+          (List.mem_filter.mpr ⟨hv₀_raw_int, by simp [hav₀_raw, hv₀_rawb]⟩)⟩
+      set v₀ := ((internalVertices τ).filter
+        (fun v => decide (a < v) && decide (v < b))).toFinset.min' hBadSet
+      have hv₀_filt : v₀ ∈ (internalVertices τ).filter
+          (fun v => decide (a < v) && decide (v < b)) := by
         exact List.mem_toFinset.mp (Finset.min'_mem _ _)
-      have hv₀_int : v₀ ∈ internalVertices τ := (List.mem_filter.mp hv₀_filt).1
-      have hav₀ : a < v₀ := by have := (List.mem_filter.mp hv₀_filt).2; simp at this; exact this.1
-      have hv₀b : v₀ < b := by have := (List.mem_filter.mp hv₀_filt).2; simp at this; exact this.2
+      have hv₀_int : v₀ ∈ internalVertices τ :=
+        (List.mem_filter.mp hv₀_filt).1
+      have hav₀ : a < v₀ := by
+        have := (List.mem_filter.mp hv₀_filt).2
+        simp only [Bool.and_eq_true, decide_eq_true_eq] at this; exact this.1
+      have hv₀b : v₀ < b := by
+        have := (List.mem_filter.mp hv₀_filt).2
+        simp only [Bool.and_eq_true, decide_eq_true_eq] at this; exact this.2
       have hv₀_min : ∀ w ∈ internalVertices τ, a < w → w < b → v₀ ≤ w := by
         intro w hw haw hwb
-        have hw_filt : w ∈ (internalVertices τ).filter (fun v => decide (a < v) && decide (v < b)) :=
+        have hw_filt : w ∈ (internalVertices τ).filter
+            (fun v => decide (a < v) && decide (v < b)) :=
           List.mem_filter.mpr ⟨hw, by simp [haw, hwb]⟩
-        exact Finset.min'_le _ _ (List.mem_toFinset.mpr hw_filt)
+        exact Finset.min'_le _ _
+          (List.mem_toFinset.mpr hw_filt)
       -- x_{v₀} divides monomial d_q (from coverage, third clause)
       have hcov_v₀ := (hCov v₀ hv₀_int).2.2 hav₀ hv₀b
       -- Use x-telescope: x_{v₀} * fij a b = x_a * fij v₀ b + x_b * fij a v₀
@@ -550,7 +567,7 @@ theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
               have hlt : (w :: rest).idxOf v₀ < (w :: rest).length :=
                 List.idxOf_lt_length_of_mem hv₀_mem
               have := List.getElem_idxOf hlt
-              simp [h0] at this; exact this
+              simp only [h0, List.getElem_cons_zero] at this; exact this
             exact absurd (this.symm.trans hHead) (ne_of_gt hav₀)
         refine ⟨τ.drop k, ?_, ?_, ?_, ?_, ?_, ?_⟩
         · simp [List.length_drop]; omega
@@ -607,7 +624,7 @@ theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
           intro heq; subst heq
           have hne_τ : τ ≠ [] := by intro h; simp [h, internalVertices] at hv_τ
           cases τ with | nil => exact absurd rfl hne_τ | cons w rest =>
-            simp at hHead; subst hHead
+            simp only [List.head?_cons, Option.some.injEq] at hHead; subst hHead
             simp only [internalVertices, List.tail_cons] at hv_τ
             exact ((List.nodup_cons.mp hND).1) ((List.dropLast_sublist _).mem hv_τ)
         -- d₁(inr v) = d_q(inr v) since ev₀, ea only affect inl
@@ -745,12 +762,16 @@ theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
           simp only [List.tail_cons]
           have hv_rest : v ∈ rest := (List.mem_cons.mp hv').resolve_left hva
           have hrest_ne : rest ≠ [] := List.ne_nil_of_mem hv_rest
-          refine List.mem_dropLast_of_mem_of_ne_getLast hv_rest (fun heq => hvb ?_)
+          refine List.mem_dropLast_of_mem_of_ne_getLast hv_rest
+            (fun heq => hvb ?_)
           have hlast_eq := List.getLast_cons hrest_ne (a := a')
-          have hb : (a' :: rest).getLast (List.cons_ne_nil a' rest) = b :=
-            Option.some.inj ((List.getLast?_eq_some_getLast (List.cons_ne_nil a' rest)).symm.trans hL)
+          have hb : (a' :: rest).getLast
+              (List.cons_ne_nil a' rest) = b :=
+            Option.some.inj ((List.getLast?_eq_some_getLast
+              (List.cons_ne_nil a' rest)).symm.trans hL)
           rw [heq, ← hlast_eq, hb]
-      have hVtx : ∀ v ∈ τ, v = a ∨ v = b ∨ v < a ∨ b < v := by
+      have hVtx :
+          ∀ v ∈ τ, v = a ∨ v = b ∨ v < a ∨ b < v := by
         intro v hv
         rcases eq_or_ne v a with rfl | hva
         · exact Or.inl rfl
@@ -839,10 +860,12 @@ theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
       exact isRemainder_fij_via_groebnerElement G a b σ hσ
         (monomial d_q 1) d_q rfl d_σ hd_σ hdiv
 
-/-- **Dual variant (y-telescope)**: same as `isRemainder_fij_of_covered_walk` but the
-coverage for "bad" vertices `a < v < b` uses `Sum.inr v` (y-variable) instead of
-`Sum.inl v` (x-variable). The proof uses `fij_telescope` instead of `fij_x_telescope`.
-Needed for the shared-last-endpoint case (Case 5 of Theorem 2.1). -/
+/-- **Dual variant (y-telescope)**: same as
+`isRemainder_fij_of_covered_walk` but the coverage for "bad"
+vertices `a < v < b` uses `Sum.inr v` (y-variable) instead of
+`Sum.inl v` (x-variable). The proof uses `fij_telescope` instead
+of `fij_x_telescope`.
+Needed for the shared-last-endpoint case (Case 5 of Thm 2.1). -/
 theorem isRemainder_fij_of_covered_walk_y (G : SimpleGraph V) :
     ∀ (n : ℕ) (a b : V) (τ : List V) (d_q : BinomialEdgeVars V →₀ ℕ),
     τ.length ≤ n →
@@ -868,19 +891,31 @@ theorem isRemainder_fij_of_covered_walk_y (G : SimpleGraph V) :
     by_cases hBad : ∃ v ∈ internalVertices τ, a < v ∧ v < b
     · -- Bad vertex case: y-telescope split at maximum v₀ ∈ (a, b)
       obtain ⟨v₀_raw, hv₀_raw_int, hav₀_raw, hv₀_rawb⟩ := hBad
-      have hBadSet : ((internalVertices τ).filter (fun v => decide (a < v) && decide (v < b))).toFinset.Nonempty := by
-        refine ⟨v₀_raw, List.mem_toFinset.mpr (List.mem_filter.mpr ⟨hv₀_raw_int, by simp [hav₀_raw, hv₀_rawb]⟩)⟩
-      set v₀ := ((internalVertices τ).filter (fun v => decide (a < v) && decide (v < b))).toFinset.max' hBadSet
-      have hv₀_filt : v₀ ∈ (internalVertices τ).filter (fun v => decide (a < v) && decide (v < b)) := by
+      have hBadSet :
+          ((internalVertices τ).filter
+            (fun v => decide (a < v) && decide (v < b))).toFinset.Nonempty := by
+        refine ⟨v₀_raw, List.mem_toFinset.mpr
+          (List.mem_filter.mpr ⟨hv₀_raw_int, by simp [hav₀_raw, hv₀_rawb]⟩)⟩
+      set v₀ := ((internalVertices τ).filter
+        (fun v => decide (a < v) && decide (v < b))).toFinset.max' hBadSet
+      have hv₀_filt : v₀ ∈ (internalVertices τ).filter
+          (fun v => decide (a < v) && decide (v < b)) := by
         exact List.mem_toFinset.mp (Finset.max'_mem _ _)
-      have hv₀_int : v₀ ∈ internalVertices τ := (List.mem_filter.mp hv₀_filt).1
-      have hav₀ : a < v₀ := by have := (List.mem_filter.mp hv₀_filt).2; simp at this; exact this.1
-      have hv₀b : v₀ < b := by have := (List.mem_filter.mp hv₀_filt).2; simp at this; exact this.2
+      have hv₀_int : v₀ ∈ internalVertices τ :=
+        (List.mem_filter.mp hv₀_filt).1
+      have hav₀ : a < v₀ := by
+        have := (List.mem_filter.mp hv₀_filt).2
+        simp only [Bool.and_eq_true, decide_eq_true_eq] at this; exact this.1
+      have hv₀b : v₀ < b := by
+        have := (List.mem_filter.mp hv₀_filt).2
+        simp only [Bool.and_eq_true, decide_eq_true_eq] at this; exact this.2
       have hv₀_max : ∀ w ∈ internalVertices τ, a < w → w < b → w ≤ v₀ := by
         intro w hw haw hwb
-        have hw_filt : w ∈ (internalVertices τ).filter (fun v => decide (a < v) && decide (v < b)) :=
+        have hw_filt : w ∈ (internalVertices τ).filter
+            (fun v => decide (a < v) && decide (v < b)) :=
           List.mem_filter.mpr ⟨hw, by simp [haw, hwb]⟩
-        exact Finset.le_max' _ _ (List.mem_toFinset.mpr hw_filt)
+        exact Finset.le_max' _ _
+          (List.mem_toFinset.mpr hw_filt)
       -- y_{v₀} divides monomial d_q (from coverage, third clause)
       have hcov_v₀ := (hCov v₀ hv₀_int).2.2 hav₀ hv₀b
       -- Use y-telescope: y v₀ * fij a b = y b * fij a v₀ + y a * fij v₀ b
@@ -919,7 +954,7 @@ theorem isRemainder_fij_of_covered_walk_y (G : SimpleGraph V) :
               have hlt : (w :: rest).idxOf v₀ < (w :: rest).length :=
                 List.idxOf_lt_length_of_mem hv₀_mem
               have := List.getElem_idxOf hlt
-              simp [h0] at this; exact this
+              simp only [h0, List.getElem_cons_zero] at this; exact this
             exact absurd (this.symm.trans hHead) (ne_of_gt hav₀)
         refine ⟨τ.drop k, ?_, ?_, ?_, ?_, ?_, ?_⟩
         · simp [List.length_drop]; omega
@@ -1010,7 +1045,7 @@ theorem isRemainder_fij_of_covered_walk_y (G : SimpleGraph V) :
           intro heq; subst heq
           have hne_τ : τ ≠ [] := by intro h; simp [h, internalVertices] at hv_τ
           cases τ with | nil => exact absurd rfl hne_τ | cons w rest =>
-            simp at hHead; subst hHead
+            simp only [List.head?_cons, Option.some.injEq] at hHead; subst hHead
             simp only [internalVertices, List.tail_cons] at hv_τ
             exact ((List.nodup_cons.mp hND).1) ((List.dropLast_sublist _).mem hv_τ)
         -- d₂(inl v) = d_q(inl v) since eyv₀, eya are inr
@@ -1107,12 +1142,16 @@ theorem isRemainder_fij_of_covered_walk_y (G : SimpleGraph V) :
           simp only [List.tail_cons]
           have hv_rest : v ∈ rest := (List.mem_cons.mp hv').resolve_left hva
           have hrest_ne : rest ≠ [] := List.ne_nil_of_mem hv_rest
-          refine List.mem_dropLast_of_mem_of_ne_getLast hv_rest (fun heq => hvb ?_)
+          refine List.mem_dropLast_of_mem_of_ne_getLast hv_rest
+            (fun heq => hvb ?_)
           have hlast_eq := List.getLast_cons hrest_ne (a := a')
-          have hb : (a' :: rest).getLast (List.cons_ne_nil a' rest) = b :=
-            Option.some.inj ((List.getLast?_eq_some_getLast (List.cons_ne_nil a' rest)).symm.trans hL)
+          have hb : (a' :: rest).getLast
+              (List.cons_ne_nil a' rest) = b :=
+            Option.some.inj ((List.getLast?_eq_some_getLast
+              (List.cons_ne_nil a' rest)).symm.trans hL)
           rw [heq, ← hlast_eq, hb]
-      have hVtx : ∀ v ∈ τ, v = a ∨ v = b ∨ v < a ∨ b < v := by
+      have hVtx :
+          ∀ v ∈ τ, v = a ∨ v = b ∨ v < a ∨ b < v := by
         intro v hv
         rcases eq_or_ne v a with rfl | hva
         · exact Or.inl rfl
@@ -1224,7 +1263,7 @@ omit [LinearOrder V] [Fintype V] in
 lemma getLast?_drop_idxOf {l : List V} {v : V} (hv : v ∈ l) :
     (l.drop (l.idxOf v)).getLast? = l.getLast? := by
   have hne : l.drop (l.idxOf v) ≠ [] := by
-    simp [List.drop_eq_nil_iff]; exact idxOf_lt hv
+    simp only [ne_eq, List.drop_eq_nil_iff, not_le]; exact idxOf_lt hv
   rw [List.getLast?_eq_some_getLast hne,
       List.getLast?_eq_some_getLast (List.ne_nil_of_mem hv)]
   exact congrArg _ (List.getLast_drop hne)
@@ -1254,7 +1293,7 @@ private lemma isChain_append {r : V → V → Prop} {l₁ l₂ : List V}
     simp only [List.cons_append]
     cases rest with
     | nil =>
-      simp at h
+      simp only [List.getLast?_singleton, Option.mem_def, Option.some.injEq, forall_eq'] at h
       cases l₂ with
       | nil => exact .singleton a
       | cons b rest₂ => exact .cons_cons (h b (by simp)) h₂
@@ -1317,7 +1356,9 @@ private lemma internal_ne_getLast {l : List V} (hnd : l.Nodup)
 omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 lemma head_of_head? {l : List V} {a : V} (h : l.head? = some a) :
     l.head (by intro h'; simp [h'] at h) = a := by
-  cases l with | nil => simp at h | cons x _ => simp at h; exact h
+  cases l with
+  | nil => simp only [List.head?_nil, reduceCtorEq] at h
+  | cons x _ => simp only [List.head?_cons, Option.some.injEq] at h; exact h
 
 omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 lemma getLast_of_getLast? {l : List V} {a : V} (h : l.getLast? = some a) :
@@ -1380,9 +1421,11 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
         exact List.mem_toFinset.mp (Finset.min'_mem _ _)
       have hv₀_int : v₀ ∈ internalVertices τ := (List.mem_filter.mp hv₀_filt).1
       have hav₀ : a < v₀ := by
-        have := (List.mem_filter.mp hv₀_filt).2; simp at this; exact this.1
+        have := (List.mem_filter.mp hv₀_filt).2
+        simp only [Bool.and_eq_true, decide_eq_true_eq] at this; exact this.1
       have hv₀b : v₀ < b := by
-        have := (List.mem_filter.mp hv₀_filt).2; simp at this; exact this.2
+        have := (List.mem_filter.mp hv₀_filt).2
+        simp only [Bool.and_eq_true, decide_eq_true_eq] at this; exact this.2
       have hv₀_min : ∀ w ∈ internalVertices τ, a < w → w < b → v₀ ≤ w := by
         intro w hw haw hwb
         have hw_filt : w ∈ (internalVertices τ).filter
@@ -1415,7 +1458,7 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
               have hlt : (w :: rest).idxOf v₀ < (w :: rest).length :=
                 List.idxOf_lt_length_of_mem hv₀_mem
               have := List.getElem_idxOf hlt
-              simp [h0] at this; exact this
+              simp only [h0, List.getElem_cons_zero] at this; exact this
             exact absurd (this.symm.trans hHead) (ne_of_gt hav₀)
         refine ⟨τ.drop k, ?_, ?_, ?_, ?_, ?_, ?_⟩
         · simp [List.length_drop]; omega
@@ -1477,7 +1520,7 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
             intro heq; subst heq
             have hne_τ : τ ≠ [] := by intro h; simp [h, internalVertices] at hv_τ
             cases τ with | nil => exact absurd rfl hne_τ | cons w rest =>
-              simp at hHead; subst hHead
+              simp only [List.head?_cons, Option.some.injEq] at hHead; subst hHead
               simp only [internalVertices, List.tail_cons] at hv_τ
               exact ((List.nodup_cons.mp hND).1) ((List.dropLast_sublist _).mem hv_τ)
           have hv_ne_v₀ : v ≠ v₀ := by
@@ -1614,7 +1657,7 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
             intro heq; subst heq
             have hne_τ : τ ≠ [] := by intro h; simp [h, internalVertices] at hv_τ
             cases τ with | nil => exact absurd rfl hne_τ | cons w rest =>
-              simp at hHead; subst hHead
+              simp only [List.head?_cons, Option.some.injEq] at hHead; subst hHead
               simp only [internalVertices, List.tail_cons] at hv_τ
               exact ((List.nodup_cons.mp hND).1) ((List.dropLast_sublist _).mem hv_τ)
           have hv_ne_v₀ : v ≠ v₀ := by
@@ -1799,7 +1842,7 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
                       (w :: rest).length :=
                     List.idxOf_lt_length_of_mem hv₀_mem
                   have := List.getElem_idxOf hlt
-                  simp [h0] at this; exact this
+                  simp only [h0, List.getElem_cons_zero] at this; exact this
                 exact absurd (this.symm.trans hHead)
                   (ne_of_gt (lt_trans hab hbv₀))
             refine ⟨τ.drop k, ?_, ?_, ?_, ?_, ?_, ?_⟩
@@ -1915,7 +1958,7 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
               cases τ with
               | nil => exact absurd rfl hne_τ
               | cons w rest =>
-                simp at hHead; subst hHead
+                simp only [List.head?_cons, Option.some.injEq] at hHead; subst hHead
                 simp only [internalVertices,
                   List.tail_cons] at hv_τ
                 exact ((List.nodup_cons.mp hND).1)
@@ -1950,7 +1993,7 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
               hτ₁_last hτ₁_nd hτ₁_walk hCov₁
           -- For fij(b, v₀) via reversed τ₂
           have hτ₂_rev_len : τ₂.reverse.length ≤ n := by
-            simp [List.length_reverse]; exact hτ₂_len
+            simp only [List.length_reverse]; exact hτ₂_len
           have hτ₂_rev_head : τ₂.reverse.head? =
               some b := by
             rw [List.head?_reverse]; exact hτ₂_last
@@ -2119,7 +2162,7 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
                       (w :: rest).length :=
                     List.idxOf_lt_length_of_mem hv₀_mem
                   have := List.getElem_idxOf hlt
-                  simp [h0] at this; exact this
+                  simp only [h0, List.getElem_cons_zero] at this; exact this
                 exact absurd (this.symm.trans hHead)
                   (ne_of_gt hv₀a).symm
             refine ⟨τ.drop k, ?_, ?_, ?_, ?_, ?_, ?_⟩
@@ -2200,7 +2243,7 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
               cases τ with
               | nil => exact absurd rfl hne_τ
               | cons w rest =>
-                simp at hHead; subst hHead
+                simp only [List.head?_cons, Option.some.injEq] at hHead; subst hHead
                 simp only [internalVertices,
                   List.tail_cons] at hv_τ
                 exact ((List.nodup_cons.mp hND).1)
@@ -2270,7 +2313,7 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
               hτ₂_last hτ₂_nd hτ₂_walk hCov₂
           -- IH for fij(v₀, a) via τ₁.reverse
           have hτ₁_rev_len : τ₁.reverse.length ≤ n := by
-            simp [List.length_reverse]; exact hτ₁_len
+            simp only [List.length_reverse]; exact hτ₁_len
           have hτ₁_rev_head : τ₁.reverse.head? =
               some v₀ := by
             rw [List.head?_reverse]; exact hτ₁_last
@@ -2461,16 +2504,17 @@ private lemma walk_from_shared_first_aux (G : SimpleGraph V) :
       have hva : v ≠ a := by
         intro heq; subst heq
         cases σ with
-        | nil => simp at hσh
+        | nil => simp only [List.head?_nil, reduceCtorEq] at hσh
         | cons x rest =>
-          simp at hσh; subst hσh
+          simp only [List.head?_cons, Option.some.injEq] at hσh; subst hσh
           rw [List.nodup_cons] at hσnd; exact absurd hv_σt hσnd.1
       -- idxOf v > 0 in σ since v ≠ head σ = a
       have hidx_pos : 0 < σ.idxOf v := by
         cases σ with
         | nil => exact absurd rfl hσ_ne
         | cons x rest =>
-          have hxa : x = a := by simp at hσh; exact hσh
+          have hxa : x = a := by
+            simp only [List.head?_cons, Option.some.injEq] at hσh; exact hσh
           change 0 < List.findIdx (fun w => w == v) (x :: rest)
           simp only [List.findIdx_cons]
           have hxv : ¬(x = v) := by rw [hxa]; exact Ne.symm hva
@@ -2492,7 +2536,7 @@ private lemma walk_from_shared_first_aux (G : SimpleGraph V) :
         have hw_π : w ∈ π := (List.drop_sublist _ _).mem (mem_of_mem_internalVertices h)
         by_cases hwa : w = a; · exact Or.inr (Or.inr hwa)
         have hπ'_ne : π.drop (π.idxOf v) ≠ [] := by
-          simp [List.drop_eq_nil_iff]; exact idxOf_lt hv_π
+          simp only [ne_eq, List.drop_eq_nil_iff, not_le]; exact idxOf_lt hv_π
         have hw_ne_b : w ≠ b := by
           intro heq; rw [heq] at h
           have := internal_ne_getLast (hπnd.sublist (List.drop_sublist _ _)) h hπ'_ne
@@ -2505,7 +2549,7 @@ private lemma walk_from_shared_first_aux (G : SimpleGraph V) :
         have hw_σ : w ∈ σ := (List.drop_sublist _ _).mem (mem_of_mem_internalVertices h)
         by_cases hwa : w = a; · exact Or.inr (Or.inr hwa)
         have hσ'_ne : σ.drop (σ.idxOf v) ≠ [] := by
-          simp [List.drop_eq_nil_iff]; exact idxOf_lt hv_σ
+          simp only [ne_eq, List.drop_eq_nil_iff, not_le]; exact idxOf_lt hv_σ
         have hw_ne_c : w ≠ c := by
           intro heq; rw [heq] at h
           have := internal_ne_getLast (hσnd.sublist (List.drop_sublist _ _)) h hσ'_ne
@@ -2533,7 +2577,10 @@ private lemma walk_from_shared_first_aux (G : SimpleGraph V) :
           cases σ with
           | nil => simp at hσh
           | cons x rest =>
-            simp at hσh hσt; subst hσh; subst hσt; simp at hσl; exact hσl.symm
+            simp only [List.head?_cons, Option.some.injEq] at hσh hσt
+            subst hσh; subst hσt
+            simp only [List.getLast?_singleton, Option.some.injEq] at hσl
+            exact hσl.symm
         subst hac
         exact ⟨π.reverse,
           by rw [List.head?_reverse]; exact hπl,
@@ -2555,7 +2602,7 @@ private lemma walk_from_shared_first_aux (G : SimpleGraph V) :
           cases σ with
           | nil => simp at hσh
           | cons x rest =>
-            simp at hσt ⊢
+            simp only [List.tail_cons] at hσt ⊢
             cases rest with
             | nil => exact absurd rfl hσt
             | cons y rest' => simp only [List.getLast?_cons_cons] at hσl ⊢; exact hσl
@@ -2582,7 +2629,8 @@ private lemma walk_from_shared_first_aux (G : SimpleGraph V) :
                 simp only [List.tail_cons, List.head?_cons,
                   Option.mem_def, Option.some.injEq] at hy; exact hy.symm
               rw [hy_eq]
-              have hs_eq : s = a := by simp at hσh; exact hσh
+              have hs_eq : s = a := by
+                simp only [List.head?_cons, Option.some.injEq] at hσh; exact hσh
               rw [hs_eq] at hσw
               cases hσw with | cons_cons hadj _ => exact hadj
         · -- coverage
@@ -2616,7 +2664,7 @@ private lemma walk_from_shared_first_aux (G : SimpleGraph V) :
                   cases σ with
                   | nil => simp at hσh
                   | cons x rest =>
-                    simp at hσt; cases rest with
+                    simp only [List.tail_cons] at hσt; cases rest with
                     | nil => exact absurd rfl hσt
                     | cons y rest' =>
                       simp only [List.tail_cons, List.getLast?_cons_cons] at hσl ⊢
