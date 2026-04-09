@@ -83,6 +83,7 @@ private lemma chain'_reverse (G : SimpleGraph V) (π : List V)
   rw [List.isChain_reverse]
   exact List.IsChain.imp (fun _ _ h => G.symm h) (hW : List.IsChain _ π)
 
+omit [LinearOrder V] in
 /-- The internal-vertex list splits as `rev(internals α') ++ [v₀] ++ internals β`
 when we cut a nodup walk π at an internal vertex v₀. Used by both the below-
 and above-case factorization lemmas. -/
@@ -131,6 +132,113 @@ private lemma internalVertices_split_eq (π : List V) (v₀ : V)
   rw [← hβ_tail, hπk] at htail_dl
   exact htail_dl
 
+omit [LinearOrder V] in
+/-- An internal vertex's index is strictly between 0 and length - 1 in a nodup walk.
+This packages the common index-bound setup shared by all split lemmas. -/
+private lemma internal_idxOf_bounds {π : List V} {v₀ : V}
+    (hv₀Int : v₀ ∈ internalVertices π) (hπND : π.Nodup) :
+    0 < π.idxOf v₀ ∧ π.idxOf v₀ < π.length - 1 := by
+  have hv₀_in_tail : v₀ ∈ π.tail :=
+    (List.dropLast_sublist π.tail).subset hv₀Int
+  have hv₀_in_π : v₀ ∈ π := (List.tail_sublist π).subset hv₀_in_tail
+  have hne : π ≠ [] := List.ne_nil_of_mem hv₀_in_π
+  have hk_lt : π.idxOf v₀ < π.length := List.idxOf_lt_length_of_mem hv₀_in_π
+  have hπk : π[π.idxOf v₀] = v₀ := List.getElem_idxOf hk_lt
+  constructor
+  · -- v₀ is not the head
+    rcases Nat.eq_zero_or_pos (π.idxOf v₀) with h | h
+    · exfalso
+      cases π with
+      | nil => exact absurd rfl hne
+      | cons a rest =>
+        have h1 := hπk; simp only [h, List.getElem_cons_zero] at h1
+        exact (List.nodup_cons.mp hπND).1 (h1 ▸ hv₀_in_tail)
+    · exact h
+  · -- v₀ is not the last
+    by_contra h_ge
+    push_neg at h_ge
+    have hk_eq := Nat.le_antisymm (by omega) h_ge
+    have hv₀_eq : v₀ = π.getLast hne := by
+      have h1 : π[π.idxOf v₀]? = some v₀ :=
+        (List.getElem?_eq_getElem hk_lt).trans (congrArg some hπk)
+      have h2 : π.getLast? = some v₀ := by
+        rw [List.getLast?_eq_getElem?, show π.length - 1 = π.idxOf v₀ from hk_eq.symm]
+        exact h1
+      exact (Option.some.inj ((List.getLast?_eq_some_getLast hne).symm.trans h2)).symm
+    rw [hv₀_eq, show internalVertices π = π.tail.dropLast from rfl] at hv₀Int
+    have hmem_dl : π.getLast hne ∈ π.dropLast := by
+      cases π with
+      | nil => exact absurd rfl hne
+      | cons a rest =>
+        simp only [List.tail_cons] at hv₀Int
+        cases rest with
+        | nil => simp at hv₀Int
+        | cons b rest' =>
+          rw [List.dropLast_cons_of_ne_nil (List.cons_ne_nil _ _)]
+          exact List.mem_cons_of_mem a hv₀Int
+    have hND := hπND
+    rw [← List.dropLast_append_getLast hne, List.nodup_append] at hND
+    exact absurd rfl (hND.2.2 _ hmem_dl _ (List.mem_singleton.mpr rfl))
+
+omit [LinearOrder V] [DecidableEq V] in
+/-- Non-membership and subset facts for the walk split at an internal vertex.
+Packages the common setup shared by pathMonomial_split_below and pathMonomial_split_above. -/
+private lemma split_nodup_facts {π : List V} {i j v₀ : V} {α' β : List V}
+    (hπND : π.Nodup) (hπHead : π.head? = some i) (hπLast : π.getLast? = some j)
+    (hintEq : internalVertices π =
+      (internalVertices α').reverse ++ [v₀] ++ internalVertices β) :
+    (internalVertices π).Nodup ∧
+    i ∉ internalVertices π ∧ j ∉ internalVertices π ∧
+    v₀ ∉ internalVertices α' ∧ v₀ ∉ internalVertices β ∧
+    (∀ v ∈ internalVertices α', v ∈ internalVertices π) ∧
+    (∀ v ∈ internalVertices β, v ∈ internalVertices π) := by
+  have hne : π ≠ [] := by intro h; simp [h] at hπHead
+  have hint_nd : (internalVertices π).Nodup :=
+    (hπND.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
+  refine ⟨hint_nd, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · -- i ∉ internalVertices π
+    simp only [internalVertices]; intro h
+    cases π with
+    | nil => exact absurd rfl hne
+    | cons a rest =>
+      simp only [List.head?_cons, Option.some.injEq] at hπHead; subst hπHead
+      exact (List.nodup_cons.mp hπND).1 ((List.dropLast_sublist _).subset h)
+  · -- j ∉ internalVertices π
+    simp only [internalVertices]; intro h
+    have hj_last : π.getLast hne = j :=
+      Option.some.inj ((List.getLast?_eq_some_getLast hne).symm.trans hπLast)
+    rw [← hj_last] at h
+    have hmem_dl : π.getLast hne ∈ π.dropLast := by
+      cases π with
+      | nil => exact absurd rfl hne
+      | cons a rest =>
+        simp only [List.tail_cons] at h
+        cases rest with
+        | nil => simp at h
+        | cons b rest' =>
+          rw [List.dropLast_cons_of_ne_nil (List.cons_ne_nil _ _)]
+          exact List.mem_cons_of_mem a h
+    have hND := hπND
+    rw [← List.dropLast_append_getLast hne, List.nodup_append] at hND
+    exact absurd rfl (hND.2.2 _ hmem_dl _ (List.mem_singleton.mpr rfl))
+  · -- v₀ ∉ internalVertices α'
+    intro h
+    have hnd' := hint_nd; rw [hintEq] at hnd'
+    exact absurd rfl ((List.nodup_append.mp (List.nodup_append.mp hnd').1).2.2 v₀
+      (List.mem_reverse.mpr h) v₀ (List.mem_singleton_self v₀))
+  · -- v₀ ∉ internalVertices β
+    intro h
+    have hnd' := hint_nd; rw [hintEq] at hnd'
+    exact absurd rfl ((List.nodup_append.mp hnd').2.2 v₀
+      (List.mem_append_right _ (List.mem_singleton_self v₀)) v₀ h)
+  · -- ∀ v ∈ internalVertices α', v ∈ internalVertices π
+    intro v hv
+    rw [hintEq]; exact List.mem_append_left _ (List.mem_append_left _
+      (List.mem_reverse.mpr hv))
+  · -- ∀ v ∈ internalVertices β, v ∈ internalVertices π
+    intro v hv
+    rw [hintEq]; exact List.mem_append_right _ hv
+
 /--
 Path monomial factorization at a below-i internal vertex v₀ (Case A).
 
@@ -153,99 +261,22 @@ private lemma pathMonomial_split_below (_G : SimpleGraph V) (i j v₀ : V)
     (hα' : α' = (π.take (π.idxOf v₀ + 1)).reverse) :
     pathMonomial (K := K) i j π =
       y v₀ * pathMonomial v₀ i α' * pathMonomial v₀ j β := by
-  -- Step 1: index setup
+  -- Step 1: index setup (via shared helpers)
   have hv₀_in_π : v₀ ∈ π :=
     (List.tail_sublist π).subset ((List.dropLast_sublist π.tail).subset hv₀Int)
   let k := π.idxOf v₀
   have hk_lt : k < π.length := List.idxOf_lt_length_of_mem hv₀_in_π
   have hπk : π[k] = v₀ := List.getElem_idxOf hk_lt
-  have hne : π ≠ [] := List.ne_nil_iff_length_pos.mpr (by omega)
-  have h0lt : 0 < π.length := List.length_pos_of_ne_nil hne
-  have hπ0i : π[0] = i := by
-    have h0 : π[0]? = some i := by rwa [← List.head?_eq_getElem?]
-    exact Option.some.inj ((List.getElem?_eq_getElem h0lt).symm.trans h0)
-  have hπ_last_j : π[π.length - 1] = j := by
-    rw [← (List.getLast_eq_getElem hne)]
-    exact Option.some.inj ((List.getLast?_eq_some_getLast hne).symm.trans hπLast)
-  have hk_pos : 0 < k := by
-    rcases Nat.eq_zero_or_pos k with h | h
-    · exfalso
-      have heq : π[0] = v₀ := by simp only [h] at hπk; exact hπk
-      exact absurd (heq.symm.trans hπ0i) (ne_of_lt hv₀i)
-    · exact h
-  have hk_lt_pred : k < π.length - 1 := by
-    rcases Nat.lt_or_ge k (π.length - 1) with h | h
-    · exact h
-    · exfalso
-      have hk_eq : k = π.length - 1 := Nat.le_antisymm (by omega) (by omega)
-      have heq : v₀ = j := by
-        have h1 : π[k]? = some v₀ :=
-          (List.getElem?_eq_getElem hk_lt).trans (congrArg some hπk)
-        have h2 : π[π.length - 1]? = some j :=
-          (List.getElem?_eq_getElem (by omega)).trans (congrArg some hπ_last_j)
-        have h3 : π[k]? = π[π.length - 1]? := by congr 1
-        exact Option.some.inj (h1.symm.trans (h3.trans h2))
-      exact absurd heq (ne_of_lt (lt_trans hv₀i hij))
+  obtain ⟨hk_pos, hk_lt_pred⟩ := internal_idxOf_bounds hv₀Int hπND
   -- Step 2: list equality for internalVertices (via shared helper)
   have hintEq : internalVertices π =
       (internalVertices α').reverse ++ [v₀] ++ internalVertices β := by
     have := internalVertices_split_eq π v₀ hk_pos hk_lt hk_lt_pred
     simp only [← hα', ← hβ] at this; exact this
-  -- Step 3: non-membership / Nodup facts
-  have hint_nd : (internalVertices π).Nodup :=
-    (hπND.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
-  have hi_not_int : i ∉ internalVertices π := by
-    simp only [internalVertices]; intro h
-    cases π with
-    | nil => exact absurd rfl hne
-    | cons a rest =>
-      simp only [List.head?_cons, Option.some.injEq] at hπHead; subst hπHead
-      exact (List.nodup_cons.mp hπND).1 ((List.dropLast_sublist _).subset h)
-  have hj_not_int : j ∉ internalVertices π := by
-    simp only [internalVertices]; intro h
-    have hj_last : π.getLast hne = j :=
-      Option.some.inj
-        ((List.getLast?_eq_some_getLast hne).symm.trans hπLast)
-    have hj_count : π.count j = 1 :=
-      List.nodup_iff_count_le_one.mp hπND |> fun hle =>
-        Nat.le_antisymm (hle _)
-          (List.count_pos_iff.mpr (hj_last ▸ List.getLast_mem hne))
-    have hmem_dl : j ∈ π.dropLast := by
-      cases π with
-      | nil => exact absurd rfl hne
-      | cons a rest =>
-        simp only [List.tail_cons] at h; cases rest with
-        | nil => simp at h
-        | cons b rest2 =>
-          rw [List.dropLast_cons_of_ne_nil
-            (List.cons_ne_nil b rest2)]
-          exact List.mem_cons_of_mem a h
-    have hpos : 0 < π.dropLast.count j :=
-      List.count_pos_iff.mpr hmem_dl
-    have heq := congrArg (List.count j)
-      (List.dropLast_append_getLast hne)
-    simp only [List.count_append, hj_last,
-      List.count_singleton_self] at heq
-    omega
-  have hv₀_not_int_α' : v₀ ∉ internalVertices α' := by
-    intro h
-    have hint_nd' := hint_nd
-    rw [hintEq] at hint_nd'
-    have hnd1 := (List.nodup_append.mp hint_nd').1
-    exact absurd rfl ((List.nodup_append.mp hnd1).2.2 v₀ (List.mem_reverse.mpr h) v₀
-      (List.mem_singleton_self v₀))
-  have hv₀_not_int_β : v₀ ∉ internalVertices β := by
-    intro h
-    have hint_nd' := hint_nd
-    rw [hintEq] at hint_nd'
-    exact absurd rfl ((List.nodup_append.mp hint_nd').2.2 v₀
-      (List.mem_append_right _ (List.mem_singleton_self v₀)) v₀ h)
+  -- Step 3: non-membership / Nodup facts (via shared helper)
+  obtain ⟨hint_nd, hi_not_int, hj_not_int, hv₀_not_int_α', hv₀_not_int_β, hα'_sub, hβ_sub⟩ :=
+    split_nodup_facts hπND hπHead hπLast hintEq
   -- Step 4: filter equalities (using membership + hπInt)
-  have hα'_sub : ∀ v ∈ internalVertices α', v ∈ internalVertices π := fun v hv => by
-    rw [hintEq]; exact List.mem_append_left _ (List.mem_append_left _
-      (List.mem_reverse.mpr hv))
-  have hβ_sub : ∀ v ∈ internalVertices β, v ∈ internalVertices π := fun v hv => by
-    rw [hintEq]; exact List.mem_append_right _ hv
   have hfilt_α'_x : (internalVertices α').filter (fun v => decide (j < v)) =
       (internalVertices α').filter (fun v => decide (i < v)) := by
     apply List.filter_congr; intro v hv
@@ -327,94 +358,22 @@ private lemma pathMonomial_split_above (_G : SimpleGraph V) (i j v₀ : V)
     (hα' : α' = (π.take (π.idxOf v₀ + 1)).reverse) :
     pathMonomial (K := K) i j π =
       x v₀ * pathMonomial j v₀ β.reverse * pathMonomial i v₀ α'.reverse := by
-  -- Step 1: index setup
+  -- Step 1: index setup (via shared helpers)
   have hv₀_in_π : v₀ ∈ π :=
     (List.tail_sublist π).subset ((List.dropLast_sublist π.tail).subset hv₀Int)
   let k := π.idxOf v₀
   have hk_lt : k < π.length := List.idxOf_lt_length_of_mem hv₀_in_π
   have hπk : π[k] = v₀ := List.getElem_idxOf hk_lt
-  have hne : π ≠ [] := List.ne_nil_iff_length_pos.mpr (by omega)
-  have h0lt : 0 < π.length := List.length_pos_of_ne_nil hne
-  have hπ0i : π[0] = i := by
-    have h0 : π[0]? = some i := by rwa [← List.head?_eq_getElem?]
-    exact Option.some.inj ((List.getElem?_eq_getElem h0lt).symm.trans h0)
-  have hπ_last_j : π[π.length - 1] = j := by
-    rw [← (List.getLast_eq_getElem hne)]
-    exact Option.some.inj ((List.getLast?_eq_some_getLast hne).symm.trans hπLast)
-  have hk_pos : 0 < k := by
-    rcases Nat.eq_zero_or_pos k with h | h
-    · exfalso
-      have heq : π[0] = v₀ := by simp only [h] at hπk; exact hπk
-      exact absurd (heq.symm.trans hπ0i) (ne_of_gt (lt_trans hij hv₀j))
-    · exact h
-  have hk_lt_pred : k < π.length - 1 := by
-    rcases Nat.lt_or_ge k (π.length - 1) with h | h
-    · exact h
-    · exfalso
-      have hk_eq : k = π.length - 1 := Nat.le_antisymm (by omega) (by omega)
-      have heq : v₀ = j := by
-        have h1 : π[k]? = some v₀ :=
-          (List.getElem?_eq_getElem hk_lt).trans (congrArg some hπk)
-        have h2 : π[π.length - 1]? = some j :=
-          (List.getElem?_eq_getElem (by omega)).trans (congrArg some hπ_last_j)
-        have h3 : π[k]? = π[π.length - 1]? := by congr 1
-        exact Option.some.inj (h1.symm.trans (h3.trans h2))
-      exact absurd heq (ne_of_gt hv₀j)
+  obtain ⟨hk_pos, hk_lt_pred⟩ := internal_idxOf_bounds hv₀Int hπND
   -- Step 2: list equality for internalVertices (via shared helper)
   have hintEq : internalVertices π =
       (internalVertices α').reverse ++ [v₀] ++ internalVertices β := by
     have := internalVertices_split_eq π v₀ hk_pos hk_lt hk_lt_pred
     simp only [← hα', ← hβ] at this; exact this
-  -- Step 3: non-membership / Nodup facts
-  have hint_nd : (internalVertices π).Nodup :=
-    (hπND.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
-  have hi_not_int : i ∉ internalVertices π := by
-    simp only [internalVertices]; intro h
-    cases π with
-    | nil => exact absurd rfl hne
-    | cons a rest =>
-      simp only [List.head?_cons, Option.some.injEq] at hπHead; subst hπHead
-      exact (List.nodup_cons.mp hπND).1 ((List.dropLast_sublist _).subset h)
-  have hj_not_int : j ∉ internalVertices π := by
-    simp only [internalVertices]; intro h
-    have hj_last : π.getLast hne = j :=
-      Option.some.inj ((List.getLast?_eq_some_getLast hne).symm.trans hπLast)
-    have hj_count : π.count j = 1 :=
-      List.nodup_iff_count_le_one.mp hπND |> fun hle =>
-        Nat.le_antisymm (hle _) (List.count_pos_iff.mpr (hj_last ▸ List.getLast_mem hne))
-    have hmem_dl : j ∈ π.dropLast := by
-      cases π with
-      | nil => exact absurd rfl hne
-      | cons a rest =>
-        simp only [List.tail_cons] at h; cases rest with
-        | nil => simp at h
-        | cons b rest2 =>
-          rw [List.dropLast_cons_of_ne_nil (List.cons_ne_nil b rest2)]
-          exact List.mem_cons_of_mem a h
-    have hpos : 0 < π.dropLast.count j := List.count_pos_iff.mpr hmem_dl
-    have heq := congrArg (List.count j) (List.dropLast_append_getLast hne)
-    simp only [List.count_append, hj_last, List.count_singleton_self] at heq
-    omega
-  have hv₀_not_int_α' : v₀ ∉ internalVertices α' := by
-    intro h
-    have hint_nd' := hint_nd
-    rw [hintEq] at hint_nd'
-    have hnd1 := (List.nodup_append.mp hint_nd').1
-    exact absurd rfl ((List.nodup_append.mp hnd1).2.2 v₀ (List.mem_reverse.mpr h) v₀
-      (List.mem_singleton_self v₀))
-  have hv₀_not_int_β : v₀ ∉ internalVertices β := by
-    intro h
-    have hint_nd' := hint_nd
-    rw [hintEq] at hint_nd'
-    exact absurd rfl ((List.nodup_append.mp hint_nd').2.2 v₀
-      (List.mem_append_right _ (List.mem_singleton_self v₀)) v₀ h)
-  -- Step 4: subset facts
-  have hα'_sub : ∀ v ∈ internalVertices α', v ∈ internalVertices π := fun v hv => by
-    rw [hintEq]; exact List.mem_append_left _ (List.mem_append_left _
-      (List.mem_reverse.mpr hv))
-  have hβ_sub : ∀ v ∈ internalVertices β, v ∈ internalVertices π := fun v hv => by
-    rw [hintEq]; exact List.mem_append_right _ hv
-  -- Step 5: reverse identities (β.reverse and α'.reverse internal vertices)
+  -- Step 3: non-membership / Nodup facts (via shared helper)
+  obtain ⟨hint_nd, hi_not_int, hj_not_int, hv₀_not_int_α', hv₀_not_int_β, hα'_sub, hβ_sub⟩ :=
+    split_nodup_facts hπND hπHead hπLast hintEq
+  -- Step 4: reverse identities (β.reverse and α'.reverse internal vertices)
   have hβ_rev_int : β.reverse.tail.dropLast = (β.tail.dropLast).reverse := by
     rw [List.tail_reverse, List.dropLast_reverse, List.tail_dropLast]
   have hα'_rev_int : α'.reverse.tail.dropLast = (α'.tail.dropLast).reverse := by
@@ -498,7 +457,6 @@ private lemma subwalk_props (G : SimpleGraph V) (π : List V) (v₀ i j : V)
     (hπInt : ∀ v ∈ π, v = i ∨ v = j ∨ v < i ∨ j < v)
     (hv₀Int : v₀ ∈ internalVertices π)
     (hv₀Max : ∀ w ∈ internalVertices π, w < i → w ≤ v₀)
-    (hv₀j : v₀ < j)
     (hπW : π.IsChain (fun a b => G.Adj a b)) :
     let k := π.idxOf v₀
     let β := π.drop k
@@ -512,7 +470,7 @@ private lemma subwalk_props (G : SimpleGraph V) (π : List V) (v₀ i j : V)
     (∀ v ∈ α', v = v₀ ∨ v = i ∨ v < v₀ ∨ i < v) ∧
     α'.IsChain (fun a b => G.Adj a b) := by
   intro k β α'
-  -- Setup: v₀ in π, k = idxOf v₀
+  -- Setup: v₀ in π, k = idxOf v₀ (bounds via shared helper)
   have hv₀_in_π : v₀ ∈ π :=
     (List.tail_sublist π).subset ((List.dropLast_sublist π.tail).subset hv₀Int)
   have hk_lt : k < π.length := List.idxOf_lt_length_of_mem hv₀_in_π
@@ -522,35 +480,7 @@ private lemma subwalk_props (G : SimpleGraph V) (π : List V) (v₀ i j : V)
   have hπ0i : π[0] = i := by
     have h0 : π[0]? = some i := by rwa [← List.head?_eq_getElem?]
     exact Option.some.inj ((List.getElem?_eq_getElem h0lt).symm.trans h0)
-  have hπ_last_j : π[π.length - 1] = j := by
-    rw [← (List.getLast_eq_getElem hne)]
-    exact Option.some.inj ((List.getLast?_eq_some_getLast hne).symm.trans hπLast)
-  -- k ≥ 1: v₀ is not the head i
-  have hk_pos : 0 < k := by
-    rcases Nat.eq_zero_or_pos k with h | h
-    · exfalso
-      have heq : π[0] = v₀ := by simp only [h] at hπk; exact hπk
-      have hv₀_eq_i : v₀ = i := heq.symm.trans hπ0i
-      have hv₀_in_tail : v₀ ∈ π.tail :=
-        (List.dropLast_sublist π.tail).subset hv₀Int
-      cases hπ_form : π with
-      | nil => simp [hπ_form] at hπHead
-      | cons a rest =>
-        simp only [hπ_form, List.head?_cons, Option.some.injEq] at hπHead; subst hπHead
-        rw [hπ_form, List.tail_cons] at hv₀_in_tail
-        rw [hπ_form] at hπND
-        exact (List.nodup_cons.mp hπND).1 (hv₀_eq_i ▸ hv₀_in_tail)
-    · exact h
-  -- k < π.length - 1: v₀ is not the last j
-  have hk_lt_pred : k < π.length - 1 := by
-    by_contra h
-    have heq : k = π.length - 1 := by omega
-    have h1 : π[k]? = some v₀ := by
-      rw [List.getElem?_eq_getElem hk_lt]; exact congrArg some hπk
-    have h2 : π[π.length - 1]? = some j := by
-      rw [List.getElem?_eq_getElem (by omega)]; exact congrArg some hπ_last_j
-    rw [heq] at h1
-    exact absurd (Option.some.inj (h1.symm.trans h2)) (ne_of_lt hv₀j)
+  obtain ⟨hk_pos, hk_lt_pred⟩ := internal_idxOf_bounds hv₀Int hπND
   -- j ∉ π.take(k+1): since j is at position length-1 > k
   have hj_not_in_dropLast : j ∉ π.dropLast := by
     have hj_last : π.getLast hne = j :=
@@ -634,7 +564,7 @@ private lemma subwalk_props (G : SimpleGraph V) (π : List V) (v₀ i j : V)
     rw [List.head?_reverse]; simp [List.getLast?_take, hk_lt, hπk]
   · -- α'.getLast? = some i
     rw [List.getLast?_reverse]
-    simp [List.head?_take, Nat.pos_iff_ne_zero.mp hk_pos, hπHead]
+    simp [List.head?_take, hπHead]
   · -- α'.length < π.length
     change ((π.take (k + 1)).reverse).length < π.length
     simp [List.length_reverse, List.length_take]; omega
@@ -680,7 +610,6 @@ private lemma subwalk_props_above (G : SimpleGraph V) (π : List V) (v₀ i j : 
     (hπInt : ∀ v ∈ π, v = i ∨ v = j ∨ v < i ∨ j < v)
     (hv₀Int : v₀ ∈ internalVertices π)
     (hv₀Min : ∀ w ∈ internalVertices π, j < w → v₀ ≤ w)
-    (hj_lt_v₀ : j < v₀)
     (hπW : π.IsChain (fun a b => G.Adj a b)) :
     let k := π.idxOf v₀
     let β := π.drop k
@@ -696,6 +625,7 @@ private lemma subwalk_props_above (G : SimpleGraph V) (π : List V) (v₀ i j : 
     (∀ v ∈ α'.reverse, v = i ∨ v = v₀ ∨ v < i ∨ v₀ < v) ∧
     α'.reverse.IsChain (fun a b => G.Adj a b) := by
   intro k β α'
+  -- Setup: v₀ in π, k = idxOf v₀ (bounds via shared helper)
   have hv₀_in_π : v₀ ∈ π :=
     (List.tail_sublist π).subset ((List.dropLast_sublist π.tail).subset hv₀Int)
   have hk_lt : k < π.length := List.idxOf_lt_length_of_mem hv₀_in_π
@@ -705,26 +635,7 @@ private lemma subwalk_props_above (G : SimpleGraph V) (π : List V) (v₀ i j : 
   have hπ0i : π[0] = i := by
     have h0 : π[0]? = some i := by rwa [← List.head?_eq_getElem?]
     exact Option.some.inj ((List.getElem?_eq_getElem h0lt).symm.trans h0)
-  have hπ_last_j : π[π.length - 1] = j := by
-    rw [← (List.getLast_eq_getElem hne)]
-    exact Option.some.inj ((List.getLast?_eq_some_getLast hne).symm.trans hπLast)
-  -- k ≥ 1: v₀ ≠ i (since i < v₀)
-  have hk_pos : 0 < k := by
-    rcases Nat.eq_zero_or_pos k with h | h
-    · exfalso
-      have heq : π[0] = v₀ := by simp only [h] at hπk; exact hπk
-      exact absurd (heq.symm.trans hπ0i) (ne_of_gt (hij.trans hj_lt_v₀))
-    · exact h
-  -- k < π.length - 1: v₀ ≠ j (since j < v₀)
-  have hk_lt_pred : k < π.length - 1 := by
-    by_contra h
-    have heq : k = π.length - 1 := by omega
-    have h1 : π[k]? = some v₀ := by
-      rw [List.getElem?_eq_getElem hk_lt]; exact congrArg some hπk
-    have h2 : π[π.length - 1]? = some j := by
-      rw [List.getElem?_eq_getElem (by omega)]; exact congrArg some hπ_last_j
-    rw [heq] at h1
-    exact absurd (Option.some.inj (h1.symm.trans h2)) (ne_of_gt hj_lt_v₀)
+  obtain ⟨hk_pos, hk_lt_pred⟩ := internal_idxOf_bounds hv₀Int hπND
   -- j ∉ π.take(k+1)
   have hj_not_in_dropLast : j ∉ π.dropLast := by
     have hj_last : π.getLast hne = j :=
@@ -764,7 +675,7 @@ private lemma subwalk_props_above (G : SimpleGraph V) (π : List V) (v₀ i j : 
     rw [List.head?_reverse]; simp [List.getLast?_take, hk_lt, hπk]
   have hα'L : α'.getLast? = some i := by
     rw [List.getLast?_reverse]
-    simp [List.head?_take, Nat.pos_iff_ne_zero.mp hk_pos, hπHead]
+    simp [List.head?_take, hπHead]
   have hα'Len : α'.length < π.length := by
     change ((π.take (k + 1)).reverse).length < π.length
     simp [List.length_reverse, List.length_take]; omega
@@ -965,7 +876,7 @@ private lemma groebnerElem_mem_aux (G : SimpleGraph V) :
       let α' := ((a :: b :: c :: rest).take (k + 1)).reverse
       obtain ⟨hβH, hβL, hβlen, hβND, hβInt, hβW, hα'H, hα'L, hα'len, hα'ND, hα'Int, hα'W⟩ :=
         subwalk_props G (a :: b :: c :: rest) v₀ a j
-          hij (by simp) hL hND hπLen hInt hv₀_int hv₀_max hv₀_lt_j hW
+          hij (by simp) hL hND hπLen hInt hv₀_int hv₀_max hW
       -- Apply IH to β (walk from v₀ to j)
       have hβ_mem : pathMonomial (K := K) v₀ j β * (x v₀ * y j - x j * y v₀) ∈
           binomialEdgeIdeal G :=
@@ -1011,7 +922,7 @@ private lemma groebnerElem_mem_aux (G : SimpleGraph V) :
       obtain ⟨hβRevH, hβRevL, hβRevLen, hβRevND, hβRevInt, hβRevW,
                hα'RevH, hα'RevL, hα'RevLen, hα'RevND, hα'RevInt, hα'RevW⟩ :=
         subwalk_props_above G (a :: b :: c :: rest) v₀ a j
-          hij (by simp) hL hND hπLen hInt hv₀_int hv₀_min hv₀_gt_j hW
+          hij (by simp) hL hND hπLen hInt hv₀_int hv₀_min hW
       -- Apply IH to β.reverse (walk from j to v₀)
       have hβrev_mem : pathMonomial (K := K) j v₀ β.reverse * (x j * y v₀ - x v₀ * y j) ∈
           binomialEdgeIdeal G :=

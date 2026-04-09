@@ -253,6 +253,7 @@ lemma isRemainder_zero_zero'
     binomialEdgeMonomialOrder.IsRemainder (0 : MvPolynomial (BinomialEdgeVars V) K) G 0 :=
   ⟨⟨0, by simp, by simp [degree_zero, le_refl]⟩, by simp⟩
 
+omit [DecidableEq V] in
 /-- Multiplying an `IsRemainder`-zero witness by a nonzero monomial preserves the property.
 Key helper for factoring S-polynomials of groebnerElements via `sPolynomial_monomial_mul`. -/
 private lemma isRemainder_monomial_mul'
@@ -286,6 +287,7 @@ private lemma isRemainder_monomial_mul'
         exact add_le_add_right (hdeg b) _
   · intro c' hc'; simp at hc'
 
+omit [DecidableEq V] in
 /-- `IsRemainder (-f) G 0` follows from
 `IsRemainder f G 0`. -/
 lemma isRemainder_neg'
@@ -474,6 +476,7 @@ private lemma internal_of_take (τ : List V) (k : ℕ) (a b : V)
 
 /-! ## General IsRemainder lemma for fij via walk decomposition -/
 
+omit [DecidableEq V] in
 /-- **Core lemma**: If there is a nodup walk `τ` from `a` to `b` in `G`,
 and the monomial `q = monomial d_q 1` "covers" every internal vertex of
 `τ` (i.e., `d_q` has `y_v` for `v < a`,
@@ -860,6 +863,7 @@ theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
       exact isRemainder_fij_via_groebnerElement G a b σ hσ
         (monomial d_q 1) d_q rfl d_σ hd_σ hdiv
 
+omit [DecidableEq V] in
 /-- **Dual variant (y-telescope)**: same as
 `isRemainder_fij_of_covered_walk` but the coverage for "bad"
 vertices `a < v < b` uses `Sum.inr v` (y-variable) instead of
@@ -1387,6 +1391,7 @@ lemma mem_internalVertices_of_ne {l : List V} {v : V}
       exact List.mem_dropLast_of_mem_of_ne_getLast hv_rest hnl
 
 
+omit [DecidableEq V] in
 theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
     ∀ (n : ℕ) (a b : V) (τ : List V) (d_q : BinomialEdgeVars V →₀ ℕ),
     τ.length ≤ n →
@@ -2473,7 +2478,7 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
 
 /-! ### The walk construction -/
 
-omit [LinearOrder V] [Fintype V] in
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 private lemma walk_from_shared_first_aux (G : SimpleGraph V) :
     ∀ (n : ℕ) (a b c : V) (π σ : List V),
     π.length + σ.length ≤ n →
@@ -2486,6 +2491,7 @@ private lemma walk_from_shared_first_aux (G : SimpleGraph V) :
     τ.IsChain (fun u v => G.Adj u v) ∧
     (∀ v ∈ internalVertices τ,
       v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = a) := by
+  classical
   intro n
   induction n with
   | zero =>
@@ -2675,7 +2681,7 @@ private lemma walk_from_shared_first_aux (G : SimpleGraph V) :
               (by rw [head_of_head? hσh]; exact hwa)
               (by rw [getLast_of_getLast? hσl]; exact hw_ne_c)
 
-omit [LinearOrder V] [Fintype V] in
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 lemma walk_from_shared_first (G : SimpleGraph V)
     (a b c : V) (π σ : List V)
     (hπ_head : π.head? = some a) (hπ_last : π.getLast? = some b)

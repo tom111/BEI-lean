@@ -14,11 +14,8 @@ This directory is the current todo list.
 
 ## Cleanup Packets
 
-- [ADMISSIBLE_PATHS_REFACTOR.md](ADMISSIBLE_PATHS_REFACTOR.md)
-  Reduce duplicated split-path machinery in `BEI/AdmissiblePaths.lean`.
-
 - [INFRA_LINTER_PACKET_01.md](INFRA_LINTER_PACKET_01.md)
-  Warning cleanup in `PrimeIdeals`, `GraphProperties`, and `CoveredWalks`.
+  Remaining warning cleanup, mainly in `PrimeIdeals.lean`.
 
 ## Dormant / Optional
 
