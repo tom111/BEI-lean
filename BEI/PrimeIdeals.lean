@@ -165,6 +165,7 @@ section ker_helpers
 set_option linter.style.openClassical false
 open Classical
 
+omit [DecidableEq V] [Fintype V] in
 /-- x_j * y_k - x_k * y_j ∈ P_S(G) when j,k are in the same connected component of G[V\S]. -/
 private lemma minor_mem_primeComponent (G : SimpleGraph V) (S : Finset V)
     {j k : V} (hjk : j ≠ k) (hsc : SameComponent G S j k) :
@@ -202,6 +203,7 @@ private lemma monomial_S_support_mem (G : SimpleGraph V) (S : Finset V)
 
 /-! #### The single-swap monomial identity -/
 
+omit [DecidableEq V] [Fintype V] in
 /-- The single-swap monomial difference lies in P_S(G):
 `monomial d c - monomial d' c ∈ P_S(G)` when `d = e + sxk + syj` and `d' = e + sxj + syk`
 for vertices j,k in the same component. Takes the two exponents directly. -/
@@ -603,7 +605,7 @@ private lemma swapExp_fiberEquiv {G : SimpleGraph V} {S : Finset V}
         (by intro h; have := Sum.inr.inj h; subst this; exact hkS hi)]
       exact (hS0 i hi).2
 
-omit [LinearOrder V] in
+omit [LinearOrder V] [DecidableEq V] in
 /-- The swap decreases deviation. -/
 private lemma swapExp_yDeviation_lt {d₀ d₁ d₀' : BinomialEdgeVars V →₀ ℕ} {j k : V}
     (hjk : j ≠ k)
@@ -972,19 +974,38 @@ private lemma no_s_ker_mem (G : SimpleGraph V) (S : Finset V) :
           have hdd₁ : d ≠ d₁ := hd.1
           simp only [c', if_neg hdd₀, if_neg hdd₁]
         -- Step: ∑_{T.erase d₀} c' d • m d = ∑_{T.erase d₀} c d • m d + c d₀ • m d₁
-        have hsum_diff : ∑ d ∈ T.erase d₀, c' d • (monomial d 1 : MvPolynomial (BinomialEdgeVars V) K) =
-            ∑ d ∈ T.erase d₀, c d • (monomial d 1 : MvPolynomial (BinomialEdgeVars V) K) +
-            c d₀ • (monomial d₁ 1 : MvPolynomial (BinomialEdgeVars V) K) := by
-          have step1 : ∑ d ∈ T.erase d₀, c' d • (monomial d 1 : MvPolynomial (BinomialEdgeVars V) K) =
-              (c d₁ + c d₀) • (monomial d₁ 1 : MvPolynomial (BinomialEdgeVars V) K) +
-              ∑ d ∈ (T.erase d₀).erase d₁, c d • (monomial d 1 : MvPolynomial (BinomialEdgeVars V) K) :=
-            calc ∑ d ∈ T.erase d₀, c' d • (monomial d 1 : MvPolynomial (BinomialEdgeVars V) K)
-                = c' d₁ • (monomial d₁ 1 : MvPolynomial (BinomialEdgeVars V) K) +
-                  ∑ d ∈ (T.erase d₀).erase d₁, c' d • (monomial d 1 : MvPolynomial (BinomialEdgeVars V) K) :=
-                  (Finset.add_sum_erase (T.erase d₀) hd₁_in_erase
-                      (f := fun d => c' d • (monomial d 1 : MvPolynomial (BinomialEdgeVars V) K))).symm
-              _ = (c d₁ + c d₀) • (monomial d₁ 1 : MvPolynomial (BinomialEdgeVars V) K) +
-                  ∑ d ∈ (T.erase d₀).erase d₁, c d • (monomial d 1 : MvPolynomial (BinomialEdgeVars V) K) := by
+        have hsum_diff : ∑ d ∈ T.erase d₀,
+            c' d • (monomial d 1 : MvPolynomial (BinomialEdgeVars V) K) =
+            ∑ d ∈ T.erase d₀,
+              c d • (monomial d 1 : MvPolynomial (BinomialEdgeVars V) K) +
+            c d₀ • (monomial d₁ 1 :
+              MvPolynomial (BinomialEdgeVars V) K) := by
+          have step1 : ∑ d ∈ T.erase d₀,
+              c' d • (monomial d 1 :
+                MvPolynomial (BinomialEdgeVars V) K) =
+              (c d₁ + c d₀) • (monomial d₁ 1 :
+                MvPolynomial (BinomialEdgeVars V) K) +
+              ∑ d ∈ (T.erase d₀).erase d₁, c d •
+                (monomial d 1 :
+                  MvPolynomial (BinomialEdgeVars V) K) :=
+            calc ∑ d ∈ T.erase d₀, c' d •
+                  (monomial d 1 :
+                    MvPolynomial (BinomialEdgeVars V) K)
+                = c' d₁ • (monomial d₁ 1 :
+                    MvPolynomial (BinomialEdgeVars V) K) +
+                  ∑ d ∈ (T.erase d₀).erase d₁, c' d •
+                    (monomial d 1 :
+                      MvPolynomial (BinomialEdgeVars V) K) :=
+                  (Finset.add_sum_erase (T.erase d₀)
+                    hd₁_in_erase (f := fun d => c' d •
+                      (monomial d 1 :
+                        MvPolynomial
+                          (BinomialEdgeVars V) K))).symm
+              _ = (c d₁ + c d₀) • (monomial d₁ 1 :
+                    MvPolynomial (BinomialEdgeVars V) K) +
+                  ∑ d ∈ (T.erase d₀).erase d₁, c d •
+                    (monomial d 1 :
+                      MvPolynomial (BinomialEdgeVars V) K) := by
                   rw [hc'_d₁]; congr 1; exact Finset.sum_congr rfl hc'_rest
           have h_ase := Finset.add_sum_erase (T.erase d₀) hd₁_in_erase
               (f := fun d => c d • (monomial d 1 : MvPolynomial (BinomialEdgeVars V) K))
@@ -1059,10 +1080,12 @@ private lemma ker_primeComponentMap_le (G : SimpleGraph V) (S : Finset V) :
   intro f hf
   simp only [RingHom.mem_ker, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom] at hf
   -- Split f.support into S-support and no-S-support parts
-  set T_S := f.support.filter (fun d => ∃ i ∈ S, d (Sum.inl i : BinomialEdgeVars V) ≥ 1 ∨
-                                                   d (Sum.inr i : BinomialEdgeVars V) ≥ 1) with hTS_def
-  set T_N := f.support.filter (fun d => ∀ i ∈ S, d (Sum.inl i : BinomialEdgeVars V) = 0 ∧
-                                                   d (Sum.inr i : BinomialEdgeVars V) = 0) with hTN_def
+  set T_S := f.support.filter (fun d => ∃ i ∈ S,
+    d (Sum.inl i : BinomialEdgeVars V) ≥ 1 ∨
+    d (Sum.inr i : BinomialEdgeVars V) ≥ 1) with hTS_def
+  set T_N := f.support.filter (fun d => ∀ i ∈ S,
+    d (Sum.inl i : BinomialEdgeVars V) = 0 ∧
+    d (Sum.inr i : BinomialEdgeVars V) = 0) with hTN_def
   -- f = ∑_{T_S} + ∑_{T_N}
   have hf_split : f = ∑ d ∈ T_S, monomial d (f.coeff d) +
                       ∑ d ∈ T_N, monomial d (f.coeff d) := by
@@ -1150,6 +1173,8 @@ private lemma ker_primeComponentMap_le (G : SimpleGraph V) (S : Finset V) :
 
 end ker_helpers
 
+omit [DecidableEq V] in
+open Classical in
 /-- `P_S(G)` is a prime ideal.
 
 The proof constructs a ring homomorphism `φ : K[x,y] → K[x,y]` (see `primeComponentMap`)
@@ -1169,7 +1194,8 @@ theorem primeComponent_eq_ker (G : SimpleGraph V) (S : Finset V) :
       RingHom.ker (primeComponentMap (K := K) G S).toRingHom :=
   le_antisymm (primeComponent_le_ker G S) (ker_primeComponentMap_le G S)
 
-omit [Fintype V] in
+omit [DecidableEq V] [Fintype V] in
+open Classical in
 /-- `J_G ⊆ P_S(G)` for every subset S. -/
 theorem binomialEdgeIdeal_le_primeComponent (G : SimpleGraph V) (S : Finset V) :
     binomialEdgeIdeal (K := K) G ≤ primeComponent (K := K) G S := by
@@ -1206,6 +1232,8 @@ theorem binomialEdgeIdeal_le_primeComponent (G : SimpleGraph V) (S : Finset V) :
 
 /-! ## Variable non-membership lemmas for P_S(G) -/
 
+omit [DecidableEq V] in
+open Classical in
 /-- `x_v ∉ P_S(G)` when `v ∉ S`. This follows because `primeComponentMap` sends
 `X(inl v)` to `X(inl v) ≠ 0`, so `X(inl v) ∉ ker(primeComponentMap) = P_S`. -/
 theorem X_inl_not_mem_primeComponent (G : SimpleGraph V) (S : Finset V)
@@ -1219,6 +1247,8 @@ theorem X_inl_not_mem_primeComponent (G : SimpleGraph V) (S : Finset V)
     primeComponentMap, aeval_X, hv, ite_false] at hker
   exact X_ne_zero _ hker
 
+omit [DecidableEq V] in
+open Classical in
 /-- `y_v ∉ P_S(G)` when `v ∉ S`. This follows because `primeComponentMap` sends
 `X(inr v)` to `X(inl v) * X(inr (compRep G S v)) ≠ 0`. -/
 theorem X_inr_not_mem_primeComponent (G : SimpleGraph V) (S : Finset V)
@@ -1646,6 +1676,8 @@ private lemma fixedPoints_card_eq_componentCount (G : SimpleGraph V) (S : Finset
       _ ≤ Fintype.card G'.ConnectedComponent := Fintype.card_le_of_injective f hf_inj
   · exact componentCount_le_fixedPoints G S
 
+omit [DecidableEq V] in
+open Classical in
 /--
 **Lemma 3.1** (Herzog et al. 2010):
   `height(P_S(G)) = |S| + (|V| - c(S))`

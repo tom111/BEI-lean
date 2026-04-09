@@ -15,7 +15,7 @@ This directory is the current todo list.
 ## Cleanup Packets
 
 - [INFRA_LINTER_PACKET_01.md](INFRA_LINTER_PACKET_01.md)
-  Remaining warning cleanup, mainly in `PrimeIdeals.lean`.
+  Remaining warning cleanup, now mainly in `ClosedGraphs.lean` with a small residue in `PrimeIdeals.lean`.
 
 ## Dormant / Optional
 
