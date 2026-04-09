@@ -1118,6 +1118,39 @@ theorem path_is_CM (n : ℕ) (G : SimpleGraph (Fin n))
 
 /-! ## Proposition 1.6: closed graphs are CM -/
 
+/-- From `SameComponent G (S.erase j) a b` and `¬ SameComponent G S a b`,
+extract a vertex `u ∉ S` adjacent to `j` with `SameComponent G S a u`.
+The path from `a` to `b` in `G[V\(S\{j})]` must visit `j` (otherwise it lifts
+to `G[V\S]`); the predecessor of the first visit gives the bridge. -/
+private lemma exists_adj_bridge_of_sameComponent_erase
+    {G : SimpleGraph V} {S : Finset V} {j a b : V}
+    (hjS : j ∈ S) (haS : a ∉ S) (hbS : b ∉ S)
+    (hsc : SameComponent G (S.erase j) a b)
+    (hnotsc : ¬ SameComponent G S a b) :
+    ∃ u, u ∉ S ∧ G.Adj u j ∧ SameComponent G S a u := by
+  obtain ⟨_, _, hpath⟩ := hsc
+  -- The path either avoids j (lifts → contradiction) or visits j (extract bridge).
+  suffices ∀ z,
+    Relation.ReflTransGen (fun p q => G.Adj p q ∧ p ∉ S.erase j ∧ q ∉ S.erase j) a z →
+    (z ≠ j ∧ z ∉ S ∧ Relation.ReflTransGen (fun p q => G.Adj p q ∧ p ∉ S ∧ q ∉ S) a z) ∨
+    (∃ u, u ∉ S ∧ G.Adj u j ∧
+      Relation.ReflTransGen (fun p q => G.Adj p q ∧ p ∉ S ∧ q ∉ S) a u) from by
+    rcases this b hpath with ⟨_, hbS', hpath_lifted⟩ | ⟨u, huS, hadj, hpath'⟩
+    · exact absurd ⟨haS, hbS', hpath_lifted⟩ hnotsc
+    · exact ⟨u, huS, hadj, haS, huS, hpath'⟩
+  intro z haz
+  induction haz with
+  | refl =>
+    left; exact ⟨fun h => haS (h ▸ hjS), haS, .refl⟩
+  | @tail x y _ hxy ih =>
+    rcases ih with ⟨hx_ne_j, hxS, hax_lifted⟩ | hresult
+    · by_cases hyj : y = j
+      · right; exact ⟨x, hxS, hyj ▸ hxy.1, hax_lifted⟩
+      · left
+        have hyS : y ∉ S := fun hyS => hxy.2.2 (Finset.mem_erase.mpr ⟨hyj, hyS⟩)
+        exact ⟨hyj, hyS, hax_lifted.tail ⟨hxy.1, hxS, hyS⟩⟩
+    · right; exact hresult
+
 /-- If `a, b ∉ T`, `SameComponent G (T.erase j) a b`, and `¬ SameComponent G T a b`,
 then `componentCount G (T.erase j) < componentCount G T`.
 
@@ -1216,6 +1249,44 @@ private lemma componentCount_lt_of_merged
     rw [SimpleGraph.ConnectedComponent.eq]
     exact sameComponent_to_reachable G (T.erase j) a b haTe hbTe hsc
 
+/-- In a connected closed graph with `SatisfiesProp1_6Condition`, if `p < s` and
+`G.Adj p t` (with `s ≤ t`, ensured by `closedGraph_adj_between`) and `G.Adj s q`
+(with `s < q`), then `G.Adj p q`.
+
+The proof uses `closedGraph_adj_between` to get `G.Adj p (s+1)`, then either
+`q = s+1` (done) or `hCond` with `γ = q-1` to get `G.Adj p q`. -/
+private lemma adj_of_gap {n : ℕ} {G : SimpleGraph (Fin n)}
+    (hClosed : IsClosedGraph G) (hConn : G.Connected)
+    (hCond : SatisfiesProp1_6Condition n G)
+    {p s t q : Fin n}
+    (hps : p < s) (hst : s < t) (hadj_pt : G.Adj p t)
+    (hsq : s < q) (hadj_sq : G.Adj s q) : G.Adj p q := by
+  have hs1n : s.val + 1 < n := by have := t.isLt; omega
+  have hs1 : Fin.mk (s.val + 1) (by omega) ≤ t :=
+    Fin.mk_le_mk.mpr (by omega)
+  have hps1 : p < Fin.mk (s.val + 1) (by omega) :=
+    Fin.mk_lt_mk.mpr (by omega)
+  have hadj_ps1 : G.Adj p ⟨s.val + 1, by omega⟩ :=
+    closedGraph_adj_between hClosed hConn hadj_pt (lt_trans hps hst) ⟨s.val + 1, by omega⟩
+      hps1 hs1
+  by_cases hq_eq : q = ⟨s.val + 1, by omega⟩
+  · rwa [hq_eq]
+  · have hq_gt : s.val + 1 < q.val := by
+      have := Fin.lt_def.mp hsq
+      simp only [Fin.ext_iff] at hq_eq; omega
+    have hq_pos : 0 < q.val := by omega
+    have hqn : q.val < n := q.isLt
+    set m : Fin n := ⟨q.val - 1, by omega⟩
+    have hm_val : m.val = q.val - 1 := rfl
+    have hm1 : m.val + 1 = q.val := by omega
+    have hsm : s < m := Fin.mk_lt_mk.mpr (by omega)
+    have hadj_sm1 : G.Adj s ⟨m.val + 1, by omega⟩ := by
+      have : (⟨m.val + 1, by omega⟩ : Fin n) = q := Fin.ext (by omega)
+      rw [this]; exact hadj_sq
+    have hadj_pm1 := hCond p s m hs1n (by omega) hps hsm hadj_ps1 hadj_sm1
+    have : (⟨m.val + 1, by omega⟩ : Fin n) = q := Fin.ext (by omega)
+    rw [this] at hadj_pm1; exact hadj_pm1
+
 /-- Under `SatisfiesProp1_6Condition`, if `j` is a cut vertex relative to `S` and
 `i ≠ j` is in `S`, then `j` is a cut vertex relative to `S.erase i`.
 
@@ -1266,16 +1337,567 @@ private lemma closedGraph_cutVertex_preserved_of_erase
     -- SatisfiesProp1_6Condition and closedGraph_adj_between, forces an edge between
     -- the component endpoints, contradicting them being in different components.
     have hnotsc_Si : ¬SameComponent G (S.erase i) a b := by
-      -- The proof requires `hCond` (SatisfiesProp1_6Condition). Outline:
-      -- 1. Assume SC(S.erase i) a b (for contradiction).
-      -- 2. Both paths (through i and through j) bridge a's and b's components.
-      --    Extract V\S-neighbors u₁, v₁ of j and u₂, v₂ of i on these paths.
-      -- 3. By closedGraph_adj_between and SatisfiesProp1_6Condition, derive a
-      --    direct G-edge between a V\S neighbor of a's component and one of b's
-      --    component. This gives SC G S a b, contradicting hnotsc_S.
-      -- The full formalization requires extracting adjacency witnesses from
-      -- ReflTransGen paths and applying the closedness + Prop 1.6 gap analysis.
-      sorry
+      by_cases hiS : i ∈ S
+      · -- i ∈ S: use bridge extraction + gap analysis
+        intro hsc_Si
+        -- Bridge extraction for j (a-side and b-side)
+        obtain ⟨u₁, hu₁S, hadj_u₁j, hsc_au₁⟩ :=
+          exists_adj_bridge_of_sameComponent_erase hjS haS hbS hsc_ej hnotsc_S
+        obtain ⟨v₁, hv₁S, hadj_v₁j, hsc_v₁b_raw⟩ :=
+          exists_adj_bridge_of_sameComponent_erase hjS hbS haS hsc_ej.symm
+            (fun h => hnotsc_S h.symm)
+        -- Bridge extraction for i (a-side and b-side)
+        obtain ⟨u₂, hu₂S, hadj_u₂i, hsc_au₂⟩ :=
+          exists_adj_bridge_of_sameComponent_erase hiS haS hbS hsc_Si hnotsc_S
+        obtain ⟨v₂, hv₂S, hadj_v₂i, hsc_v₂b_raw⟩ :=
+          exists_adj_bridge_of_sameComponent_erase hiS hbS haS hsc_Si.symm
+            (fun h => hnotsc_S h.symm)
+        -- Normalize bridge components to have b on the right
+        have hsc_v₁b : SameComponent G S v₁ b := hsc_v₁b_raw.symm
+        have hsc_v₂b : SameComponent G S v₂ b := hsc_v₂b_raw.symm
+        -- u₁, u₂ in a's component; v₁, v₂ in b's component (different components)
+        have hsc_u₁v₁ : ¬SameComponent G S u₁ v₁ := fun hsc =>
+          hnotsc_S (hsc_au₁.trans (hsc.trans hsc_v₁b))
+        have hu₁v₁ : u₁ ≠ v₁ := fun h => hsc_u₁v₁ ⟨hu₁S, h ▸ hv₁S, h ▸ .refl⟩
+        have hsc_u₂v₂ : ¬SameComponent G S u₂ v₂ := fun hsc =>
+          hnotsc_S (hsc_au₂.trans (hsc.trans hsc_v₂b))
+        -- j must be between u₁ and v₁: if both on same side, IsClosedGraph
+        -- gives G.Adj u₁ v₁, contradicting different components
+        have hbetween_j : (u₁ < j ∧ j < v₁) ∨ (v₁ < j ∧ j < u₁) := by
+          have hu₁j : u₁ ≠ j := fun h => hu₁S (h ▸ hjS)
+          have hv₁j : v₁ ≠ j := fun h => hv₁S (h ▸ hjS)
+          rcases lt_or_gt_of_ne hu₁j with h1 | h1 <;>
+            rcases lt_or_gt_of_ne hv₁j with h2 | h2
+          · -- both < j: condition 2 gives Adj u₁ v₁
+            exact absurd (hClosed.2 h1 h2 hu₁v₁ hadj_u₁j hadj_v₁j)
+              (fun h => hsc_u₁v₁ ⟨hu₁S, hv₁S, .single ⟨h, hu₁S, hv₁S⟩⟩)
+          · exact Or.inl ⟨h1, h2⟩
+          · exact Or.inr ⟨h2, h1⟩
+          · -- both > j: condition 1 gives Adj u₁ v₁
+            exact absurd (hClosed.1 h1 h2 hu₁v₁ hadj_u₁j.symm hadj_v₁j.symm)
+              (fun h => hsc_u₁v₁ ⟨hu₁S, hv₁S, .single ⟨h, hu₁S, hv₁S⟩⟩)
+        -- Similarly i must be between u₂ and v₂
+        have hu₂v₂ : u₂ ≠ v₂ := fun h => hsc_u₂v₂ ⟨hu₂S, h ▸ hv₂S, h ▸ .refl⟩
+        have hbetween_i : (u₂ < i ∧ i < v₂) ∨ (v₂ < i ∧ i < u₂) := by
+          have hu₂i : u₂ ≠ i := fun h => hu₂S (h ▸ hiS)
+          have hv₂i : v₂ ≠ i := fun h => hv₂S (h ▸ hiS)
+          rcases lt_or_gt_of_ne hu₂i with h1 | h1 <;>
+            rcases lt_or_gt_of_ne hv₂i with h2 | h2
+          · exact absurd (hClosed.2 h1 h2 hu₂v₂ hadj_u₂i hadj_v₂i)
+              (fun h => hsc_u₂v₂ ⟨hu₂S, hv₂S, .single ⟨h, hu₂S, hv₂S⟩⟩)
+          · exact Or.inl ⟨h1, h2⟩
+          · exact Or.inr ⟨h2, h1⟩
+          · exact absurd (hClosed.1 h1 h2 hu₂v₂ hadj_u₂i.symm hadj_v₂i.symm)
+              (fun h => hsc_u₂v₂ ⟨hu₂S, hv₂S, .single ⟨h, hu₂S, hv₂S⟩⟩)
+        -- Gap analysis: SatisfiesProp1_6Condition + closedGraph_adj_between
+        -- give a direct edge between the two components → contradiction.
+        -- Helper: edge between components gives SC a b, contradicting hnotsc_S
+        have mk_sc : ∀ {p q : Fin n}, p ∉ S → q ∉ S →
+            SameComponent G S a p → SameComponent G S q b →
+            G.Adj p q → SameComponent G S a b := fun hpS hqS hap hqb hadj =>
+          hap.trans ⟨hpS, hqS, .single ⟨hadj, hpS, hqS⟩⟩ |>.trans hqb
+        -- Convexity helper: if a b-side vertex β lies between two a-side
+        -- vertices α₁ < β < α₂, then β is in a's component by convexity,
+        -- contradicting β being in b's component.
+        have convex_a : ∀ {α₁ α₂ β : Fin n},
+            α₁ ∉ S → α₂ ∉ S → β ∉ S →
+            SameComponent G S a α₁ → SameComponent G S a α₂ →
+            SameComponent G S β b →
+            α₁ < β → β < α₂ → False := by
+          intro α₁ α₂ β hα₁S hα₂S hβS hsc_aα₁ hsc_aα₂ hsc_βb hlt₁ hlt₂
+          have hsc_α₁α₂ : SameComponent G S α₁ α₂ := hsc_aα₁.symm.trans hsc_aα₂
+          have hsc_α₁β : SameComponent G S α₁ β :=
+            ⟨hα₁S, hβS, reflTransGen_convex_closed hClosed hConn hα₁S hβS hlt₁ hlt₂
+              hsc_α₁α₂.2.2⟩
+          exact hnotsc_S (hsc_aα₁.trans (hsc_α₁β.trans hsc_βb))
+        -- Symmetric: a-side vertex between two b-side vertices
+        have convex_b : ∀ {β₁ β₂ α : Fin n},
+            β₁ ∉ S → β₂ ∉ S → α ∉ S →
+            SameComponent G S β₁ b → SameComponent G S β₂ b →
+            SameComponent G S a α →
+            β₁ < α → α < β₂ → False := by
+          intro β₁ β₂ α hβ₁S hβ₂S hαS hsc_β₁b hsc_β₂b hsc_aα hlt₁ hlt₂
+          have hsc_β₁β₂ : SameComponent G S β₁ β₂ := hsc_β₁b.trans hsc_β₂b.symm
+          have hsc_β₁α : SameComponent G S β₁ α :=
+            ⟨hβ₁S, hαS, reflTransGen_convex_closed hClosed hConn hβ₁S hαS hlt₁ hlt₂
+              hsc_β₁β₂.2.2⟩
+          exact hnotsc_S (hsc_aα.trans (hsc_β₁α.symm.trans hsc_β₁b))
+        -- Edge helper: G.Adj α β with α a-side, β b-side → contradiction
+        have edge_contra : ∀ {α β : Fin n},
+            α ∉ S → β ∉ S →
+            SameComponent G S a α → SameComponent G S β b →
+            G.Adj α β → False :=
+          fun hαS hβS hsc_aα hsc_βb hadj =>
+            hnotsc_S (mk_sc hαS hβS hsc_aα hsc_βb hadj)
+        -- Closed-graph projection: if s < α, s < β, α ≠ β,
+        -- G.Adj s α, G.Adj s β, then G.Adj α β
+        -- (this is hClosed.1)
+        -- Case analysis on bridge orientations
+        rcases hbetween_j with ⟨hu₁j, hjv₁⟩ | ⟨hv₁j, hju₁⟩ <;>
+          rcases hbetween_i with ⟨hu₂i, hiv₂⟩ | ⟨hv₂i, hiu₂⟩
+        · -- Case 1: u₁ < j < v₁, u₂ < i < v₂
+          -- a-side: u₁ (below j), u₂ (below i); b-side: v₁ (above j), v₂ (above i)
+          -- Strategy: find an a-to-b edge via adj_of_gap or convexity.
+          -- Sub-case on u₁ vs v₂:
+          rcases lt_or_gt_of_ne (fun h : u₁ = v₂ =>
+            hnotsc_S (hsc_au₁.trans (h ▸ hsc_v₂b))) with hu₁v₂ | hv₂u₁
+          · -- u₁ < v₂
+            rcases lt_or_gt_of_ne (fun h : u₂ = v₁ =>
+              hnotsc_S (hsc_au₂.trans (h ▸ hsc_v₁b))) with hu₂v₁ | hv₁u₂
+            · -- u₂ < v₁: all a-side < all b-side (potentially)
+              -- Use adj_of_gap: pick the right a-side vertex and b-side vertex
+              -- Try p = u₂, adj to i (u₂ < i), and q = v₁ (above j, j < v₁)
+              -- Need u₂ < i < j < v₁ or u₂ < j < i... depends on i vs j order
+              rcases lt_or_gt_of_ne (Ne.symm hij) with hij | hji
+              · -- i < j: u₂ < i, so adj_of_gap(u₂, i, v₂, v₁) if i < j < v₁
+                -- Actually: adj_of_gap(p=u₂, s=i, t=v₂, q=v₁)
+                -- needs u₂ < i < v₂, G.Adj u₂ v₂ — but we don't have G.Adj u₂ v₂!
+                -- Better: adj_of_gap(p=u₁, s=i, t=j, q=v₂)
+                -- needs u₁ < i. If u₁ < i: done. If u₁ > i: need different approach.
+                rcases lt_or_gt_of_ne (fun h : u₁ = i =>
+                  hu₁S (h ▸ hiS)) with hu₁i | hiu₁
+                · -- u₁ < i < j: adj_of_gap(u₁, i, j, v₂) → G.Adj u₁ v₂
+                  exact edge_contra hu₁S hv₂S hsc_au₁ hsc_v₂b
+                    (adj_of_gap hClosed hConn hCond hu₁i hij hadj_u₁j hiv₂
+                      hadj_v₂i.symm)
+                · -- i < u₁ < j:
+                  -- closedGraph_adj_between on G.Adj i v₂ (i < v₂) gives
+                  -- G.Adj i u₁ if u₁ ≤ v₂ (true since u₁ < v₂ = hu₁v₂)
+                  have hadj_iu₁ := closedGraph_adj_between hClosed hConn
+                    hadj_v₂i.symm hiv₂ u₁ hiu₁ hu₁v₂.le
+                  -- hClosed.1: i < u₁, i < v₂, u₁ ≠ v₂, G.Adj i u₁, G.Adj i v₂
+                  -- → G.Adj u₁ v₂
+                  exact edge_contra hu₁S hv₂S hsc_au₁ hsc_v₂b
+                    (hClosed.1 hiu₁ hiv₂ (fun h : u₁ = v₂ =>
+                      hnotsc_S (hsc_au₁.trans (h ▸ hsc_v₂b)))
+                      hadj_iu₁ hadj_v₂i.symm)
+              · -- j < i: adj_of_gap(u₂, j, i, v₁) needs u₂ < j
+                rcases lt_or_gt_of_ne (fun h : u₂ = j =>
+                  hu₂S (h ▸ hjS)) with hu₂j | hju₂
+                · -- u₂ < j < i: adj_of_gap(u₂, j, i, v₁)
+                  exact edge_contra hu₂S hv₁S hsc_au₂ hsc_v₁b
+                    (adj_of_gap hClosed hConn hCond hu₂j hji hadj_u₂i hjv₁
+                      hadj_v₁j.symm)
+                · -- j < u₂ < i:
+                  have hadj_ju₂ := closedGraph_adj_between hClosed hConn
+                    hadj_v₁j.symm hjv₁ u₂ hju₂ hu₂v₁.le
+                  exact edge_contra hu₂S hv₁S hsc_au₂ hsc_v₁b
+                    (hClosed.1 hju₂ hjv₁ (fun h : u₂ = v₁ =>
+                      hnotsc_S (hsc_au₂.trans (h ▸ hsc_v₁b)))
+                      hadj_ju₂ hadj_v₁j.symm)
+            · -- v₁ < u₂: v₁ (b-side) < u₂ (a-side)
+              -- v₁ < u₂ < i, and v₁ > j (from hjv₁), so j < v₁ < u₂ < i
+              -- But u₁ < j < v₁ < u₂: v₁ between u₁ and u₂ → convexity
+              exact convex_a hu₁S hu₂S hv₁S hsc_au₁ hsc_au₂ hsc_v₁b
+                (lt_trans hu₁j hjv₁) hv₁u₂
+          · -- v₂ < u₁: v₂ (b-side) < u₁ (a-side)
+            -- v₂ < u₁ < j, and v₂ > i (from hiv₂), so i < v₂ < u₁
+            -- u₂ < i < v₂ < u₁: v₂ between u₂ and u₁ → convexity
+            exact convex_a hu₂S hu₁S hv₂S hsc_au₂ hsc_au₁ hsc_v₂b
+              (lt_trans hu₂i hiv₂) hv₂u₁
+        · -- Case 2: u₁ < j < v₁, v₂ < i < u₂
+          -- a-side: u₁ (below j), u₂ (above i); b-side: v₁ (above j), v₂ (below i)
+          rcases lt_or_gt_of_ne (fun h : u₂ = v₁ =>
+            hnotsc_S (hsc_au₂.trans (h ▸ hsc_v₁b))) with hu₂v₁ | hv₁u₂
+          · -- u₂ > v₁ handled below; here u₂ < v₁
+            rcases lt_or_gt_of_ne (fun h : u₁ = v₂ =>
+              hnotsc_S (hsc_au₁.trans (h ▸ hsc_v₂b))) with hu₁v₂ | hv₂u₁
+            · -- u₁ < v₂ < i < u₂ < v₁? Not necessarily.
+              -- u₁ < j, v₂ < i, u₂ > i, v₁ > j
+              rcases lt_or_gt_of_ne (Ne.symm hij) with hij | hji
+              · -- i < j: v₂ < i < j, u₁ < j, u₂ > i, v₁ > j
+                rcases lt_or_gt_of_ne (fun h : u₁ = i =>
+                  hu₁S (h ▸ hiS)) with hu₁i | hiu₁
+                · -- u₁ < i < j: adj_of_gap(u₁, i, j, u₂) needs i < u₂
+                  -- G.Adj u₁ j (u₁ < j), G.Adj i u₂ (= hadj_u₂i.symm, i < u₂)
+                  -- adj_of_gap gives G.Adj u₁ u₂ — but both a-side!
+                  -- Instead: adj_of_gap(u₁, i, j, v₂)?
+                  -- needs i < v₂ — but v₂ < i! So no.
+                  -- Try: adj_of_gap(v₂, i, u₂, v₁)?
+                  -- v₂ < i < u₂, G.Adj v₂ u₂? No.
+                  -- Try closedGraph_adj_between on G.Adj u₁ j (u₁ < j):
+                  -- gives G.Adj u₁ c for u₁ < c ≤ j. If v₂ in (u₁, j]:
+                  -- G.Adj u₁ v₂. v₂ < i < j and u₁ < j.
+                  -- Need u₁ < v₂? hu₁v₂ says u₁ < v₂. And v₂ < i < j, so v₂ ≤ j.
+                  exact edge_contra hu₁S hv₂S hsc_au₁ hsc_v₂b
+                    (closedGraph_adj_between hClosed hConn hadj_u₁j hu₁j v₂
+                      hu₁v₂ (le_of_lt (lt_trans hv₂i hij)))
+                · -- i < u₁ < j: use hClosed.1 via G.Adj i u₁ and G.Adj i v₂
+                  -- v₂ < i, so G.Adj v₂ i (hadj_v₂i), i.e., G.Adj i v₂ wrong dir
+                  -- Actually hadj_v₂i : G.Adj v₂ i, so i > v₂.
+                  -- We want G.Adj u₁ v₂ with u₁ > v₂ (since u₁ > i > v₂)
+                  -- closedGraph_adj_between on G.Adj u₁ j (u₁ < j):
+                  -- gives G.Adj u₁ c for u₁ < c ≤ j. v₂ < i < u₁, so v₂ < u₁.
+                  -- Can't reach v₂ from u₁ via this edge (wrong direction).
+                  -- Try hClosed.2: v₂ < u₁ < j, G.Adj v₂ j? No.
+                  -- closedGraph_adj_between on G.Adj v₂ i (v₂ < i):
+                  -- gives G.Adj v₂ c for v₂ < c ≤ i. u₁ > i, so can't reach u₁.
+                  -- What about G.Adj u₂ i (hadj_u₂i) with i < u₂:
+                  -- closedGraph_adj_between on G.Adj i u₂ (i < u₂):
+                  -- gives G.Adj i c for i < c ≤ u₂.
+                  -- hClosed.2: v₂ < i, u₁ < ... hmm
+                  -- Try: v₂ < i and v₂ < u₁ (since i < u₁). G.Adj v₂ i.
+                  -- closedGraph_adj_between on G.Adj v₂ i (v₂ < i):
+                  -- gives G.Adj v₂ u₁ if v₂ < u₁ ≤ i. But u₁ > i! Can't.
+                  -- Try connecting via j:
+                  -- G.Adj u₁ j (u₁ < j), G.Adj v₁ j (j < v₁).
+                  -- hClosed.2 on j: u₁ < j, v₂ < j (v₂ < i < j), u₁ ≠ v₂,
+                  -- G.Adj u₁ j, G.Adj v₂ j? We don't have G.Adj v₂ j!
+                  -- Do we? v₂ < i < j. closedGraph_adj_between would need
+                  -- some edge from v₂ spanning to j. We have G.Adj v₂ i (v₂ < i).
+                  -- Not spanning to j.
+                  -- Try via u₂: i < u₂, G.Adj u₂ i (= G.Adj i u₂ reversed).
+                  -- closedGraph_adj_between on G.Adj i u₂ (i < u₂):
+                  -- G.Adj i c for i < c ≤ u₂.
+                  -- If j ≤ u₂: G.Adj i j. But j ∈ S!
+                  -- From G.Adj i j (if j ≤ u₂): closedGraph_adj_between gives
+                  -- G.Adj i c for i < c ≤ j... but we want edges to v₂ or from v₂.
+                  -- Actually, we need a totally different approach.
+                  -- v₂ < i < u₁ < j: v₂ is b-side, u₁ is a-side.
+                  -- v₂ < u₁. G.Adj v₂ i (v₂ < i). G.Adj u₁ j (u₁ < j).
+                  -- hClosed.2: v₂ < u₁ and ??? < u₁... no.
+                  -- Let's try u₂ > i and v₁ > j:
+                  -- If u₂ > j (which requires j < u₂):
+                  -- closedGraph_adj_between on G.Adj i u₂ (i < u₂):
+                  -- G.Adj i j if j ≤ u₂. Since i < j (hij) and j < u₂ would give
+                  -- j ≤ u₂. But is j < u₂?
+                  -- j ∈ S, u₂ ∉ S, so j ≠ u₂. If j < u₂: G.Adj i j from above.
+                  -- Then hClosed.2 on j: u₁ < j, v₂ < j (v₂ < i < j),
+                  -- v₂ ≠ u₁, G.Adj u₁ j, need G.Adj v₂ j.
+                  -- G.Adj v₂ j? closedGraph_adj_between on G.Adj v₂ i (v₂ < i):
+                  -- gives G.Adj v₂ c for v₂ < c ≤ i. j > i, can't reach j.
+                  -- From G.Adj i j: closedGraph_adj_between on G.Adj i j? Wait,
+                  -- does G.Adj i j even hold? Only if j ≤ u₂ as established.
+                  -- If G.Adj i j: hClosed.2(v₂ < j, i < j, v₂ ≠ i,
+                  -- G.Adj v₂ j? NO we need G.Adj v₂ j and G.Adj i j → G.Adj v₂ i)
+                  -- We have G.Adj v₂ i and G.Adj i j. To get G.Adj v₂ j:
+                  -- hClosed.1(v₂ < i, v₂ < j, i ≠ j, G.Adj v₂ i, G.Adj v₂ j)
+                  -- Circular! We need G.Adj v₂ j to apply hClosed.1.
+                  -- OK. I think the issue is: in this sub-case (v₂ < i < u₁ < j)
+                  -- with Case 2 (v₂ < i < u₂), we can't directly connect v₂ to u₁
+                  -- without involving gap vertices.
+                  -- BUT: can v₂ be between u₁ and u₂?
+                  -- u₂ > i and u₁ > i, so both a-side above i.
+                  -- v₂ < i. So v₂ < min(u₁, u₂). No interleaving with a-side.
+                  -- Can v₁ be helpful? v₁ > j > u₁ > i > v₂.
+                  -- u₂ > i. If u₂ < v₁: both a-side and b-side above j?
+                  -- u₂ could be > j or < j. u₂ > i and j > i.
+                  -- If u₂ > j: closedGraph_adj_between on G.Adj i u₂ (i < u₂):
+                  -- G.Adj i j (i < j ≤ u₂). Then from G.Adj i j (i < j) and
+                  -- G.Adj i v₂ (= hadj_v₂i.symm... wait, i > v₂, so
+                  -- hadj_v₂i : G.Adj v₂ i means G.Adj v₂ i, not G.Adj i v₂).
+                  -- Hmm, SimpleGraph.Adj is symmetric, so G.Adj v₂ i = G.Adj i v₂.
+                  -- OK so G.Adj i v₂ is just hadj_v₂i (by symmetry).
+                  -- So we have G.Adj i j (just derived) and G.Adj i v₂ (= hadj_v₂i).
+                  -- Wait, i > v₂ so i < v₂ is false. hadj_v₂i : G.Adj v₂ i.
+                  -- i > v₂. hClosed.1(v₂ < i, v₂ < ?): nope, wrong direction.
+                  -- From hClosed.2: u₁ < j, v₂ < j (since v₂ < i < j),
+                  -- u₁ ≠ v₂, G.Adj u₁ j, G.Adj v₂ j → G.Adj u₁ v₂.
+                  -- But we need G.Adj v₂ j! Derive:
+                  -- G.Adj v₂ i (hadj_v₂i, v₂ < i) and G.Adj i j (derived, i < j).
+                  -- hClosed.1(v₂ < i, v₂ < j (v₂ < i < j), i ≠ j,
+                  -- G.Adj v₂ i, G.Adj v₂ j → G.Adj i j). Circular again!
+                  -- We need G.Adj v₂ j to conclude G.Adj u₁ v₂.
+                  -- To get G.Adj v₂ j: we have G.Adj v₂ i (v₂ < i).
+                  -- closedGraph_adj_between on G.Adj v₂ i: G.Adj v₂ c for v₂ < c ≤ i.
+                  -- j > i, so can't reach j.
+                  -- What if we use adj_of_gap with G.Adj v₂ i and G.Adj i j?
+                  -- adj_of_gap needs p < s < t, G.Adj p t.
+                  -- Here p = v₂, s = i, t must satisfy G.Adj v₂ t with s < t.
+                  -- But G.Adj v₂ i only reaches up to i, not beyond.
+                  -- Unless we can extend. G.Adj v₂ i (v₂ < i) and G.Adj i j (i < j).
+                  -- adj_of_gap(v₂, i, i, j) needs i < i, impossible.
+                  -- Need a different edge for v₂ spanning to j.
+                  -- KEY INSIGHT: use SatisfiesProp1_6Condition!
+                  -- adj_of_gap(v₂, i, i, j): need G.Adj v₂ t with t > i and v₂ < i.
+                  -- But we only have G.Adj v₂ i.
+                  -- Hmm wait, adj_of_gap only uses closedGraph_adj_between and hCond.
+                  -- It can't extend beyond the initial spanning edge.
+                  -- So we're stuck with this approach.
+                  -- ALTERNATIVE: maybe the case i < u₁ can't actually happen?
+                  -- No, it can. Example: S = {2, 4}, i = 4, j = 2, u₁ = 3, v₁ = 5,
+                  -- u₂ = 5, v₂ = 1. But wait, in Case 2 we have v₂ < i < u₂, so
+                  -- v₂ < 4 < u₂. And u₁ < j = 2 < v₁. So u₁ < 2. And i < u₁
+                  -- would be 4 < u₁ < 2, impossible.
+                  -- AHA! In case i < j with Case 2 (v₂ < i < u₂) and Case 1
+                  -- (u₁ < j < v₁): i < j and u₁ < j and i < u₁ means i < u₁ < j.
+                  -- v₂ < i, so v₂ < i < u₁ < j. Now u₂ > i, so u₂ > i.
+                  -- Could u₂ be between j and v₁? u₂ > i. If u₂ < j: i < u₂ < j.
+                  -- Then we have v₂ < i < u₁ < j and v₂ < i < u₂ < j. All above v₂.
+                  -- Also v₁ > j. Where is u₂ relative to u₁, v₁?
+                  -- Actually, I realize the problem:
+                  -- In this case 2 scenario where i < u₁ and v₂ < i:
+                  -- v₂ < i < u₁. Since u₁ ∉ S and v₂ ∉ S:
+                  -- If v₂ < u₁, can we check convexity?
+                  -- v₂ b-side, u₁ a-side. v₂ could be between two b-side vertices.
+                  -- b-side: v₁ > j > u₁ > i > v₂. v₂ < ... < v₁.
+                  -- No a-side vertex between v₂ and v₁ (both b-side).
+                  -- What if u₁ is between v₂ and v₁?
+                  -- v₂ < i < u₁ < j < v₁. u₁ between v₂ and v₁ (b-side).
+                  -- convex_b(v₂, v₁, u₁)! v₂ < u₁ < v₁.
+                  -- But wait: we need v₂ < u₁ < v₁ and u₁ ∉ S.
+                  -- v₂ < u₁: ✓ (v₂ < i < u₁)
+                  -- u₁ < v₁: ✓ (u₁ < j < v₁)
+                  -- YES! convex_b gives the contradiction!
+                  exact convex_b hv₂S hv₁S hu₁S hsc_v₂b hsc_v₁b hsc_au₁
+                    (lt_trans hv₂i hiu₁) (lt_trans hu₁j hjv₁)
+              · -- j < i: v₂ < j < i, u₁ < j
+                -- u₂ > i > j > u₁: u₁ < j, u₂ > i > j.
+                -- v₂ < j, v₁ > j.
+                -- All we need: u₁ < j < v₁ and v₂ < j < u₂.
+                -- v₂ < u₁? Or u₁ < v₂? v₂ < i? No: v₂ < i from case I2.
+                -- v₂ < i but j < i, so v₂ could be > j or < j.
+                -- We know v₂ < i and j < i but v₂ vs j unknown.
+                rcases lt_or_gt_of_ne (fun h : v₂ = j => hv₂S (h ▸ hjS))
+                  with hv₂j | hjv₂
+                · -- v₂ < j: v₂ < j, u₁ < j.
+                  -- hClosed.2(v₂ < j, u₁ < j, v₂ ≠ u₁, G.Adj v₂ j?, G.Adj u₁ j)
+                  -- Need G.Adj v₂ j. v₂ < i and j < i. v₂ < j < i.
+                  -- closedGraph_adj_between on G.Adj v₂ i (v₂ < i):
+                  -- G.Adj v₂ j (v₂ < j ≤ i, well j < i so j ≤ i-1 < i,
+                  -- actually j.val < i.val so j ≤ i is Fin.le from j < i).
+                  have hadj_v₂j : G.Adj v₂ j :=
+                    closedGraph_adj_between hClosed hConn hadj_v₂i hv₂i j hv₂j
+                      (le_of_lt hji)
+                  have hu₁v₂_ne : u₁ ≠ v₂ := fun h =>
+                    hnotsc_S (hsc_au₁.trans (h ▸ hsc_v₂b))
+                  -- hClosed.2: u₁ < j, v₂ < j, u₁ ≠ v₂, G.Adj u₁ j, G.Adj v₂ j
+                  -- → G.Adj u₁ v₂
+                  exact edge_contra hu₁S hv₂S hsc_au₁ hsc_v₂b
+                    (hClosed.2 hu₁j hv₂j hu₁v₂_ne hadj_u₁j hadj_v₂j)
+                · -- j < v₂ < i: v₂ between u₁ and u₂?
+                  -- u₁ < j < v₂ < i < u₂.
+                  -- u₁ (a-side) between v₂ and v₁?
+                  -- u₁ < j < v₂. So u₁ < v₂. And v₁ > j > u₁.
+                  -- convex_b(hv₂S... ): v₁ > j. u₁ < j < v₂.
+                  -- u₁ between v₂ and v₁? Need v₂ < u₁ or u₁ < v₂.
+                  -- u₁ < j < v₂. So u₁ < v₂. u₁ < v₁ (since u₁ < j < v₁).
+                  -- Is u₁ between v₂ and v₁? No: u₁ < v₂ < v₁, so u₁ is
+                  -- below both.
+                  -- What about u₂? u₂ > i > v₂ > j > u₁. So u₂ > v₂.
+                  -- v₂ between u₁ and u₂ (a-side)! u₁ < v₂ < u₂ (a-side).
+                  -- convex_a! v₂ (b-side) between u₁, u₂ (a-side).
+                  exact convex_a hu₁S hu₂S hv₂S hsc_au₁ hsc_au₂ hsc_v₂b
+                    (lt_trans hu₁j hjv₂) (lt_trans hv₂i hiu₂)
+            · -- hv₂u₁ : v₂ < u₁. Case 2: u₁ < j < v₁, v₂ < i < u₂, u₂ < v₁.
+              -- v₂ < u₁ < j < v₁: u₁ (a-side) between v₂, v₁ (b-side). convex_b!
+              exact convex_b hv₂S hv₁S hu₁S hsc_v₂b hsc_v₁b hsc_au₁
+                hv₂u₁ (lt_trans hu₁j hjv₁)
+          · -- v₁ < u₂: v₁ (b-side) < u₂ (a-side)
+            -- v₁ > j, u₂ > i, v₂ < i, u₁ < j.
+            -- v₁ < u₂. Is v₁ between a-side vertices?
+            -- a-side: u₁ < j < v₁ < u₂. So u₁ < v₁ < u₂.
+            -- convex_a: v₁ (b-side) between u₁ and u₂ (a-side).
+            exact convex_a hu₁S hu₂S hv₁S hsc_au₁ hsc_au₂ hsc_v₁b
+              (lt_trans hu₁j hjv₁) hv₁u₂
+        · -- Case 3: v₁ < j < u₁, u₂ < i < v₂
+          -- a-side: u₁ (above j), u₂ (below i); b-side: v₁ (below j), v₂ (above i)
+          rcases lt_or_gt_of_ne (fun h : u₂ = v₁ =>
+            hnotsc_S (hsc_au₂.trans (h ▸ hsc_v₁b))) with hu₂v₁ | hv₁u₂
+          · -- u₂ < v₁: u₂ < v₁ < j
+            -- u₁ > j, v₂ > i. v₁ < j < u₁ and u₂ < i < v₂.
+            -- Is u₂ between v₁ and v₂?
+            -- v₁ < j and u₂ < i. If v₁ > u₂ or v₁ < u₂...
+            -- u₂ < v₁ (this branch). v₂ > i. v₁ < j.
+            -- v₁ < j. u₁ > j. v₂ > i. u₂ < i.
+            -- Position: u₂ < i, u₂ < v₁ < j < u₁, v₂ > i.
+            rcases lt_or_gt_of_ne (Ne.symm hij) with hij | hji
+            · -- i < j: u₂ < i < j.
+              -- u₂ < v₁ < j. v₁ < j and i < j. v₁ vs i?
+              -- If v₁ < i: u₂ < v₁ < i < j < u₁.
+              -- v₁ (b-side) between u₂ and u₁ (a-side). convex_a.
+              -- If v₁ > i: u₂ < i < v₁ < j < u₁.
+              -- u₂ (a-side) between v₂ and v₁? v₂ > i and v₁ > i.
+              -- But u₂ < i < both v₁ and v₂. No interleaving.
+              -- If v₁ = i: impossible (v₁ ∉ S, i ∈ S).
+              rcases lt_or_gt_of_ne (fun h : v₁ = i => hv₁S (h ▸ hiS)) with
+                hv₁i | hiv₁
+              · -- v₁ < i: u₂ < v₁ < i. convex_a(u₂, u₁, v₁)
+                exact convex_a hu₂S hu₁S hv₁S hsc_au₂ hsc_au₁ hsc_v₁b
+                  hu₂v₁ (lt_trans hv₁i (lt_trans hij hju₁))
+              · -- i < v₁ < j: u₂ < i < v₁ < j < u₁
+                -- adj_of_gap(u₂, i, v₁, ?) — no, need G.Adj u₂ v₁.
+                -- Actually closedGraph_adj_between on G.Adj u₂ i is too short.
+                -- Try: hClosed.2(u₂ < v₁, i < v₁, u₂ ≠ i, G.Adj u₂ v₁?, G.Adj i v₁?)
+                -- Don't have either.
+                -- adj_of_gap(u₂, i, v₂, v₁): u₂ < i < v₂, G.Adj u₂ v₂? No.
+                -- Hmm. closedGraph_adj_between on G.Adj i v₂ (i < v₂):
+                -- G.Adj i c for i < c ≤ v₂. If v₁ ≤ v₂: G.Adj i v₁.
+                -- Then hClosed.2(u₂ < v₁, i < v₁, u₂ ≠ i,
+                --   G.Adj u₂ v₁? ... still need G.Adj u₂ v₁.
+                -- OK use hClosed.1: u₂ < i, u₂ < v₁ (since u₂ < v₁ in this branch),
+                -- i ≠ v₁, G.Adj u₂ i (hadj_u₂i), G.Adj u₂ v₁?
+                -- Still circular.
+                -- Different approach: convex_b?
+                -- v₁ < j < u₁, so u₁ between v₁ and v₂?
+                -- v₂ > i and u₁ > j > v₁. If u₁ < v₂:
+                -- v₁ < u₁ < v₂. convex_b(v₁, v₂, u₁): u₁ a-side between v₁, v₂ b-side.
+                -- v₁ < u₁ ✓ (v₁ < j < u₁). u₁ < v₂? Need to check.
+                rcases lt_or_gt_of_ne (fun h : u₁ = v₂ =>
+                  hnotsc_S (hsc_au₁.trans (h ▸ hsc_v₂b))) with hu₁v₂ | hv₂u₁
+                · -- u₁ < v₂: v₁ < u₁ < v₂. convex_b!
+                  exact convex_b hv₁S hv₂S hu₁S hsc_v₁b hsc_v₂b hsc_au₁
+                    (lt_trans hv₁j hju₁) hu₁v₂
+                · -- v₂ < u₁: v₂ > i and u₁ > j > i. So v₂ < u₁.
+                  -- v₂ between u₂ and u₁? u₂ < i < v₂ < u₁ (v₂ > i, v₂ < u₁).
+                  -- convex_a(u₂, u₁, v₂): u₂ < v₂ < u₁.
+                  exact convex_a hu₂S hu₁S hv₂S hsc_au₂ hsc_au₁ hsc_v₂b
+                    (lt_trans hu₂i hiv₂) hv₂u₁
+            · -- j < i: v₁ < j < i, u₂ < i, u₁ > j, v₂ > i
+              -- u₂ < v₁ < j < i. u₁ > j.
+              rcases lt_or_gt_of_ne (fun h : u₁ = i => hu₁S (h ▸ hiS)) with
+                hu₁i | hiu₁
+              · -- u₁ < i: j < u₁ < i. u₂ < v₁ < j < u₁ < i.
+                -- v₁ between u₂ and u₁: convex_a.
+                exact convex_a hu₂S hu₁S hv₁S hsc_au₂ hsc_au₁ hsc_v₁b
+                  hu₂v₁ (lt_trans hv₁j hju₁)
+              · -- u₁ > i: v₁ < j < i < u₁.
+                -- adj_of_gap(u₂, j, i, v₁)?
+                -- u₂ < j? u₂ < v₁ < j. Yes, u₂ < v₁ < j.
+                -- adj_of_gap(u₂, j, i, v₁):
+                -- u₂ < j < i, G.Adj u₂ i (hadj_u₂i), j < v₁? No, v₁ < j.
+                -- Hmm, v₁ < j, so G.Adj j v₁ → j > v₁.
+                -- We want q = v₁ with j < v₁? No, v₁ < j.
+                -- Different pivot: use G.Adj i v₂ (i < v₂) and connect u₂ to v₂.
+                -- adj_of_gap(u₂, j, i, v₂):
+                -- u₂ < j (u₂ < v₁ < j ✓), j < i (✓), G.Adj u₂ i (hadj_u₂i),
+                -- j < v₂? v₂ > i > j. Yes.
+                -- G.Adj j v₂: from closedGraph_adj_between on G.Adj j v₁?
+                -- No: v₁ < j, so G.Adj v₁ j with v₁ < j, i.e., G.Adj j v₁ reversed.
+                -- closedGraph_adj_between on G.Adj v₁ j (v₁ < j)? No, it gives
+                -- G.Adj v₁ c for v₁ < c ≤ j, not G.Adj j c.
+                -- Hmm. G.Adj j v₂: j < v₂ (j < i < v₂).
+                -- Do we have an edge from j to something > j? G.Adj u₁ j with u₁ > j
+                -- means G.Adj j u₁. From closedGraph_adj_between on G.Adj j u₁ (j < u₁):
+                -- G.Adj j c for j < c ≤ u₁. If v₂ ≤ u₁: G.Adj j v₂.
+                -- v₂ > i and u₁ > i. v₂ vs u₁?
+                rcases lt_or_gt_of_ne (fun h : v₂ = u₁ =>
+                  hnotsc_S (hsc_au₁.trans (h.symm ▸ hsc_v₂b))) with hv₂u₁ | hu₁v₂
+                · -- v₂ < u₁: G.Adj j v₂ from closedGraph_adj_between on G.Adj j u₁.
+                  have hadj_ju₁ : G.Adj j u₁ := hadj_u₁j.symm
+                  have hadj_jv₂ := closedGraph_adj_between hClosed hConn
+                    hadj_ju₁ hju₁ v₂ (lt_trans hji hiv₂) hv₂u₁.le
+                  -- adj_of_gap(u₂, j, u₁, v₂) or directly:
+                  -- hClosed.2: u₂ < j (u₂ < v₁ < j), v₂ < ??? no.
+                  -- Actually: we have G.Adj u₂ i (u₂ < i) and G.Adj j v₂ (j < v₂).
+                  -- adj_of_gap(u₂, j, i, v₂):
+                  -- u₂ < j ✓, j < i ✓, G.Adj u₂ i ✓, j < v₂ ✓, G.Adj j v₂ ✓
+                  exact edge_contra hu₂S hv₂S hsc_au₂ hsc_v₂b
+                    (adj_of_gap hClosed hConn hCond
+                      (lt_trans hu₂v₁ hv₁j) hji hadj_u₂i
+                      (lt_trans hji hiv₂) hadj_jv₂)
+                · -- u₁ < v₂: v₁ < j < i < u₁ < v₂.
+                  -- u₁ between v₁ and v₂: convex_b!
+                  exact convex_b hv₁S hv₂S hu₁S hsc_v₁b hsc_v₂b hsc_au₁
+                    (lt_trans hv₁j hju₁) hu₁v₂
+          · -- v₁ > u₂: u₂ < i and v₁ < j.
+            -- v₁ < j < u₁ and u₂ < i < v₂.
+            -- u₂ > v₁: u₂ > v₁ > ... wait, this branch is hv₁u₂ : v₁ > u₂? No!
+            -- rcases ... with hu₂v₁ | hv₁u₂. hv₁u₂ means v₁ > u₂? Let me check.
+            -- lt_or_gt_of_ne gives .inl (u₂ < v₁) or .inr (u₂ > v₁).
+            -- So hv₁u₂ : u₂ > v₁. Confusing name. Let me re-read.
+            -- Actually: rcases lt_or_gt_of_ne ... with hu₂v₁ | hv₁u₂
+            -- lt_or_gt_of_ne (h : u₂ ≠ v₁) gives u₂ < v₁ or u₂ > v₁.
+            -- .inl = u₂ < v₁ (named hu₂v₁)
+            -- .inr = u₂ > v₁ (named hv₁u₂ : v₁ < u₂)
+            -- Wait, lt_or_gt_of_ne h gives h.lt_or_lt which is a < b ∨ b < a.
+            -- For Fin, lt_or_gt_of_ne (h : a ≠ b) gives a < b ∨ b < a.
+            -- So .inr is v₁ < u₂.
+            -- So hv₁u₂ : v₁ < u₂. Good.
+            -- v₁ < j < u₁ and v₁ < u₂ < i < v₂.
+            -- v₁ < u₂: u₂ > v₁. If u₂ > j:
+            rcases lt_or_gt_of_ne (fun h : u₂ = j => hu₂S (h ▸ hjS)) with
+              hu₂j | hju₂
+            · -- u₂ < j: v₁ < u₂ < j < u₁. u₂ between v₁ and v₂?
+              -- v₂ > i and u₂ < j. If i < j: u₂ < i < j (since u₂ < i and i < j).
+              -- v₂ > i. u₂ < i < v₂. Is u₂ between v₁ and v₂?
+              -- v₁ < u₂ and u₂ < v₂ (since u₂ < i < v₂).
+              -- convex_b(v₁, v₂, u₂): u₂ a-side between v₁, v₂ b-side. ✓
+              exact convex_b hv₁S hv₂S hu₂S hsc_v₁b hsc_v₂b hsc_au₂
+                hv₁u₂ (lt_trans hu₂i hiv₂)
+            · -- j < u₂: u₂ > j. v₁ < j < u₂ < i < v₂. u₁ > j.
+              -- u₁ vs u₂: both a-side, both > j. u₁ > j and u₂ > j.
+              -- u₂ < i < v₂ and u₁ > j. If u₁ > i:
+              -- v₁ < j < u₂ < i < v₂ and u₁ > i.
+              -- If u₁ < v₂: convex_b(v₁, v₂, u₁)? v₁ < u₁? v₁ < j < u₁. u₁ < v₂. ✓
+              -- convex_b!
+              rcases lt_or_gt_of_ne (fun h : u₁ = v₂ =>
+                hnotsc_S (hsc_au₁.trans (h ▸ hsc_v₂b))) with hu₁v₂ | hv₂u₁
+              · exact convex_b hv₁S hv₂S hu₁S hsc_v₁b hsc_v₂b hsc_au₁
+                  (lt_trans hv₁j hju₁) hu₁v₂
+              · -- v₂ < u₁: v₂ between u₂ and u₁? u₂ < i < v₂ and u₁ > v₂ > i > u₂?
+                -- Wait u₂ > j and u₁ > j. u₂ < i. v₂ > i. u₁ > v₂? v₂ < u₁.
+                -- u₂ < i < v₂ < u₁. convex_a(u₂, u₁, v₂)!
+                exact convex_a hu₂S hu₁S hv₂S hsc_au₂ hsc_au₁ hsc_v₂b
+                  (lt_trans hu₂i hiv₂) hv₂u₁
+        · -- Case 4: v₁ < j < u₁, v₂ < i < u₂
+          -- a-side: u₁ (above j), u₂ (above i); b-side: v₁ (below j), v₂ (below i)
+          -- In every sub-case, use adj_of_gap or convexity.
+          rcases lt_or_gt_of_ne (Ne.symm hij) with hij | hji
+          · -- i < j:
+            -- v₂ < i < j, v₁ < j. adj_of_gap(v₁, i, j, u₂):
+            -- Need v₁ < i. v₁ < j and v₂ < i. Is v₁ < i?
+            rcases lt_or_gt_of_ne (fun h : v₁ = i => hv₁S (h ▸ hiS)) with hv₁i | hiv₁
+            · -- v₁ < i: adj_of_gap(v₁, i, j, u₂)
+              exact edge_contra hu₂S hv₁S hsc_au₂ hsc_v₁b
+                (adj_of_gap hClosed hConn hCond hv₁i hij hadj_v₁j hiu₂
+                  hadj_u₂i.symm).symm
+            · -- i < v₁ < j: v₂ < i < v₁ < j < u₁.
+              -- u₂ > i. Is u₂ between v₁ and v₂? v₂ < i < u₂ and v₁ > i.
+              -- If u₂ < v₁: v₂ < u₂ < v₁. convex_b(v₂, v₁, u₂)!
+              -- If u₂ > v₁: i < v₁ < u₂, and j < u₁.
+              --   v₁ < j and v₁ < u₂. hClosed.2(v₁ < j, v₂ < j (v₂ < i < j),
+              --   no, try adj_of_gap.
+              rcases lt_or_gt_of_ne (fun h : u₂ = v₁ =>
+                hnotsc_S (hsc_au₂.trans (h ▸ hsc_v₁b))) with hu₂v₁ | hv₁u₂
+              · -- u₂ < v₁: convex_b(v₂, v₁, u₂). v₂ < i < u₂ (hiu₂), u₂ < v₁ (hu₂v₁).
+                -- Wait v₂ < u₂ < v₁. Need v₂ < u₂. v₂ < i < u₂ ✓.
+                exact convex_b hv₂S hv₁S hu₂S hsc_v₂b hsc_v₁b hsc_au₂
+                  (lt_trans hv₂i hiu₂) hu₂v₁
+              · -- v₁ < u₂: i < v₁ < u₂. Also v₁ < j < u₁.
+                -- adj_of_gap(v₁, i, j, u₂)? v₁ > i, so v₁ < i is false. Can't.
+                -- Try hClosed.2: v₁ < j, v₂ < j (v₂ < i < j), v₁ ≠ v₂,
+                -- G.Adj v₁ j, G.Adj v₂ j? Need G.Adj v₂ j.
+                -- closedGraph_adj_between on G.Adj v₂ i (v₂ < i):
+                -- G.Adj v₂ c for v₂ < c ≤ i. j > i, can't reach j.
+                -- Try: closedGraph_adj_between on G.Adj i u₂ (i < u₂):
+                -- G.Adj i v₁ if i < v₁ ≤ u₂. hiv₁ ✓, hv₁u₂.le ✓.
+                -- Then hClosed.1(i < v₁, i < u₂, v₁ ≠ u₂, G.Adj i v₁, G.Adj i u₂)
+                -- → G.Adj v₁ u₂. edge_contra!
+                have hadj_iv₁ := closedGraph_adj_between hClosed hConn
+                  hadj_u₂i.symm hiu₂ v₁ hiv₁ hv₁u₂.le
+                exact edge_contra hu₂S hv₁S hsc_au₂ hsc_v₁b
+                  (hClosed.1 hiv₁ hiu₂ (fun h : v₁ = u₂ =>
+                    hnotsc_S (hsc_au₂.trans (h ▸ hsc_v₁b)))
+                    hadj_iv₁ hadj_u₂i.symm).symm
+          · -- j < i:
+            -- v₁ < j < i, v₂ < i. adj_of_gap(v₂, j, i, u₁):
+            -- Need v₂ < j. v₂ < i and j < i. v₁ < j.
+            rcases lt_or_gt_of_ne (fun h : v₂ = j => hv₂S (h ▸ hjS)) with hv₂j | hjv₂
+            · -- v₂ < j: adj_of_gap(v₂, j, i, u₁)
+              exact edge_contra hu₁S hv₂S hsc_au₁ hsc_v₂b
+                (adj_of_gap hClosed hConn hCond hv₂j hji hadj_v₂i hju₁
+                  hadj_u₁j.symm).symm
+            · -- j < v₂ < i: v₁ < j < v₂ < i < u₂.
+              -- u₁ > j. Is u₁ between v₂ and v₁? v₁ < j < u₁ and u₁ vs v₂?
+              rcases lt_or_gt_of_ne (fun h : u₁ = v₂ =>
+                hnotsc_S (hsc_au₁.trans (h ▸ hsc_v₂b))) with hu₁v₂ | hv₂u₁
+              · -- u₁ < v₂: v₁ < u₁ < v₂. convex_b(v₁, v₂, u₁)!
+                exact convex_b hv₁S hv₂S hu₁S hsc_v₁b hsc_v₂b hsc_au₁
+                  (lt_trans hv₁j hju₁) hu₁v₂
+              · -- v₂ < u₁: j < v₂ < u₁. Also j < u₁.
+                -- closedGraph_adj_between on G.Adj j u₁ (j < u₁):
+                -- G.Adj j v₂ (j < v₂ ≤ u₁, hjv₂ ✓, hv₂u₁.le ✓).
+                -- Then hClosed.1(j < v₂, j < u₁, v₂ ≠ u₁, G.Adj j v₂, G.Adj j u₁)
+                -- → G.Adj v₂ u₁. edge_contra!
+                have hadj_jv₂ := closedGraph_adj_between hClosed hConn
+                  hadj_u₁j.symm hju₁ v₂ hjv₂ hv₂u₁.le
+                exact edge_contra hu₁S hv₂S hsc_au₁ hsc_v₂b
+                  (hClosed.1 hjv₂ hju₁ (fun h : v₂ = u₁ =>
+                    hnotsc_S (hsc_au₁.trans (h ▸ hsc_v₂b)))
+                    hadj_jv₂ hadj_u₁j.symm).symm
+      · -- i ∉ S: S.erase i = S, trivial
+        rwa [Finset.erase_eq_of_notMem hiS]
     -- Apply the general componentCount lemma
     exact componentCount_lt_of_merged G (S.erase i) j hjSi haSi hbSi hsc_eij hnotsc_Si
 

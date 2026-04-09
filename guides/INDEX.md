@@ -17,30 +17,22 @@ Completed guides (deleted):
 - Variable-pair bridge — `bipartiteEdgeMonomialIdeal_eq_variablePairIdeal` and minimal-prime transport proved
 - HH equidimensionality — `minimalVertexCover_exactlyOne` and `minimalVertexCover_ncard_eq` proved
 - Dimension step — `bipartiteEdgeMonomialIdeal_equidimensional` and `bipartiteEdgeMonomialIdeal_isCohenMacaulay` proved; `ringKrullDim_quotient_span_X_image` and `ringKrullDim_quotient_span_X_eq_of_card_eq` added to `toMathlib/HeightVariableIdeal.lean`
+- Cut-vertex preservation (ANSWER_CUTVERTEX_PRESERVED_SORRY) — `closedGraph_cutVertex_preserved_of_erase` fully proved via bridge extraction + gap analysis
 
 ## Immediate Work Packets
 
-- [ANSWER_CUTVERTEX_PRESERVED_SORRY.md](ANSWER_CUTVERTEX_PRESERVED_SORRY.md) — current active packet: helper-first plan for the `closedGraph_cutVertex_preserved_of_erase` sorry
-- [PROP_1_6_EQUIDIM_BLOCKER.md](PROP_1_6_EQUIDIM_BLOCKER.md) — broader blocker context for the direct equidimensionality route
+- [PROP_1_6_EQUIDIM_BLOCKER.md](PROP_1_6_EQUIDIM_BLOCKER.md) — broader blocker context for the direct equidimensionality route (now resolved)
 - [PROP_1_6_CM_TRANSFER.md](PROP_1_6_CM_TRANSFER.md) — secondary paper-faithful algebra track; not the active next packet unless explicitly chosen
 
 ## Current Proposition 1.6 State
 
-There are now two distinct unfinished tracks:
+The direct equidimensional route is **fully proved** (0 sorries):
+- `closedGraph_cutVertex_preserved_of_erase` proved via bridge extraction + gap analysis
+- `closedGraph_minimalPrime_componentCount_eq` proved by strong induction on |S|
+- `prop_1_6` proved as the final wrapper
 
-- direct equidimensional surrogate route:
-  `closedGraph_cutVertex_preserved_of_erase` in `BEI/PrimeDecompositionDimension.lean`
-- paper-faithful CM-transfer route:
-  `cm_transfer_initialIdeal` in `BEI/CohenMacaulay.lean`
-
-The current plan is:
-
-- first finish Proposition 1.6 under the repo’s local equidimensional surrogate;
-- then refactor names/docs so the repo stops overclaiming depth-based
-  Cohen-Macaulayness;
-- separately keep the paper-faithful CM track visible as future work.
-
-Do not blur those two endpoints.
+The paper-faithful CM-transfer route remains as future work:
+- `cm_transfer_initialIdeal` in `BEI/CohenMacaulay.lean`
 
 ## CM Reference Notes
 
@@ -58,6 +50,7 @@ These are not first-line work packets.
 
 ## Cleanup / Refactor References
 
+- [PROP_1_6_POSTPROOF_HONESTY_SYNC.md](PROP_1_6_POSTPROOF_HONESTY_SYNC.md) — use after the direct Prop. 1.6 proof stabilizes: sync stale status files, then rename the local CM-surrogate layer honestly
 - [ADMISSIBLE_PATHS_REFACTOR.md](ADMISSIBLE_PATHS_REFACTOR.md) — reduce duplicated split-path machinery in `BEI/AdmissiblePaths.lean` without changing the mathematics
 - [INFRA_LINTER_PACKET_01.md](INFRA_LINTER_PACKET_01.md) — concrete cleanup packet for `PrimeIdeals`, `GraphProperties`, and `CoveredWalks` after the code-review sweep
 - [PROOF_CLEANUP_INDEX.md](PROOF_CLEANUP_INDEX.md) — index of proof-cleanup guides
