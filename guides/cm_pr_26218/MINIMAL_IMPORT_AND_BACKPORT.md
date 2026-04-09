@@ -1,12 +1,5 @@
 # Guide: Minimal Import and Backport from mathlib PR #26218
 
-## Historical note
-
-This guide predates the equidim honesty refactor. Current local surrogate names in the
-repo use `Equidim` rather than `CohenMacaulay`. References below to
-`BEI/CohenMacaulay.lean` and `toMathlib/CohenMacaulay/Defs.lean` should be read as
-historical context for the pre-refactor state.
-
 ## Preserved task
 
 There is a mathlib pull request for Cohen–Macaulay infrastructure, referenced in
@@ -32,13 +25,9 @@ via:
 - [lean-toolchain](/home/tom/BEI-lean/lean-toolchain)
 - [lakefile.toml](/home/tom/BEI-lean/lakefile.toml)
 
-The CM branch in this repo is **not** currently honest formalization:
-
-- [CohenMacaulay.lean](/home/tom/BEI-lean/BEI/CohenMacaulay.lean) still defines
-  `IsCohenMacaulay` by `sorry`.
-
-So the goal here is to replace placeholder foundations with real code **without**
-needlessly destabilizing the rest of the project.
+The equidimensional surrogate track is now complete, but the paper's actual
+Cohen–Macaulay track is still open. The goal here is to add real CM foundations
+without needlessly destabilizing the rest of the project.
 
 
 ## Core policy
@@ -68,7 +57,8 @@ Potentially useful:
 - the actual `IsCohenMacaulay` definition;
 - any prerequisite definitions it depends on, if the dependency footprint is small.
 
-This is the most valuable slice because it replaces the fake placeholder.
+This is the most valuable slice because it gives the repo a real CM layer rather than
+only the equidimensional surrogate.
 
 ### Layer 2: immediate consequences actually needed here
 
@@ -152,13 +142,9 @@ Do not backport these unless the project has explicitly decided to migrate.
 
 Do **not** paste imported mathlib PR code directly into BEI theorem files.
 
-Instead, create a clearly marked local foundation area, for example:
+Instead, create a clearly marked local foundation area:
 
 - `toMathlib/CohenMacaulay/`
-
-or, if you want stronger separation,
-
-- `localMathlib/CohenMacaulay/`
 
 Recommended file split:
 
@@ -199,9 +185,9 @@ Do not replace the placeholder branch all at once.
 Recommended order:
 
 1. import the real CM definition;
-2. replace the placeholder `IsCohenMacaulay := sorry`;
-3. get the project building again;
-4. only then import one needed theorem at a time.
+2. get the project building again;
+3. only then import one needed theorem at a time;
+4. only after that reconnect the paper-faithful Proposition 1.6 route.
 
 This ensures you know which imported theorem causes breakage.
 
