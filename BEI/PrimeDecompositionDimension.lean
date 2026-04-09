@@ -555,17 +555,18 @@ private theorem ringKrullDim_quotQuot_eq
   rw [← hmap_eq]
   exact ringKrullDim_eq_of_ringEquiv (DoubleQuot.quotQuotEquivQuotOfLE hJQ)
 
-/-! ## Corollary 3.4: Cohen-Macaulay implies dimension equality -/
+/-! ## Equidimensional variant of Corollary 3.4 -/
 
 /--
-**Corollary 3.4** (Herzog et al. 2010): If `K[x,y]/J_G` is Cohen-Macaulay, then
+Direct equidimensional surrogate variant of Corollary 3.4: if
+`K[x,y]/J_G` is equidimensional in the local BEI sense, then
   `dim(K[x,y]/J_G) = |V| + c(G)`
 where `c(G)` is the number of connected components of G.
 
-Reference: Herzog et al. (2010), Corollary 3.4.
+This is not the full depth-based Cohen-Macaulay statement from the paper.
 -/
-theorem corollary_3_4 (G : SimpleGraph V)
-    (hCM : IsCohenMacaulay (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G)) :
+theorem corollary_3_4_equidim (G : SimpleGraph V)
+    (hEq : IsEquidim (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G)) :
     ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) =
     Fintype.card V + componentCount G ∅ := by
   set J := binomialEdgeIdeal (K := K) G
@@ -579,7 +580,7 @@ theorem corollary_3_4 (G : SimpleGraph V)
     obtain ⟨P', hP'min, rfl⟩ := hP
     obtain ⟨Q', hQ'min, rfl⟩ := hQ
     rw [← ringKrullDim_quotQuot_eq J P', ← ringKrullDim_quotQuot_eq J Q']
-    exact hCM.equidimensional P' Q' hP'min hQ'min
+    exact hEq.equidimensional P' Q' hP'min hQ'min
   -- Step 2: P_∅ is a minimal prime (T ≤ ∅ forces T = ∅ by prop_3_8)
   have hP0_min : primeComponent (K := K) G ∅ ∈ J.minimalPrimes := by
     rw [minimalPrimes_characterization]
@@ -600,17 +601,17 @@ theorem corollary_3_4 (G : SimpleGraph V)
     (iSup₂_le fun P hP => (hall P hP).le)
     (le_iSup₂_of_le _ hP0_min hdim0.ge)
 
-/-! ## CM from equidimensional minimal primes -/
+/-! ## Building the local equidimensional surrogate from minimal primes -/
 
 /-- If all `Ideal.minimalPrimes` of `J` have the same quotient dimension, then `R ⧸ J`
-is Cohen–Macaulay (under the equidimensionality definition). -/
-theorem isCohenMacaulay_of_equidim_minimalPrimes
+is equidimensional in the local surrogate sense. -/
+theorem isEquidim_of_equidim_minimalPrimes
     (J : Ideal (MvPolynomial (BinomialEdgeVars V) K))
     (hequal : ∀ P Q : Ideal (MvPolynomial (BinomialEdgeVars V) K),
       P ∈ J.minimalPrimes → Q ∈ J.minimalPrimes →
       ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ P) =
       ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ Q)) :
-    IsCohenMacaulayRing (MvPolynomial (BinomialEdgeVars V) K ⧸ J) where
+    IsEquidimRing (MvPolynomial (BinomialEdgeVars V) K ⧸ J) where
   equidimensional P' Q' hP'min hQ'min := by
     -- Convert: minimalPrimes (R/J) → J.minimalPrimes via comap
     have hP_mem : Ideal.comap (Ideal.Quotient.mk J) P' ∈ J.minimalPrimes := by
@@ -620,7 +621,7 @@ theorem isCohenMacaulay_of_equidim_minimalPrimes
     rw [ringKrullDim_quotQuot_eq J P', ringKrullDim_quotQuot_eq J Q']
     exact hequal _ _ hP_mem hQ_mem
 
-/-! ## Example 1.7(b): Path graph is CM -/
+/-! ## Example 1.7(b): Path graph at the equidimensional surrogate level -/
 
 /-- The path graph on Fin n is connected when n ≥ 1.
 Proof: vertex 0 can reach any vertex k by walking along edges 0-1-2-...-k. -/
@@ -1088,20 +1089,20 @@ private theorem path_minimalPrime_dim_eq (n : ℕ) (G : SimpleGraph (Fin n))
   decreasing_by exact Finset.card_erase_lt_of_mem hiS
 
 /--
-**Example 1.7(b)** (Herzog et al. 2010): The path on `n` vertices (with natural ordering)
-yields a Cohen–Macaulay quotient.
+**Example 1.7(b)** at the equidimensional surrogate level: the path on `n` vertices
+(with natural ordering) yields an equidimensional quotient.
 
 Proof: Every minimal prime `P_S` of `J_G` satisfies `dim(R/P_S) = n + 1`.
 This is because for valid S (non-consecutive interior vertices), removing S from
 the path creates |S| + 1 connected components, so `n - |S| + c(S) = n + 1`.
-Since all minimal primes have equal quotient dimension, `R/J_G` is equidimensional = CM.
+Since all minimal primes have equal quotient dimension, `R/J_G` is equidimensional.
 -/
-theorem path_is_CM (n : ℕ) (G : SimpleGraph (Fin n))
+theorem path_isEquidim (n : ℕ) (G : SimpleGraph (Fin n))
     (hPath : ∀ (i j : Fin n),
       G.Adj i j ↔ (i.val + 1 = j.val ∨ j.val + 1 = i.val)) :
-    IsCohenMacaulay
+    IsEquidim
       (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ binomialEdgeIdeal G) := by
-  apply isCohenMacaulay_of_equidim_minimalPrimes
+  apply isEquidim_of_equidim_minimalPrimes
   intro P Q hP hQ
   -- Every minimal prime is P_S for some S
   have hP' := hP; have hQ' := hQ
@@ -1959,8 +1960,9 @@ private theorem closedGraph_minimalPrime_componentCount_eq
   decreasing_by exact Finset.card_erase_lt_of_mem hiS
 
 /--
-**Proposition 1.6** (Herzog et al. 2010): If `G` is a connected closed graph satisfying
-the interval condition, then `S/J_G` is Cohen–Macaulay.
+Direct equidimensional surrogate variant of Proposition 1.6:
+if `G` is a connected closed graph satisfying the interval condition, then `S/J_G`
+is equidimensional in the local BEI sense.
 
 **Proof** (direct equidimensionality, not the paper's Gröbner degeneration route):
 
@@ -1968,15 +1970,15 @@ For every minimal prime `P_S` of `J_G`, the dimension formula gives
 `dim(R/P_S) = n - |S| + c(S)`. By `closedGraph_minimalPrime_componentCount_eq`,
 `c(S) = |S| + 1` for every minimal-prime set `S`, so `dim(R/P_S) = n + 1` uniformly.
 Since all minimal primes have the same quotient dimension, the quotient ring is
-equidimensional = Cohen–Macaulay (under the local working definition).
+equidimensional in the local surrogate sense.
 -/
-theorem prop_1_6 (n : ℕ) (_hn : 0 < n) (G : SimpleGraph (Fin n))
+theorem prop_1_6_equidim (n : ℕ) (_hn : 0 < n) (G : SimpleGraph (Fin n))
     (hConn : G.Connected)
     (hClosed : IsClosedGraph G)
     (hCond : SatisfiesProp1_6Condition n G) :
-    IsCohenMacaulay
+    IsEquidim
       (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ binomialEdgeIdeal G) := by
-  apply isCohenMacaulay_of_equidim_minimalPrimes
+  apply isEquidim_of_equidim_minimalPrimes
   intro P Q hP hQ
   have hP' := hP; have hQ' := hQ
   rw [minimalPrimes_characterization G] at hP' hQ'
@@ -1993,7 +1995,7 @@ theorem prop_1_6 (n : ℕ) (_hn : 0 < n) (G : SimpleGraph (Fin n))
     SQ.card_le_univ.trans (by simp)
   omega
 
-/-! ## Corollary 3.7 CM branch -/
+/-! ## Corollary 3.7 equidimensional branch -/
 
 /-- In a cycle graph with ≥ 4 vertices, the non-adjacent pair {u,w}
 gives a minimal prime `P_{u,w}` (since both u and w are cut vertices
@@ -2015,21 +2017,22 @@ private lemma cycle_pair_minimalPrime (G : SimpleGraph V) (hCyc : IsCycleGraph G
     omega
 
 /--
-**Corollary 3.7 (CM branch)** (Herzog et al. 2010): For a cycle graph G with |V| ≥ 3,
-`K[x,y]/J_G` is Cohen–Macaulay if and only if `J_G` is prime (equivalently, |V| = 3).
+Direct equidimensional surrogate branch of Corollary 3.7: for a cycle graph `G`
+with `|V| ≥ 3`, the local equidimensional surrogate for `K[x,y]/J_G` holds if and
+only if `J_G` is prime (equivalently, `|V| = 3`).
 
-The forward direction (CM → prime) shows that when |V| ≥ 4, the minimal primes
+The forward direction (equidim → prime) shows that when `|V| ≥ 4`, the minimal primes
 `P_∅` and `P_{u,w}` (for non-adjacent u,w) have quotient dimensions |V|+1 and |V|
-respectively, contradicting CM equidimensionality.
+respectively, contradicting equidimensionality.
 
-The reverse direction (prime → CM) is immediate since prime ideals give domains,
-and domains are CM under our equidimensionality definition.
+The reverse direction (prime → equidim) is immediate since prime ideals give domains,
+and domains are equidimensional under the local surrogate.
 
-Reference: Herzog et al. (2010), Corollary 3.7.
+This is not the full depth-based Cohen-Macaulay branch from the paper.
 -/
-theorem corollary_3_7_CM (G : SimpleGraph V) (hCyc : IsCycleGraph G)
+theorem corollary_3_7_equidim (G : SimpleGraph V) (hCyc : IsCycleGraph G)
     (hn : 3 ≤ Fintype.card V) :
-    IsCohenMacaulay (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) ↔
+    IsEquidim (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) ↔
     (binomialEdgeIdeal (K := K) G).IsPrime := by
   constructor
   · -- CM → prime: by contradiction, |V| ≥ 4 has non-equidimensional minimal primes
@@ -2071,4 +2074,4 @@ theorem corollary_3_7_CM (G : SimpleGraph V) (hCyc : IsCycleGraph G)
   · -- prime → CM: domain is CM
     intro hPrime
     haveI := hPrime
-    exact IsDomain.isCohenMacaulayRing
+    exact IsDomain.isEquidimRing

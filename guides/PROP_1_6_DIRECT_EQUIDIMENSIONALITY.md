@@ -2,36 +2,30 @@
 
 ## Purpose
 
-This guide is the track overview for the direct equidimensional route.
-
-It is no longer the best packet for the next Claude round. The active next packet is:
-
-- [PROP_1_6_EQUIDIM_BLOCKER.md](PROP_1_6_EQUIDIM_BLOCKER.md)
-
-Use this file for the big picture only.
+This guide is now a historical overview for the direct equidimensional route, which has
+already landed.
 
 
 ## Preserved context
 
-Current local CM definition:
+Current local surrogate definition:
 
-- in `toMathlib/CohenMacaulay/Defs.lean`, `IsCohenMacaulayRing` means
+- in `toMathlib/Equidim/Defs.lean`, `IsEquidimRing` means
   equidimensionality of minimal primes, not the full depth-based definition
 
-So this guide is the direct fallback route:
+So this guide records the direct fallback route that was taken:
 
 - do **not** try to formalize the full Gröbner flat-deformation theorem
-- instead, finish Proposition 1.6 directly under the repo’s current local CM
+- instead, finish Proposition 1.6 directly under the repo’s current local equidimensional
   definition
 
 Current live code state:
 
 - the direct route now lives in
   `/home/tom/BEI-lean/BEI/PrimeDecompositionDimension.lean`
-- its active blocker is
-  `closedGraph_cutVertex_preserved_of_erase`
+- the final theorem is `prop_1_6_equidim`
 - the paper-faithful transfer route in
-  `/home/tom/BEI-lean/BEI/CohenMacaulay.lean`
+  `/home/tom/BEI-lean/BEI/Equidim.lean`
   remains a separate secondary track
 
 
@@ -58,19 +52,19 @@ Then use:
 
 - `minimalPrimes_characterization`
 - `ringKrullDim_quot_primeComponent`
-- `isCohenMacaulay_of_equidim_minimalPrimes`
+- `isEquidim_of_equidim_minimalPrimes`
 
-to prove `prop_1_6` directly.
+to prove `prop_1_6_equidim` directly.
 
 
 ## Why this route is legitimate
 
 This is **not** the paper’s proof. It is a fallback route justified only because
-the repo’s local `IsCohenMacaulayRing` is already defined as equidimensionality.
+the repo’s local `IsEquidimRing` is already defined as equidimensionality.
 
 So the correct endpoint here is:
 
-- an honest proof of the current local theorem `prop_1_6`
+- an honest proof of the current local theorem `prop_1_6_equidim`
 
 This route should **not** be described as a formalization of Eisenbud 15.17 or as
 the paper’s actual Gröbner-degeneration proof.
@@ -81,14 +75,14 @@ the paper’s actual Gröbner-degeneration proof.
 From `BEI/PrimeDecompositionDimension.lean`:
 
 - `ringKrullDim_quot_primeComponent`
-- `isCohenMacaulay_of_equidim_minimalPrimes`
+- `isEquidim_of_equidim_minimalPrimes`
 
 From `BEI/PrimeDecomposition.lean` / `BEI/MinimalPrimes.lean`:
 
 - `minimalPrimes_characterization`
 - `corollary_3_9`
 
-From `BEI/CohenMacaulay.lean`:
+From `BEI/Equidim.lean`:
 
 - `prop_1_6_herzogHibi`
 - `hhEdgeSet_diagonal`
@@ -177,8 +171,8 @@ componentCount G S = S.card + 1
 for every minimal-prime set `S` under the Proposition 1.6 hypotheses.
 
 This is the direct analogue of the path-graph argument already used in
-`path_is_CM`, but now driven by the HH combinatorics already formalized in
-`BEI/CohenMacaulay.lean`.
+`path_isEquidim`, but now driven by the HH combinatorics already formalized in
+`BEI/Equidim.lean`.
 
 
 ### Step 4. Convert to equal quotient dimensions
@@ -191,21 +185,18 @@ ringKrullDim (R ⧸ P_S(G)) = n + 1
 
 for every minimal prime `P_S(G)`.
 
-Then use `isCohenMacaulay_of_equidim_minimalPrimes`.
+Then use `isEquidim_of_equidim_minimalPrimes`.
 
 
-### Step 5. Replace the current sorry-based proof of `prop_1_6`
+### Step 5. Replace the current sorry-based proof of `prop_1_6_equidim`
 
 If the direct route lands, remove `cm_transfer_initialIdeal` from the critical path
 of Proposition 1.6.
 
-Possible outcomes:
+Outcome:
 
-- leave `cm_transfer_initialIdeal` in the file as a clearly deferred theorem, but do
-  not use it in `prop_1_6`; or
-- move it out of the way entirely if that produces a cleaner theorem layer
-
-Do not silently leave a sorry-based lemma on the proof path once a direct proof exists.
+- the direct surrogate theorem `prop_1_6_equidim` is proved;
+- the paper-faithful CM-transfer route remains separate future work.
 
 
 ## Warnings / false routes
@@ -213,7 +204,7 @@ Do not silently leave a sorry-based lemma on the proof path once a direct proof 
 ### Do not claim this proves the paper’s actual Gröbner transfer theorem
 
 It does not. It only closes Proposition 1.6 under the repo’s local working
-definition of `IsCohenMacaulayRing`.
+definition of `IsEquidimRing`.
 
 
 ### Do not try to prove a huge new classification of all closed graphs
@@ -224,7 +215,7 @@ hypotheses.
 
 ### Do not rebuild the HH graph API
 
-Use the already-proved theorems in `BEI/CohenMacaulay.lean`.
+Use the already-proved theorems in `BEI/Equidim.lean`.
 
 
 ### Do not start from scratch on path-style induction
@@ -237,9 +228,8 @@ Exploit those first.
 
 Best outcome:
 
-- a direct proof of `prop_1_6` via `isCohenMacaulay_of_equidim_minimalPrimes`
-- `cm_transfer_initialIdeal` removed from the proof path
-- docs updated to say Proposition 1.6 is proved directly under the local CM definition
+- a direct proof of `prop_1_6_equidim` via `isEquidim_of_equidim_minimalPrimes`
+- docs updated to say the equidimensional surrogate is proved directly
 
 Minimum acceptable outcome:
 
@@ -250,7 +240,7 @@ Minimum acceptable outcome:
 
 ## Files likely involved
 
-- `BEI/CohenMacaulay.lean`
+- `BEI/Equidim.lean`
 - `BEI/PrimeDecompositionDimension.lean`
 - `TODO.md`
 - `FORMALIZATION_MAP.md`

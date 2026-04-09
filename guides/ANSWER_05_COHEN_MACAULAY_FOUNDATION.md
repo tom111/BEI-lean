@@ -16,7 +16,7 @@ The original question asked what foundation, if any, should be built locally:
 
 ## Short answer
 
-Do not build a fake local `IsCohenMacaulay` definition and then use it as if the CM
+Do not build a fake local equidimensional surrogate and then use it as if the CM
 branch were formalized. That would blur the line between real algebra and scaffolding.
 
 The pragmatic choice was:

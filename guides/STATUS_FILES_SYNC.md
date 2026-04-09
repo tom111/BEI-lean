@@ -59,21 +59,23 @@ Do not collapse `Partial`, `Sorry`, and `Blocked` into one bucket.
 
 ## Cohen–Macaulay caution
 
-Do not advertise CM results as proved while `BEI/CohenMacaulay.lean` still defines
-`IsCohenMacaulay` by placeholder. In particular:
+Do not advertise the paper's Cohen–Macaulay results as proved merely because the repo
+now has a local equidimensional surrogate in `BEI/Equidim.lean` and
+`toMathlib/Equidim/Defs.lean`. In particular:
 - Proposition 1.6
 - Corollary 3.4
 - the CM branch of Corollary 3.7
 
-should remain clearly marked as blocked or sorry until the foundations are real.
+should remain clearly marked as partial at the paper level until the real depth-based
+CM foundations are formalized.
 
 ## Current hotspots
 
 As of the current repo state, the status files most need to track:
 - the Corollary 3.3 move to `BEI/PrimeDecompositionDimension.lean`
 - the Theorem 2.1 split between `BEI/GroebnerBasisSPolynomial.lean` and `BEI/GroebnerBasis.lean`
-- the fact that Corollary 3.7 is still only partial
-- the honest CM-blocked state of Proposition 1.6 and Corollary 3.4
+- the fact that the CM-shaped Section 3 results are only partial at the paper level
+- the honest paper-level status of Proposition 1.6 and Corollary 3.4
 
 ## Minimum acceptable practice
 

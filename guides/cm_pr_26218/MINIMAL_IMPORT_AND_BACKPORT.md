@@ -1,5 +1,12 @@
 # Guide: Minimal Import and Backport from mathlib PR #26218
 
+## Historical note
+
+This guide predates the equidim honesty refactor. Current local surrogate names in the
+repo use `Equidim` rather than `CohenMacaulay`. References below to
+`BEI/CohenMacaulay.lean` and `toMathlib/CohenMacaulay/Defs.lean` should be read as
+historical context for the pre-refactor state.
+
 ## Preserved task
 
 There is a mathlib pull request for Cohen–Macaulay infrastructure, referenced in

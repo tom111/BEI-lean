@@ -21,7 +21,7 @@ faithfully the current Lean statements match the paper.
 | Corollary 1.3 | `cor_1_3`, `cor_1_3_connected_forward`, `pathGraph_isClosedGraph` | `BEI/GraphProperties.lean` | Exact | Formalized in the connected-graph form implicit in the paper |
 | Proposition 1.4 | `prop_1_4` | `BEI/GraphProperties.lean` | Equivalent | Directed shortest-path formulation |
 | Proposition 1.5 | `prop_1_5` | `BEI/GraphProperties.lean` | Exact | Unique minimal closed supergraph |
-| Proposition 1.6 | `prop_1_6`, `closedGraph_minimalPrime_componentCount_eq`, `closedGraph_componentCount_le_card_add_one` | `BEI/PrimeDecompositionDimension.lean`, `BEI/CohenMacaulay.lean` | Partial | Direct equidimensional surrogate proved; full depth-based CM statement from the paper still open |
+| Proposition 1.6 | `prop_1_6_equidim`, `closedGraph_minimalPrime_componentCount_eq`, `closedGraph_componentCount_le_card_add_one` | `BEI/PrimeDecompositionDimension.lean`, `BEI/Equidim.lean` | Partial | Direct equidimensional surrogate proved; full depth-based CM statement from the paper still open |
 
 ## Section 2: Reduced Gröbner Basis and Radicality
 
@@ -38,9 +38,9 @@ faithfully the current Lean statements match the paper.
 | Theorem 3.2 | `theorem_3_2` | `BEI/PrimeDecomposition.lean` | Exact | `J_G = ⨅ S, P_S(G)` |
 | Corollary 3.3 | `corollary_3_3` | `BEI/PrimeDecompositionDimension.lean` | Exact | Dimension formula proved directly in the quotient |
 | Corollary 3.3 (lower bound) | `corollary_3_3_lower_bound` | `BEI/PrimeDecompositionDimension.lean` | Exact | `dim ≥ |V| + c(G)` |
-| Corollary 3.4 | `corollary_3_4` | `BEI/PrimeDecompositionDimension.lean` | Exact | CM + `P_∅` minimal prime + equidimensionality |
+| Corollary 3.4 | `corollary_3_4_equidim` | `BEI/PrimeDecompositionDimension.lean` | Partial | Equidimensional surrogate version proved; paper's full CM statement still depends on real CM theory |
 | Proposition 3.6 | `prop_3_6` | `BEI/PrimeDecomposition.lean` | Equivalent | Completeness of components phrased via reachability |
-| Corollary 3.7 | `corollary_3_7`, `corollary_3_7_unmixed`, `corollary_3_7_CM` | `BEI/PrimeDecomposition.lean`, `BEI/MinimalPrimes.lean`, `BEI/PrimeDecompositionDimension.lean` | Exact | All four equivalences proved (prime, unmixed, CM, |V|=3) |
+| Corollary 3.7 | `corollary_3_7`, `corollary_3_7_unmixed`, `corollary_3_7_equidim` | `BEI/PrimeDecomposition.lean`, `BEI/MinimalPrimes.lean`, `BEI/PrimeDecompositionDimension.lean` | Partial | Prime, unmixed, and `|V| = 3` branches are paper-faithful; the CM branch is currently an equidimensional surrogate |
 | Proposition 3.8 | `prop_3_8` | `BEI/MinimalPrimes.lean` | Equivalent | Rephrased using `SameComponent` |
 | Corollary 3.9 | `corollary_3_9` | `BEI/MinimalPrimes.lean` | Equivalent | Rephrased via `IsCutVertexRelative` |
 
@@ -109,11 +109,11 @@ faithfully the current Lean statements match the paper.
 
 - `BEI/GroebnerBasisSPolynomial.lean` now carries the long S-polynomial proof of Theorem 2.1.
 - `BEI/GroebnerBasis.lean` carries reducedness and the paper-facing wrapper.
-- `BEI/PrimeDecompositionDimension.lean` carries Corollary 3.3, Corollary 3.4, `corollary_3_7_CM`, the path CM example, Proposition 1.6, and supporting equidimensionality lemmas.
+- `BEI/PrimeDecompositionDimension.lean` carries Corollary 3.3, the equidimensional surrogate version of Corollary 3.4, `corollary_3_7_equidim`, the path equidimensional example, Proposition 1.6 via the direct equidimensional route, and supporting equidimensionality lemmas.
 - `BEI/PrimeDecomposition.lean` carries Theorem 3.2 and Proposition 3.6.
 - `BEI/CIIdeals.lean` carries the Section 4 binary-output setup, both bridge theorems, and the transferred radicality / prime-decomposition / minimal-prime theorems.
-- `BEI/CohenMacaulay.lean` carries the local CM-surrogate definition wrapper, HH bipartite graph infrastructure, the closed-graph component-count upper bound, and the complete-graph example.
-- `toMathlib/CohenMacaulay/Defs.lean` carries the local working CM definition currently used in the project.
+- `BEI/Equidim.lean` carries the local equidimensional surrogate definition wrapper, HH bipartite graph infrastructure, the closed-graph component-count upper bound, and the complete-graph example.
+- `toMathlib/Equidim/Defs.lean` carries the local working equidimensional definition currently used in the project.
 - `toMathlib/MonomialIdeal.lean` carries `Ideal.IsMonomial`, `MvPolynomial.isPrime_span_X_image_set` (Set version), `Ideal.exists_variable_mem_of_monomial_mem_prime`, `Ideal.IsMonomial.isPrime_iff_eq_span_X_image` (prime monomial ideals = variable ideals), `Ideal.IsMonomial.span_X_image`, `coeff_pow_lexMax`, `Ideal.IsMonomial.radical_isMonomial`, `Ideal.isPrimary_monomial_criterion`, `Ideal.IsMonomial.isPrimary_radical_eq_span_X`, the structural outside-`s` membership lemmas, the general support-extraction lemma `Ideal.not_mem_exists_monomial_notMem`, the converse helper `Ideal.mem_of_mul_mem_of_lexMax_outside`, and the full primary iff `Ideal.IsMonomial.isPrimary_iff`.
 - `toMathlib/SquarefreeMonomialPrimes.lean` carries `variablePairIdeal`, `IsVertexCover`, `IsMinimalVertexCover`, and the complete minimal prime ↔ minimal vertex cover characterization for edge ideals.
 - `toMathlib/HeightVariableIdeal.lean` carries the variable-killing map, the quotient equivalence for variable ideals, and the resulting quotient-dimension formulas.

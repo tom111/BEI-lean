@@ -14,7 +14,7 @@ variable {K : Type*} [Field K]
 variable {V : Type*} [LinearOrder V] [DecidableEq V] [Fintype V]
 
 /-!
-# Rauh's approach to Theorem 2.1 (ARCHIVED)
+# Rauh's approach to Theorem 2.1 (ARCHIVED SUPPLEMENT)
 
 This file contains an alternative proof approach to Theorem 2.1 via Rauh (2013),
 arxiv:1210.7960. The key idea: prove that every nonzero element of J_G has its
@@ -25,7 +25,8 @@ This approach was partially completed but has two remaining sorry's:
 - `exists_walk_outside_interval`: graph connectivity from sub-ideal membership
 - `exists_groebnerElement_from_walk`: degree bound from walk to admissible path
 
-The main file (GroebnerBasis.lean) now uses the direct Herzog S-polynomial approach instead.
+The main paper formalization uses the direct Herzog S-polynomial approach instead.
+This file is kept as supplementary archived code and is not on the main import path.
 -/
 
 noncomputable section

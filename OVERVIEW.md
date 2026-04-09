@@ -12,19 +12,19 @@ The project already formalizes the main algebraic backbone of the paper:
 - Corollary 2.2 on radicality
 - Lemma 3.1 and Theorem 3.2 on the prime components `P_S(G)`
 - Corollary 3.3 on the Krull-dimension formula
-- Corollary 3.4 on the Cohen–Macaulay dimension consequence
+- Corollary 3.4 on the equidimensional surrogate dimension consequence
 - Proposition 3.8 and Corollary 3.9 on minimal primes
-- Corollary 3.7, including the CM branch for cycle graphs
+- Corollary 3.7, including the equidimensional surrogate branch for cycle graphs
 - the Section 4 binary-output CI ideal = BEI bridges and transferred radicality / prime decomposition / minimal-prime results
 
-It also now contains the basic Cohen–Macaulay examples from the paper:
+It also now contains the basic equidimensional surrogate examples corresponding to the paper's Cohen–Macaulay discussion:
 
 - the complete graph case
 - the path graph case
 
 The remaining paper endpoint is concentrated in:
 
-- the full Cohen–Macaulay sufficient-condition theorem of Proposition 1.6
+- the full depth-based Cohen–Macaulay sufficient-condition theorem of Proposition 1.6
 
 
 ## Mathematical Setup
@@ -51,13 +51,16 @@ The main mathematical files are now split roughly as follows:
 - `BEI/Radical.lean` — Corollary 2.2
 - `BEI/PrimeIdeals.lean` — prime components and the height formula
 - `BEI/PrimeDecomposition.lean` — Theorem 3.2 and Proposition 3.6
-- `BEI/PrimeDecompositionDimension.lean` — Corollaries 3.3, 3.4, the CM branch of Corollary 3.7, and the direct equidimensional Proposition 1.6 route
+- `BEI/PrimeDecompositionDimension.lean` — Corollaries 3.3, the equidimensional surrogate version of Corollary 3.4, the equidimensional surrogate branch of Corollary 3.7, and the direct equidimensional Proposition 1.6 route
 - `BEI/MinimalPrimes.lean` — Proposition 3.8, Corollary 3.9, and Corollary 3.7 unmixed branch
 - `BEI/CIIdeals.lean` — Section 4 binary-output CI ideals, both bridge theorems, and transferred radicality / prime decomposition / minimal-prime theorems
-- `BEI/CohenMacaulay.lean` — the HH bipartite-graph infrastructure and the complete-graph CM example
+- `BEI/Equidim.lean` — the local equidimensional surrogate API, HH bipartite-graph infrastructure, and the complete-graph equidimensional example
 
 Generic or backported infrastructure lives in `toMathlib/`, including
-`toMathlib/CohenMacaulay/Defs.lean`.
+`toMathlib/Equidim/Defs.lean`.
+
+Supplementary archived code that is outside the main paper formalization lives in
+`Supplement/`, currently including an alternative Rauh-style route to Theorem 2.1.
 
 
 ## Current Status
@@ -68,7 +71,7 @@ how to finish the remaining paper endpoints cleanly and document them accurately
 At the time of this summary:
 
 - the non-CM Section 3 backbone is in place, including the unmixed branch of Corollary 3.7;
-- the Section 3 CM consequences `corollary_3_4` and `corollary_3_7_CM` are proved over the local equidimensionality-style definition;
+- the Section 3 equidimensional surrogate consequences `corollary_3_4_equidim` and `corollary_3_7_equidim` are proved over the local equidimensional definition;
 - Section 4 now has the binary-output single-statement bridge, specification bridge, and transferred radicality / prime decomposition / minimal-prime theorems in `BEI/CIIdeals.lean`;
 - the direct equidimensional Proposition 1.6 route is now proved with no `sorry`;
 - the remaining paper-level gap is that this still uses the local equidimensional surrogate rather than the paper's full depth-based CM theory.

@@ -1,7 +1,7 @@
 import BEI.PrimeIdeals
 import BEI.GraphProperties
 import BEI.ClosedGraphs
-import toMathlib.CohenMacaulay.Defs
+import toMathlib.Equidim.Defs
 import toMathlib.SquarefreeMonomialPrimes
 import toMathlib.HeightVariableIdeal
 import Mathlib.RingTheory.Ideal.MinimalPrime.Basic
@@ -15,26 +15,26 @@ noncomputable section
 open MvPolynomial SimpleGraph
 
 /-!
-# Cohen-Macaulay rings and binomial edge ideals
+# Equidimensional surrogate theorems for binomial edge ideals
 
-Uses `IsCohenMacaulayRing` from `toMathlib/CohenMacaulay/Defs.lean`, which defines
-CM via equidimensionality (all minimal primes have the same height). This is a
-consequence of the full CM definition (depth = dim), adapted from mathlib PR #26218.
+Uses `IsEquidimRing` from `toMathlib/Equidim/Defs.lean`, the local
+equidimensional surrogate currently used in the BEI project.
 
-Formalizes Proposition 1.6 of Herzog et al. (2010):
-  If G is a connected closed graph satisfying an additional interval condition,
-  then S/J_G is Cohen-Macaulay.
+This file carries:
+
+- the local surrogate API (`IsEquidim`);
+- the Herzog-Hibi bipartite graph setup used in the paper's Proposition 1.6;
+- equidimensional surrogate results on the monomial side.
 
 ## Reference: Herzog et al. (2010), Section 1
 -/
 
--- Re-export for backward compatibility
-abbrev IsCohenMacaulay (R : Type*) [CommRing R] := IsCohenMacaulayRing R
+abbrev IsEquidim (R : Type*) [CommRing R] := IsEquidimRing R
 
-/-- An integral domain is CM: it has a unique minimal prime (⊥),
+/-- An integral domain is equidimensional: it has a unique minimal prime (⊥),
 so the equidimensionality condition holds vacuously. -/
-instance IsDomain.isCohenMacaulayRing {R : Type*} [CommRing R] [IsDomain R] :
-    IsCohenMacaulayRing R where
+instance IsDomain.isEquidimRing {R : Type*} [CommRing R] [IsDomain R] :
+    IsEquidimRing R where
   equidimensional P Q hP hQ := by
     have h := IsDomain.minimalPrimes_eq_singleton_bot (R := R)
     rw [h, Set.mem_singleton_iff] at hP hQ
@@ -90,11 +90,10 @@ theorem prop_1_6_herzogHibi (n : ℕ) (G : SimpleGraph (Fin n))
     HerzogHibiConditions n G :=
   ⟨fun i hi => closedGraph_adj_consecutive hClosed hConn i hi, hCond⟩
 
-/-- Example 1.7(a): The complete graph K_n yields a Cohen-Macaulay quotient.
-The complete graph has J_G = P_∅(G), which is prime, so R/J_G is a domain and
-hence trivially CM (unique minimal prime). -/
-theorem complete_is_CM (n : ℕ) :
-    IsCohenMacaulay
+/-- Example 1.7(a), formalized at the equidimensional surrogate level:
+the complete graph quotient is a domain, hence equidimensional. -/
+theorem complete_isEquidim (n : ℕ) :
+    IsEquidim
       (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸
        binomialEdgeIdeal (⊤ : SimpleGraph (Fin n))) := by
   -- P_∅(K_n) ≤ J_{K_n}: every SameComponent minor is an edge in K_n
@@ -113,7 +112,7 @@ theorem complete_is_CM (n : ℕ) :
   haveI := primeComponent_isPrime (K := K) (⊤ : SimpleGraph (Fin n)) ∅
   exact inferInstance
 
--- Example 1.7(b) (path_is_CM) is proved in PrimeDecompositionDimension.lean
+-- Example 1.7(b) (`path_isEquidim`) is proved in PrimeDecompositionDimension.lean
 -- where the dimension formula and minimal prime characterization are available.
 
 /-! ## Initial ideal description for closed graphs (algebraic side of Prop 1.6) -/
@@ -520,11 +519,11 @@ theorem bipartiteEdgeMonomialIdeal_equidimensional {n : ℕ} {G : SimpleGraph (F
   rw [Set.ncard_eq_toFinset_card' S, Set.ncard_eq_toFinset_card' T] at hncard
   exact_mod_cast hncard
 
-/-- Under HH conditions, the quotient by `bipartiteEdgeMonomialIdeal G` is Cohen–Macaulay
-(equidimensional). -/
-theorem bipartiteEdgeMonomialIdeal_isCohenMacaulay {n : ℕ} {G : SimpleGraph (Fin n)}
+/-- Under HH conditions, the quotient by `bipartiteEdgeMonomialIdeal G` is
+equidimensional in the local surrogate sense. -/
+theorem bipartiteEdgeMonomialIdeal_isEquidim {n : ℕ} {G : SimpleGraph (Fin n)}
     (hHH : HerzogHibiConditions n G) :
-    IsCohenMacaulayRing
+    IsEquidimRing
       (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸
        bipartiteEdgeMonomialIdeal (K := K) G) where
   equidimensional P Q hP hQ := by
@@ -588,11 +587,11 @@ theorem rename_yPredVar_monomialInitialIdeal {n : ℕ} (hn : 0 < n)
     refine ⟨X (Sum.inl i) * X (Sum.inr j'), ⟨i, j', hadj, hij', rfl⟩, ?_⟩
     rw [rename_yPredVar_generator hn i j' hij', hj'_eq]
 
-/-! ## CM transfer through ring isomorphism -/
+/-! ## Equidimensionality transfer through ring isomorphism -/
 
-/-- Cohen–Macaulayness (equidimensionality) transfers across ring isomorphisms. -/
-theorem isCohenMacaulay_of_ringEquiv {R S : Type*} [CommRing R] [CommRing S]
-    (e : R ≃+* S) (hCM : IsCohenMacaulayRing R) : IsCohenMacaulayRing S where
+/-- The local equidimensional surrogate transfers across ring isomorphisms. -/
+theorem isEquidim_of_ringEquiv {R S : Type*} [CommRing R] [CommRing S]
+    (e : R ≃+* S) (hEq : IsEquidimRing R) : IsEquidimRing S where
   equidimensional P Q hP hQ := by
     -- Pull back minimal primes of S to minimal primes of R
     have hP' : Ideal.comap e.toRingHom P ∈ minimalPrimes R := by
@@ -613,7 +612,7 @@ theorem isCohenMacaulay_of_ringEquiv {R S : Type*} [CommRing R] [CommRing S]
         (Ideal.quotientEquiv _ Q e
           (Ideal.map_comap_of_surjective e.toRingHom e.surjective Q).symm)
     rw [← hPe, ← hQe]
-    exact hCM.equidimensional _ _ hP' hQ'
+    exact hEq.equidimensional _ _ hP' hQ'
 
 /-! ## The y-predecessor variable equivalence -/
 
@@ -672,16 +671,18 @@ def yPredEquiv (n : ℕ) (hn : 0 < n) :
   left_inv := ySucc_yPred n hn
   right_inv := yPred_ySucc n hn
 
-/-! ## CM of the monomial initial ideal quotient -/
+/-! ## Equidimensionality of the monomial initial ideal quotient -/
 
-/-- Under HH conditions, `S / monomialInitialIdeal G` is Cohen–Macaulay.
+/-- Under HH conditions, `S / monomialInitialIdeal G` is equidimensional in the
+local surrogate sense.
 
 Proof: the y-predecessor shift `φ` gives a ring isomorphism
 `S / monomialInitialIdeal G ≃+* S / bipartiteEdgeMonomialIdeal G`,
-and the bipartite edge ideal quotient is CM by `bipartiteEdgeMonomialIdeal_isCohenMacaulay`. -/
-theorem monomialInitialIdeal_isCohenMacaulay {n : ℕ} (hn : 0 < n)
+and the bipartite edge ideal quotient is equidimensional by
+`bipartiteEdgeMonomialIdeal_isEquidim`. -/
+theorem monomialInitialIdeal_isEquidim {n : ℕ} (hn : 0 < n)
     {G : SimpleGraph (Fin n)} (hHH : HerzogHibiConditions n G) :
-    IsCohenMacaulayRing
+    IsEquidimRing
       (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G) := by
   -- Build the ring equivalence from yPredEquiv
   set φ := (MvPolynomial.renameEquiv K (yPredEquiv n hn)).toRingEquiv
@@ -700,8 +701,8 @@ theorem monomialInitialIdeal_isCohenMacaulay {n : ℕ} (hn : 0 < n)
   have e : MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G ≃+*
       MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ bipartiteEdgeMonomialIdeal (K := K) G :=
     Ideal.quotientEquiv _ _ φ hmap
-  exact isCohenMacaulay_of_ringEquiv e.symm
-    (bipartiteEdgeMonomialIdeal_isCohenMacaulay (K := K) hHH)
+  exact isEquidim_of_ringEquiv e.symm
+    (bipartiteEdgeMonomialIdeal_isEquidim (K := K) hHH)
 
 /-! ## Closed graph interval and component count lemmas -/
 

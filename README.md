@@ -10,13 +10,17 @@ of the paper, including Theorems 1.1, 2.1, 3.2, the Section 3 dimension formula,
 the minimal-prime description. It also includes the binary-output Section 4
 single-statement bridge, specification bridge, and transferred radicality / prime
 decomposition / minimal-prime results for CI ideals. The main remaining paper gap is
-the Cohen–Macaulay branch of Proposition 1.6. The Section 3 CM corollaries and the
-Section 4 CI-ideal transfers are now formalized. A direct equidimensional surrogate
-variant of Proposition 1.6 is also proved, but the full depth-based Cohen–Macaulay
-statement from the paper is still open.
+the depth-based Cohen–Macaulay branch around Proposition 1.6. The Section 3
+equidimensional surrogate corollaries and the Section 4 CI-ideal transfers are now
+formalized. A direct equidimensional surrogate variant of Proposition 1.6 is also
+proved, but the full Cohen–Macaulay statement from the paper is still open.
 
 Documentation and blueprint scaffold:
 
 - [Formalization map](FORMALIZATION_MAP.md)
 - [Blueprint source](docs/index.md)
 - [Published blueprint](https://tom111.github.io/BEI-lean/)
+
+Supplementary archived code that is outside the main paper formalization lives in
+[`Supplement/`](Supplement/), currently including an alternative Rauh-style proof attempt
+for Theorem 2.1.

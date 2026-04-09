@@ -41,7 +41,6 @@
 ### Priority 1: Proposition 1.6 honesty sync
 
 Active follow-up work now lives in:
-- `guides/PROP_1_6_POSTPROOF_HONESTY_SYNC.md`
 - `guides/PROP_1_6_CM_TRANSFER.md`
 - `guides/ANSWER_05_COHEN_MACAULAY_FOUNDATION.md`
 - `guides/CM_CODEBASE_RESEARCH_MONOMIAL_IDEAL.md`
@@ -49,25 +48,25 @@ Active follow-up work now lives in:
 
 Supporting files on this branch:
 - `BEI/PrimeDecompositionDimension.lean`
-- `BEI/CohenMacaulay.lean`
+- `BEI/Equidim.lean`
 - `toMathlib/MonomialIdeal.lean` — `Ideal.IsMonomial`, prime classification, radical-is-monomial, full primary iff characterization
 - `toMathlib/SquarefreeMonomialPrimes.lean` — variable-pair ideals, vertex covers, and minimal prime ↔ minimal vertex cover
 - `toMathlib/HeightVariableIdeal.lean` — quotients by variable ideals, quotient equivalences, and dimension formulas
 
-`IsCohenMacaulay` now has a real local working definition (equidimensionality, adapted
-from mathlib PR #26218) in `toMathlib/CohenMacaulay/Defs.lean`.
+`IsEquidim` now has a real local working definition (equidimensionality, adapted
+from mathlib PR #26218) in `toMathlib/Equidim/Defs.lean`.
 
-`prop_1_6` is now proved directly via equidimensionality (0 sorries).
+`prop_1_6_equidim` is now proved directly via equidimensionality (0 sorries).
 The proof is in `BEI/PrimeDecompositionDimension.lean`, not the paper's Gröbner
 degeneration route. It uses:
 1. `closedGraph_componentCount_le_card_add_one` — convex components in closed graphs give
-   `c(S) ≤ |S| + 1` (in `BEI/CohenMacaulay.lean`)
+   `c(S) ≤ |S| + 1` (in `BEI/Equidim.lean`)
 2. `corollary_3_9` — cut vertex property for minimal-prime sets
 3. `closedGraph_minimalPrime_componentCount_eq` — combines 1+2 to get `c(S) = |S| + 1`
-4. `isCohenMacaulay_of_equidim_minimalPrimes` + `ringKrullDim_quot_primeComponent`
+4. `isEquidim_of_equidim_minimalPrimes` + `ringKrullDim_quot_primeComponent`
 
 The old paper-faithful route (HH bipartite graph → monomial ideal CM → transfer) is
-still present as infrastructure in `BEI/CohenMacaulay.lean` but `cm_transfer_initialIdeal`
+still present as infrastructure in `BEI/Equidim.lean` but `cm_transfer_initialIdeal`
 has been removed from the critical path. The Gröbner CM transfer theorem (Eisenbud 15.17)
 remains unformalized and the full paper Cohen–Macaulay statement is still open.
 
@@ -87,7 +86,7 @@ The minimal-prime transfer assumes a connected union graph, mirroring `corollary
 
 - `toMathlib/HeightAdditivity.lean` is still incomplete, but it is not currently on the
   critical path.
-- `BEI/RauhApproach.lean` remains archived and off the main import path.
+- `Supplement/RauhApproach.lean` remains archived and off the main import path.
 
 ---
 
@@ -96,10 +95,10 @@ The minimal-prime transfer assumes a connected union graph, mirroring `corollary
 - `BEI/GroebnerBasisSPolynomial.lean` carries the Buchberger / S-polynomial proof of Theorem 2.1.
 - `BEI/GroebnerBasis.lean` carries reducedness and the paper-facing wrapper.
 - `BEI/PrimeDecomposition.lean` carries Theorem 3.2 and Proposition 3.6.
-- `BEI/PrimeDecompositionDimension.lean` carries Corollary 3.3, Corollary 3.4, `corollary_3_7_CM`, the path CM example, Proposition 1.6 via the direct equidimensional route, and supporting quotient-dimension / equidimensionality lemmas.
+- `BEI/PrimeDecompositionDimension.lean` carries Corollary 3.3, the equidimensional surrogate version `corollary_3_4_equidim`, `corollary_3_7_equidim`, the path equidimensional example, `prop_1_6_equidim`, and supporting quotient-dimension / equidimensionality lemmas.
 - `BEI/CIIdeals.lean` carries the Section 4 binary-output setup, the single-statement and specification-level CI ideal = BEI bridges, and the transferred radicality / prime-decomposition / minimal-prime theorems.
-- `BEI/CohenMacaulay.lean` carries the HH bipartite-graph infrastructure, the closed-graph component-count upper bound, and the complete-graph CM example.
-- `toMathlib/CohenMacaulay/Defs.lean` carries the local working CM definition used by the current CM branch.
+- `BEI/Equidim.lean` carries the local equidimensional surrogate API, the HH bipartite-graph infrastructure, the closed-graph component-count upper bound, and the complete-graph equidimensional example.
+- `toMathlib/Equidim/Defs.lean` carries the local working equidimensional definition used by the current surrogate branch.
 - `toMathlib/MonomialIdeal.lean` carries `Ideal.IsMonomial`, the `Set σ` version of `isPrime_span_X_image`, the prime classification theorem for monomial ideals, `Ideal.IsMonomial.span_X_image`, `coeff_pow_lexMax`, `Ideal.IsMonomial.radical_isMonomial`, `Ideal.isPrimary_monomial_criterion`, `Ideal.IsMonomial.isPrimary_radical_eq_span_X`, the structural lemmas `Ideal.monomial_mem_iff_add_outside` / `Ideal.monomial_mem_iff_filter`, the general support-extraction lemma `Ideal.not_mem_exists_monomial_notMem`, the converse helper `Ideal.mem_of_mul_mem_of_lexMax_outside`, and the full primary iff `Ideal.IsMonomial.isPrimary_iff`.
 - `toMathlib/SquarefreeMonomialPrimes.lean` carries `MvPolynomial.variablePairIdeal`, `MvPolynomial.IsVertexCover`, `MvPolynomial.IsMinimalVertexCover`, the containment-iff-vertex-cover theorem, and the complete minimal prime ↔ minimal vertex cover characterization.
 - `toMathlib/HeightVariableIdeal.lean` carries the variable-killing quotient map, the quotient-by-variable-ideal equivalence, and the quotient-dimension formulas for variable ideals.
@@ -112,11 +111,11 @@ Some of these splits still need cleanup, but these are the current live location
 
 | File | Sorries | Notes |
 |---|---:|---|
-| `BEI/CohenMacaulay.lean` | 0 | paper-faithful CM-transfer route kept as future infrastructure |
+| `BEI/Equidim.lean` | 0 | paper-faithful CM-transfer route kept as future infrastructure |
 | `BEI/PrimeDecompositionDimension.lean` | 0 | direct equidimensional Prop. 1.6 route complete |
 | `BEI/PrimeDecomposition.lean` | 0 | |
 | `toMathlib/HeightAdditivity.lean` | 2 | dormant infrastructure |
-| `BEI/RauhApproach.lean` | 2 | archived, not on main path |
+| `Supplement/RauhApproach.lean` | 2 | archived, not on main path |
 | **Active total** | **0** | excluding dormant `HeightAdditivity` and archived `RauhApproach` |
 
 ---

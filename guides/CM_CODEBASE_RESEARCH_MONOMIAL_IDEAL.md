@@ -26,13 +26,13 @@ After searching the local codebase thoroughly, the answer is:
    codebase;
 5. the only genuinely usable “equivalent and more accessible notion of CM” already
    present in this repo is the local equidimensionality-style definition in
-   `toMathlib/CohenMacaulay/Defs.lean`.
+   `toMathlib/Equidim/Defs.lean`.
 
 So the realistic accessible route is:
 
 - prove the relevant **monomial ideal quotient is equidimensional** by describing and
   comparing its minimal primes;
-- then use the repo’s local `IsCohenMacaulay` definition, which is exactly that
+- then use the repo’s local `IsEquidim` definition, which is exactly that
   equidimensionality property.
 
 
@@ -80,16 +80,16 @@ Findings:
 
 Files inspected:
 
-- `toMathlib/CohenMacaulay/Defs.lean`
-- `BEI/CohenMacaulay.lean`
+- `toMathlib/Equidim/Defs.lean`
+- `BEI/Equidim.lean`
 - `BEI/PrimeDecompositionDimension.lean`
 
 Findings:
 
-- `toMathlib/CohenMacaulay/Defs.lean` defines `IsCohenMacaulayRing` as:
+- `toMathlib/Equidim/Defs.lean` defines `IsEquidimRing` as:
   all minimal primes have the same quotient dimension;
-- `BEI/CohenMacaulay.lean` already honestly identifies the two remaining external inputs
-  for `prop_1_6`:
+- `BEI/Equidim.lean` already honestly identifies the two remaining external inputs
+  for the paper-faithful Proposition 1.6 route:
   1. the Herzog–Hibi CM theorem for the associated bipartite edge ideal;
   2. CM transfer from `S / in_<(J_G)` to `S / J_G`;
 - `BEI/PrimeDecompositionDimension.lean` already shows the repo is comfortable working
@@ -138,8 +138,8 @@ R is CM  <=>  all minimal primes of R have the same quotient dimension
 
 That is the operative notion in:
 
-- `toMathlib/CohenMacaulay/Defs.lean`
-- `BEI/CohenMacaulay.lean`
+- `toMathlib/Equidim/Defs.lean`
+- `BEI/Equidim.lean`
 - `BEI/PrimeDecompositionDimension.lean`
 
 So the real alternative to the full classical CM route is not “find another notion”.
@@ -155,7 +155,7 @@ the most plausible program is:
 
 ### Step 1: isolate the right monomial ideal as a graph edge ideal
 
-This is already essentially packaged in `BEI/CohenMacaulay.lean`:
+This is already essentially packaged in `BEI/Equidim.lean`:
 
 - `bipartiteEdgeMonomialIdeal`
 - `rename_yPredVar_monomialInitialIdeal`

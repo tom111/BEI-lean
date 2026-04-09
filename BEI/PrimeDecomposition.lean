@@ -1,5 +1,5 @@
 import BEI.PrimeIdeals
-import BEI.CohenMacaulay
+import BEI.Equidim
 import BEI.Radical
 import Mathlib.RingTheory.Ideal.MinimalPrime.Basic
 import Mathlib.RingTheory.Ideal.MinimalPrime.Localization
@@ -16,7 +16,8 @@ This file formalizes:
 - **Minimal prime characterization**
 
 Dimension results (Corollary 3.3) are in `PrimeDecompositionDimension.lean`.
-Cycle/CM corollaries (3.4, 3.7) are at the end of this file.
+Cycle/equidimensional corollaries and related consequences are handled in
+`PrimeDecompositionDimension.lean`.
 
 ## Reference: Herzog et al. (2010), Section 3
 -/

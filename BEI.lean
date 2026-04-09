@@ -9,7 +9,7 @@ import BEI.CoveredWalks
 import BEI.GroebnerBasisSPolynomial
 import BEI.GroebnerBasis
 import BEI.Radical
-import BEI.CohenMacaulay
+import BEI.Equidim
 import BEI.PrimeIdeals
 import BEI.PrimeDecomposition
 import BEI.MinimalPrimes

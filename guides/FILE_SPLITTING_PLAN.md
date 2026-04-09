@@ -109,7 +109,7 @@ This avoids breaking the project while refactoring.
 
 ## Archived material
 
-- [RauhApproach.lean](/home/tom/BEI-lean/BEI/RauhApproach.lean) should remain clearly
+- [RauhApproach.lean](/home/tom/BEI-lean/Supplement/RauhApproach.lean) should remain clearly
   separated from the main development.
 - It should not influence the structure of the live files.
 

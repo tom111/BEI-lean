@@ -13,7 +13,7 @@ title: Section 1
 | Corollary 1.3 | `cor_1_3` and related wrappers | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Exact |
 | Proposition 1.4 | `prop_1_4` | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Equivalent |
 | Proposition 1.5 | `prop_1_5` | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Exact |
-| Proposition 1.6 | `prop_1_6`, `closedGraph_minimalPrime_componentCount_eq`, `closedGraph_cutVertex_preserved_of_erase` | [PrimeDecompositionDimension.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecompositionDimension.lean), [CohenMacaulay.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/CohenMacaulay.lean) | Partial |
+| Proposition 1.6 | `prop_1_6_equidim`, `closedGraph_minimalPrime_componentCount_eq`, `closedGraph_cutVertex_preserved_of_erase` | [PrimeDecompositionDimension.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecompositionDimension.lean), [Equidim.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Equidim.lean) | Partial |
 
 ## Notes
 
@@ -35,10 +35,10 @@ while making the connectedness and labeling subtleties explicit.
 
 ### Examples 1.7
 
-The supporting Cohen–Macaulay examples from Section 1 are now partly formalized:
+The supporting Section 1 examples are formalized at the local equidimensional surrogate level:
 
-- Example 1.7(a): `complete_is_CM` in `BEI/CohenMacaulay.lean`
-- Example 1.7(b): `path_is_CM` in `BEI/PrimeDecompositionDimension.lean`
+- Example 1.7(a): `complete_isEquidim` in `BEI/Equidim.lean`
+- Example 1.7(b): `path_isEquidim` in `BEI/PrimeDecompositionDimension.lean`
 
 ### Proposition 1.6
 
@@ -55,7 +55,7 @@ reference for this repository is Mathlib PR
 
 As a partial substitute, the current code also studies an equidimensional variant,
 implemented via the temporary local definition in
-`toMathlib/CohenMacaulay/Defs.lean`.
+`toMathlib/Equidim/Defs.lean`.
 
 What is already in place:
 

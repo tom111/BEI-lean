@@ -101,7 +101,7 @@ on the declarations the linter already points to.
 ## What not to do
 
 - do not change theorem statements in ways that move the formalization away from the paper;
-- do not touch `BEI/CohenMacaulay.lean` or Section 4 in this packet;
+- do not touch `BEI/Equidim.lean` or Section 4 in this packet;
 - do not mix cleanup with new theorem development;
 - do not start broad “replace all classical assumptions everywhere” work if the local
   warning can be fixed by a smaller change.
