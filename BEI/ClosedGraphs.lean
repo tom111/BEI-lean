@@ -34,17 +34,20 @@ def generatorSet (G : SimpleGraph V) :
     Set (MvPolynomial (BinomialEdgeVars V) K) :=
   { f | ∃ i j : V, G.Adj i j ∧ i < j ∧ f = x i * y j - x j * y i }
 
+omit [DecidableEq V] [Fintype V] in
 /-- The generator set spans `binomialEdgeIdeal G`. -/
 theorem generatorSet_span (G : SimpleGraph V) :
     Ideal.span (generatorSet (K := K) G) = binomialEdgeIdeal (K := K) G := rfl
 
 /-! ## Helper lemmas for the Buchberger case analysis -/
 
+omit [DecidableEq V] in
 private lemma zero_le_syn (d : BinomialEdgeVars V →₀ ℕ) :
     binomialEdgeMonomialOrder.toSyn 0 ≤ binomialEdgeMonomialOrder.toSyn d := by
   simp only [binomialEdgeMonomialOrder, MonomialOrder.lex, map_zero]
   exact bot_le
 
+omit [DecidableEq V] in
 /-- If `f ∈ G`, then `q * f` has remainder `0` modulo `G`. -/
 lemma isRemainder_single_mul
     (f q : MvPolynomial (BinomialEdgeVars V) K)
@@ -65,6 +68,7 @@ lemma isRemainder_single_mul
 
 /-! ### Finsupp sup/tsub helpers -/
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- Sup of two finsupps sharing `inl i`: the `inr` components are disjoint. -/
 private lemma finsupp_ext_shared_inl (i j₁ j₂ : V) (hj : j₁ ≠ j₂) :
     let d₁ := Finsupp.single (Sum.inl i : BinomialEdgeVars V) 1 +
@@ -78,13 +82,13 @@ private lemma finsupp_ext_shared_inl (i j₁ j₂ : V) (hj : j₁ ≠ j₂) :
       Finsupp.single (Sum.inr j₁ : BinomialEdgeVars V) 1) := by
   refine ⟨?_, ?_, ?_⟩ <;> {
     ext v; simp only [Finsupp.sup_apply, Finsupp.tsub_apply,
-      Finsupp.add_apply, Finsupp.single_apply]
+      Finsupp.add_apply]
     rcases v with u | u
     · have : (Sum.inr j₁ : BinomialEdgeVars V) ≠ Sum.inl u := Sum.inr_ne_inl
       have : (Sum.inr j₂ : BinomialEdgeVars V) ≠ Sum.inl u := Sum.inr_ne_inl
       simp_all
     · have : (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inr u := Sum.inl_ne_inr
-      simp_all only [ne_eq, ite_false, zero_add]
+      simp_all only [ne_eq]
       by_cases h1 : j₁ = u <;> by_cases h2 : j₂ = u
       · exact absurd (h1.trans h2.symm) hj
       · simp [h1, h2]
@@ -92,6 +96,7 @@ private lemma finsupp_ext_shared_inl (i j₁ j₂ : V) (hj : j₁ ≠ j₂) :
       · simp [h1, h2]
   }
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- Sup of two finsupps sharing `inr j`: the `inl` components are disjoint. -/
 private lemma finsupp_ext_shared_inr (i₁ i₂ j : V) (hi : i₁ ≠ i₂) :
     let d₁ := Finsupp.single (Sum.inl i₁ : BinomialEdgeVars V) 1 +
@@ -105,10 +110,10 @@ private lemma finsupp_ext_shared_inr (i₁ i₂ j : V) (hi : i₁ ≠ i₂) :
       Finsupp.single (Sum.inl i₁ : BinomialEdgeVars V) 1) := by
   refine ⟨?_, ?_, ?_⟩ <;> {
     ext v; simp only [Finsupp.sup_apply, Finsupp.tsub_apply,
-      Finsupp.add_apply, Finsupp.single_apply]
+      Finsupp.add_apply]
     rcases v with u | u
     · have : (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inl u := Sum.inr_ne_inl
-      simp_all only [ne_eq, ite_false, add_zero]
+      simp_all only [ne_eq]
       by_cases h1 : i₁ = u <;> by_cases h2 : i₂ = u
       · exact absurd (h1.trans h2.symm) hi
       · simp [h1, h2]
@@ -122,6 +127,8 @@ private lemma finsupp_ext_shared_inr (i₁ i₂ j : V) (hi : i₁ ≠ i₂) :
 /-! ### S-polynomial identities -/
 
 set_option maxHeartbeats 400000 in
+-- S-polynomial ring normalization needs extra heartbeats
+omit [DecidableEq V] in
 /-- S-polynomial of generators sharing first endpoint:
 `S(f_{i,j₁}, f_{i,j₂}) = -(y_i) * f_{j₁,j₂}`. -/
 lemma sPolynomial_fij_shared_first (i j₁ j₂ : V) (hij₁ : i < j₁)
@@ -139,6 +146,8 @@ lemma sPolynomial_fij_shared_first (i j₁ j₂ : V) (hij₁ : i < j₁)
   unfold fij x y; ring
 
 set_option maxHeartbeats 400000 in
+-- S-polynomial ring normalization needs extra heartbeats
+omit [DecidableEq V] in
 /-- S-polynomial of generators sharing last endpoint:
 `S(f_{i₁,j}, f_{i₂,j}) = x_j * f_{i₁,i₂}`. -/
 lemma sPolynomial_fij_shared_last (i₁ i₂ j : V) (hi₁j : i₁ < j)
@@ -157,6 +166,7 @@ lemma sPolynomial_fij_shared_last (i₁ i₂ j : V) (hi₁j : i₁ < j)
 
 /-! ### Coprime case helpers -/
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- Sup/tsub for coprime finsupps (no shared inl or inr components). -/
 private lemma finsupp_ext_coprime (i₁ i₂ j₁ j₂ : V) (hi : i₁ ≠ i₂)
     (hj : j₁ ≠ j₂) :
@@ -168,13 +178,13 @@ private lemma finsupp_ext_coprime (i₁ i₂ j₁ j₂ : V) (hi : i₁ ≠ i₂)
     (d₁ + d₂ - d₂ = d₁) := by
   refine ⟨?_, ?_, ?_⟩ <;> {
     ext v; simp only [Finsupp.sup_apply, Finsupp.tsub_apply,
-      Finsupp.add_apply, Finsupp.single_apply]
+      Finsupp.add_apply]
     rcases v with u | u
     · have : (Sum.inr j₁ : BinomialEdgeVars V) ≠ Sum.inl u :=
         Sum.inr_ne_inl
       have : (Sum.inr j₂ : BinomialEdgeVars V) ≠ Sum.inl u :=
         Sum.inr_ne_inl
-      simp_all only [ne_eq, ite_false, add_zero]
+      simp_all only [ne_eq]
       by_cases h1 : i₁ = u <;> by_cases h2 : i₂ = u
       · exact absurd (h1.trans h2.symm) hi
       · simp [h1, h2]
@@ -184,7 +194,7 @@ private lemma finsupp_ext_coprime (i₁ i₂ j₁ j₂ : V) (hi : i₁ ≠ i₂)
         Sum.inl_ne_inr
       have : (Sum.inl i₂ : BinomialEdgeVars V) ≠ Sum.inr u :=
         Sum.inl_ne_inr
-      simp_all only [ne_eq, ite_false, zero_add]
+      simp_all only [ne_eq]
       by_cases h1 : j₁ = u <;> by_cases h2 : j₂ = u
       · exact absurd (h1.trans h2.symm) hj
       · simp [h1, h2]
@@ -192,6 +202,7 @@ private lemma finsupp_ext_coprime (i₁ i₂ j₁ j₂ : V) (hi : i₁ ≠ i₂)
       · simp [h1, h2]
   }
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 private lemma monomial_sum_eq_mul (a b : BinomialEdgeVars V) :
     (monomial (Finsupp.single a 1 + Finsupp.single b 1)) (1 : K) =
     X a * X b := by
@@ -199,6 +210,8 @@ private lemma monomial_sum_eq_mul (a b : BinomialEdgeVars V) :
   rfl
 
 set_option maxHeartbeats 800000 in
+-- Coprime case ring normalization needs extra heartbeats
+omit [DecidableEq V] in
 /-- S-polynomial of generators with coprime leading monomials. -/
 lemma sPolynomial_fij_coprime (i₁ i₂ j₁ j₂ : V) (hi₁j₁ : i₁ < j₁)
     (hi₂j₂ : i₂ < j₂) (hi : i₁ ≠ i₂) (hj : j₁ ≠ j₂) :
@@ -214,6 +227,7 @@ lemma sPolynomial_fij_coprime (i₁ i₂ j₁ j₂ : V) (hi₁j₁ : i₁ < j₁
     monomial_sum_eq_mul]
   unfold fij x y; ring
 
+omit [DecidableEq V] in
 /-- `IsRemainder` for `q₁ * f₁ - q₂ * f₂` when `f₁, f₂ ∈ G`, `f₁ ≠ f₂`,
 and the degree bounds hold. -/
 lemma isRemainder_sub_mul
@@ -260,6 +274,7 @@ lemma isRemainder_sub_mul
 
 /-! ### Coprime degree bound helpers -/
 
+omit [DecidableEq V] in
 lemma fij_ne_zero (a b : V) (hab : a < b) :
     fij (K := K) a b ≠ 0 := by
   intro h
@@ -267,6 +282,7 @@ lemma fij_ne_zero (a b : V) (hab : a < b) :
   rw [h, MonomialOrder.leadingCoeff_zero] at this
   exact not_isUnit_zero this
 
+omit [DecidableEq V] in
 /-- The degree of `x j * y i * fij a b` splits as sum of degrees. -/
 lemma degree_xy_mul_fij (i j a b : V) (hab : a < b) :
     binomialEdgeMonomialOrder.degree
@@ -283,6 +299,7 @@ lemma degree_xy_mul_fij (i j a b : V) (hab : a < b) :
     MonomialOrder.degree_X, MonomialOrder.degree_X,
     fij_degree a b hab]
 
+omit [DecidableEq V] in
 /-- The degrees of the two terms in the coprime S-polynomial are distinct.
 Discriminator: evaluate at `Sum.inl i₁` — one side has 1, the other has 0. -/
 lemma coprime_degrees_ne (i₁ i₂ j₁ j₂ : V)
@@ -309,6 +326,7 @@ lemma coprime_degrees_ne (i₁ i₂ j₁ j₂ : V)
     fun h => hi (Sum.inl.inj h).symm
   simp_all
 
+omit [DecidableEq V] in
 /-- If `toSyn(deg f) ≠ toSyn(deg g)`, both degree bounds hold for `f - g`. -/
 lemma degree_bounds_of_sub
     (f g : MvPolynomial (BinomialEdgeVars V) K)
@@ -418,8 +436,7 @@ theorem closed_implies_groebner (G : SimpleGraph V) (h : IsClosedGraph G) :
       rw [fij_degree i₁ j₁ hij₁, fij_degree i₂ j₂ hij₂] at h1
       have h2 := Finsupp.ext_iff.mp h1
         (Sum.inl i₁ : BinomialEdgeVars V)
-      simp only [Finsupp.add_apply, Finsupp.single_apply,
-        Sum.inr_ne_inl, ite_false] at h2
+      simp only [Finsupp.add_apply, Finsupp.single_apply] at h2
       have : ¬((Sum.inl i₂ : BinomialEdgeVars V) = Sum.inl i₁) :=
         fun h => heq_i (Sum.inl.inj h).symm
       simp_all
@@ -436,6 +453,7 @@ theorem closed_implies_groebner (G : SimpleGraph V) (h : IsClosedGraph G) :
       (x j₂ * y i₂) (x j₁ * y i₁) _ hmem₁ hmem₂ hfij_ne hd₁ hd₂
 
 set_option maxHeartbeats 800000 in
+-- Large case analysis needs extra heartbeats
 /-- Backward direction of Theorem 1.1: Gröbner basis → closed graph. -/
 theorem groebner_implies_closed (G : SimpleGraph V)
     (h : binomialEdgeMonomialOrder.IsGroebnerBasis (generatorSet (K := K) G)
@@ -506,8 +524,10 @@ theorem groebner_implies_closed (G : SimpleGraph V)
       D (Sum.inr b) = (if b = j then 1 else 0) + 0 →
       b = j := fun a b j D hs hD => by
     by_contra hbj
-    have h1 : (Finsupp.single (Sum.inl a) 1 + Finsupp.single (Sum.inr b) 1 : BinomialEdgeVars V →₀ ℕ) (Sum.inr b) = 1 := by
-      simp [Finsupp.add_apply, Finsupp.single_apply]
+    have h1 : (Finsupp.single (Sum.inl a) 1 +
+        Finsupp.single (Sum.inr b) 1 : BinomialEdgeVars V →₀ ℕ)
+        (Sum.inr b) = 1 := by
+      simp [Finsupp.add_apply]
     have h2 : D (Sum.inr b) = 0 := by simp [hD, hbj]
     linarith [hs (Sum.inr b), h1.symm ▸ h2.symm ▸ (hs (Sum.inr b))]
   constructor
@@ -530,74 +550,113 @@ theorem groebner_implies_closed (G : SimpleGraph V)
           (x j * y i * y k - x k * y i * y j : MvPolynomial (BinomialEdgeVars V) K) := by ring
       -- Degree of x j * y i * y k
       have hdeg1 : binomialEdgeMonomialOrder.degree
-          (x j * y i * y k : MvPolynomial (BinomialEdgeVars V) K) =
-          Finsupp.single (Sum.inl j) 1 + Finsupp.single (Sum.inr i) 1 + Finsupp.single (Sum.inr k) 1 := by
-        simp only [x, y]
-        rw [MonomialOrder.degree_mul (mul_ne_zero (X_ne_zero _) (X_ne_zero _)) (X_ne_zero _),
-            MonomialOrder.degree_mul (X_ne_zero _) (X_ne_zero _),
-            MonomialOrder.degree_X, MonomialOrder.degree_X, MonomialOrder.degree_X]
-      have hdeg2 : binomialEdgeMonomialOrder.degree
-          (x k * y i * y j : MvPolynomial (BinomialEdgeVars V) K) =
-          Finsupp.single (Sum.inl k) 1 + Finsupp.single (Sum.inr i) 1 + Finsupp.single (Sum.inr j) 1 := by
-        simp only [x, y]
-        rw [MonomialOrder.degree_mul (mul_ne_zero (X_ne_zero _) (X_ne_zero _)) (X_ne_zero _),
-            MonomialOrder.degree_mul (X_ne_zero _) (X_ne_zero _),
-            MonomialOrder.degree_X, MonomialOrder.degree_X, MonomialOrder.degree_X]
-      -- M2 <lex M1: discriminator = Sum.inr k (since k > j > i, inr k is lowest-ranked)
-      have hne_ik : ¬(Sum.inr i = Sum.inr k) := fun h => (lt_trans hij hjlt).ne (Sum.inr.inj (α := V) h)
-      have hne_jk : ¬(Sum.inr j = Sum.inr k) := fun h => hjlt.ne (Sum.inr.inj (α := V) h)
-      have hlex_ineq := lex_lt k
-          (Finsupp.single (Sum.inl k) 1 + Finsupp.single (Sum.inr i) 1 + Finsupp.single (Sum.inr j) 1)
-          (Finsupp.single (Sum.inl j) 1 + Finsupp.single (Sum.inr i) 1 + Finsupp.single (Sum.inr k) 1)
-          (by simp [Finsupp.add_apply, Finsupp.single_apply, hne_ik, hne_jk])
-          (by simp [Finsupp.add_apply, Finsupp.single_apply, hne_ik])
-          (fun v hv => by
-            have hne_iv : ¬(Sum.inr i = Sum.inr v) := fun h => (lt_trans (lt_trans hij hjlt) hv).ne (Sum.inr.inj (α := V) h)
-            have hne_jv : ¬(Sum.inr j = Sum.inr v) := fun h => (lt_trans hjlt hv).ne (Sum.inr.inj (α := V) h)
-            have hne_kv : ¬(Sum.inr k = Sum.inr v) := fun h => hv.ne (Sum.inr.inj (α := V) h)
-            simp [Finsupp.add_apply, Finsupp.single_apply, hne_iv, hne_jv, hne_kv])
-      have hp_deg : binomialEdgeMonomialOrder.degree
-          (y j * (x i * y k - x k * y i) - y k * (x i * y j - x j * y i) :
+          (x j * y i * y k :
             MvPolynomial (BinomialEdgeVars V) K) =
-          Finsupp.single (Sum.inl j) 1 + Finsupp.single (Sum.inr i) 1 + Finsupp.single (Sum.inr k) 1 := by
-        rw [hp_eq, MonomialOrder.degree_sub_of_lt (by rw [hdeg1, hdeg2]; exact hlex_ineq), hdeg1]
+          Finsupp.single (Sum.inl j) 1 +
+            Finsupp.single (Sum.inr i) 1 +
+            Finsupp.single (Sum.inr k) 1 := by
+        simp only [x, y]
+        rw [MonomialOrder.degree_mul
+              (mul_ne_zero (X_ne_zero _) (X_ne_zero _))
+              (X_ne_zero _),
+            MonomialOrder.degree_mul (X_ne_zero _)
+              (X_ne_zero _),
+            MonomialOrder.degree_X,
+            MonomialOrder.degree_X, MonomialOrder.degree_X]
+      have hdeg2 : binomialEdgeMonomialOrder.degree
+          (x k * y i * y j :
+            MvPolynomial (BinomialEdgeVars V) K) =
+          Finsupp.single (Sum.inl k) 1 +
+            Finsupp.single (Sum.inr i) 1 +
+            Finsupp.single (Sum.inr j) 1 := by
+        simp only [x, y]
+        rw [MonomialOrder.degree_mul
+              (mul_ne_zero (X_ne_zero _) (X_ne_zero _))
+              (X_ne_zero _),
+            MonomialOrder.degree_mul (X_ne_zero _)
+              (X_ne_zero _),
+            MonomialOrder.degree_X,
+            MonomialOrder.degree_X, MonomialOrder.degree_X]
+      -- M2 <lex M1: discriminator = Sum.inr k (since k > j > i, inr k is lowest-ranked)
+      have hne_ik : ¬(Sum.inr i = Sum.inr k) :=
+        fun h => (lt_trans hij hjlt).ne (Sum.inr.inj (α := V) h)
+      have hne_jk : ¬(Sum.inr j = Sum.inr k) :=
+        fun h => hjlt.ne (Sum.inr.inj (α := V) h)
+      have hlex_ineq := lex_lt k
+          (Finsupp.single (Sum.inl k) 1 +
+            Finsupp.single (Sum.inr i) 1 +
+            Finsupp.single (Sum.inr j) 1)
+          (Finsupp.single (Sum.inl j) 1 +
+            Finsupp.single (Sum.inr i) 1 +
+            Finsupp.single (Sum.inr k) 1)
+          (by simp [Finsupp.add_apply, hne_ik, hne_jk])
+          (by simp [Finsupp.add_apply, hne_ik])
+          (fun v hv => by
+            have hne_iv : ¬(Sum.inr i = Sum.inr v) :=
+              fun h => (lt_trans (lt_trans hij hjlt) hv).ne
+                (Sum.inr.inj (α := V) h)
+            have hne_jv : ¬(Sum.inr j = Sum.inr v) :=
+              fun h => (lt_trans hjlt hv).ne
+                (Sum.inr.inj (α := V) h)
+            have hne_kv : ¬(Sum.inr k = Sum.inr v) :=
+              fun h => hv.ne (Sum.inr.inj (α := V) h)
+            simp [Finsupp.add_apply, hne_iv, hne_jv, hne_kv])
+      have hp_deg : binomialEdgeMonomialOrder.degree
+          (y j * (x i * y k - x k * y i) -
+            y k * (x i * y j - x j * y i) :
+            MvPolynomial (BinomialEdgeVars V) K) =
+          Finsupp.single (Sum.inl j) 1 +
+            Finsupp.single (Sum.inr i) 1 +
+            Finsupp.single (Sum.inr k) 1 := by
+        rw [hp_eq, MonomialOrder.degree_sub_of_lt
+          (by rw [hdeg1, hdeg2]; exact hlex_ineq), hdeg1]
       apply contra _ _ hp_mem hp_deg
       · intro heq
         have := Finsupp.ext_iff.mp heq (Sum.inl j)
-        simp [Finsupp.add_apply, Finsupp.single_apply] at this
+        simp [Finsupp.add_apply] at this
       · intro a b hadj_ab hab hs_le
-        -- Determine b: from hs_le at inr b, b ∈ {i, k}; rule out b = i via inl
+        -- Determine b: from hs_le at inr b, b ∈ {i, k};
+        -- rule out b = i via inl
         have hb : b = k := by
           have hle_inr := hs_le (Sum.inr b)
-          simp only [Finsupp.add_apply, Finsupp.single_apply, Sum.inl_ne_inr, if_false, zero_add,
-                     Sum.inr.injEq] at hle_inr
-          -- hle_inr : 1 ≤ (if b = i then 1 else 0) + (if b = k then 1 else 0)
+          simp only [Finsupp.add_apply,
+            Finsupp.single_apply] at hle_inr
           by_cases hbi : b = i
-          · -- b = i: then from inl constraint a = j, but a < b = i < j contradicts a = j
+          · -- b = i: then from inl constraint a = j,
+            -- but a < b = i < j contradicts a = j
             subst hbi
             exfalso
             have hle_inl := hs_le (Sum.inl a)
-            simp only [Finsupp.add_apply, Finsupp.single_apply] at hle_inl
+            simp only [Finsupp.add_apply,
+              Finsupp.single_apply] at hle_inl
             have haj : a = j := by
               by_contra h
-              have hne_ja : Sum.inl j ≠ Sum.inl a := fun heq => h (Sum.inl.inj (α := V) (β := V) heq).symm
+              have hne_ja : Sum.inl j ≠ Sum.inl a :=
+                fun heq => h (Sum.inl.inj
+                  (α := V) (β := V) heq).symm
               simp [hne_ja] at hle_inl
-            subst haj; exact absurd (lt_trans hab hij) (lt_irrefl a)
+            subst haj
+            exact absurd (lt_trans hab hij) (lt_irrefl a)
           · -- b ≠ i: from hle_inr, b = k
             by_contra hbk
-            have hne_ib : Sum.inr i ≠ Sum.inr b := fun h => hbi (Sum.inr.inj (α := V) h).symm
-            have hne_kb : Sum.inr k ≠ Sum.inr b := fun h => hbk (Sum.inr.inj (α := V) h).symm
+            have hne_ib : Sum.inr i ≠ Sum.inr b :=
+              fun h => hbi (Sum.inr.inj (α := V) h).symm
+            have hne_kb : Sum.inr k ≠ Sum.inr b :=
+              fun h => hbk (Sum.inr.inj (α := V) h).symm
             simp [hne_ib, hne_kb] at hle_inr
         have ha : a = j := by
           subst hb
           have hle_inl := hs_le (Sum.inl a)
-          simp only [Finsupp.add_apply, Finsupp.single_apply] at hle_inl
+          simp only [Finsupp.add_apply,
+            Finsupp.single_apply] at hle_inl
           by_contra haj
-          have hne_ja : Sum.inl j ≠ Sum.inl a := fun heq => haj (Sum.inl.inj (α := V) (β := V) heq).symm
+          have hne_ja : Sum.inl j ≠ Sum.inl a :=
+            fun heq => haj (Sum.inl.inj
+              (α := V) (β := V) heq).symm
           simp [hne_ja] at hle_inl
         subst hb ha
         exact hnotadj hadj_ab
-    · -- Case k < j (so i < k < j): p = y k * fij i j - y j * fij i k = y i * fij k j
+    · -- Case k < j (so i < k < j):
       -- degree p = e_{inl k} + e_{inr i} + e_{inr j}
       have hp_mem : y k * (x i * y j - x j * y i) - y j * (x i * y k - x k * y i) ∈
           binomialEdgeIdeal (K := K) G := by
@@ -611,71 +670,111 @@ theorem groebner_implies_closed (G : SimpleGraph V)
       have hp_eq : y k * (x i * y j - x j * y i) - y j * (x i * y k - x k * y i) =
           (x k * y i * y j - x j * y i * y k : MvPolynomial (BinomialEdgeVars V) K) := by ring
       have hdeg1 : binomialEdgeMonomialOrder.degree
-          (x k * y i * y j : MvPolynomial (BinomialEdgeVars V) K) =
-          Finsupp.single (Sum.inl k) 1 + Finsupp.single (Sum.inr i) 1 + Finsupp.single (Sum.inr j) 1 := by
-        simp only [x, y]
-        rw [MonomialOrder.degree_mul (mul_ne_zero (X_ne_zero _) (X_ne_zero _)) (X_ne_zero _),
-            MonomialOrder.degree_mul (X_ne_zero _) (X_ne_zero _),
-            MonomialOrder.degree_X, MonomialOrder.degree_X, MonomialOrder.degree_X]
-      have hdeg2 : binomialEdgeMonomialOrder.degree
-          (x j * y i * y k : MvPolynomial (BinomialEdgeVars V) K) =
-          Finsupp.single (Sum.inl j) 1 + Finsupp.single (Sum.inr i) 1 + Finsupp.single (Sum.inr k) 1 := by
-        simp only [x, y]
-        rw [MonomialOrder.degree_mul (mul_ne_zero (X_ne_zero _) (X_ne_zero _)) (X_ne_zero _),
-            MonomialOrder.degree_mul (X_ne_zero _) (X_ne_zero _),
-            MonomialOrder.degree_X, MonomialOrder.degree_X, MonomialOrder.degree_X]
-      -- Discriminator = Sum.inr j (j > k, so inr j has lower rank than inr k)
-      have hne_ij : ¬(Sum.inr i = Sum.inr j) := fun h => hij.ne (Sum.inr.inj (α := V) h)
-      have hne_kj : ¬(Sum.inr k = Sum.inr j) := fun h => hklt.ne (Sum.inr.inj (α := V) h)
-      have hlex_ineq := lex_lt j
-          (Finsupp.single (Sum.inl j) 1 + Finsupp.single (Sum.inr i) 1 + Finsupp.single (Sum.inr k) 1)
-          (Finsupp.single (Sum.inl k) 1 + Finsupp.single (Sum.inr i) 1 + Finsupp.single (Sum.inr j) 1)
-          (by simp [Finsupp.add_apply, Finsupp.single_apply, hne_ij, hne_kj])
-          (by simp [Finsupp.add_apply, Finsupp.single_apply, hne_ij])
-          (fun v hv => by
-            have hne_iv : ¬(Sum.inr i = Sum.inr v) := fun h => (lt_trans hij hv).ne (Sum.inr.inj (α := V) h)
-            have hne_kv : ¬(Sum.inr k = Sum.inr v) := fun h => (lt_trans hklt hv).ne (Sum.inr.inj (α := V) h)
-            have hne_jv : ¬(Sum.inr j = Sum.inr v) := fun h => hv.ne (Sum.inr.inj (α := V) h)
-            simp [Finsupp.add_apply, Finsupp.single_apply, hne_iv, hne_kv, hne_jv])
-      have hp_deg : binomialEdgeMonomialOrder.degree
-          (y k * (x i * y j - x j * y i) - y j * (x i * y k - x k * y i) :
+          (x k * y i * y j :
             MvPolynomial (BinomialEdgeVars V) K) =
-          Finsupp.single (Sum.inl k) 1 + Finsupp.single (Sum.inr i) 1 + Finsupp.single (Sum.inr j) 1 := by
-        rw [hp_eq, MonomialOrder.degree_sub_of_lt (by rw [hdeg1, hdeg2]; exact hlex_ineq), hdeg1]
+          Finsupp.single (Sum.inl k) 1 +
+            Finsupp.single (Sum.inr i) 1 +
+            Finsupp.single (Sum.inr j) 1 := by
+        simp only [x, y]
+        rw [MonomialOrder.degree_mul
+              (mul_ne_zero (X_ne_zero _) (X_ne_zero _))
+              (X_ne_zero _),
+            MonomialOrder.degree_mul (X_ne_zero _)
+              (X_ne_zero _),
+            MonomialOrder.degree_X,
+            MonomialOrder.degree_X, MonomialOrder.degree_X]
+      have hdeg2 : binomialEdgeMonomialOrder.degree
+          (x j * y i * y k :
+            MvPolynomial (BinomialEdgeVars V) K) =
+          Finsupp.single (Sum.inl j) 1 +
+            Finsupp.single (Sum.inr i) 1 +
+            Finsupp.single (Sum.inr k) 1 := by
+        simp only [x, y]
+        rw [MonomialOrder.degree_mul
+              (mul_ne_zero (X_ne_zero _) (X_ne_zero _))
+              (X_ne_zero _),
+            MonomialOrder.degree_mul (X_ne_zero _)
+              (X_ne_zero _),
+            MonomialOrder.degree_X,
+            MonomialOrder.degree_X, MonomialOrder.degree_X]
+      -- Discriminator = Sum.inr j
+      -- (j > k, so inr j has lower rank than inr k)
+      have hne_ij : ¬(Sum.inr i = Sum.inr j) :=
+        fun h => hij.ne (Sum.inr.inj (α := V) h)
+      have hne_kj : ¬(Sum.inr k = Sum.inr j) :=
+        fun h => hklt.ne (Sum.inr.inj (α := V) h)
+      have hlex_ineq := lex_lt j
+          (Finsupp.single (Sum.inl j) 1 +
+            Finsupp.single (Sum.inr i) 1 +
+            Finsupp.single (Sum.inr k) 1)
+          (Finsupp.single (Sum.inl k) 1 +
+            Finsupp.single (Sum.inr i) 1 +
+            Finsupp.single (Sum.inr j) 1)
+          (by simp [Finsupp.add_apply, hne_ij, hne_kj])
+          (by simp [Finsupp.add_apply, hne_ij])
+          (fun v hv => by
+            have hne_iv : ¬(Sum.inr i = Sum.inr v) :=
+              fun h => (lt_trans hij hv).ne
+                (Sum.inr.inj (α := V) h)
+            have hne_kv : ¬(Sum.inr k = Sum.inr v) :=
+              fun h => (lt_trans hklt hv).ne
+                (Sum.inr.inj (α := V) h)
+            have hne_jv : ¬(Sum.inr j = Sum.inr v) :=
+              fun h => hv.ne (Sum.inr.inj (α := V) h)
+            simp [Finsupp.add_apply, hne_iv, hne_kv, hne_jv])
+      have hp_deg : binomialEdgeMonomialOrder.degree
+          (y k * (x i * y j - x j * y i) -
+            y j * (x i * y k - x k * y i) :
+            MvPolynomial (BinomialEdgeVars V) K) =
+          Finsupp.single (Sum.inl k) 1 +
+            Finsupp.single (Sum.inr i) 1 +
+            Finsupp.single (Sum.inr j) 1 := by
+        rw [hp_eq, MonomialOrder.degree_sub_of_lt
+          (by rw [hdeg1, hdeg2]; exact hlex_ineq), hdeg1]
       apply contra _ _ hp_mem hp_deg
       · intro heq
         have := Finsupp.ext_iff.mp heq (Sum.inl k)
-        simp [Finsupp.add_apply, Finsupp.single_apply] at this
+        simp [Finsupp.add_apply] at this
       · intro a b hadj_ab hab hs_le
         have hb : b = j := by
           have hle_inr := hs_le (Sum.inr b)
-          simp only [Finsupp.add_apply, Finsupp.single_apply, Sum.inl_ne_inr, if_false, zero_add,
-                     Sum.inr.injEq] at hle_inr
+          simp only [Finsupp.add_apply,
+            Finsupp.single_apply] at hle_inr
           by_cases hbi : b = i
-          · -- b = i: then from inl constraint a = k, but a < b = i < k contradicts a = k
+          · -- b = i: then from inl constraint a = k,
+            -- but a < b = i < k contradicts a = k
             subst hbi
             exfalso
             have hle_inl := hs_le (Sum.inl a)
-            simp only [Finsupp.add_apply, Finsupp.single_apply] at hle_inl
+            simp only [Finsupp.add_apply,
+              Finsupp.single_apply] at hle_inl
             have hak : a = k := by
               by_contra h
-              have hne_ka : Sum.inl k ≠ Sum.inl a := fun heq => h (Sum.inl.inj (α := V) (β := V) heq).symm
+              have hne_ka : Sum.inl k ≠ Sum.inl a :=
+                fun heq => h (Sum.inl.inj
+                  (α := V) (β := V) heq).symm
               simp [hne_ka] at hle_inl
-            subst hak; exact absurd (lt_trans hab hik) (lt_irrefl a)
+            subst hak
+            exact absurd (lt_trans hab hik) (lt_irrefl a)
           · by_contra hbj
-            have hne_ib : Sum.inr i ≠ Sum.inr b := fun h => hbi (Sum.inr.inj (α := V) h).symm
-            have hne_jb : Sum.inr j ≠ Sum.inr b := fun h => hbj (Sum.inr.inj (α := V) h).symm
+            have hne_ib : Sum.inr i ≠ Sum.inr b :=
+              fun h => hbi (Sum.inr.inj (α := V) h).symm
+            have hne_jb : Sum.inr j ≠ Sum.inr b :=
+              fun h => hbj (Sum.inr.inj (α := V) h).symm
             simp [hne_ib, hne_jb] at hle_inr
         have ha : a = k := by
           subst hb
           have hle_inl := hs_le (Sum.inl a)
-          simp only [Finsupp.add_apply, Finsupp.single_apply] at hle_inl
+          simp only [Finsupp.add_apply,
+            Finsupp.single_apply] at hle_inl
           by_contra hak
-          have hne_ka : Sum.inl k ≠ Sum.inl a := fun heq => hak (Sum.inl.inj (α := V) (β := V) heq).symm
+          have hne_ka : Sum.inl k ≠ Sum.inl a :=
+            fun heq => hak (Sum.inl.inj
+              (α := V) (β := V) heq).symm
           simp [hne_ka] at hle_inl
         subst hb ha
         exact hnotadj hadj_ab.symm
-  · -- Condition 2: ∀ i j k, i<k → j<k → i≠j → adj(i,k) → adj(j,k) → adj(i,j)
+  · -- Condition 2:
     intro i j k hik hjk hij hadj_ik hadj_jk
     by_contra hnotadj
     rcases lt_or_gt_of_ne hij with hilt | hjlt
@@ -693,55 +792,89 @@ theorem groebner_implies_closed (G : SimpleGraph V)
       have hp_eq : x j * (x i * y k - x k * y i) - x i * (x j * y k - x k * y j) =
           (x i * x k * y j - x j * x k * y i : MvPolynomial (BinomialEdgeVars V) K) := by ring
       have hdeg1 : binomialEdgeMonomialOrder.degree
-          (x i * x k * y j : MvPolynomial (BinomialEdgeVars V) K) =
-          Finsupp.single (Sum.inl i) 1 + Finsupp.single (Sum.inl k) 1 + Finsupp.single (Sum.inr j) 1 := by
-        simp only [x, y]
-        rw [MonomialOrder.degree_mul (mul_ne_zero (X_ne_zero _) (X_ne_zero _)) (X_ne_zero _),
-            MonomialOrder.degree_mul (X_ne_zero _) (X_ne_zero _),
-            MonomialOrder.degree_X, MonomialOrder.degree_X, MonomialOrder.degree_X]
-      have hdeg2 : binomialEdgeMonomialOrder.degree
-          (x j * x k * y i : MvPolynomial (BinomialEdgeVars V) K) =
-          Finsupp.single (Sum.inl j) 1 + Finsupp.single (Sum.inl k) 1 + Finsupp.single (Sum.inr i) 1 := by
-        simp only [x, y]
-        rw [MonomialOrder.degree_mul (mul_ne_zero (X_ne_zero _) (X_ne_zero _)) (X_ne_zero _),
-            MonomialOrder.degree_mul (X_ne_zero _) (X_ne_zero _),
-            MonomialOrder.degree_X, MonomialOrder.degree_X, MonomialOrder.degree_X]
-      -- Discriminator = Sum.inr j; M2 = e_{inl j}+e_{inl k}+e_{inr i}, M1 = e_{inl i}+e_{inl k}+e_{inr j}
-      have hne_ij3 : ¬(Sum.inr i = Sum.inr j) := fun h => hilt.ne (Sum.inr.inj (α := V) h)
-      have hlex_ineq := lex_lt j
-          (Finsupp.single (Sum.inl j) 1 + Finsupp.single (Sum.inl k) 1 + Finsupp.single (Sum.inr i) 1)
-          (Finsupp.single (Sum.inl i) 1 + Finsupp.single (Sum.inl k) 1 + Finsupp.single (Sum.inr j) 1)
-          (by simp [Finsupp.add_apply, Finsupp.single_apply, hne_ij3])
-          (by simp [Finsupp.add_apply, Finsupp.single_apply, hne_ij3])
-          (fun v hv => by
-            have hne_iv : ¬(Sum.inr i = Sum.inr v) := fun h => (lt_trans hilt hv).ne (Sum.inr.inj (α := V) h)
-            have hne_jv : ¬(Sum.inr j = Sum.inr v) := fun h => hv.ne (Sum.inr.inj (α := V) h)
-            simp [Finsupp.add_apply, Finsupp.single_apply, hne_iv, hne_jv])
-      have hp_deg : binomialEdgeMonomialOrder.degree
-          (x j * (x i * y k - x k * y i) - x i * (x j * y k - x k * y j) :
+          (x i * x k * y j :
             MvPolynomial (BinomialEdgeVars V) K) =
-          Finsupp.single (Sum.inl i) 1 + Finsupp.single (Sum.inl k) 1 + Finsupp.single (Sum.inr j) 1 := by
-        rw [hp_eq, MonomialOrder.degree_sub_of_lt (by rw [hdeg1, hdeg2]; exact hlex_ineq), hdeg1]
+          Finsupp.single (Sum.inl i) 1 +
+            Finsupp.single (Sum.inl k) 1 +
+            Finsupp.single (Sum.inr j) 1 := by
+        simp only [x, y]
+        rw [MonomialOrder.degree_mul
+              (mul_ne_zero (X_ne_zero _) (X_ne_zero _))
+              (X_ne_zero _),
+            MonomialOrder.degree_mul (X_ne_zero _)
+              (X_ne_zero _),
+            MonomialOrder.degree_X,
+            MonomialOrder.degree_X, MonomialOrder.degree_X]
+      have hdeg2 : binomialEdgeMonomialOrder.degree
+          (x j * x k * y i :
+            MvPolynomial (BinomialEdgeVars V) K) =
+          Finsupp.single (Sum.inl j) 1 +
+            Finsupp.single (Sum.inl k) 1 +
+            Finsupp.single (Sum.inr i) 1 := by
+        simp only [x, y]
+        rw [MonomialOrder.degree_mul
+              (mul_ne_zero (X_ne_zero _) (X_ne_zero _))
+              (X_ne_zero _),
+            MonomialOrder.degree_mul (X_ne_zero _)
+              (X_ne_zero _),
+            MonomialOrder.degree_X,
+            MonomialOrder.degree_X, MonomialOrder.degree_X]
+      -- Discriminator = Sum.inr j;
+      -- M2 = e_{inl j}+e_{inl k}+e_{inr i},
+      -- M1 = e_{inl i}+e_{inl k}+e_{inr j}
+      have hne_ij3 : ¬(Sum.inr i = Sum.inr j) :=
+        fun h => hilt.ne (Sum.inr.inj (α := V) h)
+      have hlex_ineq := lex_lt j
+          (Finsupp.single (Sum.inl j) 1 +
+            Finsupp.single (Sum.inl k) 1 +
+            Finsupp.single (Sum.inr i) 1)
+          (Finsupp.single (Sum.inl i) 1 +
+            Finsupp.single (Sum.inl k) 1 +
+            Finsupp.single (Sum.inr j) 1)
+          (by simp [Finsupp.add_apply, hne_ij3])
+          (by simp [Finsupp.add_apply])
+          (fun v hv => by
+            have hne_iv : ¬(Sum.inr i = Sum.inr v) :=
+              fun h => (lt_trans hilt hv).ne
+                (Sum.inr.inj (α := V) h)
+            have hne_jv : ¬(Sum.inr j = Sum.inr v) :=
+              fun h => hv.ne (Sum.inr.inj (α := V) h)
+            simp [Finsupp.add_apply, hne_iv, hne_jv])
+      have hp_deg : binomialEdgeMonomialOrder.degree
+          (x j * (x i * y k - x k * y i) -
+            x i * (x j * y k - x k * y j) :
+            MvPolynomial (BinomialEdgeVars V) K) =
+          Finsupp.single (Sum.inl i) 1 +
+            Finsupp.single (Sum.inl k) 1 +
+            Finsupp.single (Sum.inr j) 1 := by
+        rw [hp_eq, MonomialOrder.degree_sub_of_lt
+          (by rw [hdeg1, hdeg2]; exact hlex_ineq), hdeg1]
       apply contra _ _ hp_mem hp_deg
       · intro heq
         have := Finsupp.ext_iff.mp heq (Sum.inl i)
-        simp [Finsupp.add_apply, Finsupp.single_apply] at this
+        simp [Finsupp.add_apply] at this
       · intro a b hadj_ab hab hs_le
         -- b = j (D has only inr j)
         have hb : b = j := by
           have hle_inr := hs_le (Sum.inr b)
-          simp only [Finsupp.add_apply, Finsupp.single_apply, Sum.inl_ne_inr, if_false, zero_add,
-                     Sum.inr.injEq] at hle_inr
+          simp only [Finsupp.add_apply,
+            Finsupp.single_apply] at hle_inr
           by_contra hbj
-          have hne_jb : Sum.inr j ≠ Sum.inr b := fun h => hbj (Sum.inr.inj (α := V) h).symm
+          have hne_jb : Sum.inr j ≠ Sum.inr b :=
+            fun h => hbj (Sum.inr.inj (α := V) h).symm
           simp [hne_jb] at hle_inr
         -- a = i or a = k (D has inl i and inl k)
         have ha : a = i ∨ a = k := by
           have hle_inl := hs_le (Sum.inl a)
-          simp only [Finsupp.add_apply, Finsupp.single_apply] at hle_inl
+          simp only [Finsupp.add_apply,
+            Finsupp.single_apply] at hle_inl
           by_contra hh; push_neg at hh
-          have hne_ia : Sum.inl i ≠ Sum.inl a := fun heq => hh.1 (Sum.inl.inj (α := V) (β := V) heq).symm
-          have hne_ka : Sum.inl k ≠ Sum.inl a := fun heq => hh.2 (Sum.inl.inj (α := V) (β := V) heq).symm
+          have hne_ia : Sum.inl i ≠ Sum.inl a :=
+            fun heq => hh.1 (Sum.inl.inj
+              (α := V) (β := V) heq).symm
+          have hne_ka : Sum.inl k ≠ Sum.inl a :=
+            fun heq => hh.2 (Sum.inl.inj
+              (α := V) (β := V) heq).symm
           simp [hne_ia, hne_ka] at hle_inl
         subst hb
         rcases ha with rfl | rfl
@@ -761,55 +894,89 @@ theorem groebner_implies_closed (G : SimpleGraph V)
       have hp_eq : x i * (x j * y k - x k * y j) - x j * (x i * y k - x k * y i) =
           (x j * x k * y i - x i * x k * y j : MvPolynomial (BinomialEdgeVars V) K) := by ring
       have hdeg1 : binomialEdgeMonomialOrder.degree
-          (x j * x k * y i : MvPolynomial (BinomialEdgeVars V) K) =
-          Finsupp.single (Sum.inl j) 1 + Finsupp.single (Sum.inl k) 1 + Finsupp.single (Sum.inr i) 1 := by
-        simp only [x, y]
-        rw [MonomialOrder.degree_mul (mul_ne_zero (X_ne_zero _) (X_ne_zero _)) (X_ne_zero _),
-            MonomialOrder.degree_mul (X_ne_zero _) (X_ne_zero _),
-            MonomialOrder.degree_X, MonomialOrder.degree_X, MonomialOrder.degree_X]
-      have hdeg2 : binomialEdgeMonomialOrder.degree
-          (x i * x k * y j : MvPolynomial (BinomialEdgeVars V) K) =
-          Finsupp.single (Sum.inl i) 1 + Finsupp.single (Sum.inl k) 1 + Finsupp.single (Sum.inr j) 1 := by
-        simp only [x, y]
-        rw [MonomialOrder.degree_mul (mul_ne_zero (X_ne_zero _) (X_ne_zero _)) (X_ne_zero _),
-            MonomialOrder.degree_mul (X_ne_zero _) (X_ne_zero _),
-            MonomialOrder.degree_X, MonomialOrder.degree_X, MonomialOrder.degree_X]
-      -- Discriminator = Sum.inr i; M2 = e_{inl i}+e_{inl k}+e_{inr j}, M1 = e_{inl j}+e_{inl k}+e_{inr i}
-      have hne_ij4 : ¬(Sum.inr i = Sum.inr j) := fun h => hjlt.ne' (Sum.inr.inj (α := V) h)
-      have hlex_ineq := lex_lt i
-          (Finsupp.single (Sum.inl i) 1 + Finsupp.single (Sum.inl k) 1 + Finsupp.single (Sum.inr j) 1)
-          (Finsupp.single (Sum.inl j) 1 + Finsupp.single (Sum.inl k) 1 + Finsupp.single (Sum.inr i) 1)
-          (by simp [Finsupp.add_apply, Finsupp.single_apply, hne_ij4])
-          (by simp [Finsupp.add_apply, Finsupp.single_apply])
-          (fun v hv => by
-            have hne_jv : ¬(Sum.inr j = Sum.inr v) := fun h => (lt_trans hjlt hv).ne (Sum.inr.inj (α := V) h)
-            have hne_iv : ¬(Sum.inr i = Sum.inr v) := fun h => hv.ne (Sum.inr.inj (α := V) h)
-            simp [Finsupp.add_apply, Finsupp.single_apply, hne_jv, hne_iv])
-      have hp_deg : binomialEdgeMonomialOrder.degree
-          (x i * (x j * y k - x k * y j) - x j * (x i * y k - x k * y i) :
+          (x j * x k * y i :
             MvPolynomial (BinomialEdgeVars V) K) =
-          Finsupp.single (Sum.inl j) 1 + Finsupp.single (Sum.inl k) 1 + Finsupp.single (Sum.inr i) 1 := by
-        rw [hp_eq, MonomialOrder.degree_sub_of_lt (by rw [hdeg1, hdeg2]; exact hlex_ineq), hdeg1]
+          Finsupp.single (Sum.inl j) 1 +
+            Finsupp.single (Sum.inl k) 1 +
+            Finsupp.single (Sum.inr i) 1 := by
+        simp only [x, y]
+        rw [MonomialOrder.degree_mul
+              (mul_ne_zero (X_ne_zero _) (X_ne_zero _))
+              (X_ne_zero _),
+            MonomialOrder.degree_mul (X_ne_zero _)
+              (X_ne_zero _),
+            MonomialOrder.degree_X,
+            MonomialOrder.degree_X, MonomialOrder.degree_X]
+      have hdeg2 : binomialEdgeMonomialOrder.degree
+          (x i * x k * y j :
+            MvPolynomial (BinomialEdgeVars V) K) =
+          Finsupp.single (Sum.inl i) 1 +
+            Finsupp.single (Sum.inl k) 1 +
+            Finsupp.single (Sum.inr j) 1 := by
+        simp only [x, y]
+        rw [MonomialOrder.degree_mul
+              (mul_ne_zero (X_ne_zero _) (X_ne_zero _))
+              (X_ne_zero _),
+            MonomialOrder.degree_mul (X_ne_zero _)
+              (X_ne_zero _),
+            MonomialOrder.degree_X,
+            MonomialOrder.degree_X, MonomialOrder.degree_X]
+      -- Discriminator = Sum.inr i;
+      -- M2 = e_{inl i}+e_{inl k}+e_{inr j},
+      -- M1 = e_{inl j}+e_{inl k}+e_{inr i}
+      have hne_ij4 : ¬(Sum.inr i = Sum.inr j) :=
+        fun h => hjlt.ne' (Sum.inr.inj (α := V) h)
+      have hlex_ineq := lex_lt i
+          (Finsupp.single (Sum.inl i) 1 +
+            Finsupp.single (Sum.inl k) 1 +
+            Finsupp.single (Sum.inr j) 1)
+          (Finsupp.single (Sum.inl j) 1 +
+            Finsupp.single (Sum.inl k) 1 +
+            Finsupp.single (Sum.inr i) 1)
+          (by simp [Finsupp.add_apply, hne_ij4])
+          (by simp [Finsupp.add_apply])
+          (fun v hv => by
+            have hne_jv : ¬(Sum.inr j = Sum.inr v) :=
+              fun h => (lt_trans hjlt hv).ne
+                (Sum.inr.inj (α := V) h)
+            have hne_iv : ¬(Sum.inr i = Sum.inr v) :=
+              fun h => hv.ne (Sum.inr.inj (α := V) h)
+            simp [Finsupp.add_apply, hne_jv, hne_iv])
+      have hp_deg : binomialEdgeMonomialOrder.degree
+          (x i * (x j * y k - x k * y j) -
+            x j * (x i * y k - x k * y i) :
+            MvPolynomial (BinomialEdgeVars V) K) =
+          Finsupp.single (Sum.inl j) 1 +
+            Finsupp.single (Sum.inl k) 1 +
+            Finsupp.single (Sum.inr i) 1 := by
+        rw [hp_eq, MonomialOrder.degree_sub_of_lt
+          (by rw [hdeg1, hdeg2]; exact hlex_ineq), hdeg1]
       apply contra _ _ hp_mem hp_deg
       · intro heq
         have := Finsupp.ext_iff.mp heq (Sum.inl j)
-        simp [Finsupp.add_apply, Finsupp.single_apply] at this
+        simp [Finsupp.add_apply] at this
       · intro a b hadj_ab hab hs_le
         -- b = i (D has only inr i)
         have hb : b = i := by
           have hle_inr := hs_le (Sum.inr b)
-          simp only [Finsupp.add_apply, Finsupp.single_apply, Sum.inl_ne_inr, if_false, zero_add,
-                     Sum.inr.injEq] at hle_inr
+          simp only [Finsupp.add_apply,
+            Finsupp.single_apply] at hle_inr
           by_contra hbi
-          have hne_ib : Sum.inr i ≠ Sum.inr b := fun h => hbi (Sum.inr.inj (α := V) h).symm
+          have hne_ib : Sum.inr i ≠ Sum.inr b :=
+            fun h => hbi (Sum.inr.inj (α := V) h).symm
           simp [hne_ib] at hle_inr
         -- a = j or a = k (D has inl j and inl k)
         have ha : a = j ∨ a = k := by
           have hle_inl := hs_le (Sum.inl a)
-          simp only [Finsupp.add_apply, Finsupp.single_apply] at hle_inl
+          simp only [Finsupp.add_apply,
+            Finsupp.single_apply] at hle_inl
           by_contra hh; push_neg at hh
-          have hne_ja : Sum.inl j ≠ Sum.inl a := fun heq => hh.1 (Sum.inl.inj (α := V) (β := V) heq).symm
-          have hne_ka : Sum.inl k ≠ Sum.inl a := fun heq => hh.2 (Sum.inl.inj (α := V) (β := V) heq).symm
+          have hne_ja : Sum.inl j ≠ Sum.inl a :=
+            fun heq => hh.1 (Sum.inl.inj
+              (α := V) (β := V) heq).symm
+          have hne_ka : Sum.inl k ≠ Sum.inl a :=
+            fun heq => hh.2 (Sum.inl.inj
+              (α := V) (β := V) heq).symm
           simp [hne_ja, hne_ka] at hle_inl
         subst hb
         rcases ha with rfl | rfl
