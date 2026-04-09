@@ -24,7 +24,7 @@ It also now contains the basic Cohen–Macaulay examples from the paper:
 
 The remaining paper endpoint is concentrated in:
 
-- the Cohen–Macaulay sufficient-condition theorem of Proposition 1.6
+- the full Cohen–Macaulay sufficient-condition theorem of Proposition 1.6
 
 
 ## Mathematical Setup
@@ -51,10 +51,10 @@ The main mathematical files are now split roughly as follows:
 - `BEI/Radical.lean` — Corollary 2.2
 - `BEI/PrimeIdeals.lean` — prime components and the height formula
 - `BEI/PrimeDecomposition.lean` — Theorem 3.2 and Proposition 3.6
-- `BEI/PrimeDecompositionDimension.lean` — Corollaries 3.3, 3.4, and the CM branch of Corollary 3.7
+- `BEI/PrimeDecompositionDimension.lean` — Corollaries 3.3, 3.4, the CM branch of Corollary 3.7, and the direct equidimensional Proposition 1.6 route
 - `BEI/MinimalPrimes.lean` — Proposition 3.8, Corollary 3.9, and Corollary 3.7 unmixed branch
 - `BEI/CIIdeals.lean` — Section 4 binary-output CI ideals, both bridge theorems, and transferred radicality / prime decomposition / minimal-prime theorems
-- `BEI/CohenMacaulay.lean` — Proposition 1.6 and the CM examples
+- `BEI/CohenMacaulay.lean` — the HH bipartite-graph infrastructure and the complete-graph CM example
 
 Generic or backported infrastructure lives in `toMathlib/`, including
 `toMathlib/CohenMacaulay/Defs.lean`.
@@ -70,7 +70,8 @@ At the time of this summary:
 - the non-CM Section 3 backbone is in place, including the unmixed branch of Corollary 3.7;
 - the Section 3 CM consequences `corollary_3_4` and `corollary_3_7_CM` are proved over the local equidimensionality-style definition;
 - Section 4 now has the binary-output single-statement bridge, specification bridge, and transferred radicality / prime decomposition / minimal-prime theorems in `BEI/CIIdeals.lean`;
-- the only active paper endpoint still depending on `sorry` is Proposition 1.6.
+- the direct equidimensional Proposition 1.6 route is now proved with no `sorry`;
+- the remaining paper-level gap is that this still uses the local equidimensional surrogate rather than the paper's full depth-based CM theory.
 
 
 ## Where To Look Next

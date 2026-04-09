@@ -21,7 +21,7 @@ faithfully the current Lean statements match the paper.
 | Corollary 1.3 | `cor_1_3`, `cor_1_3_connected_forward`, `pathGraph_isClosedGraph` | `BEI/GraphProperties.lean` | Exact | Formalized in the connected-graph form implicit in the paper |
 | Proposition 1.4 | `prop_1_4` | `BEI/GraphProperties.lean` | Equivalent | Directed shortest-path formulation |
 | Proposition 1.5 | `prop_1_5` | `BEI/GraphProperties.lean` | Exact | Unique minimal closed supergraph |
-| Proposition 1.6 | `prop_1_6`, `closedGraph_minimalPrime_componentCount_eq`, `closedGraph_componentCount_le_card_add_one` | `BEI/PrimeDecompositionDimension.lean`, `BEI/CohenMacaulay.lean` | Proved | Direct equidimensionality proof; `SatisfiesProp1_6Condition` unused |
+| Proposition 1.6 | `prop_1_6`, `closedGraph_minimalPrime_componentCount_eq`, `closedGraph_componentCount_le_card_add_one` | `BEI/PrimeDecompositionDimension.lean`, `BEI/CohenMacaulay.lean` | Partial | Direct equidimensional surrogate proved; full depth-based CM statement from the paper still open |
 
 ## Section 2: Reduced Gröbner Basis and Radicality
 
@@ -61,7 +61,7 @@ faithfully the current Lean statements match the paper.
 
 | Paper endpoint | Current state |
 |---|---|
-| Proposition 1.6 | **proved** via direct equidimensionality (0 sorries) |
+| Proposition 1.6 | equidimensional surrogate proved directly; full paper CM statement still open |
 | Corollary 3.4 | **proved** |
 | Corollary 3.7 | **proved** (all branches) |
 | Section 4 | complete: bridges, radicality, prime decomposition, and minimal-prime transfer all proved |
@@ -112,7 +112,7 @@ faithfully the current Lean statements match the paper.
 - `BEI/PrimeDecompositionDimension.lean` carries Corollary 3.3, Corollary 3.4, `corollary_3_7_CM`, the path CM example, Proposition 1.6, and supporting equidimensionality lemmas.
 - `BEI/PrimeDecomposition.lean` carries Theorem 3.2 and Proposition 3.6.
 - `BEI/CIIdeals.lean` carries the Section 4 binary-output setup, both bridge theorems, and the transferred radicality / prime-decomposition / minimal-prime theorems.
-- `BEI/CohenMacaulay.lean` carries the CM definition, HH bipartite graph infrastructure, closed-graph component-count upper bound, and the complete-graph CM example.
+- `BEI/CohenMacaulay.lean` carries the local CM-surrogate definition wrapper, HH bipartite graph infrastructure, the closed-graph component-count upper bound, and the complete-graph example.
 - `toMathlib/CohenMacaulay/Defs.lean` carries the local working CM definition currently used in the project.
 - `toMathlib/MonomialIdeal.lean` carries `Ideal.IsMonomial`, `MvPolynomial.isPrime_span_X_image_set` (Set version), `Ideal.exists_variable_mem_of_monomial_mem_prime`, `Ideal.IsMonomial.isPrime_iff_eq_span_X_image` (prime monomial ideals = variable ideals), `Ideal.IsMonomial.span_X_image`, `coeff_pow_lexMax`, `Ideal.IsMonomial.radical_isMonomial`, `Ideal.isPrimary_monomial_criterion`, `Ideal.IsMonomial.isPrimary_radical_eq_span_X`, the structural outside-`s` membership lemmas, the general support-extraction lemma `Ideal.not_mem_exists_monomial_notMem`, the converse helper `Ideal.mem_of_mul_mem_of_lexMax_outside`, and the full primary iff `Ideal.IsMonomial.isPrimary_iff`.
 - `toMathlib/SquarefreeMonomialPrimes.lean` carries `variablePairIdeal`, `IsVertexCover`, `IsMinimalVertexCover`, and the complete minimal prime ↔ minimal vertex cover characterization for edge ideals.

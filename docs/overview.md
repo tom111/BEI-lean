@@ -18,9 +18,9 @@ good use of Lean and Mathlib.
 
 One important qualification: the current project uses a local equidimensional stand-in
 for Cohen-Macaulayness in the Proposition 1.6 branch. That stand-in is not the full
-depth-based theory from commutative algebra, and even the current stand-in proof path is
-still unfinished. So the project does not count the paper as completely formalized until
-both the remaining Proposition 1.6 gap and the full Cohen-Macaulay theory are in place.
+depth-based theory from commutative algebra. The direct proof of the resulting
+equidimensional surrogate is now complete, but the project still does not count the
+paper as completely formalized until the full Cohen-Macaulay theory is in place.
 
 For the full theory, the likely next source is newer Mathlib or a backport from
 Mathlib PR `#26218`.

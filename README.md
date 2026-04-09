@@ -11,7 +11,9 @@ the minimal-prime description. It also includes the binary-output Section 4
 single-statement bridge, specification bridge, and transferred radicality / prime
 decomposition / minimal-prime results for CI ideals. The main remaining paper gap is
 the Cohen–Macaulay branch of Proposition 1.6. The Section 3 CM corollaries and the
-Section 4 CI-ideal transfers are now formalized.
+Section 4 CI-ideal transfers are now formalized. A direct equidimensional surrogate
+variant of Proposition 1.6 is also proved, but the full depth-based Cohen–Macaulay
+statement from the paper is still open.
 
 Documentation and blueprint scaffold:
 

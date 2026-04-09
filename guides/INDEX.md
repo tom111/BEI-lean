@@ -18,10 +18,11 @@ Completed guides (deleted):
 - HH equidimensionality — `minimalVertexCover_exactlyOne` and `minimalVertexCover_ncard_eq` proved
 - Dimension step — `bipartiteEdgeMonomialIdeal_equidimensional` and `bipartiteEdgeMonomialIdeal_isCohenMacaulay` proved; `ringKrullDim_quotient_span_X_image` and `ringKrullDim_quotient_span_X_eq_of_card_eq` added to `toMathlib/HeightVariableIdeal.lean`
 - Cut-vertex preservation (ANSWER_CUTVERTEX_PRESERVED_SORRY) — `closedGraph_cutVertex_preserved_of_erase` fully proved via bridge extraction + gap analysis
+- Direct Prop. 1.6 equidim blocker — `prop_1_6` now fully proved on the local equidimensional route
 
 ## Immediate Work Packets
 
-- [PROP_1_6_EQUIDIM_BLOCKER.md](PROP_1_6_EQUIDIM_BLOCKER.md) — broader blocker context for the direct equidimensionality route (now resolved)
+- [PROP_1_6_POSTPROOF_HONESTY_SYNC.md](PROP_1_6_POSTPROOF_HONESTY_SYNC.md) — sync stale status files, then rename the local CM-surrogate layer honestly
 - [PROP_1_6_CM_TRANSFER.md](PROP_1_6_CM_TRANSFER.md) — secondary paper-faithful algebra track; not the active next packet unless explicitly chosen
 
 ## Current Proposition 1.6 State
@@ -33,6 +34,9 @@ The direct equidimensional route is **fully proved** (0 sorries):
 
 The paper-faithful CM-transfer route remains as future work:
 - `cm_transfer_initialIdeal` in `BEI/CohenMacaulay.lean`
+
+This does **not** yet count as a full formalization of the paper's depth-based
+Cohen–Macaulay statement.
 
 ## CM Reference Notes
 
