@@ -82,6 +82,7 @@ private lemma prod_X_list_exponent_one {σ : Type*} {R : Type*} [CommSemiring R]
       rw [if_neg hat, zero_add]
       exact ih ht' hnd' d' hd'
 
+omit [DecidableEq V] [Fintype V] in
 /-- The pathMonomial exponent at `Sum.inl v` is 0 when `v ∉ internalVertices π` or `¬(j < v)`. -/
 lemma pathMonomial_exponent_inl_zero
     (i j : V) (π : List V) (v : V)
@@ -120,6 +121,7 @@ lemma pathMonomial_exponent_inl_zero
     simp only [List.mem_map, not_exists, not_and]; intro w _ hweq; exact absurd hweq (by simp)
   omega
 
+omit [DecidableEq V] [Fintype V] in
 /-- The pathMonomial exponent at `Sum.inr v` is 0 when `v ∉ internalVertices π` or `¬(v < i)`. -/
 lemma pathMonomial_exponent_inr_zero
     (i j : V) (π : List V) (v : V)
@@ -158,6 +160,7 @@ lemma pathMonomial_exponent_inr_zero
     exact hw
   omega
 
+omit [DecidableEq V] [Fintype V] in
 /-- The pathMonomial exponent at `Sum.inl v` is 1 when `v ∈ internalVertices π` and `j < v`. -/
 lemma pathMonomial_exponent_inl_one
     (i j : V) (π : List V) (v : V)
@@ -195,6 +198,7 @@ lemma pathMonomial_exponent_inl_one
     · exact (hnd.filter _).map Sum.inl_injective
   omega
 
+omit [DecidableEq V] [Fintype V] in
 /-- The pathMonomial exponent at `Sum.inr v` is 1 when `v ∈ internalVertices π` and `v < i`. -/
 lemma pathMonomial_exponent_inr_one
     (i j : V) (π : List V) (v : V)
@@ -242,6 +246,7 @@ lemma sPolyD_ge_of_zero {ι : Type*} (d₁ d₂ f₁ f₂ : ι →₀ ℕ) (w : 
     add_zero, Nat.zero_max, Nat.sub_zero]
   omega
 
+omit [DecidableEq V] in
 /-- `IsRemainder 0 G 0` holds trivially for any set G. -/
 lemma isRemainder_zero_zero'
     (G : Set (MvPolynomial (BinomialEdgeVars V) K)) :
@@ -296,13 +301,14 @@ lemma isRemainder_neg'
 
 /-! ## Admissible path existence from walks -/
 
+omit [DecidableEq V] [Fintype V] in
 /-- Given a nodup walk from `a` to `b` (with `a < b`) satisfying the vertex condition,
 there exists an admissible path from `a` to `b` in G that is a sublist of the walk. -/
 theorem exists_admissible_path_of_walk (G : SimpleGraph V)
     (a b : V) (hab : a < b)
     (π : List V) (hHead : π.head? = some a) (hLast : π.getLast? = some b)
     (hND : π.Nodup) (hVtx : ∀ v ∈ π, v = a ∨ v = b ∨ v < a ∨ b < v)
-    (hWalk : π.Chain' (fun u v => G.Adj u v)) :
+    (hWalk : π.IsChain (fun u v => G.Adj u v)) :
     ∃ σ : List V, IsAdmissiblePath G a b σ ∧ σ.Sublist π := by
   -- By strong induction on π.length.
   -- Either π satisfies the minimality condition (7) and is admissible,
@@ -310,7 +316,7 @@ theorem exists_admissible_path_of_walk (G : SimpleGraph V)
   suffices ∀ (n : ℕ) (π : List V), π.length ≤ n →
       π.head? = some a → π.getLast? = some b → π.Nodup →
       (∀ v ∈ π, v = a ∨ v = b ∨ v < a ∨ b < v) →
-      π.Chain' (fun u v => G.Adj u v) →
+      π.IsChain (fun u v => G.Adj u v) →
       ∃ σ, IsAdmissiblePath G a b σ ∧ σ.Sublist π from
     this π.length π le_rfl hHead hLast hND hVtx hWalk
   intro n
@@ -324,7 +330,7 @@ theorem exists_admissible_path_of_walk (G : SimpleGraph V)
     intro π hlen hHead hLast hND hVtx hWalk
     by_cases hMin : ∀ (π' : List V), π'.Sublist π → π' ≠ π →
         π'.head? = some a → π'.getLast? = some b →
-        π'.Chain' (fun u v => G.Adj u v) →
+        π'.IsChain (fun u v => G.Adj u v) →
         ¬(∀ v ∈ π', v = a ∨ v = b ∨ v < a ∨ b < v)
     · exact ⟨π, ⟨hab, hHead, hLast, hND, hVtx, hWalk, hMin⟩, List.Sublist.refl π⟩
     · push_neg at hMin
@@ -337,6 +343,7 @@ theorem exists_admissible_path_of_walk (G : SimpleGraph V)
 
 
 
+omit [DecidableEq V] [Fintype V] in
 /-- The pathMonomial is a monomial with coefficient 1. -/
 lemma pathMonomial_is_monomial (i j : V) (π : List V) :
     ∃ d : BinomialEdgeVars V →₀ ℕ, pathMonomial (K := K) i j π = monomial d 1 := by
@@ -358,12 +365,14 @@ lemma pathMonomial_is_monomial (i j : V) (π : List V) :
 
 /-! ## Sub-walk internal vertex helpers -/
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 private lemma getLast_not_mem_dropLast_nd (l : List V) (hnd : l.Nodup) (hne : l ≠ []) :
     l.getLast hne ∉ l.dropLast := by
   intro h
   rw [← List.dropLast_append_getLast hne] at hnd
   exact (List.nodup_append.mp hnd).2.2 _ h _ (List.mem_singleton.mpr rfl) rfl
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 private lemma ne_getLast_of_mem_tdl (l : List V) (hnd : l.Nodup) (hne : l ≠ [])
     (u : V) (hu : u ∈ l.tail.dropLast) : u ≠ l.getLast hne := by
   intro heq; rw [heq] at hu
@@ -378,6 +387,7 @@ private lemma ne_getLast_of_mem_tdl (l : List V) (hnd : l.Nodup) (hne : l ≠ []
       rw [List.dropLast_cons_of_ne_nil (List.cons_ne_nil y rest')]
       exact List.mem_cons_of_mem x hu
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- Internal vertices of `τ.drop k` are internal vertices of `τ`. -/
 private lemma internal_of_drop (τ : List V) (k : ℕ) (a b : V)
     (hne : τ ≠ []) (hND : τ.Nodup) (hHead : τ.head? = some a) (hLast : τ.getLast? = some b)
@@ -414,6 +424,7 @@ private lemma internal_of_drop (τ : List V) (k : ℕ) (a b : V)
     rw [heq, ← List.getLast_cons hrest_ne (a := w)]
     exact Option.some.inj ((List.getLast?_eq_some_getLast (List.cons_ne_nil w rest)).symm.trans hLast)
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- Internal vertices of `τ.take (k+1)` are internal vertices of `τ`. -/
 private lemma internal_of_take (τ : List V) (k : ℕ) (a b : V)
     (hne : τ ≠ []) (hND : τ.Nodup) (hHead : τ.head? = some a) (hLast : τ.getLast? = some b)
@@ -474,7 +485,7 @@ theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
     τ.head? = some a →
     τ.getLast? = some b →
     τ.Nodup →
-    τ.Chain' (fun u v => G.Adj u v) →
+    τ.IsChain (fun u v => G.Adj u v) →
     (∀ v ∈ internalVertices τ,
        (v < a → d_q (Sum.inr v) ≥ 1) ∧
        (b < v → d_q (Sum.inl v) ≥ 1) ∧
@@ -520,7 +531,7 @@ theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
           ∃ τ₂ : List V,
           τ₂.length ≤ n ∧
           τ₂.head? = some v₀ ∧ τ₂.getLast? = some b ∧ τ₂.Nodup ∧
-          τ₂.Chain' (fun u v => G.Adj u v) ∧
+          τ₂.IsChain (fun u v => G.Adj u v) ∧
           ∀ u ∈ internalVertices τ₂, u ∈ internalVertices τ := by
         have hne : τ ≠ [] := by intro h; simp [h, internalVertices] at hv₀_int
         have hv₀_mem : v₀ ∈ τ :=
@@ -553,7 +564,7 @@ theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
           ∃ τ₁ : List V,
           τ₁.length ≤ n ∧
           τ₁.head? = some a ∧ τ₁.getLast? = some v₀ ∧ τ₁.Nodup ∧
-          τ₁.Chain' (fun u v => G.Adj u v) ∧
+          τ₁.IsChain (fun u v => G.Adj u v) ∧
           ∀ u ∈ internalVertices τ₁, u ∈ internalVertices τ := by
         have hne : τ ≠ [] := by intro h; simp [h, internalVertices] at hv₀_int
         have hv₀_mem : v₀ ∈ τ :=
@@ -602,7 +613,7 @@ theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
         -- d₁(inr v) = d_q(inr v) since ev₀, ea only affect inl
         have hinr : d₁ (Sum.inr v) = d_q (Sum.inr v) := by
           simp only [hd₁_def, hev₀_def, hea_def, Finsupp.add_apply, Finsupp.tsub_apply]
-          simp [Finsupp.single_apply]
+          simp
         -- d₁(inl v) = d_q(inl v) when v ≠ v₀ and v ≠ a
         have hinl (hv₀' : v ≠ v₀) : d₁ (Sum.inl v) = d_q (Sum.inl v) := by
           simp only [hd₁_def, hev₀_def, hea_def]
@@ -640,7 +651,7 @@ theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
         -- d₂(inr v) = d_q(inr v)
         have hinr : d₂ (Sum.inr v) = d_q (Sum.inr v) := by
           simp only [hd₂_def, hev₀_def, heb_def, Finsupp.add_apply, Finsupp.tsub_apply]
-          simp [Finsupp.single_apply]
+          simp
         -- d₂(inl v) = d_q(inl v) when v ≠ v₀ and v ≠ b
         have hinl (hv₀' : v ≠ v₀) : d₂ (Sum.inl v) = d_q (Sum.inl v) := by
           simp only [hd₂_def, hev₀_def, heb_def]
@@ -839,7 +850,7 @@ theorem isRemainder_fij_of_covered_walk_y (G : SimpleGraph V) :
     τ.head? = some a →
     τ.getLast? = some b →
     τ.Nodup →
-    τ.Chain' (fun u v => G.Adj u v) →
+    τ.IsChain (fun u v => G.Adj u v) →
     (∀ v ∈ internalVertices τ,
        (v < a → d_q (Sum.inr v) ≥ 1) ∧
        (b < v → d_q (Sum.inl v) ≥ 1) ∧
@@ -889,7 +900,7 @@ theorem isRemainder_fij_of_covered_walk_y (G : SimpleGraph V) :
           ∃ τ₂ : List V,
           τ₂.length ≤ n ∧
           τ₂.head? = some v₀ ∧ τ₂.getLast? = some b ∧ τ₂.Nodup ∧
-          τ₂.Chain' (fun u v => G.Adj u v) ∧
+          τ₂.IsChain (fun u v => G.Adj u v) ∧
           ∀ u ∈ internalVertices τ₂, u ∈ internalVertices τ := by
         have hne : τ ≠ [] := by intro h; simp [h, internalVertices] at hv₀_int
         have hv₀_mem : v₀ ∈ τ :=
@@ -922,7 +933,7 @@ theorem isRemainder_fij_of_covered_walk_y (G : SimpleGraph V) :
           ∃ τ₁ : List V,
           τ₁.length ≤ n ∧
           τ₁.head? = some a ∧ τ₁.getLast? = some v₀ ∧ τ₁.Nodup ∧
-          τ₁.Chain' (fun u v => G.Adj u v) ∧
+          τ₁.IsChain (fun u v => G.Adj u v) ∧
           ∀ u ∈ internalVertices τ₁, u ∈ internalVertices τ := by
         have hne : τ ≠ [] := by intro h; simp [h, internalVertices] at hv₀_int
         have hv₀_mem : v₀ ∈ τ :=
@@ -1079,9 +1090,7 @@ theorem isRemainder_fij_of_covered_walk_y (G : SimpleGraph V) :
         unfold BinomialEdgeVars at hv
         simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply,
           Sum.inr.injEq, reduceCtorEq, ite_true, ite_false,
-          if_neg (ne_of_lt hav₀).symm, if_neg (ne_of_lt hv₀b),
-          if_neg (ne_of_gt hv₀b), if_neg (ne_of_gt hav₀),
-          if_neg (ne_of_lt hav₀), if_neg (ne_of_lt hv₀b)] at hv
+          if_neg (ne_of_gt hv₀b), if_neg (ne_of_lt hav₀)] at hv
         omega
       obtain ⟨hdeg₁, hdeg₂⟩ := degree_bounds_of_ne _ _ hne_deg
       rw [halg]
@@ -1178,20 +1187,22 @@ theorem isRemainder_fij_of_covered_walk_y (G : SimpleGraph V) :
 
 /-! ## Walk construction from shared-endpoint admissible paths -/
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- Reversed walk preserves adjacency (graph is undirected). -/
 lemma chain'_reverse' (G : SimpleGraph V) (π : List V)
-    (hW : π.Chain' (fun a b => G.Adj a b)) :
-    π.reverse.Chain' (fun a b => G.Adj a b) := by
-  change List.IsChain (fun a b => G.Adj a b) π.reverse
+    (hW : π.IsChain (fun a b => G.Adj a b)) :
+    π.reverse.IsChain (fun a b => G.Adj a b) := by
   rw [List.isChain_reverse]
   exact List.IsChain.imp (fun _ _ h => G.symm h) (hW : List.IsChain _ π)
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- Internal vertices of a reversed list have the same membership as the original.
 Both are "all elements except first and last", which are swapped by reversal. -/
 private lemma internalVertices_reverse (l : List V) :
     internalVertices l.reverse = (internalVertices l).reverse := by
   simp only [internalVertices, List.tail_reverse, List.dropLast_reverse, List.tail_dropLast]
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 lemma mem_internalVertices_reverse {l : List V} {v : V}
     (h : v ∈ internalVertices l.reverse) : v ∈ internalVertices l := by
   rw [internalVertices_reverse] at h
@@ -1199,14 +1210,17 @@ lemma mem_internalVertices_reverse {l : List V} {v : V}
 
 /-! ### Helpers for walk construction -/
 
+omit [LinearOrder V] [Fintype V] in
 private lemma idxOf_lt {l : List V} {v : V} (hv : v ∈ l) : l.idxOf v < l.length :=
   List.findIdx_lt_length_of_exists ⟨v, hv, by simp [BEq.beq]⟩
 
+omit [LinearOrder V] [Fintype V] in
 lemma head?_drop_idxOf {l : List V} {v : V} (hv : v ∈ l) :
     (l.drop (l.idxOf v)).head? = some v := by
   rw [List.head?_eq_getElem?, List.getElem?_drop]
   simp [List.getElem?_eq_getElem (idxOf_lt hv), List.getElem_idxOf (idxOf_lt hv)]
 
+omit [LinearOrder V] [Fintype V] in
 lemma getLast?_drop_idxOf {l : List V} {v : V} (hv : v ∈ l) :
     (l.drop (l.idxOf v)).getLast? = l.getLast? := by
   have hne : l.drop (l.idxOf v) ≠ [] := by
@@ -1215,6 +1229,7 @@ lemma getLast?_drop_idxOf {l : List V} {v : V} (hv : v ∈ l) :
       List.getLast?_eq_some_getLast (List.ne_nil_of_mem hv)]
   exact congrArg _ (List.getLast_drop hne)
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 lemma isChain_drop {r : V → V → Prop} {l : List V} (h : l.IsChain r) (i : ℕ) :
     (l.drop i).IsChain r := by
   induction i generalizing l with
@@ -1228,6 +1243,7 @@ lemma isChain_drop {r : V → V → Prop} {l : List V} (h : l.IsChain r) (i : �
       | singleton _ => exact ih .nil
       | cons_cons _ h2 => exact ih h2
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 private lemma isChain_append {r : V → V → Prop} {l₁ l₂ : List V}
     (h₁ : l₁.IsChain r) (h₂ : l₂.IsChain r)
     (h : ∀ x, x ∈ l₁.getLast? → ∀ y, y ∈ l₂.head? → r x y) :
@@ -1249,6 +1265,7 @@ private lemma isChain_append {r : V → V → Prop} {l₁ l₂ : List V}
         intro x hx y hy; apply h x _ y hy
         simp only [List.getLast?_cons_cons]; exact hx))
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 private lemma isChain_tail {r : V → V → Prop} {l : List V}
     (h : l.IsChain r) : l.tail.IsChain r := by
   cases h with
@@ -1256,16 +1273,19 @@ private lemma isChain_tail {r : V → V → Prop} {l : List V}
   | singleton _ => exact .nil
   | cons_cons _ h2 => exact h2
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 private lemma mem_of_mem_internalVertices {l : List V} {v : V}
     (h : v ∈ internalVertices l) : v ∈ l :=
   (List.tail_sublist l).mem ((List.dropLast_sublist _).mem h)
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 private lemma getLast_not_mem_dropLast (l : List V) (hnd : l.Nodup) (hne : l ≠ []) :
     l.getLast hne ∉ l.dropLast := by
   rw [← List.dropLast_append_getLast hne] at hnd
   rw [List.nodup_append] at hnd
   intro h; exact absurd rfl (hnd.2.2 _ h _ (List.Mem.head []))
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 private lemma internal_ne_head {l : List V} (hnd : l.Nodup)
     {v : V} (hv : v ∈ internalVertices l) (hne : l ≠ []) : v ≠ l.head hne := by
   simp only [internalVertices] at hv
@@ -1277,6 +1297,7 @@ private lemma internal_ne_head {l : List V} (hnd : l.Nodup)
     rw [List.nodup_cons] at hnd
     exact hnd.1 (List.dropLast_subset rest hv)
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 private lemma internal_ne_getLast {l : List V} (hnd : l.Nodup)
     {v : V} (hv : v ∈ internalVertices l) (hne : l ≠ []) : v ≠ l.getLast hne := by
   simp only [internalVertices] at hv
@@ -1293,16 +1314,19 @@ private lemma internal_ne_getLast {l : List V} (hnd : l.Nodup)
                           exact getLast_not_mem_dropLast _ hnd_rest _ hv
 
 -- Head/last from head?/getLast? as plain equalities
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 lemma head_of_head? {l : List V} {a : V} (h : l.head? = some a) :
     l.head (by intro h'; simp [h'] at h) = a := by
   cases l with | nil => simp at h | cons x _ => simp at h; exact h
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 lemma getLast_of_getLast? {l : List V} {a : V} (h : l.getLast? = some a) :
     l.getLast (by intro h'; simp [h'] at h) = a := by
   have hne : l ≠ [] := by intro h'; simp [h'] at h
   rw [List.getLast?_eq_some_getLast hne] at h; exact Option.some.inj h
 
 -- v ∈ l, v ≠ head, v ≠ getLast → v ∈ internalVertices l
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 lemma mem_internalVertices_of_ne {l : List V} {v : V}
     (hnd : l.Nodup) (hv : v ∈ l) (hne : l ≠ [])
     (hnh : v ≠ l.head hne) (hnl : v ≠ l.getLast hne) :
@@ -1329,7 +1353,7 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
     τ.head? = some a →
     τ.getLast? = some b →
     τ.Nodup →
-    τ.Chain' (fun u v => G.Adj u v) →
+    τ.IsChain (fun u v => G.Adj u v) →
     (∀ w ∈ internalVertices τ, d_q (Sum.inl w) ≥ 1 ∨ d_q (Sum.inr w) ≥ 1) →
     binomialEdgeMonomialOrder.IsRemainder
       (monomial d_q 1 * fij (K := K) a b) (groebnerBasisSet G) 0 := by
@@ -1372,7 +1396,7 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
           ∃ τ₂ : List V,
           τ₂.length ≤ n ∧
           τ₂.head? = some v₀ ∧ τ₂.getLast? = some b ∧ τ₂.Nodup ∧
-          τ₂.Chain' (fun u v => G.Adj u v) ∧
+          τ₂.IsChain (fun u v => G.Adj u v) ∧
           ∀ u ∈ internalVertices τ₂, u ∈ internalVertices τ := by
         have hne : τ ≠ [] := by intro h; simp [h, internalVertices] at hv₀_int
         have hv₀_mem : v₀ ∈ τ :=
@@ -1405,7 +1429,7 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
           ∃ τ₁ : List V,
           τ₁.length ≤ n ∧
           τ₁.head? = some a ∧ τ₁.getLast? = some v₀ ∧ τ₁.Nodup ∧
-          τ₁.Chain' (fun u v => G.Adj u v) ∧
+          τ₁.IsChain (fun u v => G.Adj u v) ∧
           ∀ u ∈ internalVertices τ₁, u ∈ internalVertices τ := by
         have hne : τ ≠ [] := by intro h; simp [h, internalVertices] at hv₀_int
         have hv₀_mem : v₀ ∈ τ :=
@@ -1749,7 +1773,7 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
               τ₂.length ≤ n ∧
               τ₂.head? = some v₀ ∧ τ₂.getLast? = some b ∧
               τ₂.Nodup ∧
-              τ₂.Chain' (fun u v => G.Adj u v) ∧
+              τ₂.IsChain (fun u v => G.Adj u v) ∧
               ∀ u ∈ internalVertices τ₂,
                 u ∈ internalVertices τ := by
             have hne : τ ≠ [] := by
@@ -1796,7 +1820,7 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
               τ₁.length ≤ n ∧
               τ₁.head? = some a ∧ τ₁.getLast? = some v₀ ∧
               τ₁.Nodup ∧
-              τ₁.Chain' (fun u v => G.Adj u v) ∧
+              τ₁.IsChain (fun u v => G.Adj u v) ∧
               ∀ u ∈ internalVertices τ₁,
                 u ∈ internalVertices τ := by
             have hne : τ ≠ [] := by
@@ -1935,7 +1959,7 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
             rw [List.getLast?_reverse]; exact hτ₂_head
           have hτ₂_rev_nd : τ₂.reverse.Nodup :=
             List.nodup_reverse.mpr hτ₂_nd
-          have hτ₂_rev_walk : τ₂.reverse.Chain'
+          have hτ₂_rev_walk : τ₂.reverse.IsChain
               (fun u v => G.Adj u v) :=
             chain'_reverse' G τ₂ hτ₂_walk
           have h₂_pre :
@@ -2069,7 +2093,7 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
               τ₂.length ≤ n ∧
               τ₂.head? = some v₀ ∧ τ₂.getLast? = some b ∧
               τ₂.Nodup ∧
-              τ₂.Chain' (fun u v => G.Adj u v) ∧
+              τ₂.IsChain (fun u v => G.Adj u v) ∧
               ∀ u ∈ internalVertices τ₂,
                 u ∈ internalVertices τ := by
             have hne : τ ≠ [] := by
@@ -2116,7 +2140,7 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
               τ₁.length ≤ n ∧
               τ₁.head? = some a ∧ τ₁.getLast? = some v₀ ∧
               τ₁.Nodup ∧
-              τ₁.Chain' (fun u v => G.Adj u v) ∧
+              τ₁.IsChain (fun u v => G.Adj u v) ∧
               ∀ u ∈ internalVertices τ₁,
                 u ∈ internalVertices τ := by
             have hne : τ ≠ [] := by
@@ -2255,7 +2279,7 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
             rw [List.getLast?_reverse]; exact hτ₁_head
           have hτ₁_rev_nd : τ₁.reverse.Nodup :=
             List.nodup_reverse.mpr hτ₁_nd
-          have hτ₁_rev_walk : τ₁.reverse.Chain'
+          have hτ₁_rev_walk : τ₁.reverse.IsChain
               (fun u v => G.Adj u v) :=
             chain'_reverse' G τ₁ hτ₁_walk
           -- fij(v₀, a): v₀ < a, good order
@@ -2406,16 +2430,17 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
 
 /-! ### The walk construction -/
 
+omit [LinearOrder V] [Fintype V] in
 private lemma walk_from_shared_first_aux (G : SimpleGraph V) :
     ∀ (n : ℕ) (a b c : V) (π σ : List V),
     π.length + σ.length ≤ n →
     π.head? = some a → π.getLast? = some b →
-    π.Nodup → π.Chain' (fun u v => G.Adj u v) →
+    π.Nodup → π.IsChain (fun u v => G.Adj u v) →
     σ.head? = some a → σ.getLast? = some c →
-    σ.Nodup → σ.Chain' (fun u v => G.Adj u v) →
+    σ.Nodup → σ.IsChain (fun u v => G.Adj u v) →
     b ≠ c →
     ∃ τ : List V, τ.head? = some b ∧ τ.getLast? = some c ∧ τ.Nodup ∧
-    τ.Chain' (fun u v => G.Adj u v) ∧
+    τ.IsChain (fun u v => G.Adj u v) ∧
     (∀ v ∈ internalVertices τ,
       v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = a) := by
   intro n
@@ -2449,7 +2474,7 @@ private lemma walk_from_shared_first_aux (G : SimpleGraph V) :
           change 0 < List.findIdx (fun w => w == v) (x :: rest)
           simp only [List.findIdx_cons]
           have hxv : ¬(x = v) := by rw [hxa]; exact Ne.symm hva
-          simp only [BEq.beq, beq_iff_eq, hxv, ite_false]
+          simp only [BEq.beq, hxv]
           exact Nat.succ_pos _
       -- Apply IH with drops
       obtain ⟨τ, hτh, hτl, hτnd, hτw, hτcov⟩ := ih v b c
@@ -2602,15 +2627,16 @@ private lemma walk_from_shared_first_aux (G : SimpleGraph V) :
               (by rw [head_of_head? hσh]; exact hwa)
               (by rw [getLast_of_getLast? hσl]; exact hw_ne_c)
 
+omit [LinearOrder V] [Fintype V] in
 lemma walk_from_shared_first (G : SimpleGraph V)
     (a b c : V) (π σ : List V)
     (hπ_head : π.head? = some a) (hπ_last : π.getLast? = some b)
-    (hπ_nd : π.Nodup) (hπ_walk : π.Chain' (fun u v => G.Adj u v))
+    (hπ_nd : π.Nodup) (hπ_walk : π.IsChain (fun u v => G.Adj u v))
     (hσ_head : σ.head? = some a) (hσ_last : σ.getLast? = some c)
-    (hσ_nd : σ.Nodup) (hσ_walk : σ.Chain' (fun u v => G.Adj u v))
+    (hσ_nd : σ.Nodup) (hσ_walk : σ.IsChain (fun u v => G.Adj u v))
     (hbc : b ≠ c) :
     ∃ τ : List V, τ.head? = some b ∧ τ.getLast? = some c ∧ τ.Nodup ∧
-    τ.Chain' (fun u v => G.Adj u v) ∧
+    τ.IsChain (fun u v => G.Adj u v) ∧
     (∀ v ∈ internalVertices τ,
       v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = a) :=
   walk_from_shared_first_aux G _ a b c π σ le_rfl

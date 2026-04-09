@@ -531,12 +531,14 @@ theorem closedGraph_adj_consecutive {n : ℕ} {G : SimpleGraph (Fin n)}
       -- i.val < v₁.val < j.val = i.val + 1 is impossible for ℕ
       omega
 
+omit [LinearOrder V] in
 -- Helper: snd of a non-nil closed walk is in the support tail.
 private lemma snd_mem_tail' {G : SimpleGraph V} {v : V} (c : G.Walk v v) (hnil : ¬c.Nil) :
     c.snd ∈ c.support.tail := by
   obtain ⟨_, _, _, h, p, rfl⟩ := Walk.not_nil_iff.mp hnil
   simp [Walk.snd, Walk.support]
 
+omit [LinearOrder V] in
 -- Helper: penultimate of a non-nil closed walk is in the support tail (given it ≠ start).
 private lemma penultimate_mem_tail' {G : SimpleGraph V} {v : V} (c : G.Walk v v) (hnil : ¬c.Nil)
     (hne : c.penultimate ≠ v) : c.penultimate ∈ c.support.tail := by
@@ -547,6 +549,7 @@ private lemma penultimate_mem_tail' {G : SimpleGraph V} {v : V} (c : G.Walk v v)
     simp only [Walk.support, List.tail_cons, List.mem_cons] at hmem ⊢
     exact hmem.resolve_left hne
 
+omit [LinearOrder V] in
 -- Helper: a triangle contradicts bipartiteness.
 private lemma noTriangle_of_bipartite {G : SimpleGraph V} {u₁ u₂ v : V}
     (hAdju1 : G.Adj v u₁) (hAdju2 : G.Adj v u₂) (hAdj12 : G.Adj u₁ u₂)
@@ -765,7 +768,7 @@ theorem edge_is_admissible (G : SimpleGraph V) {i j : V}
   refine ⟨hij, rfl, rfl, ?_, ?_, ?_, ?_⟩
   · simp [List.Nodup, G.ne_of_adj h]
   · intro v hv
-    simp at hv
+    simp only [List.mem_pair] at hv
     rcases hv with rfl | rfl
     · exact Or.inl rfl
     · exact Or.inr (Or.inl rfl)
@@ -787,7 +790,7 @@ theorem edge_is_admissible (G : SimpleGraph V) {i j : V}
       exfalso
       cases t with
       | nil =>
-        simp at hLast
+        simp only [List.getLast?_singleton, Option.some.injEq] at hLast
         exact hij_ne hLast
       | cons _ _ =>
         have h1 := hSub'.length_le
@@ -800,7 +803,7 @@ theorem edge_is_admissible (G : SimpleGraph V) {i j : V}
         -- hSub'' : t <+ []; forces t = []
         exfalso
         cases hSub''
-        simp at hLast
+        simp only [List.getLast?_singleton, Option.some.injEq] at hLast
         exact hij_ne hLast
       | cons₂ _ hSub'' =>
         -- t = j :: t'' with hSub'' : t'' <+ []

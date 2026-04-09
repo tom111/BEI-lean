@@ -43,6 +43,7 @@ a `DecidableRel G.Adj` instance; it equals `Fintype.card` whenever the type is f
 noncomputable def componentCount (G : SimpleGraph V) (S : Finset V) : ℕ :=
   Nat.card (G.induce {v : V | v ∉ S}).ConnectedComponent
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- c(∅) equals the number of connected components of G itself.
 When S = ∅ the induced subgraph is G.induce Set.univ ≃g G. -/
 theorem componentCount_empty (G : SimpleGraph V) :
@@ -61,6 +62,7 @@ def SameComponent (G : SimpleGraph V) (S : Finset V) (u v : V) : Prop :=
   u ∉ S ∧ v ∉ S ∧
   Relation.ReflTransGen (fun a b => G.Adj a b ∧ a ∉ S ∧ b ∉ S) u v
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 private lemma reflTransGen_symm {R : V → V → Prop}
     (hR : ∀ a b, R a b → R b a) {u v : V}
     (h : Relation.ReflTransGen R u v) : Relation.ReflTransGen R v u := by
@@ -68,11 +70,13 @@ private lemma reflTransGen_symm {R : V → V → Prop}
   | refl => exact .refl
   | tail _ hab ih => exact (Relation.ReflTransGen.single (hR _ _ hab)).trans ih
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 lemma SameComponent.symm {G : SimpleGraph V} {S : Finset V}
     {u v : V} (h : SameComponent G S u v) : SameComponent G S v u :=
   ⟨h.2.1, h.1, reflTransGen_symm
     (fun _ _ ⟨hadj, ha, hb⟩ => ⟨hadj.symm, hb, ha⟩) h.2.2⟩
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 lemma SameComponent.trans {G : SimpleGraph V} {S : Finset V}
     {u v w : V} (h1 : SameComponent G S u v) (h2 : SameComponent G S v w) :
     SameComponent G S u w :=
@@ -158,6 +162,7 @@ private lemma primeComponent_le_ker (G : SimpleGraph V) (S : Finset V) :
 
 -- Use an open section to avoid repeating `open Classical in`
 section ker_helpers
+set_option linter.style.openClassical false
 open Classical
 
 /-- x_j * y_k - x_k * y_j ∈ P_S(G) when j,k are in the same connected component of G[V\S]. -/
@@ -170,6 +175,7 @@ private lemma minor_mem_primeComponent (G : SimpleGraph V) (S : Finset V)
       Ideal.subset_span (Set.mem_union_right _ ⟨k, j, h, hsc.symm, rfl⟩)
     convert (primeComponent G S).neg_mem this using 1; ring
 
+omit [DecidableEq V] [Fintype V] in
 /-- A monomial with S-support lies in `P_S(G)`. -/
 private lemma monomial_S_support_mem (G : SimpleGraph V) (S : Finset V)
     (d : BinomialEdgeVars V →₀ ℕ) (c : K) {i : V} (hi : i ∈ S)
@@ -235,7 +241,7 @@ private lemma single_swap_mem (G : SimpleGraph V) (S : Finset V)
       X (Sum.inl k : BinomialEdgeVars V) * X (Sum.inr j : BinomialEdgeVars V) -
       X (Sum.inl j : BinomialEdgeVars V) * X (Sum.inr k : BinomialEdgeVars V)
     simp only [MvPolynomial.X]
-    congr 1 <;> { rw [monomial_mul, one_mul]; congr 1 <;> simp [sxk, syj, sxj, syk] }
+    congr 1 <;> { rw [monomial_mul, one_mul]; congr 1 }
   have := minor_mem_primeComponent (K := K) G S hjk hsc
   convert (primeComponent (K := K) G S).neg_mem this using 1
   simp only [x, y]; ring
@@ -521,7 +527,8 @@ private lemma swapExp_fiberEquiv {G : SimpleGraph V} {S : Finset V}
     -- For m = j: d₀'(inr j) = d₀(inr j) - 1, and the ite condition holds iff compRep j = r' ∧ j ∉ S
     -- For m = k: d₀'(inr k) = d₀(inr k) + 1, and the ite condition holds iff compRep k = r' ∧ k ∉ S
     -- Since compRep j = compRep k, both conditions hold or neither holds.
-    -- When both hold: (d₀(inr j) - 1) + (d₀(inr k) + 1) = d₀(inr j) + d₀(inr k) (since d₀(inr j) ≥ 1)
+    -- When both hold: (d₀(inr j) - 1) + (d₀(inr k) + 1) = d₀(inr j) + d₀(inr k)
+    -- (since d₀(inr j) ≥ 1)
     -- When neither holds: 0 + 0 = 0 + 0
     -- So the sums are equal.
     by_cases hr : compRep G S j = r'
@@ -547,7 +554,8 @@ private lemma swapExp_fiberEquiv {G : SimpleGraph V} {S : Finset V}
         ← Finset.add_sum_erase _ _ hkmem]
       -- The remaining sums are equal (m ≠ j, m ≠ k, so d₀' = d₀)
       -- Split into j-term, k-term, and remaining sum
-      -- The j and k terms in d₀' sum cancel: (d₀(inr j) - 1) + (d₀(inr k) + 1) = d₀(inr j) + d₀(inr k)
+      -- The j and k terms in d₀' sum cancel:
+      -- (d₀(inr j) - 1) + (d₀(inr k) + 1) = d₀(inr j) + d₀(inr k)
       have hj_plus_k : d₀' (Sum.inr j) + d₀' (Sum.inr k) = d₀ (Sum.inr j) + d₀ (Sum.inr k) := by
         simp only [hd₀'_yj, hd₀'_yk]
         have h1 := hyj
@@ -573,7 +581,8 @@ private lemma swapExp_fiberEquiv {G : SimpleGraph V} {S : Finset V}
         simp only [show ¬(compRep G S j = r' ∧ j ∉ S) from fun ⟨h, _⟩ => hr h, ite_false]
       · by_cases hmk : m = k
         · rw [hmk]
-          simp only [show ¬(compRep G S k = r' ∧ k ∉ S) from fun ⟨h, _⟩ => hr (hrep_eq ▸ h), ite_false]
+          simp only [show ¬(compRep G S k = r' ∧ k ∉ S)
+            from fun ⟨h, _⟩ => hr (hrep_eq ▸ h), ite_false]
         · rw [hd₀'_other (Sum.inr m) (fun h => by cases h)
                 (by intro h; exact hmj (Sum.inr.inj h)) (fun h => by cases h)
                 (by intro h; exact hmk (Sum.inr.inj h))]
@@ -594,6 +603,7 @@ private lemma swapExp_fiberEquiv {G : SimpleGraph V} {S : Finset V}
         (by intro h; have := Sum.inr.inj h; subst this; exact hkS hi)]
       exact (hS0 i hi).2
 
+omit [LinearOrder V] in
 /-- The swap decreases deviation. -/
 private lemma swapExp_yDeviation_lt {d₀ d₁ d₀' : BinomialEdgeVars V →₀ ℕ} {j k : V}
     (hjk : j ≠ k)
@@ -772,6 +782,7 @@ private lemma fiberEquiv_iff_normExp_eq (G : SimpleGraph V) (S : Finset V)
     · have := h (Sum.inr r : BinomialEdgeVars V); simp only [normExp_apply_inr] at this; exact this
 
 set_option maxHeartbeats 2000000 in
+-- Large product-rewriting proof with many `Finsupp.prod` / `Finset.prod` steps.
 /-- `φ(monomial d 1) = monomial (normExp d) 1` for monomials with no S-support. -/
 private lemma primeComponentMap_monomial_noSSupport (G : SimpleGraph V) (S : Finset V)
     {d : BinomialEdgeVars V →₀ ℕ}
@@ -852,7 +863,7 @@ private lemma primeComponentMap_S_support_zero (G : SimpleGraph V) (S : Finset V
     (hS : ∃ i ∈ S, d (Sum.inl i : BinomialEdgeVars V) ≥ 1 ∨
                    d (Sum.inr i : BinomialEdgeVars V) ≥ 1) :
     (primeComponentMap (K := K) G S) (monomial d c) = 0 := by
-  simp only [primeComponentMap, aeval_monomial, smul_eq_mul]
+  simp only [primeComponentMap, aeval_monomial]
   obtain ⟨i, hiS, hi⟩ := hS
   rcases hi with hi | hi
   · -- d(inl i) ≥ 1: the factor for inl i is 0^(≥1) = 0
@@ -867,6 +878,7 @@ private lemma primeComponentMap_S_support_zero (G : SimpleGraph V) (S : Finset V
     simp [hiS, zero_pow (Nat.one_le_iff_ne_zero.mp hi)]
 
 set_option maxHeartbeats 2000000 in
+-- Induction on T.card with multiple fiber-rewriting sub-cases.
 /-- Helper: fiber sums of no-S-support monomials in kernel are in P_S(G).
     Strong induction on T.card. -/
 private lemma no_s_ker_mem (G : SimpleGraph V) (S : Finset V) :
@@ -918,8 +930,12 @@ private lemma no_s_ker_mem (G : SimpleGraph V) (S : Finset V) :
       have hfib0 := hker (normExp G S d₀)
       have hd₀_in_fib : d₀ ∈ T.filter (fun d => normExp G S d = normExp G S d₀) := by
         simp [hd₀T]
-      have hfib_minus : ∑ d ∈ (T.filter (fun d => normExp G S d = normExp G S d₀)).erase d₀, c d = -c d₀ := by
-        have heq := Finset.add_sum_erase (T.filter (fun d => normExp G S d = normExp G S d₀)) hd₀_in_fib (f := c)
+      have hfib_minus :
+          ∑ d ∈ (T.filter (fun d => normExp G S d = normExp G S d₀)).erase d₀,
+            c d = -c d₀ := by
+        have heq := Finset.add_sum_erase
+          (T.filter (fun d => normExp G S d = normExp G S d₀))
+          hd₀_in_fib (f := c)
         rw [hfib0] at heq
         exact eq_neg_of_add_eq_zero_right heq
       have hfib_ne : ((T.filter (fun d => normExp G S d = normExp G S d₀)).erase d₀).Nonempty := by
@@ -999,9 +1015,11 @@ private lemma no_s_ker_mem (G : SimpleGraph V) (S : Finset V) :
             rw [hfib_eq, ← Finset.add_sum_erase _ hd₁_in (f := c'),
                 show c' d₁ = c d₁ + c d₀ from by simp [c', if_neg hd₁_ne]]
             -- For remaining elements (≠ d₁, ≠ d₀), c' d = c d
-            have hrest_eq : ∑ d ∈ ((T.filter (fun d => normExp G S d = normExp G S d₀)).erase d₀).erase d₁,
-                c' d = ∑ d ∈ ((T.filter (fun d => normExp G S d = normExp G S d₀)).erase d₀).erase d₁,
-                c d := by
+            have hrest_eq :
+                ∑ d ∈ ((T.filter (fun d =>
+                    normExp G S d = normExp G S d₀)).erase d₀).erase d₁, c' d =
+                ∑ d ∈ ((T.filter (fun d =>
+                    normExp G S d = normExp G S d₀)).erase d₀).erase d₁, c d := by
               apply Finset.sum_congr rfl
               intro d hd
               simp only [Finset.mem_erase] at hd
@@ -1033,8 +1051,9 @@ private lemma no_s_ker_mem (G : SimpleGraph V) (S : Finset V) :
             rw [Finset.sum_congr rfl hconv]
             exact hker e
 
--- The hard direction: ker(primeComponentMap) ⊆ P_S(G).
 set_option maxHeartbeats 2000000 in
+-- The hard direction: ker(primeComponentMap) ⊆ P_S(G).
+-- Splits f.support into S-support and no-S-support parts; applies no_s_ker_mem.
 private lemma ker_primeComponentMap_le (G : SimpleGraph V) (S : Finset V) :
     RingHom.ker (primeComponentMap (K := K) G S).toRingHom ≤ primeComponent (K := K) G S := by
   intro f hf
@@ -1150,6 +1169,7 @@ theorem primeComponent_eq_ker (G : SimpleGraph V) (S : Finset V) :
       RingHom.ker (primeComponentMap (K := K) G S).toRingHom :=
   le_antisymm (primeComponent_le_ker G S) (ker_primeComponentMap_le G S)
 
+omit [Fintype V] in
 /-- `J_G ⊆ P_S(G)` for every subset S. -/
 theorem binomialEdgeIdeal_le_primeComponent (G : SimpleGraph V) (S : Finset V) :
     binomialEdgeIdeal (K := K) G ≤ primeComponent (K := K) G S := by
@@ -1258,6 +1278,7 @@ private lemma compRep_idempotent (G : SimpleGraph V) (S : Finset V)
     {v : V} (hv : v ∉ S) : compRep G S (compRep G S v) = compRep G S v :=
   (compRep_eq_of_sameComponent G S (sameComponent_compRep G S hv)).symm
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 open Classical in
 /-- `SameComponent` implies reachability in the induced subgraph `G[V \ S]`. -/
 private lemma sameComponent_imp_reachable_induce (G : SimpleGraph V) (S : Finset V)
@@ -1272,6 +1293,7 @@ private lemma sameComponent_imp_reachable_induce (G : SimpleGraph V) (S : Finset
     exact (ih hcd.2.1).trans
       (SimpleGraph.Adj.reachable (SimpleGraph.induce_adj.mpr hcd.1))
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 open Classical in
 /-- Reachability in `G.induce (V \ S)` implies `SameComponent`. -/
 lemma reachable_induce_imp_sameComponent (G : SimpleGraph V) (S : Finset V)
@@ -1407,9 +1429,9 @@ private lemma span_genSet31_le (G : SimpleGraph V) (S : Finset V) :
     have hsc := sameComponent_compRep G S hvS
     exact minor_mem_primeComponent (K := K) G S (Ne.symm hvr) hsc.symm
 
-open Classical in
 set_option maxHeartbeats 800000 in
 -- This minimal-prime argument expands several large `aeval` and kernel expressions.
+open Classical in
 /-- P_S(G) is a minimal prime of span(genSet31). The key step uses the
 Plücker identity: for j,k in the same component with representative r,
 `x_r * (x_j y_k - x_k y_j) = x_j * (x_r y_k - x_k y_r) - x_k * (x_r y_j - x_j y_r)`
@@ -1495,9 +1517,9 @@ private lemma lbMap_full_eq (G : SimpleGraph V) (S : Finset V) :
     · have h2 : i ∈ Finset.univ.filter (· ∉ S) := Finset.mem_filter.mpr ⟨Finset.mem_univ _, h1⟩
       simp [h1, h2]
 
-open Classical in
 set_option maxHeartbeats 800000 in
 -- Factoring the x-kill map through `aeval` requires large elaboration and simplification.
+open Classical in
 private lemma ker_lbMap_insert_Ux (G : SimpleGraph V) (S : Finset V)
     (T Ux Uy : Finset V) (i : V) (hiT : i ∉ T) :
     RingHom.ker (lbMap (K := K) G S T Ux Uy).toRingHom ≤
@@ -1532,9 +1554,9 @@ private lemma ker_lbMap_insert_Ux (G : SimpleGraph V) (S : Finset V)
   simp only [AlgHom.comp_apply] at hstep
   rw [AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, hstep, hf', map_zero]
 
-open Classical in
 set_option maxHeartbeats 800000 in
 -- The y-kill map has the same large `aeval`-factorization shape as the x-kill map.
+open Classical in
 private lemma ker_lbMap_insert_Uy (G : SimpleGraph V) (S : Finset V)
     (T Ux Uy : Finset V) (i : V) (hiT : i ∉ T)
     (hrep_ne : ∀ j ∈ T, compRep G S j ≠ i) :
@@ -1568,9 +1590,9 @@ private lemma ker_lbMap_insert_Uy (G : SimpleGraph V) (S : Finset V)
   simp only [AlgHom.comp_apply] at hstep
   rw [AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, hstep, hf', map_zero]
 
-open Classical in
 set_option maxHeartbeats 800000 in
 -- Adding one Segre variable again factors through a large `aeval`-defined map.
+open Classical in
 private lemma ker_lbMap_insert_T (G : SimpleGraph V) (S : Finset V)
     (T : Finset V) (v : V) (hvT : v ∉ T)
     (no_rep_v : ∀ w ∈ T, compRep G S w ≠ v) :
@@ -1720,8 +1742,8 @@ theorem lemma_3_1 (G : SimpleGraph V) (S : Finset V) :
         (RingHom.ker (lbMap (K := K) G S T' Ux' Uy').toRingHom).IsPrime :=
       fun _ _ _ => RingHom.ker_isPrime _
     -- Phase 1: Segre chain
-    have phase1 : ∀ F, F ⊆ nonReps →
-        (F.card : ℕ∞) ≤ Ideal.height (RingHom.ker (lbMap (K := K) G S (reps ∪ F) ∅ ∅).toRingHom) := by
+    have phase1 : ∀ F, F ⊆ nonReps → (F.card : ℕ∞) ≤
+        Ideal.height (RingHom.ker (lbMap (K := K) G S (reps ∪ F) ∅ ∅).toRingHom) := by
       intro F hF; induction F using Finset.induction with
       | empty => simp
       | @insert a F' haF' ihF =>
@@ -1911,6 +1933,7 @@ theorem lemma_3_1 (G : SimpleGraph V) (S : Finset V) :
 
 end lemma31
 
+omit [DecidableEq V] [Fintype V] in
 /--
 For connected G, `P_∅(G)` equals the binomial edge ideal of the **complete graph** on V.
 Every pair j < k has `SameComponent G ∅ j k` (since G is connected and S = ∅),
