@@ -38,17 +38,16 @@
 
 ## Current Priorities
 
-### Priority 1: Proposition 1.6 honesty sync
+### Priority 1: Real Cohen-Macaulay track
 
 Active follow-up work now lives in:
 - `guides/PROP_1_6_CM_TRANSFER.md`
-- `guides/ANSWER_05_COHEN_MACAULAY_FOUNDATION.md`
-- `guides/CM_CODEBASE_RESEARCH_MONOMIAL_IDEAL.md`
 - `guides/cm_pr_26218/`
 
 Supporting files on this branch:
 - `BEI/PrimeDecompositionDimension.lean`
 - `BEI/Equidim.lean`
+- `toMathlib/CohenMacaulay/Defs.lean` — first real CM foundation layer: `ringDepth`, `IsCohenMacaulayLocalRing`, `IsCohenMacaulayRing`, and the basic inequality `ringDepth ≤ ringKrullDim`
 - `toMathlib/MonomialIdeal.lean` — `Ideal.IsMonomial`, prime classification, radical-is-monomial, full primary iff characterization
 - `toMathlib/SquarefreeMonomialPrimes.lean` — variable-pair ideals, vertex covers, and minimal prime ↔ minimal vertex cover
 - `toMathlib/HeightVariableIdeal.lean` — quotients by variable ideals, quotient equivalences, and dimension formulas
@@ -69,6 +68,10 @@ The old paper-faithful route (HH bipartite graph → monomial ideal CM → trans
 still present as infrastructure in `BEI/Equidim.lean` but `cm_transfer_initialIdeal`
 has been removed from the critical path. The Gröbner CM transfer theorem (Eisenbud 15.17)
 remains unformalized and the full paper Cohen–Macaulay statement is still open.
+
+The first real CM foundation file has now landed in `toMathlib/CohenMacaulay/Defs.lean`.
+The next recommended step on this track is `toMathlib/CohenMacaulay/Basic.lean`,
+centered on regular-quotient behavior for local Cohen–Macaulay rings.
 
 Note: the direct proof uses the repo's local equidimensional surrogate for
 Cohen–Macaulayness. This does not yet count as a full formalization of the paper's
@@ -99,6 +102,7 @@ The minimal-prime transfer assumes a connected union graph, mirroring `corollary
 - `BEI/CIIdeals.lean` carries the Section 4 binary-output setup, the single-statement and specification-level CI ideal = BEI bridges, and the transferred radicality / prime-decomposition / minimal-prime theorems.
 - `BEI/Equidim.lean` carries the local equidimensional surrogate API, the HH bipartite-graph infrastructure, the closed-graph component-count upper bound, and the complete-graph equidimensional example.
 - `toMathlib/Equidim/Defs.lean` carries the local working equidimensional definition used by the current surrogate branch.
+- `toMathlib/CohenMacaulay/Defs.lean` carries the first real Cohen–Macaulay foundation layer: local/global CM definitions via regular-sequence depth and the basic inequality `ringDepth ≤ ringKrullDim`.
 - `toMathlib/MonomialIdeal.lean` carries `Ideal.IsMonomial`, the `Set σ` version of `isPrime_span_X_image`, the prime classification theorem for monomial ideals, `Ideal.IsMonomial.span_X_image`, `coeff_pow_lexMax`, `Ideal.IsMonomial.radical_isMonomial`, `Ideal.isPrimary_monomial_criterion`, `Ideal.IsMonomial.isPrimary_radical_eq_span_X`, the structural lemmas `Ideal.monomial_mem_iff_add_outside` / `Ideal.monomial_mem_iff_filter`, the general support-extraction lemma `Ideal.not_mem_exists_monomial_notMem`, the converse helper `Ideal.mem_of_mul_mem_of_lexMax_outside`, and the full primary iff `Ideal.IsMonomial.isPrimary_iff`.
 - `toMathlib/SquarefreeMonomialPrimes.lean` carries `MvPolynomial.variablePairIdeal`, `MvPolynomial.IsVertexCover`, `MvPolynomial.IsMinimalVertexCover`, the containment-iff-vertex-cover theorem, and the complete minimal prime ↔ minimal vertex cover characterization.
 - `toMathlib/HeightVariableIdeal.lean` carries the variable-killing quotient map, the quotient-by-variable-ideal equivalence, and the quotient-dimension formulas for variable ideals.

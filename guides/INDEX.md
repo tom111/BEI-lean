@@ -12,6 +12,9 @@ This directory is the current todo list.
    Concrete subtask for track 1: inspect PR `#26218`, identify the smallest usable
    real CM slice, and backport/import it cleanly.
 
+Current next concrete target:
+- `toMathlib/CohenMacaulay/Basic.lean`
+
 ## Dormant / Optional
 
 - [ANSWER_04_HEIGHT_ADDITIVITY_REPAIR.md](ANSWER_04_HEIGHT_ADDITIVITY_REPAIR.md)

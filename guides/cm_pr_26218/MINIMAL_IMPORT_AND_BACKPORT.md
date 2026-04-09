@@ -154,6 +154,11 @@ Recommended file split:
 
 Only create the files you actually need.
 
+Current status:
+
+- `toMathlib/CohenMacaulay/Defs.lean` is now landed
+- the next target is `toMathlib/CohenMacaulay/Basic.lean`
+
 
 ## Phase 4: preserve provenance
 

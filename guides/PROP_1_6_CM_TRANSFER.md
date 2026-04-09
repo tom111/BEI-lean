@@ -16,7 +16,7 @@ Everything internal to the BEI reduction is now proved:
 
 The remaining paper-level gaps are:
 
-1. import or backport real Cohen–Macaulay foundations into this repo;
+1. extend the newly landed real Cohen–Macaulay foundations in `toMathlib/CohenMacaulay/Defs.lean`;
 2. formalize a Gröbner-basis transfer theorem strong enough for Proposition 1.6.
 
 
@@ -81,8 +81,14 @@ Start with:
 
 - [cm_pr_26218/MINIMAL_IMPORT_AND_BACKPORT.md](cm_pr_26218/MINIMAL_IMPORT_AND_BACKPORT.md)
 
-The first concrete job is to identify the smallest real CM slice from PR `#26218` that
-can be imported or backported cleanly.
+The first concrete job was to land the minimal definition layer in
+`toMathlib/CohenMacaulay/Defs.lean`.
+
+The next concrete job is:
+
+- `toMathlib/CohenMacaulay/Basic.lean`
+
+targeting the regular-quotient characterization for local Cohen–Macaulay rings.
 
 ### Step 2: look for the smallest truthful transfer theorem
 

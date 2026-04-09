@@ -85,6 +85,15 @@ faithfully the current Lean statements match the paper.
 | Converse primary characterization | `Ideal.IsMonomial.isPrimary_of_criterion` | `toMathlib/MonomialIdeal.lean` | proved | Criterion + radical = span(X '' s) → primary; minimal bad s-exponent + primality of span(X '' s) |
 | Full primary iff | `Ideal.IsMonomial.isPrimary_iff` | `toMathlib/MonomialIdeal.lean` | proved | Complete characterization of primary monomial ideals |
 
+### Real Cohen-Macaulay foundations (`toMathlib/CohenMacaulay/Defs.lean`)
+
+| Result | Lean name(s) | File | Status | Notes |
+|--------|-------------|------|--------|-------|
+| Depth of a local ring | `ringDepth` | `toMathlib/CohenMacaulay/Defs.lean` | proved | Defined via lengths of weakly regular sequences in the maximal ideal |
+| Local CM definition | `IsCohenMacaulayLocalRing` | `toMathlib/CohenMacaulay/Defs.lean` | proved | Real CM definition for local rings via `ringKrullDim = ringDepth` |
+| Global CM definition | `IsCohenMacaulayRing` | `toMathlib/CohenMacaulay/Defs.lean` | proved | Defined by localization at every prime |
+| Depth ≤ dimension | `weaklyRegular_length_le_ringKrullDim`, `ringDepth_le_ringKrullDim` | `toMathlib/CohenMacaulay/Defs.lean` | proved | First basic CM inequalities for the real-CM track |
+
 ### Variable ideal dimension (`toMathlib/HeightVariableIdeal.lean`)
 
 | Result | Lean name(s) | File | Status | Notes |
@@ -114,6 +123,7 @@ faithfully the current Lean statements match the paper.
 - `BEI/CIIdeals.lean` carries the Section 4 binary-output setup, both bridge theorems, and the transferred radicality / prime-decomposition / minimal-prime theorems.
 - `BEI/Equidim.lean` carries the local equidimensional surrogate definition wrapper, HH bipartite graph infrastructure, the closed-graph component-count upper bound, and the complete-graph example.
 - `toMathlib/Equidim/Defs.lean` carries the local working equidimensional definition currently used in the project.
+- `toMathlib/CohenMacaulay/Defs.lean` carries the first real Cohen–Macaulay foundation layer, kept separate from the equidimensional surrogate.
 - `toMathlib/MonomialIdeal.lean` carries `Ideal.IsMonomial`, `MvPolynomial.isPrime_span_X_image_set` (Set version), `Ideal.exists_variable_mem_of_monomial_mem_prime`, `Ideal.IsMonomial.isPrime_iff_eq_span_X_image` (prime monomial ideals = variable ideals), `Ideal.IsMonomial.span_X_image`, `coeff_pow_lexMax`, `Ideal.IsMonomial.radical_isMonomial`, `Ideal.isPrimary_monomial_criterion`, `Ideal.IsMonomial.isPrimary_radical_eq_span_X`, the structural outside-`s` membership lemmas, the general support-extraction lemma `Ideal.not_mem_exists_monomial_notMem`, the converse helper `Ideal.mem_of_mul_mem_of_lexMax_outside`, and the full primary iff `Ideal.IsMonomial.isPrimary_iff`.
 - `toMathlib/SquarefreeMonomialPrimes.lean` carries `variablePairIdeal`, `IsVertexCover`, `IsMinimalVertexCover`, and the complete minimal prime ↔ minimal vertex cover characterization for edge ideals.
 - `toMathlib/HeightVariableIdeal.lean` carries the variable-killing map, the quotient equivalence for variable ideals, and the resulting quotient-dimension formulas.
