@@ -96,21 +96,23 @@ The current route uses the substitution
 and reduces `sum_XY_isSMulRegular_mod_diagonalSum` to two precise sublemmas
 about the monomial ideal `I.map φ`.
 
-The next targets are exactly:
+The first of those two sublemmas is now proved:
 
 1. `ell_not_mem_minimalPrime_map_diagSubstHom`
+
+The single remaining target is now:
+
 2. `nilradical_nzd_map_diagSubstHom`
 
-So this packet is now specifically about those two sublemmas, not about the old
-filtration route in general.
+So this packet is now specifically about that nilradical sublemma, not about
+the old filtration route in general.
 
 ### Step 3: only then decide the route
 
 Good outcomes:
 
-- minimal-prime avoidance for `I.map φ` is proved cleanly;
 - the nilradical NZD step for `I.map φ` is proved;
-- `sum_XY_isSMulRegular_mod_diagonalSum` is then completed from those two lemmas.
+- `sum_XY_isSMulRegular_mod_diagonalSum` is then completed.
 
 If none of those happen, report the exact obstruction instead of forcing a long
 proof attempt.
@@ -130,11 +132,10 @@ proof attempt.
 
 Best outcome:
 
-- `ell_not_mem_minimalPrime_map_diagSubstHom` proved;
 - `nilradical_nzd_map_diagSubstHom` proved;
 - `sum_XY_isSMulRegular_mod_diagonalSum` proved.
 
 Minimum acceptable outcome:
 
-- one of the two sublemmas is proved;
-- the other is reduced to one exact monomial-ideal statement.
+- the remaining nilradical sublemma is reduced to one exact monomial-ideal
+  statement.

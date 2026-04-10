@@ -1360,7 +1360,256 @@ private theorem ell_not_mem_minimalPrime_map_diagSubstHom {n : ℕ} {G : SimpleG
     (hP : P ∈ (Ideal.map (diagSubstHom (K := K) k).toRingHom
       (bipartiteEdgeMonomialIdeal (K := K) G)).minimalPrimes) :
     X (Sum.inl i) + X (Sum.inr i) ∉ P := by
-  sorry
+  set Iφ := Ideal.map (diagSubstHom (K := K) k).toRingHom
+    (bipartiteEdgeMonomialIdeal (K := K) G) with hIφ_def
+  haveI hPprime : P.IsPrime := hP.1.1
+  have hIφP : Iφ ≤ P := hP.1.2
+  set C : Set (BinomialEdgeVars (Fin n)) := {v | (X v : MvPolynomial _ K) ∈ P}
+  set Q : Ideal (MvPolynomial (BinomialEdgeVars (Fin n)) K) :=
+    Ideal.span (MvPolynomial.X '' C) with hQ_def
+  have hQ_prime : Q.IsPrime := MvPolynomial.isPrime_span_X_image_set C
+  have hQ_le_P : Q ≤ P := Ideal.span_le.mpr fun _ ⟨v, hv, he⟩ => he ▸ hv
+  -- Helper: compute φ(x_a * y_b) and show it's in P, then put it in Q
+  have hIφQ : Iφ ≤ Q := by
+    rw [hIφ_def, Ideal.map_le_iff_le_comap]
+    change bipartiteEdgeMonomialIdeal (K := K) G ≤ _
+    unfold bipartiteEdgeMonomialIdeal
+    rw [Ideal.span_le]
+    rintro _ ⟨a, b, hb, hadj, hab, rfl⟩
+    rw [SetLike.mem_coe, Ideal.mem_comap]
+    have hgP : (diagSubstHom (K := K) k).toRingHom (X (Sum.inl a) * X (Sum.inr b)) ∈ P :=
+      hIφP (Ideal.mem_map_of_mem _ (Ideal.subset_span ⟨a, b, hb, hadj, hab, rfl⟩))
+    simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
+      MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr] at hgP ⊢
+    split_ifs at hgP ⊢ with hcond
+    · -- b < k: φ(x_a * y_b) = x_a * (-x_b)
+      have hmul : X (Sum.inl a) * X (Sum.inl b) ∈ P := by
+        rw [show X (Sum.inl a) * -X (Sum.inl b) =
+          -(X (Sum.inl a) * X (Sum.inl b) : MvPolynomial _ K) from by ring] at hgP
+        exact neg_mem_iff.mp hgP
+      rw [show X (Sum.inl a) * -X (Sum.inl b) =
+        -(X (Sum.inl a) * X (Sum.inl b) : MvPolynomial _ K) from by ring]
+      rcases hPprime.mem_or_mem hmul with ha | hb'
+      · exact Q.neg_mem (Q.mul_mem_right _ (Ideal.subset_span ⟨Sum.inl a, ha, rfl⟩))
+      · exact Q.neg_mem (Q.mul_mem_left _ (Ideal.subset_span ⟨Sum.inl b, hb', rfl⟩))
+    · -- b ≥ k: φ(x_a * y_b) = x_a * y_b
+      rcases hPprime.mem_or_mem hgP with ha | hb'
+      · exact Q.mul_mem_right _ (Ideal.subset_span ⟨Sum.inl a, ha, rfl⟩)
+      · exact Q.mul_mem_left _ (Ideal.subset_span ⟨Sum.inr b, hb', rfl⟩)
+  -- P = Q by minimality
+  have hP_eq : P = Q := le_antisymm (hP.2 ⟨hQ_prime, hIφQ⟩ hQ_le_P) hQ_le_P
+  -- Forced variables: x_j ∈ P for j < k with j+1 < n (from diagonal squares)
+  have hforced : ∀ (j : Fin n), j.val < k → j.val + 1 < n → Sum.inl j ∈ C := by
+    intro j hjk hjn
+    change (X (Sum.inl j) : MvPolynomial _ K) ∈ P
+    have hφgen : (diagSubstHom (K := K) k).toRingHom
+        (X (Sum.inl j) * X (Sum.inr j)) ∈ P :=
+      hIφP (Ideal.mem_map_of_mem _ (Ideal.subset_span
+        ⟨j, j, hjn, hHH.diagonal j hjn, le_refl j, rfl⟩))
+    simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
+      MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr] at hφgen
+    split_ifs at hφgen with hcond
+    · -- j < k holds: φ(x_j * y_j) = x_j * (-x_j) = -(x_j²)
+      have : (X (Sum.inl j) : MvPolynomial _ K) ^ 2 ∈ P := by
+        rw [show (X (Sum.inl j) : MvPolynomial _ K) ^ 2 =
+          -(X (Sum.inl j) * -X (Sum.inl j)) from by ring]
+        exact P.neg_mem hφgen
+      exact hPprime.mem_of_pow_mem 2 this
+    · exact absurd ⟨hjk, hjn⟩ hcond
+  -- Show ℓ ∉ P = Q
+  rw [hP_eq]; intro hmem
+  -- Diagonal edge: x_i * y_i ∈ Q (since i ≥ k, φ fixes it)
+  have hdiag : (X (Sum.inl i) * X (Sum.inr i) : MvPolynomial _ K) ∈ Q := by
+    apply hIφQ
+    have hgen : X (Sum.inl i) * X (Sum.inr i) ∈
+        bipartiteEdgeMonomialIdeal (K := K) G :=
+      Ideal.subset_span ⟨i, i, hi, hHH.diagonal i hi, le_refl i, rfl⟩
+    have h := Ideal.mem_map_of_mem (diagSubstHom (K := K) k).toRingHom hgen
+    simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
+      MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr] at h
+    split_ifs at h with hcond
+    · exact absurd hcond.1 (Nat.not_lt.mpr hik)
+    · exact h
+  -- Both variables in Q (and hence in C)
+  have hx : (X (Sum.inl i) : MvPolynomial _ K) ∈ Q := by
+    rcases hQ_prime.mem_or_mem hdiag with h | h
+    · exact h
+    · have := Q.sub_mem hmem h; rwa [add_sub_cancel_right] at this
+  have hy : (X (Sum.inr i) : MvPolynomial _ K) ∈ Q := by
+    have := Q.sub_mem hmem hx; rwa [add_sub_cancel_left] at this
+  have hxi : Sum.inl i ∈ C := (MvPolynomial.X_mem_span_X_image_iff (R := K)).mp hx
+  have hyi : Sum.inr i ∈ C := (MvPolynomial.X_mem_span_X_image_iff (R := K)).mp hy
+  -- === Extract uncovered edges via minimality + HH transitivity ===
+  -- Helper to get non-containment from minimality
+  have hextract (v : BinomialEdgeVars (Fin n)) (hv : v ∈ C) :
+      ¬(Iφ ≤ Ideal.span (MvPolynomial.X '' (C \ {v}) :
+        Set (MvPolynomial _ K))) := by
+    intro h
+    have hle : Ideal.span (MvPolynomial.X '' (C \ {v}) :
+        Set (MvPolynomial _ K)) ≤ P :=
+      (Ideal.span_mono (Set.image_mono Set.diff_subset)).trans hQ_le_P
+    have hge := hP.2 ⟨MvPolynomial.isPrime_span_X_image_set _, h⟩ hle
+    rw [hP_eq] at hge
+    exact ((MvPolynomial.X_mem_span_X_image_iff (R := K)).mp
+      (hge (Ideal.subset_span ⟨v, hv, rfl⟩))).2 rfl
+  -- Removing Sum.inr i: extract edge (a₁, i) with Sum.inl a₁ ∉ C
+  have hnotQ1 := hextract _ hyi
+  rw [hIφ_def, Ideal.map_le_iff_le_comap] at hnotQ1
+  change ¬(bipartiteEdgeMonomialIdeal (K := K) G ≤ _) at hnotQ1
+  unfold bipartiteEdgeMonomialIdeal at hnotQ1
+  rw [Ideal.span_le, Set.not_subset] at hnotQ1
+  obtain ⟨_, ⟨a₁, b₁, hb₁, hadj₁, hab₁, rfl⟩, hg₁⟩ := hnotQ1
+  rw [SetLike.mem_coe, Ideal.mem_comap] at hg₁
+  simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
+    MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr] at hg₁
+  set Q₁ := Ideal.span (MvPolynomial.X '' (C \ {Sum.inr i}) :
+    Set (MvPolynomial _ K))
+  -- b₁ must equal i
+  have hb₁_eq_i : b₁ = i := by
+    split_ifs at hg₁ with hcond
+    · -- b₁ < k: impossible since x_{b₁} forced into C hence C \ {Sum.inr i}
+      exfalso; apply hg₁
+      have hb₁_C : Sum.inl b₁ ∈ C \ ({Sum.inr i} : Set _) :=
+        ⟨hforced b₁ hcond.1 hb₁, Sum.inl_ne_inr⟩
+      rw [show X (Sum.inl a₁) * -X (Sum.inl b₁) =
+        -(X (Sum.inl a₁) * X (Sum.inl b₁) : MvPolynomial _ K) from by ring]
+      exact Q₁.neg_mem (Q₁.mul_mem_left _
+        (Ideal.subset_span ⟨Sum.inl b₁, hb₁_C, rfl⟩))
+    · -- b₁ ≥ k: must be b₁ = i
+      have ha₁_notC : Sum.inl a₁ ∉ C :=
+        fun h => hg₁ (Q₁.mul_mem_right _
+          (Ideal.subset_span ⟨Sum.inl a₁, ⟨h, Sum.inl_ne_inr⟩, rfl⟩))
+      by_contra hb₁_ne
+      have hb₁_notC : Sum.inr b₁ ∉ C :=
+        fun h => hg₁ (Q₁.mul_mem_left _
+          (Ideal.subset_span ⟨Sum.inr b₁, ⟨h, fun heq => hb₁_ne (Sum.inr_injective heq)⟩, rfl⟩))
+      -- Show g ∈ Q: compute φ(g) = g in this branch (b₁ ≥ k), hence g ∈ Iφ ⊆ Q
+      have hg_Q : (X (Sum.inl a₁) * X (Sum.inr b₁) : MvPolynomial _ K) ∈ Q := by
+        apply hIφQ
+        have h := Ideal.mem_map_of_mem (diagSubstHom (K := K) k).toRingHom
+          (Ideal.subset_span (s := { m | ∃ (i j : Fin n) (_ : j.val + 1 < n),
+            G.Adj i ⟨j.val + 1, by omega⟩ ∧ i ≤ j ∧ m = X (Sum.inl i) * X (Sum.inr j) })
+            ⟨a₁, b₁, hb₁, hadj₁, hab₁, rfl⟩)
+        simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
+          MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr, hcond,
+          ite_false] at h
+        exact h
+      exact ha₁_notC ((MvPolynomial.X_mem_span_X_image_iff (R := K)).mp
+        ((hQ_prime.mem_or_mem hg_Q).resolve_right
+          (fun h => hb₁_notC ((MvPolynomial.X_mem_span_X_image_iff (R := K)).mp h))))
+  -- Now b₁ = i; rewrite hg₁ and hab₁ (not hadj₁ due to dependent Fin)
+  rw [hb₁_eq_i] at hg₁ hab₁
+  -- hadj₁ still has b₁, but we'll use it later with hb₁_eq_i
+  -- Resolve the if-then-else in hg₁ (i ≥ k, so condition is false)
+  simp only [show ¬(i.val < k ∧ i.val + 1 < n) from
+    fun ⟨h, _⟩ => Nat.not_lt.mpr hik h, ite_false] at hg₁
+  -- hg₁ : X (Sum.inl a₁) * X (Sum.inr i) ∉ Q₁
+  have ha₁_notC : Sum.inl a₁ ∉ C :=
+    fun h => hg₁ (Q₁.mul_mem_right _
+      (Ideal.subset_span ⟨Sum.inl a₁, ⟨h, Sum.inl_ne_inr⟩, rfl⟩))
+  have ha₁_lt_i : a₁ < i := lt_of_le_of_ne hab₁ (fun h => ha₁_notC (h ▸ hxi))
+  have ha₁_ge_k : k ≤ a₁.val := by
+    by_contra h; push_neg at h
+    exact ha₁_notC (hforced a₁ h (by omega))
+  -- Removing Sum.inl i: extract edge (i, b₂) with Sum.inr b₂ ∉ C
+  have hnotQ2 := hextract _ hxi
+  rw [hIφ_def, Ideal.map_le_iff_le_comap] at hnotQ2
+  change ¬(bipartiteEdgeMonomialIdeal (K := K) G ≤ _) at hnotQ2
+  unfold bipartiteEdgeMonomialIdeal at hnotQ2
+  rw [Ideal.span_le, Set.not_subset] at hnotQ2
+  obtain ⟨_, ⟨a₂, b₂, hb₂, hadj₂, hab₂, rfl⟩, hg₂⟩ := hnotQ2
+  rw [SetLike.mem_coe, Ideal.mem_comap] at hg₂
+  simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
+    MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr] at hg₂
+  set Q₂ := Ideal.span (MvPolynomial.X '' (C \ {Sum.inl i}) :
+    Set (MvPolynomial _ K))
+  -- a₂ must equal i
+  have ha₂_eq_i : a₂ = i := by
+    split_ifs at hg₂ with hcond
+    · -- b₂ < k: impossible since x_{b₂} forced into C \ {Sum.inl i} (b₂ ≠ i)
+      exfalso; apply hg₂
+      have hb₂_ne_i : b₂ ≠ i := fun h => Nat.not_lt.mpr hik (h ▸ hcond.1)
+      have hb₂_C : Sum.inl b₂ ∈ C \ ({Sum.inl i} : Set _) :=
+        ⟨hforced b₂ hcond.1 hb₂, fun h => hb₂_ne_i (Sum.inl_injective h)⟩
+      rw [show X (Sum.inl a₂) * -X (Sum.inl b₂) =
+        -(X (Sum.inl a₂) * X (Sum.inl b₂) : MvPolynomial _ K) from by ring]
+      exact Q₂.neg_mem (Q₂.mul_mem_left _
+        (Ideal.subset_span ⟨Sum.inl b₂, hb₂_C, rfl⟩))
+    · -- b₂ ≥ k: must be a₂ = i
+      have hb₂_notC : Sum.inr b₂ ∉ C :=
+        fun h => hg₂ (Q₂.mul_mem_left _
+          (Ideal.subset_span ⟨Sum.inr b₂, ⟨h, Sum.inr_ne_inl⟩, rfl⟩))
+      by_contra ha₂_ne
+      have ha₂_notC : Sum.inl a₂ ∉ C :=
+        fun h => hg₂ (Q₂.mul_mem_right _
+          (Ideal.subset_span ⟨Sum.inl a₂, ⟨h, fun heq => ha₂_ne (Sum.inl_injective heq)⟩, rfl⟩))
+      have hg_Q : (X (Sum.inl a₂) * X (Sum.inr b₂) : MvPolynomial _ K) ∈ Q := by
+        apply hIφQ
+        have h := Ideal.mem_map_of_mem (diagSubstHom (K := K) k).toRingHom
+          (Ideal.subset_span (s := { m | ∃ (i j : Fin n) (_ : j.val + 1 < n),
+            G.Adj i ⟨j.val + 1, by omega⟩ ∧ i ≤ j ∧ m = X (Sum.inl i) * X (Sum.inr j) })
+            ⟨a₂, b₂, hb₂, hadj₂, hab₂, rfl⟩)
+        simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
+          MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr, hcond,
+          ite_false] at h
+        exact h
+      exact ha₂_notC ((MvPolynomial.X_mem_span_X_image_iff (R := K)).mp
+        ((hQ_prime.mem_or_mem hg_Q).resolve_right
+          (fun h => hb₂_notC ((MvPolynomial.X_mem_span_X_image_iff (R := K)).mp h))))
+  -- Now a₂ = i; rewrite where possible
+  rw [ha₂_eq_i] at hg₂ hab₂
+  -- Resolve the if on b₂
+  -- Resolve if-then-else: if b₂ < k, get contradiction; else proceed
+  by_cases hb₂k : b₂.val < k
+  · -- b₂ < k: contradiction since x_{b₂} forced into C \ {Sum.inl i}
+    exfalso
+    have hb₂_ne_i : b₂ ≠ i := fun h => Nat.not_lt.mpr hik (h ▸ hb₂k)
+    have hb₂_C : Sum.inl b₂ ∈ C \ ({Sum.inl i} : Set _) :=
+      ⟨hforced b₂ hb₂k hb₂, fun h => hb₂_ne_i (Sum.inl_injective h)⟩
+    apply hg₂
+    have : (X (Sum.inl i) * X (Sum.inl b₂) : MvPolynomial _ K) ∈ Q₂ :=
+      Q₂.mul_mem_left _ (Ideal.subset_span ⟨Sum.inl b₂, hb₂_C, rfl⟩)
+    simp only [show b₂.val < k ∧ b₂.val + 1 < n from ⟨hb₂k, hb₂⟩, and_self, ite_true]
+    rw [show X (Sum.inl i) * -X (Sum.inl b₂) =
+      -(X (Sum.inl i) * X (Sum.inl b₂) : MvPolynomial _ K) from by ring]
+    exact Q₂.neg_mem this
+  -- b₂ ≥ k: simplify hg₂
+  simp only [show ¬(b₂.val < k ∧ b₂.val + 1 < n) from fun ⟨h, _⟩ => hb₂k h,
+    ite_false] at hg₂
+  -- hg₂ : X (Sum.inl i) * X (Sum.inr b₂) ∉ Q₂
+  have hb₂_notC : Sum.inr b₂ ∉ C :=
+    fun h => hg₂ (Q₂.mul_mem_left _
+      (Ideal.subset_span ⟨Sum.inr b₂, ⟨h, Sum.inr_ne_inl⟩, rfl⟩))
+  have hb₂_gt_i : i < b₂ := by
+    rcases lt_or_eq_of_le hab₂ with h | h
+    · exact h
+    · exact absurd (h ▸ hyi) hb₂_notC
+  -- Convert hadj₁ : G.Adj a₁ ⟨b₁.val + 1, hb₁⟩ to use i (since b₁ = i)
+  have hadj₁' : G.Adj a₁ ⟨i.val + 1, hi⟩ := by
+    rw [show (⟨i.val + 1, hi⟩ : Fin n) = ⟨b₁.val + 1, hb₁⟩ from
+      Fin.ext (by simp [hb₁_eq_i])]
+    exact hadj₁
+  -- Convert hadj₂ : G.Adj a₂ ... to G.Adj i ... (since a₂ = i)
+  rw [ha₂_eq_i] at hadj₂
+  -- HH transitivity: (a₁, i) and (i, b₂) with a₁ < i < b₂ → (a₁, b₂) is an edge
+  have hadj_trans : G.Adj a₁ ⟨b₂.val + 1, by omega⟩ :=
+    hHH.transitivity a₁ i b₂ hi hb₂ ha₁_lt_i hb₂_gt_i hadj₁' hadj₂
+  -- (a₁, b₂) ∈ hhEdgeSet → x_{a₁} * y_{b₂} ∈ I → φ(x_{a₁} * y_{b₂}) ∈ Iφ → in Q
+  have hgen_I : X (Sum.inl a₁) * X (Sum.inr b₂) ∈
+      bipartiteEdgeMonomialIdeal (K := K) G :=
+    Ideal.subset_span ⟨a₁, b₂, hb₂, hadj_trans,
+      le_of_lt (lt_trans ha₁_lt_i hb₂_gt_i), rfl⟩
+  have hgen_final : (X (Sum.inl a₁) * X (Sum.inr b₂) : MvPolynomial _ K) ∈ Q := by
+    apply hIφQ
+    have h := Ideal.mem_map_of_mem (diagSubstHom (K := K) k).toRingHom hgen_I
+    simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
+      MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr] at h
+    split_ifs at h with hc
+    · exact absurd hc.1 (by omega)
+    · exact h
+  rcases hQ_prime.mem_or_mem hgen_final with h | h
+  · exact ha₁_notC ((MvPolynomial.X_mem_span_X_image_iff (R := K)).mp h)
+  · exact hb₂_notC ((MvPolynomial.X_mem_span_X_image_iff (R := K)).mp h)
 
 /-- NZD on the nilradical module of the monomial image ideal:
 if `c ∈ √(I.map φ)` and `ℓ * c ∈ I.map φ`, then `c ∈ I.map φ`.
