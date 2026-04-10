@@ -51,6 +51,7 @@ Supporting generic lemmas intended for possible upstreaming live in:
 
 - [toMathlib/](https://github.com/tom111/BEI-lean/tree/master/toMathlib)
 - including [toMathlib/Equidim/Defs.lean](https://github.com/tom111/BEI-lean/blob/master/toMathlib/Equidim/Defs.lean)
+- and are summarized in the dedicated [toMathlib support page](./toMathlib.html)
 
 ## Organization by paper section
 
