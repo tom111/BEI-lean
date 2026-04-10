@@ -1214,49 +1214,200 @@ theorem sum_X_not_mem_minimalPrime_sup_diagonalSum {n : ℕ} {G : SimpleGraph (F
   -- Conclude: ℓ_k ∈ Q ⊆ P₀ ⊔ diag contradicts havoid
   exact fun hℓ_Q => havoid (hQ_le hℓ_Q)
 
-/-! ## Statement of the iterated regularity theorem
+/-! ## Iterated regularity via diagonal substitution
 
-The full regular-sequence result and analysis of the remaining gap.
+The proof that `x_i + y_i` is a non-zero-divisor on `S / (I ⊔ diag)` uses a
+substitution homomorphism `φ` that replaces `y_j` with `-x_j` for active
+`j < k`. This transforms the non-radical ideal `I ⊔ diag` into a monomial
+ideal `I.map φ`, where the NZD property can be established separately.
+
+The key structural facts are:
+1. `f - φ(f) ∈ diag` for all `f` (by the universal property of `MvPolynomial`);
+2. `diag ≤ ker φ` (φ kills diagonal sum generators);
+3. `I.map φ ⊆ J` (follows from 1);
+4. `ℓ` is NZD on `S / I.map φ` (monomial ideal NZD, the remaining gap).
+
+From these: if `ℓ · c ∈ J`, then `ℓ · φ(c) ∈ I.map φ`, so `φ(c) ∈ I.map φ ⊆ J`,
+and `c - φ(c) ∈ diag ⊆ J`, hence `c ∈ J`.
 -/
 
-/-- **Iterated regularity** (statement with gap):
-Under HH conditions, `x_k + y_k` is a non-zero-divisor on the quotient
-`S / (I ⊔ diag)` where `I = bipartiteEdgeMonomialIdeal G` and
-`diag = diagonalSumIdeal n k`.
+/-- The diagonal substitution: `y_j ↦ -x_j` for active `j < k`, identity otherwise. -/
+private noncomputable def diagSubstFun {n : ℕ} (k : ℕ) :
+    BinomialEdgeVars (Fin n) → MvPolynomial (BinomialEdgeVars (Fin n)) K :=
+  Sum.elim (fun j => X (Sum.inl j))
+    (fun j => if j.val < k ∧ j.val + 1 < n then -X (Sum.inl j) else X (Sum.inr j))
 
-### Proved steps
+/-- The diagonal substitution as a K-algebra homomorphism. -/
+private noncomputable def diagSubstHom {n : ℕ} (k : ℕ) :
+    MvPolynomial (BinomialEdgeVars (Fin n)) K →ₐ[K] MvPolynomial (BinomialEdgeVars (Fin n)) K :=
+  MvPolynomial.aeval (diagSubstFun (K := K) k)
 
-1. Every minimal prime of `I ⊔ diag` is of the form `span(X '' C')` where `C'`
-   extends a minimal vertex cover of `hhEdgeSet G` by adding both `x_j, y_j`
-   for `j < k`.  (Follows from `sum_X_not_mem_prime_sup_diagonalSum`.)
+/-- The diagonal substitution agrees with the identity modulo `diag`:
+the two K-algebra maps `mk ∘ φ` and `mk` agree on variables, hence are equal.
+Consequence: `f - φ(f) ∈ diag` for every polynomial `f`. -/
+private theorem diagSubstHom_congr_mod_diag {n : ℕ} (k : ℕ)
+    (f : MvPolynomial (BinomialEdgeVars (Fin n)) K) :
+    f - diagSubstHom (K := K) k f ∈ diagonalSumIdeal (K := K) n k := by
+  suffices h : (Ideal.Quotient.mkₐ K (diagonalSumIdeal (K := K) n k)).comp
+      (diagSubstHom (K := K) k) =
+    Ideal.Quotient.mkₐ K (diagonalSumIdeal (K := K) n k) by
+    have h1 := AlgHom.congr_fun h f
+    simp only [AlgHom.comp_apply, Ideal.Quotient.mkₐ_eq_mk] at h1
+    rw [eq_comm, Ideal.Quotient.eq] at h1
+    exact h1
+  apply MvPolynomial.algHom_ext
+  intro v
+  cases v with
+  | inl _ =>
+    simp only [AlgHom.comp_apply, diagSubstHom, MvPolynomial.aeval_X,
+      Ideal.Quotient.mkₐ_eq_mk, diagSubstFun, Sum.elim_inl]
+  | inr j =>
+    simp only [AlgHom.comp_apply, diagSubstHom, MvPolynomial.aeval_X,
+      Ideal.Quotient.mkₐ_eq_mk, diagSubstFun, Sum.elim_inr]
+    split_ifs with h
+    · rw [Ideal.Quotient.eq]
+      have : (-X (Sum.inl j) : MvPolynomial _ K) - X (Sum.inr j) =
+        -(X (Sum.inl j) + X (Sum.inr j)) := by ring
+      rw [this]
+      exact (Ideal.neg_mem_iff _).mpr (Ideal.subset_span ⟨j, h.1, h.2, rfl⟩)
+    · rfl
 
-2. `x_k + y_k` avoids all such primes.  (See above.)
+/-- `diag ≤ ker φ`: the substitution kills all diagonal sum generators. -/
+private theorem diag_le_ker_diagSubstHom {n : ℕ} (k : ℕ) :
+    diagonalSumIdeal (K := K) n k ≤
+      RingHom.ker (diagSubstHom (K := K) k).toRingHom := by
+  unfold diagonalSumIdeal
+  rw [Ideal.span_le]
+  rintro _ ⟨j, hjk, hjn, rfl⟩
+  rw [SetLike.mem_coe, RingHom.mem_ker, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]
+  change diagSubstHom (K := K) k (X (Sum.inl j) + X (Sum.inr j)) = 0
+  simp only [diagSubstHom, map_add, MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl,
+    Sum.elim_inr, hjk, hjn, and_self, ite_true, add_neg_cancel]
 
-3. The radical `√(I ⊔ diag)` equals `(x_j, y_j : j < k) + I_{≥k}` where
-   `I_{≥k}` is the edge ideal restricted to indices `≥ k`. This is a radical
-   (squarefree monomial) ideal, so `x_k + y_k` is a non-zero-divisor on
-   `S / √(I ⊔ diag)` by `isSMulRegular_of_radical_not_mem_minimalPrimes`.
+/-- `I.map φ ⊆ J`: the φ-image of the edge ideal is contained in `I ⊔ diag`. -/
+private theorem map_diagSubstHom_le {n : ℕ} {G : SimpleGraph (Fin n)} (k : ℕ) :
+    Ideal.map (diagSubstHom (K := K) k).toRingHom
+      (bipartiteEdgeMonomialIdeal (K := K) G) ≤
+    bipartiteEdgeMonomialIdeal (K := K) G ⊔ diagonalSumIdeal (K := K) n k := by
+  rw [Ideal.map_le_iff_le_comap]
+  intro g hg
+  rw [Ideal.mem_comap, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]
+  set J := bipartiteEdgeMonomialIdeal (K := K) G ⊔ diagonalSumIdeal (K := K) n k
+  have hg_J : g ∈ J := Ideal.mem_sup_left hg
+  have h_diff := diagSubstHom_congr_mod_diag (K := K) k g
+  have : diagSubstHom (K := K) k g = g - (g - diagSubstHom (K := K) k g) := by ring
+  rw [this]
+  exact J.sub_mem hg_J (Ideal.mem_sup_right h_diff)
 
-### Remaining gap
+/-- `φ` fixes `x_i + y_i` when `i ≥ k`. -/
+private theorem diagSubstHom_fix_ell {n : ℕ} (k : ℕ) (i : Fin n) (hik : k ≤ i.val) :
+    diagSubstHom (K := K) k (X (Sum.inl i) + X (Sum.inr i)) =
+      X (Sum.inl i) + X (Sum.inr i) := by
+  simp only [diagSubstHom, map_add, MvPolynomial.aeval_X, diagSubstFun,
+    Sum.elim_inl, Sum.elim_inr]
+  have : ¬(i.val < k) := Nat.not_lt.mpr hik
+  simp [this]
 
-The ideal `I ⊔ diag` is NOT radical: it contains `x_j² = x_j(x_j + y_j) - x_j y_j`
-for each `j < k`, but not `x_j` itself. Therefore the standard "radical = intersection
-of minimal primes" argument only gives `f ∈ √(I ⊔ diag)`, not `f ∈ I ⊔ diag`.
+/-- `(I ⊔ diag).map φ ≤ I.map φ`: the φ-image of the full ideal reduces to
+the φ-image of I, since φ kills diag. -/
+private theorem map_sup_diag_le {n : ℕ} {G : SimpleGraph (Fin n)} (k : ℕ) :
+    Ideal.map (diagSubstHom (K := K) k).toRingHom
+      (bipartiteEdgeMonomialIdeal (K := K) G ⊔ diagonalSumIdeal (K := K) n k) ≤
+    Ideal.map (diagSubstHom (K := K) k).toRingHom
+      (bipartiteEdgeMonomialIdeal (K := K) G) := by
+  rw [Ideal.map_le_iff_le_comap]
+  intro g hg
+  rw [Ideal.mem_comap, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]
+  obtain ⟨a, ha, d, hd, hgad⟩ := Submodule.mem_sup.mp hg
+  rw [← hgad, map_add]
+  have hd_zero : diagSubstHom (K := K) k d = 0 := by
+    have := diag_le_ker_diagSubstHom (K := K) k hd
+    rwa [RingHom.mem_ker, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom] at this
+  rw [hd_zero, add_zero]
+  exact Ideal.mem_map_of_mem _ ha
 
-The nilradical `√(I ⊔ diag) / (I ⊔ diag)` is generated by `x̄₀, …, x̄_{k-1}`.
-For `k = 1`, it is cyclic with annihilator `(x₀, x₁y₁) = (x₀, I_{≥1})` in the
-reduced ring, which is itself radical with no associated prime containing both
-`x_k` and `y_k`. This shows `ℓ_k` is NZD on the nilradical module, completing
-the proof for `k = 1`.
+/-- If `ℓ` is NZD on `R/√J` and on the nilradical module `√J/J`, then NZD on `R/J`. -/
+private theorem isSMulRegular_of_radical_step
+    {J : Ideal (MvPolynomial (BinomialEdgeVars (Fin n)) K)}
+    {r : MvPolynomial (BinomialEdgeVars (Fin n)) K}
+    (hrad : IsSMulRegular
+      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ J.radical)
+      (Ideal.Quotient.mk J.radical r))
+    (hnil : ∀ c ∈ J.radical, r * c ∈ J → c ∈ J) :
+    IsSMulRegular
+      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ J)
+      (Ideal.Quotient.mk J r) := by
+  intro a b hab
+  obtain ⟨a', rfl⟩ := Ideal.Quotient.mk_surjective a
+  obtain ⟨b', rfl⟩ := Ideal.Quotient.mk_surjective b
+  simp only [smul_eq_mul, ← map_mul, Ideal.Quotient.eq] at hab ⊢
+  have hdiff : r * (a' - b') ∈ J := by rwa [mul_sub]
+  have hrad_mem : a' - b' ∈ J.radical := by
+    rw [← Ideal.Quotient.eq_zero_iff_mem]
+    exact hrad (by
+      simp only [smul_eq_mul, mul_zero, ← map_mul,
+        Ideal.Quotient.eq_zero_iff_mem.mpr (J.le_radical hdiff)])
+  exact hnil _ hrad_mem hdiff
 
-The general case uses a filtration of the nilradical module; each graded piece
-is a quotient by a radical variable-generated ideal that also avoids `ℓ_k`.
+/-- `ℓ` avoids all minimal primes of the monomial image ideal `I.map φ`:
+no minimal prime of `I.map φ` contains both `x_i` and `y_i`.
+Proof uses HH transitivity: if both `x_i·m` and `y_i·m` belong to `I.map φ`,
+then some generator `x_a·y_b` has both `x_a | m` and `y_b | m`, so `m ∈ I.map φ`. -/
+private theorem ell_not_mem_minimalPrime_map_diagSubstHom {n : ℕ} {G : SimpleGraph (Fin n)}
+    (hHH : HerzogHibiConditions n G) (i : Fin n) (hi : i.val + 1 < n)
+    (hik : k ≤ i.val)
+    {P : Ideal (MvPolynomial (BinomialEdgeVars (Fin n)) K)}
+    (hP : P ∈ (Ideal.map (diagSubstHom (K := K) k).toRingHom
+      (bipartiteEdgeMonomialIdeal (K := K) G)).minimalPrimes) :
+    X (Sum.inl i) + X (Sum.inr i) ∉ P := by
+  sorry
 
-Viable route: factor the exact sequence
-  `0 → √(I ⊔ diag)/(I ⊔ diag) → S/(I ⊔ diag) → S/√(I ⊔ diag) → 0`
-and show `ℓ_k` is NZD on both outer terms (the first via the filtration argument,
-the second via radicality + prime avoidance).
--/
+/-- NZD on the nilradical module of the monomial image ideal:
+if `c ∈ √(I.map φ)` and `ℓ * c ∈ I.map φ`, then `c ∈ I.map φ`.
+This uses the monomial structure: `I.map φ` is a monomial ideal and `ℓ = x_i + y_i`
+where `x_i, y_i` are algebraically independent of the "killed" variables `y_j` (j < k). -/
+private theorem nilradical_nzd_map_diagSubstHom {n : ℕ} {G : SimpleGraph (Fin n)}
+    (hHH : HerzogHibiConditions n G) (i : Fin n) (hi : i.val + 1 < n)
+    (hik : k ≤ i.val) :
+    ∀ c ∈ (Ideal.map (diagSubstHom (K := K) k).toRingHom
+      (bipartiteEdgeMonomialIdeal (K := K) G)).radical,
+    (X (Sum.inl i) + X (Sum.inr i)) * c ∈
+      Ideal.map (diagSubstHom (K := K) k).toRingHom
+        (bipartiteEdgeMonomialIdeal (K := K) G) →
+    c ∈ Ideal.map (diagSubstHom (K := K) k).toRingHom
+      (bipartiteEdgeMonomialIdeal (K := K) G) := by
+  sorry
+
+private theorem isSMulRegular_map_diagSubstHom {n : ℕ} {G : SimpleGraph (Fin n)}
+    (hHH : HerzogHibiConditions n G) (i : Fin n) (hi : i.val + 1 < n)
+    (hik : k ≤ i.val) :
+    IsSMulRegular
+      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸
+        Ideal.map (diagSubstHom (K := K) k).toRingHom
+          (bipartiteEdgeMonomialIdeal (K := K) G))
+      (Ideal.Quotient.mk
+        (Ideal.map (diagSubstHom (K := K) k).toRingHom
+          (bipartiteEdgeMonomialIdeal (K := K) G))
+        (X (Sum.inl i) + X (Sum.inr i))) := by
+  set Iφ := Ideal.map (diagSubstHom (K := K) k).toRingHom
+    (bipartiteEdgeMonomialIdeal (K := K) G)
+  apply isSMulRegular_of_radical_step
+  · -- NZD on S / √(Iφ): use radical + prime avoidance
+    exact isSMulRegular_of_radical_not_mem_minimalPrimes
+      Iφ.radical_isRadical
+      (fun P hP => by
+        -- minimal primes of √(Iφ) = minimal primes of Iφ
+        rw [Ideal.radical_minimalPrimes] at hP
+        exact ell_not_mem_minimalPrime_map_diagSubstHom (K := K) hHH i hi hik hP)
+  · exact nilradical_nzd_map_diagSubstHom (K := K) hHH i hi hik
+
+/-- **Iterated regularity**: Under HH conditions, `x_i + y_i` is a non-zero-divisor
+on `S / (I ⊔ diag)` where `I = bipartiteEdgeMonomialIdeal G` and
+`diag = diagonalSumIdeal n k`, for any `i` with `k ≤ i.val` and `i.val + 1 < n`.
+
+Proof via the diagonal substitution `φ`:
+- Apply `φ` (which kills `diag`) to reduce to NZD on `S / I.map φ` (monomial ideal).
+- Use `f - φ(f) ∈ diag` and `I.map φ ⊆ J` to transfer back. -/
 theorem sum_XY_isSMulRegular_mod_diagonalSum {n : ℕ} {G : SimpleGraph (Fin n)}
     (hHH : HerzogHibiConditions n G) (i : Fin n) (hi : i.val + 1 < n)
     (hik : k ≤ i.val) :
@@ -1265,6 +1416,40 @@ theorem sum_XY_isSMulRegular_mod_diagonalSum {n : ℕ} {G : SimpleGraph (Fin n)}
         (bipartiteEdgeMonomialIdeal (K := K) G ⊔ diagonalSumIdeal (K := K) n k))
       (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K) G ⊔
         diagonalSumIdeal (K := K) n k) (X (Sum.inl i) + X (Sum.inr i))) := by
-  sorry
+  set J := bipartiteEdgeMonomialIdeal (K := K) G ⊔ diagonalSumIdeal (K := K) n k
+  set I := bipartiteEdgeMonomialIdeal (K := K) G
+  set diag := diagonalSumIdeal (K := K) n k
+  set ℓ : MvPolynomial (BinomialEdgeVars (Fin n)) K := X (Sum.inl i) + X (Sum.inr i)
+  set φ := diagSubstHom (K := K) k
+  set Iφ := Ideal.map φ.toRingHom I
+  -- Lift to the polynomial ring
+  intro a b hab
+  obtain ⟨a', rfl⟩ := Ideal.Quotient.mk_surjective a
+  obtain ⟨b', rfl⟩ := Ideal.Quotient.mk_surjective b
+  simp only [smul_eq_mul, ← map_mul, Ideal.Quotient.eq] at hab ⊢
+  set c := a' - b'
+  have hℓc : ℓ * c ∈ J := by rw [mul_sub]; exact hab
+  -- Step 1: Apply φ to get ℓ * φ(c) ∈ I.map φ
+  have h_map_mem : φ.toRingHom (ℓ * c) ∈ Iφ :=
+    map_sup_diag_le (K := K) k (Ideal.mem_map_of_mem φ.toRingHom hℓc)
+  rw [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom,
+    diagSubstHom_fix_ell (K := K) k i hik] at h_map_mem
+  -- h_map_mem : ℓ * φ(c) ∈ Iφ
+  -- Step 2: NZD on S / Iφ gives φ(c) ∈ Iφ
+  have h_nzd := isSMulRegular_map_diagSubstHom (K := K) hHH i hi hik
+  have hφc_mem : φ c ∈ Iφ := by
+    rw [← Ideal.Quotient.eq_zero_iff_mem]
+    have h1 : Ideal.Quotient.mk Iφ ℓ * Ideal.Quotient.mk Iφ (φ c) = 0 := by
+      rw [← map_mul]; exact Ideal.Quotient.eq_zero_iff_mem.mpr h_map_mem
+    exact h_nzd (show _ • _ = _ • _ from by
+      simp only [smul_eq_mul, mul_zero]; exact h1)
+  -- Step 3: c = (c - φ(c)) + φ(c) ∈ diag + Iφ ⊆ J
+  have h_diff : c - φ c ∈ diag :=
+    diagSubstHom_congr_mod_diag (K := K) k c
+  have h_Iφ_le : Iφ ≤ J := map_diagSubstHom_le (K := K) k
+  change c ∈ J
+  have : c = (c - φ c) + φ c := by ring
+  rw [this]
+  exact J.add_mem (Ideal.mem_sup_right h_diff) (h_Iφ_le hφc_mem)
 
 end
