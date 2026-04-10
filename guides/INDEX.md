@@ -13,7 +13,9 @@ This directory is the current todo list.
    real CM slice, and backport/import it cleanly.
 
 Current next concrete target:
-- `toMathlib/CohenMacaulay/Basic.lean`
+- [cm_pr_26218/BASIC_FORWARD_DEPTH.md](cm_pr_26218/BASIC_FORWARD_DEPTH.md)
+  The next exact blocker is the missing forward depth inequality for regular
+  quotients.
 
 ## Dormant / Optional
 

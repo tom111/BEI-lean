@@ -48,6 +48,7 @@ There is no test suite — correctness is enforced by Lean's type checker. A suc
 - `BEI/Equidim.lean` — HH bipartite graph infrastructure, direct-route helpers, and paper-side infrastructure over the local working equidimensional surrogate
 - `toMathlib/Equidim/Defs.lean` — local backport / working definition for the equidimensional surrogate branch
 - `toMathlib/CohenMacaulay/Defs.lean` — first real Cohen–Macaulay foundation layer: `ringDepth`, `IsCohenMacaulayLocalRing`, `IsCohenMacaulayRing`, and the basic inequality `ringDepth ≤ ringKrullDim`
+- `toMathlib/CohenMacaulay/Basic.lean` — quotient-local-ring setup, the easy depth inequality for regular quotients, and the converse regular-quotient CM transfer
 - `toMathlib/MonomialIdeal.lean` — monomial ideals in `MvPolynomial`, variable-generated prime ideals, the prime classification for monomial ideals, `coeff_pow_lexMax`, `radical_isMonomial`, the full primary monomial ideal characterization (`isPrimary_iff`), and supporting structural lemmas
 - `toMathlib/SquarefreeMonomialPrimes.lean` — variable-pair ideals (edge ideals), vertex covers, and minimal prime ↔ minimal vertex cover classification
 - `toMathlib/HeightVariableIdeal.lean` — quotients by variable ideals, quotient equivalences, and Krull-dimension formulas used in the Proposition 1.6 CM branch
@@ -77,7 +78,7 @@ There is no test suite — correctness is enforced by Lean's type checker. A suc
 - Treat `BEI.tex` and the Lean files as the source of truth.
 - If a theorem is finished, moved, split across files, or downgraded from an earlier claim, update `TODO.md` and `FORMALIZATION_MAP.md` in the same round.
 - `IsEquidim` now has a real local working definition in `toMathlib/Equidim/Defs.lean`. The Section 3 equidimensional surrogate consequences `corollary_3_4_equidim` and `corollary_3_7_equidim` are proved, and Proposition 1.6 now has a direct equidimensional proof `prop_1_6_equidim` in `BEI/PrimeDecompositionDimension.lean`. This still does **not** count as a full formalization of the paper's depth-based Cohen–Macaulay statement.
-- The first real Cohen–Macaulay foundation file has now landed in `toMathlib/CohenMacaulay/Defs.lean`, but the paper-faithful Proposition 1.6 route still needs more CM infrastructure before it can be resumed honestly.
+- The first two real Cohen–Macaulay foundation files have now landed in `toMathlib/CohenMacaulay/Defs.lean` and `toMathlib/CohenMacaulay/Basic.lean`, but the paper-faithful Proposition 1.6 route still needs the forward regular-quotient depth inequality before the CM induction story can move further.
 - Section 4 is fully landed in `BEI/CIIdeals.lean` at the current paper-facing level: the single-statement bridge, specification bridge, and transferred radicality / prime decomposition / minimal-prime theorems are all proved. The minimal-prime transfer keeps the connectedness hypothesis from `corollary_3_9`.
 - `OVERVIEW.md`, `NEXT_STEPS_PLAN.md`, and the public `docs/` pages should stay reader-facing; avoid turning them into internal blocker logs.
 

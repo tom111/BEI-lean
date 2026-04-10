@@ -8,7 +8,7 @@ Current active packet:
 
 Current next code target:
 
-- `toMathlib/CohenMacaulay/Basic.lean`
+- [BASIC_FORWARD_DEPTH.md](/home/tom/BEI-lean/guides/cm_pr_26218/BASIC_FORWARD_DEPTH.md)
 
 Goal:
 

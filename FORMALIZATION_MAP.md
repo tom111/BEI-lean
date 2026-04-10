@@ -94,6 +94,15 @@ faithfully the current Lean statements match the paper.
 | Global CM definition | `IsCohenMacaulayRing` | `toMathlib/CohenMacaulay/Defs.lean` | proved | Defined by localization at every prime |
 | Depth ≤ dimension | `weaklyRegular_length_le_ringKrullDim`, `ringDepth_le_ringKrullDim` | `toMathlib/CohenMacaulay/Defs.lean` | proved | First basic CM inequalities for the real-CM track |
 
+### Real Cohen-Macaulay basics (`toMathlib/CohenMacaulay/Basic.lean`)
+
+| Result | Lean name(s) | File | Status | Notes |
+|--------|-------------|------|--------|-------|
+| Quotient nontriviality/locality | `quotSMulTop_nontrivial`, `quotSMulTopLocalRing` | `toMathlib/CohenMacaulay/Basic.lean` | proved | If `x ∈ maximalIdeal R`, then `R ⧸ xR` is nontrivial and local |
+| Easy depth inequality | `ringDepth_quotSMulTop_succ_le` | `toMathlib/CohenMacaulay/Basic.lean` | proved | `depth(R/xR) + 1 ≤ depth(R)` for regular `x ∈ maximalIdeal R` |
+| Converse regular-quotient CM transfer | `isCohenMacaulayLocalRing_of_regular_quotient` | `toMathlib/CohenMacaulay/Basic.lean` | proved | CM quotient implies CM ring under regularity and Noetherianity |
+| Forward regular-quotient CM transfer | — | `toMathlib/CohenMacaulay/Basic.lean` | blocked | Missing the opposite depth inequality `depth(R) ≤ depth(R/xR) + 1` |
+
 ### Variable ideal dimension (`toMathlib/HeightVariableIdeal.lean`)
 
 | Result | Lean name(s) | File | Status | Notes |
@@ -124,6 +133,7 @@ faithfully the current Lean statements match the paper.
 - `BEI/Equidim.lean` carries the local equidimensional surrogate definition wrapper, HH bipartite graph infrastructure, the closed-graph component-count upper bound, and the complete-graph example.
 - `toMathlib/Equidim/Defs.lean` carries the local working equidimensional definition currently used in the project.
 - `toMathlib/CohenMacaulay/Defs.lean` carries the first real Cohen–Macaulay foundation layer, kept separate from the equidimensional surrogate.
+- `toMathlib/CohenMacaulay/Basic.lean` carries the quotient-local-ring setup, the easy depth inequality for regular quotients, and the converse regular-quotient CM transfer.
 - `toMathlib/MonomialIdeal.lean` carries `Ideal.IsMonomial`, `MvPolynomial.isPrime_span_X_image_set` (Set version), `Ideal.exists_variable_mem_of_monomial_mem_prime`, `Ideal.IsMonomial.isPrime_iff_eq_span_X_image` (prime monomial ideals = variable ideals), `Ideal.IsMonomial.span_X_image`, `coeff_pow_lexMax`, `Ideal.IsMonomial.radical_isMonomial`, `Ideal.isPrimary_monomial_criterion`, `Ideal.IsMonomial.isPrimary_radical_eq_span_X`, the structural outside-`s` membership lemmas, the general support-extraction lemma `Ideal.not_mem_exists_monomial_notMem`, the converse helper `Ideal.mem_of_mul_mem_of_lexMax_outside`, and the full primary iff `Ideal.IsMonomial.isPrimary_iff`.
 - `toMathlib/SquarefreeMonomialPrimes.lean` carries `variablePairIdeal`, `IsVertexCover`, `IsMinimalVertexCover`, and the complete minimal prime ↔ minimal vertex cover characterization for edge ideals.
 - `toMathlib/HeightVariableIdeal.lean` carries the variable-killing map, the quotient equivalence for variable ideals, and the resulting quotient-dimension formulas.

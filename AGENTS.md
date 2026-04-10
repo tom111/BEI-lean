@@ -96,7 +96,8 @@ Each guide should make clear which of these jobs it is addressing.
 The repo now has two separate layers:
 
 - the equidimensional surrogate in `toMathlib/Equidim/Defs.lean`;
-- the first real CM foundation file in `toMathlib/CohenMacaulay/Defs.lean`.
+- the first real CM foundation files in
+  `toMathlib/CohenMacaulay/Defs.lean` and `toMathlib/CohenMacaulay/Basic.lean`.
 
 This still does **not** mean the CM part of the paper is finished.
 

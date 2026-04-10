@@ -157,7 +157,8 @@ Only create the files you actually need.
 Current status:
 
 - `toMathlib/CohenMacaulay/Defs.lean` is now landed
-- the next target is `toMathlib/CohenMacaulay/Basic.lean`
+- `toMathlib/CohenMacaulay/Basic.lean` is now landed
+- the next exact blocker is the forward depth inequality for regular quotients
 
 
 ## Phase 4: preserve provenance

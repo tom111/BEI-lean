@@ -84,11 +84,16 @@ Start with:
 The first concrete job was to land the minimal definition layer in
 `toMathlib/CohenMacaulay/Defs.lean`.
 
-The next concrete job is:
+The next concrete job is no longer to create `Basic.lean`; that file is now landed.
 
-- `toMathlib/CohenMacaulay/Basic.lean`
+The next exact blocker is:
 
-targeting the regular-quotient characterization for local Cohen–Macaulay rings.
+- the forward depth inequality for regular quotients
+
+  `ringDepth R ≤ ringDepth (QuotSMulTop x R) + 1`
+
+which is the missing half of the regular-quotient characterization for local
+Cohen–Macaulay rings.
 
 ### Step 2: look for the smallest truthful transfer theorem
 

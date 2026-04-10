@@ -48,6 +48,7 @@ Supporting files on this branch:
 - `BEI/PrimeDecompositionDimension.lean`
 - `BEI/Equidim.lean`
 - `toMathlib/CohenMacaulay/Defs.lean` — first real CM foundation layer: `ringDepth`, `IsCohenMacaulayLocalRing`, `IsCohenMacaulayRing`, and the basic inequality `ringDepth ≤ ringKrullDim`
+- `toMathlib/CohenMacaulay/Basic.lean` — quotient-local-ring setup, the easy depth inequality `depth(R/xR) + 1 ≤ depth(R)`, and the converse regular-quotient CM transfer
 - `toMathlib/MonomialIdeal.lean` — `Ideal.IsMonomial`, prime classification, radical-is-monomial, full primary iff characterization
 - `toMathlib/SquarefreeMonomialPrimes.lean` — variable-pair ideals, vertex covers, and minimal prime ↔ minimal vertex cover
 - `toMathlib/HeightVariableIdeal.lean` — quotients by variable ideals, quotient equivalences, and dimension formulas
@@ -69,9 +70,21 @@ still present as infrastructure in `BEI/Equidim.lean` but `cm_transfer_initialId
 has been removed from the critical path. The Gröbner CM transfer theorem (Eisenbud 15.17)
 remains unformalized and the full paper Cohen–Macaulay statement is still open.
 
-The first real CM foundation file has now landed in `toMathlib/CohenMacaulay/Defs.lean`.
-The next recommended step on this track is `toMathlib/CohenMacaulay/Basic.lean`,
-centered on regular-quotient behavior for local Cohen–Macaulay rings.
+The first two real CM foundation files have now landed:
+
+1. `toMathlib/CohenMacaulay/Defs.lean` — definitions and the basic inequality
+   `ringDepth ≤ ringKrullDim`
+2. `toMathlib/CohenMacaulay/Basic.lean` — quotient-local-ring instances,
+   `ringDepth_quotSMulTop_succ_le`, and
+   `isCohenMacaulayLocalRing_of_regular_quotient`
+
+At the moment this regular-quotient story is only one-directional. The next exact blocker
+is the missing forward depth inequality
+
+`ringDepth R ≤ ringDepth (QuotSMulTop x R) + 1`
+
+for `x ∈ maximalIdeal R` regular, which is needed for the forward regular-quotient CM
+transfer.
 
 Note: the direct proof uses the repo's local equidimensional surrogate for
 Cohen–Macaulayness. This does not yet count as a full formalization of the paper's
