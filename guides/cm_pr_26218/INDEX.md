@@ -15,3 +15,8 @@ Goal:
 - keep the repo pinned to mathlib `v4.28.0` as long as possible;
 - import only the smallest real Cohen–Macaulay slice actually needed;
 - preserve a clean paper-faithful path for Proposition 1.6.
+
+Note:
+
+- this subdirectory is the supporting general-CM backport track;
+- it is not, by itself, the full critical path for the paper-style Proposition 1.6.

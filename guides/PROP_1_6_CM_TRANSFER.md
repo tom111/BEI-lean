@@ -16,7 +16,8 @@ Everything internal to the BEI reduction is now proved:
 
 The remaining paper-level gaps are:
 
-1. extend the newly landed real Cohen–Macaulay foundations in `toMathlib/CohenMacaulay/Defs.lean`;
+1. formalize a Herzog–Hibi bipartite Cohen–Macaulay theorem strong enough for
+   the graph `Γ` already constructed in the repo;
 2. formalize a Gröbner-basis transfer theorem strong enough for Proposition 1.6.
 
 
@@ -75,27 +76,34 @@ Important scope note:
 
 ## Recommended strategy
 
-### Step 1: use the PR track first
+### Step 1: keep the CM backport track separate
 
-Start with:
+The real CM foundation work in
 
-- [cm_pr_26218/MINIMAL_IMPORT_AND_BACKPORT.md](cm_pr_26218/MINIMAL_IMPORT_AND_BACKPORT.md)
+- `toMathlib/CohenMacaulay/Defs.lean`
+- `toMathlib/CohenMacaulay/Basic.lean`
 
-The first concrete job was to land the minimal definition layer in
-`toMathlib/CohenMacaulay/Defs.lean`.
+is useful and should continue as a separate supporting track.
 
-The next concrete job is no longer to create `Basic.lean`; that file is now landed.
+However, the missing forward depth inequality for regular quotients is **not**
+the immediate paper-critical blocker for Proposition 1.6.
 
-The next exact blocker is:
+That packet now lives as supporting infrastructure in:
 
-- the forward depth inequality for regular quotients
+- [cm_pr_26218/BASIC_FORWARD_DEPTH.md](cm_pr_26218/BASIC_FORWARD_DEPTH.md)
 
-  `ringDepth R ≤ ringDepth (QuotSMulTop x R) + 1`
+### Step 2: target the two paper-critical theorems directly
 
-which is the missing half of the regular-quotient characterization for local
-Cohen–Macaulay rings.
+The actual remaining paper route consists of two isolated gaps:
 
-### Step 2: look for the smallest truthful transfer theorem
+1. HH bipartite CM:
+   prove that the quotient by the bipartite edge ideal is genuinely
+   Cohen–Macaulay under the Herzog–Hibi conditions;
+2. Gröbner transfer:
+   prove that Cohen–Macaulayness transfers from the initial ideal quotient back
+   to the original ideal quotient.
+
+### Step 3: look for the smallest truthful theorem in each gap
 
 The ideal theorem may need to be narrower than the classical statement. Good outcomes:
 
@@ -107,7 +115,7 @@ The ideal theorem may need to be narrower than the classical statement. Good out
 Do not overstate what has been formalized if the theorem only covers the current BEI
 setting.
 
-### Step 3: reconnect to the paper-style route
+### Step 4: reconnect to the paper-style route
 
 Once real CM foundations and a truthful transfer theorem are available, use the
 already-proved
@@ -125,6 +133,8 @@ genuine CM foundations.
 
 - This is the one place where it may be necessary to formalize genuinely external
   commutative-algebra infrastructure. Do not pretend it is already in Mathlib if it is not.
+- Do not confuse the general CM backport track with the immediate Proposition 1.6
+  critical path.
 - Prefer the smallest theorem that honestly closes the current project.
 - Do not reopen the graph-combinatorial or dimension packets; they are done.
 - If the transfer theorem turns out to require more serious infrastructure than fits in

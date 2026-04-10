@@ -9,13 +9,21 @@ This directory is the current todo list.
    paper-faithful Proposition 1.6 track.
 
 2. [cm_pr_26218/MINIMAL_IMPORT_AND_BACKPORT.md](cm_pr_26218/MINIMAL_IMPORT_AND_BACKPORT.md)
-   Concrete subtask for track 1: inspect PR `#26218`, identify the smallest usable
-   real CM slice, and backport/import it cleanly.
+   Supporting general-CM subtrack: inspect PR `#26218`, identify the smallest
+   usable real CM slice, and backport/import it cleanly.
 
 Current next concrete target:
+- [ANSWER_PROP_1_6_CM_WHAT_IS_NEEDED.md](ANSWER_PROP_1_6_CM_WHAT_IS_NEEDED.md)
+  Decision note: the paper-critical gaps are the HH bipartite CM theorem and
+  the Gröbner transfer theorem; the forward depth inequality is supporting
+  infrastructure, not the immediate Prop. 1.6 blocker.
+
+Current next concrete theorem packet to write/use:
+- a new guide for the HH bipartite Cohen–Macaulay theorem
+
+Supporting CM backport packet:
 - [cm_pr_26218/BASIC_FORWARD_DEPTH.md](cm_pr_26218/BASIC_FORWARD_DEPTH.md)
-  The next exact blocker is the missing forward depth inequality for regular
-  quotients.
+  Useful general CM infrastructure, but not the immediate paper-critical task.
 
 ## Dormant / Optional
 
