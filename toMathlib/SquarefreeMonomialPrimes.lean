@@ -178,6 +178,73 @@ theorem minimalPrime_variablePairIdeal_iff
   · rintro ⟨S, hS, rfl⟩
     exact span_minimalVertexCover_minimalPrime hS
 
+/-! ### Radicality of variable-pair ideals
+
+The variable-pair ideal is radical because it equals the intersection of its
+minimal primes (all of which are variable-generated primes).
+
+The proof reduces to a monomial argument: if a monomial `m` lies in every
+`span (X '' C)` for every minimal vertex cover `C`, then `supp(m)` intersects
+every such `C`.  By contrapositive, if `supp(m)` contained no edge, its
+complement would be a vertex cover — which would contain a minimal vertex
+cover `C` disjoint from `supp(m)`, contradicting `m ∈ span (X '' C)`. -/
+
+/-- The variable-pair ideal of a set of edges is radical: every element of
+`radical (variablePairIdeal edges)` already belongs to the ideal.
+
+Equivalently, `variablePairIdeal edges` equals the intersection of its
+minimal primes `span (X '' C)` over all minimal vertex covers `C`. -/
+theorem variablePairIdeal_isRadical (edges : Set (σ × σ))
+    (h_distinct : ∀ a b, (a, b) ∈ edges → a ≠ b) :
+    (variablePairIdeal (R := R) edges).IsRadical := by
+  rw [Ideal.IsRadical]
+  intro f hf
+  by_contra hfI
+  obtain ⟨m, hm_supp, hm_notI⟩ := Ideal.not_mem_exists_monomial_notMem hfI
+  -- The zero-set of m is a vertex cover: for every edge (a,b), m(a) = 0 or m(b) = 0.
+  -- If not, then monomial m 1 ∈ variablePairIdeal, contradicting hm_notI.
+  set C := {i : σ | m i = 0} with hC_def
+  have hcover : IsVertexCover edges C := by
+    intro a b hab
+    by_contra h_not
+    push_neg at h_not
+    obtain ⟨ha, hb⟩ := h_not
+    change m a ≠ 0 at ha; change m b ≠ 0 at hb
+    have hab_ne : a ≠ b := h_distinct a b hab
+    apply hm_notI
+    have hle : Finsupp.single a 1 + Finsupp.single b 1 ≤ m := by
+      classical
+      intro i
+      rw [Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+      by_cases h1 : i = a <;> by_cases h2 : i = b
+      · exact absurd (h1.symm.trans h2) hab_ne
+      · subst h1; rw [if_pos rfl, if_neg (Ne.symm h2)]; omega
+      · subst h2; rw [if_neg (Ne.symm h1), if_pos rfl]; omega
+      · rw [if_neg (Ne.symm h1), if_neg (Ne.symm h2)]; omega
+    have hgen : X a * X b ∈ variablePairIdeal (R := R) edges :=
+      subset_span ⟨a, b, hab, rfl⟩
+    have hdvd : monomial (Finsupp.single a 1 + Finsupp.single b 1) (1 : R) ∣
+        monomial m (1 : R) := by
+      rw [monomial_dvd_monomial]
+      exact ⟨Or.inr hle, dvd_refl 1⟩
+    rw [show X a * X b = monomial (Finsupp.single a 1 + Finsupp.single b 1) (1 : R) from by
+      simp [X, monomial_mul]] at hgen
+    obtain ⟨q, hq⟩ := hdvd
+    rw [hq]
+    exact mul_mem_right q _ hgen
+  -- span(X '' C) is prime and contains I
+  have hprime := isPrime_span_X_image_set (R := R) C
+  have hI_le : variablePairIdeal (R := R) edges ≤ span (X '' C) :=
+    variablePairIdeal_le_span_X_iff.mpr hcover
+  -- f ∈ radical(I) ≤ span(X '' C)
+  have hf_mem : f ∈ span (X '' C : Set (MvPolynomial σ R)) :=
+    hprime.isRadical.radical_le_iff.mpr hI_le hf
+  -- By mem_ideal_span_X_image, m ∈ f.support has some i ∈ C with m(i) ≠ 0
+  rw [mem_ideal_span_X_image] at hf_mem
+  obtain ⟨i, hi_C, hi_ne⟩ := hf_mem m hm_supp
+  -- But i ∈ C means m(i) = 0, contradiction
+  exact hi_ne hi_C
+
 end MvPolynomial
 
 end

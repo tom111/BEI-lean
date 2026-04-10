@@ -13,13 +13,15 @@ This directory is the current todo list.
    usable real CM slice, and backport/import it cleanly.
 
 Current next concrete target:
-- [ANSWER_PROP_1_6_CM_WHAT_IS_NEEDED.md](ANSWER_PROP_1_6_CM_WHAT_IS_NEEDED.md)
-  Decision note: the paper-critical gaps are the HH bipartite CM theorem and
-  the Gröbner transfer theorem; the forward depth inequality is supporting
-  infrastructure, not the immediate Prop. 1.6 blocker.
+- [HH_BIPARTITE_CM_REGULAR_SEQUENCE.md](HH_BIPARTITE_CM_REGULAR_SEQUENCE.md)
+  The HH route now has individual non-zero-divisors; the next blocker is
+  regularity through the iterated quotients.
 
-Current next concrete theorem packet to write/use:
-- a new guide for the HH bipartite Cohen–Macaulay theorem
+Decision note:
+- [ANSWER_PROP_1_6_CM_WHAT_IS_NEEDED.md](ANSWER_PROP_1_6_CM_WHAT_IS_NEEDED.md)
+  The paper-critical gaps are the HH bipartite CM theorem and the Gröbner
+  transfer theorem; the forward depth inequality is supporting infrastructure,
+  not the immediate Prop. 1.6 blocker.
 
 Supporting CM backport packet:
 - [cm_pr_26218/BASIC_FORWARD_DEPTH.md](cm_pr_26218/BASIC_FORWARD_DEPTH.md)

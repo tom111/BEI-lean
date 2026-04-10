@@ -542,6 +542,120 @@ theorem bipartiteEdgeMonomialIdeal_isEquidim {n : ℕ} {G : SimpleGraph (Fin n)}
         ringKrullDim_eq_of_ringEquiv (DoubleQuot.quotQuotEquivQuotOfLE hJ'min.1.2)]
     exact bipartiteEdgeMonomialIdeal_equidimensional hHH hJmin hJ'min
 
+/-! ## Regular elements for the Cohen–Macaulay path
+
+Under HH conditions, each linear form `X (Sum.inl i) + X (Sum.inr i)` avoids every
+minimal prime of `bipartiteEdgeMonomialIdeal G`.  Since the edge ideal is radical
+(proved via `variablePairIdeal_isRadical` in `SquarefreeMonomialPrimes`), these linear
+forms are non-zero-divisors on the quotient ring — the first step toward showing the
+quotient is Cohen–Macaulay via a direct regular-sequence argument. -/
+
+/-- Under HH conditions, `X (Sum.inl i) + X (Sum.inr i)` is not in any minimal
+prime of the bipartite edge monomial ideal.
+
+Each minimal prime is `span (X '' C)` for a minimal vertex cover `C`, and
+`minimalVertexCover_exactlyOne` ensures `C` picks exactly one element from
+each diagonal pair `{Sum.inl i, Sum.inr i}`.  Therefore the other variable
+is free in the quotient `S / P`, and the sum maps to a nonzero variable. -/
+theorem sum_X_not_mem_minimalPrime {n : ℕ} {G : SimpleGraph (Fin n)}
+    (hHH : HerzogHibiConditions n G) (i : Fin n) (hi : i.val + 1 < n)
+    {P : Ideal (MvPolynomial (BinomialEdgeVars (Fin n)) K)}
+    (hP : P ∈ Ideal.minimalPrimes (bipartiteEdgeMonomialIdeal (K := K) G)) :
+    X (Sum.inl i) + X (Sum.inr i) ∉ P := by
+  -- Extract P = span(X '' C) for a minimal vertex cover C
+  obtain ⟨C, hC, rfl⟩ := (minimalPrime_bipartiteEdgeMonomialIdeal_iff G).mp hP
+  -- Under HH conditions, exactly one of Sum.inl i, Sum.inr i is in C
+  have hexact := minimalVertexCover_exactlyOne hHH hC i hi
+  -- Case split on which element of the diagonal pair is in C
+  set S : Set (MvPolynomial (BinomialEdgeVars (Fin n)) K) := MvPolynomial.X '' C
+  by_cases hxi : Sum.inl i ∈ C
+  · -- Sum.inl i ∈ C, Sum.inr i ∉ C
+    have hyi : Sum.inr i ∉ C := hexact.mp hxi
+    intro hmem
+    have hxi_mem : (X (Sum.inl i) : MvPolynomial _ K) ∈ Ideal.span S :=
+      Ideal.subset_span ⟨Sum.inl i, hxi, rfl⟩
+    have hyi_mem : (X (Sum.inr i) : MvPolynomial _ K) ∈ Ideal.span S := by
+      have := (Ideal.span S).sub_mem hmem hxi_mem
+      rwa [add_sub_cancel_left] at this
+    exact hyi ((MvPolynomial.X_mem_span_X_image_iff (R := K)).mp hyi_mem)
+  · -- Sum.inl i ∉ C, Sum.inr i ∈ C
+    have hyi : Sum.inr i ∈ C := by
+      rcases hC.1 _ _ (hhEdgeSet_diagonal hHH i hi) with h | h
+      · exact absurd h hxi
+      · exact h
+    intro hmem
+    have hyi_mem : (X (Sum.inr i) : MvPolynomial _ K) ∈ Ideal.span S :=
+      Ideal.subset_span ⟨Sum.inr i, hyi, rfl⟩
+    have hxi_mem : (X (Sum.inl i) : MvPolynomial _ K) ∈ Ideal.span S := by
+      have := (Ideal.span S).sub_mem hmem hyi_mem
+      rwa [add_sub_cancel_right] at this
+    exact hxi ((MvPolynomial.X_mem_span_X_image_iff (R := K)).mp hxi_mem)
+
+/-- The bipartite edge monomial ideal is radical, inherited from
+`variablePairIdeal_isRadical` via the bridge
+`bipartiteEdgeMonomialIdeal_eq_variablePairIdeal`. -/
+theorem bipartiteEdgeMonomialIdeal_isRadical {n : ℕ} (G : SimpleGraph (Fin n)) :
+    (bipartiteEdgeMonomialIdeal (K := K) G).IsRadical := by
+  rw [bipartiteEdgeMonomialIdeal_eq_variablePairIdeal]
+  apply MvPolynomial.variablePairIdeal_isRadical
+  intro a b hab
+  obtain ⟨i, j, _, _, _, he⟩ := hab
+  have := congr_arg Prod.fst he
+  have := congr_arg Prod.snd he
+  simp only [ne_eq] at *
+  subst_vars
+  exact Sum.inl_ne_inr
+
+/-- Under HH conditions, `X (Sum.inl i) + X (Sum.inr i)` is a non-zero-divisor
+on the quotient by the bipartite edge monomial ideal.
+
+The proof uses three ingredients:
+1. the edge ideal is radical (`bipartiteEdgeMonomialIdeal_isRadical`);
+2. each minimal prime is a variable-generated prime from a minimal vertex cover;
+3. the sum avoids every such prime (`sum_X_not_mem_minimalPrime`).
+
+If `(x_i + y_i) · f ∈ I`, then `(x_i + y_i) · f ∈ P` for every minimal prime
+`P` of `I`.  Since `P` is prime and `x_i + y_i ∉ P`, we get `f ∈ P`.  So
+`f ∈ ⋂ P = radical(I) = I`. -/
+theorem sum_XY_isSMulRegular {n : ℕ} {G : SimpleGraph (Fin n)}
+    (hHH : HerzogHibiConditions n G) (i : Fin n) (hi : i.val + 1 < n) :
+    IsSMulRegular
+      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸
+        bipartiteEdgeMonomialIdeal (K := K) G)
+      (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K) G)
+        (X (Sum.inl i) + X (Sum.inr i))) := by
+  set I := bipartiteEdgeMonomialIdeal (K := K) G
+  set ℓ : MvPolynomial (BinomialEdgeVars (Fin n)) K :=
+    X (Sum.inl i) + X (Sum.inr i)
+  set mk := Ideal.Quotient.mk I
+  intro a b hab
+  -- Lift to the polynomial ring
+  obtain ⟨a', rfl⟩ := Ideal.Quotient.mk_surjective a
+  obtain ⟨b', rfl⟩ := Ideal.Quotient.mk_surjective b
+  -- Convert smul hypothesis to ring multiplication
+  simp only [smul_eq_mul] at hab
+  -- hab : mk ℓ * mk a' = mk ℓ * mk b'
+  rw [← map_mul, ← map_mul, Ideal.Quotient.eq] at hab
+  -- hab : ℓ * a' - ℓ * b' ∈ I
+  rw [Ideal.Quotient.eq]
+  -- Goal: a' - b' ∈ I. Show it's in radical(I) = I.
+  have hdiff : ℓ * (a' - b') ∈ I := by rwa [mul_sub]
+  suffices a' - b' ∈ I.radical by
+    rwa [(bipartiteEdgeMonomialIdeal_isRadical (K := K) G).radical] at this
+  rw [Ideal.radical_eq_sInf, Submodule.mem_sInf]
+  intro P ⟨hPI, hPprime⟩
+  -- Get a minimal prime Q of I with Q ≤ P
+  haveI := hPprime
+  obtain ⟨Q, hQmin, hQP⟩ := Ideal.exists_minimalPrimes_le hPI
+  -- ℓ * (a' - b') ∈ I ⊆ Q (since Q is a minimal prime containing I)
+  have hmemQ : ℓ * (a' - b') ∈ Q := hQmin.1.2 hdiff
+  -- ℓ ∉ Q (our combinatorial result)
+  have hℓ_not_Q := sum_X_not_mem_minimalPrime (K := K) hHH i hi hQmin
+  -- Q is prime, so a' - b' ∈ Q
+  have hab_Q := (hQmin.1.1.mem_or_mem hmemQ).resolve_left hℓ_not_Q
+  -- Q ≤ P, so a' - b' ∈ P
+  exact hQP hab_Q
+
 /-! ## Ideal-level transport: monomial initial ideal → bipartite edge ideal -/
 
 /-- The y-predecessor shift `φ` transports the monomial initial ideal to the bipartite
