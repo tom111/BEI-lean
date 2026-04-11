@@ -185,4 +185,41 @@ theorem isCohenMacaulayLocalRing_of_regular_quotient {x : R}
     · -- ↑(ringDepth R) ≤ ringKrullDim R
       exact hdepth_le
 
+/-- **CM from regular sequence of maximal length**: if there exists a weakly regular
+sequence in the maximal ideal whose length equals the Krull dimension, then `R`
+is Cohen-Macaulay local.
+
+Proof: `length ≤ depth` (from `ringDepth_le_of_isWeaklyRegular`) and
+`depth ≤ dim` (from `ringDepth_le_ringKrullDim`), so `length = dim` forces
+`depth = dim`. -/
+theorem isCohenMacaulayLocalRing_of_weaklyRegular_length_eq_dim {rs : List R}
+    (hreg : IsWeaklyRegular R rs) (hmem : ∀ r ∈ rs, r ∈ maximalIdeal R)
+    (hdim : ringKrullDim R = (rs.length : ℕ∞)) :
+    IsCohenMacaulayLocalRing R where
+  depth_eq_dim := by
+    have h_depth_lb : (rs.length : ℕ∞) ≤ ringDepth R :=
+      ringDepth_le_of_isWeaklyRegular R hreg hmem
+    have h_depth_ub : (ringDepth R : WithBot ℕ∞) ≤ ringKrullDim R :=
+      ringDepth_le_ringKrullDim R
+    apply le_antisymm
+    · -- ringKrullDim R ≤ ↑(ringDepth R)
+      rw [hdim]
+      exact_mod_cast h_depth_lb
+    · exact h_depth_ub
+
+/-- A Noetherian local ring of Krull dimension zero is Cohen-Macaulay.
+
+Every element of the maximal ideal is a zero-divisor (since the ring is
+Artinian-like at dimension zero), so `depth = 0 = dim`. -/
+theorem isCohenMacaulayLocalRing_of_ringKrullDim_eq_zero
+    (hdim : ringKrullDim R = 0) :
+    IsCohenMacaulayLocalRing R where
+  depth_eq_dim := by
+    have h_depth_ub : (ringDepth R : WithBot ℕ∞) ≤ ringKrullDim R :=
+      ringDepth_le_ringKrullDim R
+    rw [hdim] at h_depth_ub
+    have h0 : ringDepth R = 0 :=
+      nonpos_iff_eq_zero.mp (by exact_mod_cast h_depth_ub)
+    rw [hdim, h0]; rfl
+
 end

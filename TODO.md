@@ -67,26 +67,31 @@ degeneration route. It uses:
 
 The old paper-faithful route (HH bipartite graph → monomial ideal CM → transfer) is
 still present as infrastructure in `BEI/Equidim.lean`. The iterated HH regularity theorem
-`sum_XY_isSMulRegular_mod_diagonalSum` is now proved there, but the code still lacks the
-final real-CM packaging theorem that turns this into the paper's bipartite
-Cohen–Macaulay statement. The Gröbner CM transfer theorem (Eisenbud 15.17) also remains
-unformalized, so the full paper Cohen–Macaulay statement is still open.
+`sum_XY_isSMulRegular_mod_diagonalSum` is now proved there, and the key CM bridge lemmas
+are also done:
+- `isSMulRegular_of_doubleQuot` — transfers NZD from `R ⧸ (I ⊔ J)` to `(R ⧸ I) ⧸ J.map mk_I`
+- `ideal_smul_top_self` — `I • ⊤ = I` for the self-module
+- `mem_map_mk_iff_mem_sup` — `mk_I(x) ∈ J.map mk_I ↔ x ∈ I ⊔ J`
 
-The first two real CM foundation files have now landed:
+The remaining step to assemble a genuine `IsWeaklyRegular` result from these bridge lemmas
+is Lean list/Fin plumbing (matching `diagList` indexing with `diagonalSumIdeal`), not new
+math. See `guides/work_packages/HH_CM_BRIDGE_LEMMAS.md` for the precise remaining steps.
+
+After `IsWeaklyRegular` is established, localizing and applying the CM criterion requires
+further work (localization of regular sequences, dimension at localizations).
+
+The Gröbner CM transfer theorem (Eisenbud 15.17) also remains unformalized, so the full
+paper Cohen–Macaulay statement is still open.
+
+The real CM foundation files:
 
 1. `toMathlib/CohenMacaulay/Defs.lean` — definitions and the basic inequality
    `ringDepth ≤ ringKrullDim`
 2. `toMathlib/CohenMacaulay/Basic.lean` — quotient-local-ring instances,
-   `ringDepth_quotSMulTop_succ_le`, and
-   `isCohenMacaulayLocalRing_of_regular_quotient`
-
-At the moment this regular-quotient story is only one-directional. The missing forward
-depth inequality
-
-`ringDepth R ≤ ringDepth (QuotSMulTop x R) + 1`
-
-is still an important support theorem for one natural CM-packaging route, but it should
-not be confused with the whole remaining Proposition 1.6 gap by itself.
+   `ringDepth_quotSMulTop_succ_le`,
+   `isCohenMacaulayLocalRing_of_regular_quotient`,
+   `isCohenMacaulayLocalRing_of_weaklyRegular_length_eq_dim` (new),
+   `isCohenMacaulayLocalRing_of_ringKrullDim_eq_zero` (new)
 
 Note: the direct proof uses the repo's local equidimensional surrogate for
 Cohen–Macaulayness. This does not yet count as a full formalization of the paper's

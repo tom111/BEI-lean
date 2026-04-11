@@ -101,6 +101,8 @@ faithfully the current Lean statements match the paper.
 | Quotient nontriviality/locality | `quotSMulTop_nontrivial`, `quotSMulTopLocalRing` | `toMathlib/CohenMacaulay/Basic.lean` | proved | If `x ∈ maximalIdeal R`, then `R ⧸ xR` is nontrivial and local |
 | Easy depth inequality | `ringDepth_quotSMulTop_succ_le` | `toMathlib/CohenMacaulay/Basic.lean` | proved | `depth(R/xR) + 1 ≤ depth(R)` for regular `x ∈ maximalIdeal R` |
 | Converse regular-quotient CM transfer | `isCohenMacaulayLocalRing_of_regular_quotient` | `toMathlib/CohenMacaulay/Basic.lean` | proved | CM quotient implies CM ring under regularity and Noetherianity |
+| CM from regular sequence of max length | `isCohenMacaulayLocalRing_of_weaklyRegular_length_eq_dim` | `toMathlib/CohenMacaulay/Basic.lean` | proved | Weakly regular seq of length = dim implies CM |
+| 0-dimensional CM | `isCohenMacaulayLocalRing_of_ringKrullDim_eq_zero` | `toMathlib/CohenMacaulay/Basic.lean` | proved | 0-dim Noetherian local ring is CM |
 | Forward regular-quotient CM transfer | — | `toMathlib/CohenMacaulay/Basic.lean` | blocked | Missing the opposite depth inequality `depth(R) ≤ depth(R/xR) + 1` |
 
 ### HH-side Proposition 1.6 infrastructure (`BEI/Equidim.lean`)
@@ -109,7 +111,10 @@ faithfully the current Lean statements match the paper.
 |--------|-------------|------|--------|-------|
 | HH graph conditions | `prop_1_6_herzogHibi` | `BEI/Equidim.lean` | proved | Packages the graph-combinatorial Herzog–Hibi conditions from the Proposition 1.6 setup |
 | Iterated diagonal regularity | `sum_XY_isSMulRegular_mod_diagonalSum` | `BEI/Equidim.lean` | proved | The successive diagonal sums are non-zero-divisors on the relevant HH quotients |
-| HH-side CM theorem | — | `BEI/Equidim.lean` / `toMathlib/CohenMacaulay/*` | blocked | The code has the regularity infrastructure, but not yet the final real-CM packaging theorem |
+| NZD transfer through double quotient | `isSMulRegular_of_doubleQuot` | `BEI/Equidim.lean` | proved | Transfers NZD from `R ⧸ (I ⊔ J)` to `(R ⧸ I) ⧸ J.map mk_I` |
+| Self-module ideal equality | `ideal_smul_top_self` | `BEI/Equidim.lean` | proved | `I • ⊤ = I` for self-module; bridges `IsWeaklyRegular` module quotients to ring quotients |
+| `IsWeaklyRegular` packaging | `bipartiteEdgeMonomialIdeal_isWeaklyRegular` | `BEI/Equidim.lean` | in progress | Bridge lemmas done; remaining step is list/Fin plumbing to assemble the list |
+| HH-side CM theorem | — | `BEI/Equidim.lean` / `toMathlib/CohenMacaulay/*` | blocked | Needs `IsWeaklyRegular` + localization + CM criterion |
 
 ### Variable ideal dimension (`toMathlib/HeightVariableIdeal.lean`)
 

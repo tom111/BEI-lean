@@ -18,10 +18,15 @@
    usable real CM slice, and backport/import it cleanly.
 
 Current next concrete target:
+- [work_packages/HH_CM_BRIDGE_LEMMAS.md](work_packages/HH_CM_BRIDGE_LEMMAS.md)
+  The bridge lemmas (double-quotient NZD transfer, self-module ideal equality)
+  are proved; the remaining step is list/Fin plumbing to assemble
+  `IsWeaklyRegular`.
+
+Superseded (bridge lemmas now landed):
 - [work_packages/HH_BIPARTITE_CM_PACKAGING.md](work_packages/HH_BIPARTITE_CM_PACKAGING.md)
-  The iterated HH regularity theorem is proved; the next HH-side task is to
-  package it into a genuine Cohen–Macaulay conclusion, or isolate the exact
-  missing real-CM bridge.
+  The blocker identified in this guide is now resolved by the three bridge
+  lemmas. See HH_CM_BRIDGE_LEMMAS.md for the remaining plumbing step.
 
 Supporting CM backport packet:
 - [work_packages/cm_pr_26218/BASIC_FORWARD_DEPTH.md](work_packages/cm_pr_26218/BASIC_FORWARD_DEPTH.md)

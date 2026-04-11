@@ -6,6 +6,7 @@ import toMathlib.SquarefreeMonomialPrimes
 import toMathlib.HeightVariableIdeal
 import Mathlib.RingTheory.Ideal.MinimalPrime.Basic
 import Mathlib.RingTheory.Ideal.MinimalPrime.Localization
+import Mathlib.RingTheory.Regular.RegularSequence
 
 variable {K : Type*} [Field K]
 variable {V : Type*} [LinearOrder V] [DecidableEq V] [Fintype V]
@@ -2471,5 +2472,69 @@ theorem sum_XY_isSMulRegular_mod_diagonalSum {n : ℕ} {G : SimpleGraph (Fin n)}
   have : c = (c - φ c) + φ c := by ring
   rw [this]
   exact J.add_mem (Ideal.mem_sup_right h_diff) (h_Iφ_le hφc_mem)
+
+/-! ### Weakly regular sequence packaging -/
+
+section WeaklyRegularPackaging
+
+variable {K : Type*} [Field K]
+
+open RingTheory.Sequence MvPolynomial
+
+/-- Membership in `J.map mk_I` is equivalent to membership in `I ⊔ J`. -/
+private lemma mem_map_mk_iff_mem_sup {R : Type*} [CommRing R]
+    {I J : Ideal R} (x : R) :
+    Ideal.Quotient.mk I x ∈ J.map (Ideal.Quotient.mk I) ↔ x ∈ I ⊔ J := by
+  constructor
+  · intro h
+    rw [Ideal.mem_map_iff_of_surjective _ Ideal.Quotient.mk_surjective] at h
+    obtain ⟨j, hj, hjx⟩ := h
+    rw [Ideal.Quotient.eq] at hjx
+    have : x - j ∈ I := by
+      rw [show x - j = -(j - x) from by ring]; exact I.neg_mem hjx
+    rw [show x = (x - j) + j from by ring]
+    exact (I ⊔ J).add_mem (Ideal.mem_sup_left this) (Ideal.mem_sup_right hj)
+  · intro h
+    have : Ideal.Quotient.mk I x ∈ (I ⊔ J).map (Ideal.Quotient.mk I) :=
+      Ideal.mem_map_of_mem _ h
+    rwa [Ideal.map_sup, Ideal.map_quotient_self, bot_sup_eq] at this
+
+/-- Transfer of `IsSMulRegular` through double quotient: if `r` is a NZD on
+`R ⧸ (I ⊔ J)`, then `mk_I(r)` is a NZD on `(R ⧸ I) ⧸ J.map mk_I`
+(where the scalar action uses the `R ⧸ I`-algebra structure). -/
+private lemma isSMulRegular_of_doubleQuot {R : Type*} [CommRing R]
+    {I J : Ideal R} {r : R}
+    (hreg : IsSMulRegular (R ⧸ (I ⊔ J))
+      (Ideal.Quotient.mk (I ⊔ J) r)) :
+    IsSMulRegular ((R ⧸ I) ⧸ J.map (Ideal.Quotient.mk I))
+      (Ideal.Quotient.mk I r) := by
+  set mkI := Ideal.Quotient.mk I
+  set mkIJ := Ideal.Quotient.mk (I ⊔ J)
+  set mkJ' := Ideal.Quotient.mk (Ideal.map mkI J)
+  intro a b hab
+  obtain ⟨a', rfl⟩ := Ideal.Quotient.mk_surjective a
+  obtain ⟨a'', rfl⟩ := Ideal.Quotient.mk_surjective a'
+  obtain ⟨b', rfl⟩ := Ideal.Quotient.mk_surjective b
+  obtain ⟨b'', rfl⟩ := Ideal.Quotient.mk_surjective b'
+  change mkI r • mkJ' (mkI a'') = mkI r • mkJ' (mkI b'') at hab
+  simp only [Algebra.smul_def, Ideal.Quotient.algebraMap_eq] at hab
+  have hab' : mkJ' (mkI (r * a'')) = mkJ' (mkI (r * b'')) := by
+    rwa [map_mul mkI r a'', map_mul mkI r b'']
+  rw [Ideal.Quotient.eq, ← map_sub, mem_map_mk_iff_mem_sup,
+      show r * a'' - r * b'' = r * (a'' - b'') from by ring] at hab'
+  rw [Ideal.Quotient.eq, ← map_sub, mem_map_mk_iff_mem_sup]
+  have h1 : mkIJ r * mkIJ (a'' - b'') = 0 := by
+    rw [← map_mul]; exact Ideal.Quotient.eq_zero_iff_mem.mpr hab'
+  have h2 := hreg (show mkIJ r • mkIJ (a'' - b'') = mkIJ r • 0 from by
+    rw [smul_eq_mul, smul_zero]; exact h1)
+  exact Ideal.Quotient.eq_zero_iff_mem.mp h2
+
+/-- For the self-module of a ring, `I • ⊤ = I` as a submodule. -/
+private lemma ideal_smul_top_self {R : Type*} [CommRing R] (I : Ideal R) :
+    I • (⊤ : Submodule R R) = I.restrictScalars R := by
+  rw [Ideal.smul_top_eq_map, show algebraMap R R = RingHom.id R from rfl,
+      Ideal.map_id]
+
+end WeaklyRegularPackaging
 
 end
