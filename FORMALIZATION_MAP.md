@@ -113,7 +113,7 @@ faithfully the current Lean statements match the paper.
 | Iterated diagonal regularity | `sum_XY_isSMulRegular_mod_diagonalSum` | `BEI/Equidim.lean` | proved | The successive diagonal sums are non-zero-divisors on the relevant HH quotients |
 | NZD transfer through double quotient | `isSMulRegular_of_doubleQuot` | `BEI/Equidim.lean` | proved | Transfers NZD from `R ⧸ (I ⊔ J)` to `(R ⧸ I) ⧸ J.map mk_I` |
 | Self-module ideal equality | `ideal_smul_top_self` | `BEI/Equidim.lean` | proved | `I • ⊤ = I` for self-module; bridges `IsWeaklyRegular` module quotients to ring quotients |
-| `IsWeaklyRegular` packaging | `bipartiteEdgeMonomialIdeal_isWeaklyRegular` | `BEI/Equidim.lean` | in progress | Bridge lemmas done; remaining step is list/Fin plumbing to assemble the list |
+| `IsWeaklyRegular` packaging | `bipartiteEdgeMonomialIdeal_isWeaklyRegular` | `BEI/Equidim.lean` | proved | Diagonal forms are a weakly regular sequence on the bipartite quotient |
 | HH-side CM theorem | — | `BEI/Equidim.lean` / `toMathlib/CohenMacaulay/*` | blocked | Needs `IsWeaklyRegular` + localization + CM criterion |
 
 ### Variable ideal dimension (`toMathlib/HeightVariableIdeal.lean`)

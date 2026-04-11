@@ -1,8 +1,9 @@
-# Guide: HH CM Bridge — Remaining IsWeaklyRegular Plumbing
+# Guide: HH CM Bridge — IsWeaklyRegular Plumbing (COMPLETED)
 
 ## Status
 
-The hard algebraic content for the HH bipartite CM packaging is now **done**.
+Steps A and B are **done**. `bipartiteEdgeMonomialIdeal_isWeaklyRegular` is
+proved with 0 sorries. Step C (localization to CM) remains open.
 Three key bridge lemmas have been proved in `BEI/Equidim.lean`:
 
 1. **`mem_map_mk_iff_mem_sup`**: `mk_I(x) ∈ J.map mk_I ↔ x ∈ I ⊔ J`

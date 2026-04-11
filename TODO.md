@@ -73,12 +73,15 @@ are also done:
 - `ideal_smul_top_self` — `I • ⊤ = I` for the self-module
 - `mem_map_mk_iff_mem_sup` — `mk_I(x) ∈ J.map mk_I ↔ x ∈ I ⊔ J`
 
-The remaining step to assemble a genuine `IsWeaklyRegular` result from these bridge lemmas
-is Lean list/Fin plumbing (matching `diagList` indexing with `diagonalSumIdeal`), not new
-math. See `guides/work_packages/HH_CM_BRIDGE_LEMMAS.md` for the precise remaining steps.
+The `IsWeaklyRegular` theorem `bipartiteEdgeMonomialIdeal_isWeaklyRegular` is now fully
+proved (0 sorries): the diagonal elements form a weakly regular sequence on the bipartite
+quotient under HH conditions.
 
-After `IsWeaklyRegular` is established, localizing and applying the CM criterion requires
-further work (localization of regular sequences, dimension at localizations).
+The next step toward a genuine `IsCohenMacaulayRing` conclusion requires:
+1. localizing the weakly regular sequence at primes (Mathlib has
+   `IsWeaklyRegular.isRegular_of_isLocalization_of_mem`)
+2. showing the localized dimension matches the sequence length
+3. applying `isCohenMacaulayLocalRing_of_weaklyRegular_length_eq_dim`
 
 The Gröbner CM transfer theorem (Eisenbud 15.17) also remains unformalized, so the full
 paper Cohen–Macaulay statement is still open.
