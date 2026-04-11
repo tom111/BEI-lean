@@ -19,9 +19,11 @@
 
 Current next concrete target:
 - [work_packages/HH_CM_TO_GLOBAL.md](work_packages/HH_CM_TO_GLOBAL.md)
-  Three independent blockers to pass from the proved `IsWeaklyRegular` to
-  `IsCohenMacaulayRing`: (1) dimension formula for radical equidim ideals,
-  (2) NZD for free polynomial variables, (3) localization at irrelevant max.
+  Remaining HH-side route from the proved `IsWeaklyRegular` theorem to a genuine
+  Cohen–Macaulay theorem: (1) prove the two free-variable NZD steps, (2) extend
+  the regular sequence from length `n - 1` to length `n + 1 = dim`, (3) do the
+  local CM step at the irrelevant maximal ideal, and then (4) close the graded
+  local-to-global CM packaging.
 
 Completed (bridge lemmas + IsWeaklyRegular now landed):
 - [work_packages/HH_CM_BRIDGE_LEMMAS.md](work_packages/HH_CM_BRIDGE_LEMMAS.md)
@@ -34,6 +36,12 @@ Superseded:
 Supporting CM backport packet:
 - [work_packages/cm_pr_26218/BASIC_FORWARD_DEPTH.md](work_packages/cm_pr_26218/BASIC_FORWARD_DEPTH.md)
   Useful general CM infrastructure, but not the immediate paper-critical task.
+
+Dormant paper-critical packet:
+- [work_packages/GROEBNER_CM_TRANSFER.md](work_packages/GROEBNER_CM_TRANSFER.md)
+  The second remaining Proposition 1.6 gap after the HH-side CM theorem:
+  transfer Cohen–Macaulayness from the initial ideal quotient back to the
+  original quotient.
 
 ## Answers And Decision Notes
 

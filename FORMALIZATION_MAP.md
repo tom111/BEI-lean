@@ -61,7 +61,7 @@ faithfully the current Lean statements match the paper.
 
 | Paper endpoint | Current state |
 |---|---|
-| Proposition 1.6 | direct equidimensional surrogate proved; full paper CM statement still open |
+| Proposition 1.6 | direct equidimensional surrogate proved; HH weakly-regular and dimension infrastructure proved; full paper CM statement still open |
 | Corollary 3.4 | only the equidimensional surrogate consequence is proved |
 | Corollary 3.7 | prime/unmixed branches are proved; the CM branch is only represented by the equidimensional surrogate |
 | Section 4 | complete: bridges, radicality, prime decomposition, and minimal-prime transfer all proved |
@@ -117,7 +117,8 @@ faithfully the current Lean statements match the paper.
 | Dimension formula (`dim = n+1`) | `ringKrullDim_bipartiteEdgeMonomialIdeal` | `BEI/Equidim.lean` | proved | `dim(S ⧸ I) = n + 1` under HH conditions; uses radical equidim machinery |
 | Radical equidim dim theorem | `ringKrullDim_quotient_radical_equidim` | `BEI/Equidim.lean` | proved | For radical equidimensional ideal: `dim(R/I) = d` when all minimal primes give dim `d` |
 | NZD for free variables | — | — | blocked | Variables `x_{n-1}, y_{n-1}` extend the regular sequence to length `n+1 = dim` |
-| HH-side CM theorem | — | `BEI/Equidim.lean` / `toMathlib/CohenMacaulay/*` | blocked | Needs free variable NZD + localization at irrelevant max |
+| HH-side local/graded CM packaging | — | `BEI/Equidim.lean` / `toMathlib/CohenMacaulay/*` | blocked | After free-variable NZD, still need local CM at the irrelevant maximal ideal and a graded local-to-global CM step |
+| HH-side CM theorem | — | `BEI/Equidim.lean` / `toMathlib/CohenMacaulay/*` | blocked | Depends on free-variable NZD plus the local/graded CM packaging |
 
 ### Variable ideal dimension (`toMathlib/HeightVariableIdeal.lean`)
 

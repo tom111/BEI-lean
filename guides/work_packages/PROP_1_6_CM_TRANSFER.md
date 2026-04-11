@@ -30,6 +30,8 @@ The theorems
 - `bipartiteEdgeMonomialIdeal_isEquidim`
 - `monomialInitialIdeal_isEquidim`
 - `sum_XY_isSMulRegular_mod_diagonalSum`
+- `bipartiteEdgeMonomialIdeal_isWeaklyRegular`
+- `ringKrullDim_bipartiteEdgeMonomialIdeal`
 
 are proved.
 
@@ -101,12 +103,27 @@ That packet now lives as supporting infrastructure in:
 The actual remaining paper route consists of two isolated gaps:
 
 1. HH bipartite CM:
-   use the completed theorem `sum_XY_isSMulRegular_mod_diagonalSum` and the
-   real-CM layer to prove that the quotient by the bipartite edge ideal is
-   genuinely Cohen–Macaulay under the Herzog–Hibi conditions;
+   use the completed weakly-regular-sequence theorem and the proved dimension
+   formula to show that the quotient by the bipartite edge ideal is genuinely
+   Cohen–Macaulay under the Herzog–Hibi conditions;
 2. Gröbner transfer:
    prove that Cohen–Macaulayness transfers from the initial ideal quotient back
    to the original ideal quotient.
+
+The HH-side packet now lives concretely in:
+
+- [HH_CM_TO_GLOBAL.md](HH_CM_TO_GLOBAL.md)
+
+Its remaining internal blockers are now:
+
+1. free-variable NZD for `x_{n-1}` and `y_{n-1}`;
+2. extension of the regular sequence from length `n - 1` to `n + 1 = dim`;
+3. local CM at the irrelevant maximal ideal;
+4. a graded local-to-global CM step.
+
+The Gröbner-transfer gap should be treated as its own theorem packet:
+
+- [GROEBNER_CM_TRANSFER.md](GROEBNER_CM_TRANSFER.md)
 
 ### Step 3: look for the smallest truthful theorem in each gap
 

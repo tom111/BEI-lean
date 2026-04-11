@@ -42,6 +42,8 @@
 
 Active follow-up work now lives in:
 - `guides/work_packages/PROP_1_6_CM_TRANSFER.md`
+- `guides/work_packages/HH_CM_TO_GLOBAL.md`
+- `guides/work_packages/GROEBNER_CM_TRANSFER.md`
 - `guides/work_packages/cm_pr_26218/`
 
 Supporting files on this branch:
@@ -85,10 +87,14 @@ The quotient dimension formula is now proved:
 The next step toward a genuine `IsCohenMacaulayRing` conclusion requires:
 1. proving `x_{n-1}` and `y_{n-1}` are NZDs on `S ⧸ (I + diag)` (free variable NZD)
 2. extending the weakly regular sequence from length `n-1` to `n+1 = dim`
-3. localizing and applying `isCohenMacaulayLocalRing_of_weaklyRegular_length_eq_dim`
+3. proving local CM at the irrelevant maximal ideal via
+   `isCohenMacaulayLocalRing_of_weaklyRegular_length_eq_dim`
+4. closing the graded local-to-global CM packaging step
 
 The Gröbner CM transfer theorem (Eisenbud 15.17) also remains unformalized, so the full
-paper Cohen–Macaulay statement is still open.
+paper Cohen–Macaulay statement is still open even after the HH-side CM theorem lands.
+That second paper-critical gap is now tracked separately in
+`guides/work_packages/GROEBNER_CM_TRANSFER.md`.
 
 The real CM foundation files:
 
