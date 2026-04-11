@@ -4,11 +4,11 @@ This subdirectory is the todo list for the real Cohen–Macaulay track.
 
 Current active packet:
 
-- [MINIMAL_IMPORT_AND_BACKPORT.md](/home/tom/BEI-lean/guides/cm_pr_26218/MINIMAL_IMPORT_AND_BACKPORT.md)
+- [MINIMAL_IMPORT_AND_BACKPORT.md](/home/tom/BEI-lean/guides/work_packages/cm_pr_26218/MINIMAL_IMPORT_AND_BACKPORT.md)
 
 Current next code target:
 
-- [BASIC_FORWARD_DEPTH.md](/home/tom/BEI-lean/guides/cm_pr_26218/BASIC_FORWARD_DEPTH.md)
+- [BASIC_FORWARD_DEPTH.md](/home/tom/BEI-lean/guides/work_packages/cm_pr_26218/BASIC_FORWARD_DEPTH.md)
 
 Goal:
 

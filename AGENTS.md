@@ -36,18 +36,25 @@ If the docs disagree with the code or the paper, treat the docs as stale until c
 
 ## Workflow Directories
 
-The repo uses two directories for the ongoing collaboration:
+The repo uses two collaboration roots:
 
-- [guides](/home/tom/BEI-lean/guides): Codex writes guides and answers here
+- [guides](/home/tom/BEI-lean/guides): umbrella directory for Codex-written material
 - [questions](/home/tom/BEI-lean/questions): Claude drops questions here
+
+Within `guides/`, the current subdirectories are:
+
+- [guides/work_packages](/home/tom/BEI-lean/guides/work_packages): active Claude work packets
+- [guides/answers](/home/tom/BEI-lean/guides/answers): preserved answers to questions
+- [guides/cleanup](/home/tom/BEI-lean/guides/cleanup): optional refactor / cleanup packets
+- [guides/process](/home/tom/BEI-lean/guides/process): workflow notes
 
 Rules:
 
-- Every answer to a question goes into a new guide file in `guides/`.
+- Every answer to a question goes into a new guide file in `guides/answers/`.
 - The answer guide must preserve the original task/question inside the guide itself.
 - After answering a question, delete the corresponding file from `questions/`.
-- Keep [guides/INDEX.md](/home/tom/BEI-lean/guides/INDEX.md) updated when adding major
-  new guides.
+- Keep [guides/INDEX.md](/home/tom/BEI-lean/guides/INDEX.md) updated when adding,
+  moving, or retiring major guides.
 
 
 ## Self-Contained Guide Rule

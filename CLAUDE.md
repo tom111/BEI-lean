@@ -55,7 +55,11 @@ There is no test suite — correctness is enforced by Lean's type checker. A suc
 - `BEI.lean` — Root library entry point
 - `BEI.tex` — Reference paper with the mathematical content being formalized
 - `TODO.md` / `FORMALIZATION_MAP.md` — human-facing status docs that must be updated whenever theorem status or file layout changes
-- `guides/` — self-contained agent guides for the active formalization branches
+- `guides/` — umbrella directory for self-contained agent guides and workflow notes
+  - `guides/work_packages/` — active Claude-facing work packets
+  - `guides/answers/` — preserved answers / decision memos
+  - `guides/cleanup/` — optional refactor and proof-cleanup packets
+  - `guides/process/` — workflow notes
 - `questions/` — incoming worker questions; preserve question context in any answer guide before deleting the question file
 
 ## Key Mathematical Concepts
@@ -88,7 +92,8 @@ When starting fresh on a task:
 
 1. Read the relevant paper statement in `BEI.tex`.
 2. Read the live Lean declaration and nearby helper lemmas.
-3. Read the matching file in `guides/` if one exists.
+3. Read the matching file in `guides/work_packages/` first, then in the other `guides/`
+   subdirectories if the task is an answer, cleanup packet, or process note.
 4. Restrict work to the requested theorem / file / branch before expanding scope.
 
 Do not start by rewriting unrelated proofs, reorganizing files, or updating docs unless the
@@ -106,7 +111,7 @@ task actually requires that.
 - If a relevant guide exists in `guides/`, use it first.
 - Guides should be self-contained and should preserve the original question context.
 - If blocked, write a focused question in `questions/` about one exact sublemma or API issue, not a broad project-status note.
-- After a question is answered in a new guide, the corresponding question file should be deleted.
+- After a question is answered in a new guide under `guides/answers/`, the corresponding question file should be deleted.
 - If a guide has been fully carried out and is no longer needed, the worker may delete that guide.
 - When removing a completed guide, also update `guides/INDEX.md` so the guide list stays truthful.
 

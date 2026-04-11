@@ -8,12 +8,12 @@ These guides are for refactoring the existing formalization so that proofs becom
 
 Recommended order:
 
-1. [PUBLIC_THEOREM_LAYER.md](/home/tom/BEI-lean/guides/PUBLIC_THEOREM_LAYER.md)
-2. [EVALUATION_MAP_API.md](/home/tom/BEI-lean/guides/EVALUATION_MAP_API.md)
-3. [PATH_AND_INTERNAL_VERTEX_API.md](/home/tom/BEI-lean/guides/PATH_AND_INTERNAL_VERTEX_API.md)
-4. [MONOMIAL_AND_FINSUPP_API.md](/home/tom/BEI-lean/guides/MONOMIAL_AND_FINSUPP_API.md)
-5. [FILE_SPLITTING_PLAN.md](/home/tom/BEI-lean/guides/FILE_SPLITTING_PLAN.md)
-6. [LINTER_AND_STYLE_CLEANUP.md](/home/tom/BEI-lean/guides/LINTER_AND_STYLE_CLEANUP.md)
+1. [PUBLIC_THEOREM_LAYER.md](/home/tom/BEI-lean/guides/cleanup/PUBLIC_THEOREM_LAYER.md)
+2. [EVALUATION_MAP_API.md](/home/tom/BEI-lean/guides/cleanup/EVALUATION_MAP_API.md)
+3. [PATH_AND_INTERNAL_VERTEX_API.md](/home/tom/BEI-lean/guides/cleanup/PATH_AND_INTERNAL_VERTEX_API.md)
+4. [MONOMIAL_AND_FINSUPP_API.md](/home/tom/BEI-lean/guides/cleanup/MONOMIAL_AND_FINSUPP_API.md)
+5. [FILE_SPLITTING_PLAN.md](/home/tom/BEI-lean/guides/cleanup/FILE_SPLITTING_PLAN.md)
+6. [LINTER_AND_STYLE_CLEANUP.md](/home/tom/BEI-lean/guides/cleanup/LINTER_AND_STYLE_CLEANUP.md)
 
 General rule:
 

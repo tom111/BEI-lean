@@ -95,7 +95,7 @@ Before copying code, record:
 
 Make a temporary note file if needed, for example:
 
-- `guides/cm_pr_26218/PR_NOTES.md`
+- `guides/work_packages/cm_pr_26218/PR_NOTES.md`
 
 The goal is to know whether the useful CM code is:
 

@@ -1,45 +1,54 @@
-# Guide Queue
+# Guide Index
 
-This directory is the current todo list.
+`guides/` is now an umbrella directory with four subdirectories:
 
-## Active Theorem Track
+- `work_packages/` for active Claude-facing coding packets;
+- `answers/` for preserved answers and decision memos;
+- `cleanup/` for optional refactor and proof-cleanup packets;
+- `process/` for workflow / maintenance notes.
 
-1. [PROP_1_6_CM_TRANSFER.md](PROP_1_6_CM_TRANSFER.md)
+## Active Work Packages
+
+1. [work_packages/PROP_1_6_CM_TRANSFER.md](work_packages/PROP_1_6_CM_TRANSFER.md)
    Bring real Cohen–Macaulay theory into the repo far enough to finish the
    paper-faithful Proposition 1.6 track.
 
-2. [cm_pr_26218/MINIMAL_IMPORT_AND_BACKPORT.md](cm_pr_26218/MINIMAL_IMPORT_AND_BACKPORT.md)
+2. [work_packages/cm_pr_26218/MINIMAL_IMPORT_AND_BACKPORT.md](work_packages/cm_pr_26218/MINIMAL_IMPORT_AND_BACKPORT.md)
    Supporting general-CM subtrack: inspect PR `#26218`, identify the smallest
    usable real CM slice, and backport/import it cleanly.
 
 Current next concrete target:
-- [HH_BIPARTITE_CM_REGULAR_SEQUENCE.md](HH_BIPARTITE_CM_REGULAR_SEQUENCE.md)
+- [work_packages/HH_BIPARTITE_CM_REGULAR_SEQUENCE.md](work_packages/HH_BIPARTITE_CM_REGULAR_SEQUENCE.md)
   The HH route now has individual non-zero-divisors; the next blocker is
   regularity through the iterated quotients.
 
-Decision note:
-- [ANSWER_PROP_1_6_CM_WHAT_IS_NEEDED.md](ANSWER_PROP_1_6_CM_WHAT_IS_NEEDED.md)
-  The paper-critical gaps are the HH bipartite CM theorem and the Gröbner
-  transfer theorem; the forward depth inequality is supporting infrastructure,
-  not the immediate Prop. 1.6 blocker.
-
 Supporting CM backport packet:
-- [cm_pr_26218/BASIC_FORWARD_DEPTH.md](cm_pr_26218/BASIC_FORWARD_DEPTH.md)
+- [work_packages/cm_pr_26218/BASIC_FORWARD_DEPTH.md](work_packages/cm_pr_26218/BASIC_FORWARD_DEPTH.md)
   Useful general CM infrastructure, but not the immediate paper-critical task.
 
-## Dormant / Optional
+## Answers And Decision Notes
 
-- [ANSWER_04_HEIGHT_ADDITIVITY_REPAIR.md](ANSWER_04_HEIGHT_ADDITIVITY_REPAIR.md)
-  Dormant infrastructure repair; not on the critical path.
+- [answers/ANSWER_PROP_1_6_CM_WHAT_IS_NEEDED.md](answers/ANSWER_PROP_1_6_CM_WHAT_IS_NEEDED.md)
+  Decision note: the paper-critical gaps are the HH bipartite CM theorem and
+  the Gröbner transfer theorem; the forward depth inequality is supporting
+  infrastructure, not the immediate Prop. 1.6 blocker.
 
-- [FILE_SPLITTING_PLAN.md](FILE_SPLITTING_PLAN.md)
-  Structural cleanup notes for later refactors.
+- [answers/ANSWER_04_HEIGHT_ADDITIVITY_REPAIR.md](answers/ANSWER_04_HEIGHT_ADDITIVITY_REPAIR.md)
+  Dormant infrastructure repair; useful reference, not on the critical path.
 
-- [PROOF_CLEANUP_INDEX.md](PROOF_CLEANUP_INDEX.md)
+## Cleanup And Refactor Packets
+
+- [cleanup/PROOF_CLEANUP_INDEX.md](cleanup/PROOF_CLEANUP_INDEX.md)
   Index of optional proof-cleanup packets.
 
-- [PUBLIC_THEOREM_LAYER.md](PUBLIC_THEOREM_LAYER.md)
-- [EVALUATION_MAP_API.md](EVALUATION_MAP_API.md)
-- [PATH_AND_INTERNAL_VERTEX_API.md](PATH_AND_INTERNAL_VERTEX_API.md)
-- [MONOMIAL_AND_FINSUPP_API.md](MONOMIAL_AND_FINSUPP_API.md)
-- [LINTER_AND_STYLE_CLEANUP.md](LINTER_AND_STYLE_CLEANUP.md)
+- [cleanup/PUBLIC_THEOREM_LAYER.md](cleanup/PUBLIC_THEOREM_LAYER.md)
+- [cleanup/EVALUATION_MAP_API.md](cleanup/EVALUATION_MAP_API.md)
+- [cleanup/PATH_AND_INTERNAL_VERTEX_API.md](cleanup/PATH_AND_INTERNAL_VERTEX_API.md)
+- [cleanup/MONOMIAL_AND_FINSUPP_API.md](cleanup/MONOMIAL_AND_FINSUPP_API.md)
+- [cleanup/FILE_SPLITTING_PLAN.md](cleanup/FILE_SPLITTING_PLAN.md)
+- [cleanup/LINTER_AND_STYLE_CLEANUP.md](cleanup/LINTER_AND_STYLE_CLEANUP.md)
+
+## Process
+
+- [process/STATUS_FILES_SYNC.md](process/STATUS_FILES_SYNC.md)
+  Workflow note for keeping status files aligned with the live Lean code.

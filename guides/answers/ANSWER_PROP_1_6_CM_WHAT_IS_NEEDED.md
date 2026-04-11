@@ -57,7 +57,7 @@ from the initial ideal quotient back to the original ideal quotient.
 
 The forward depth inequality packet in
 
-- `guides/cm_pr_26218/BASIC_FORWARD_DEPTH.md`
+- `guides/work_packages/cm_pr_26218/BASIC_FORWARD_DEPTH.md`
 
 is still a legitimate **general CM foundation** task.
 

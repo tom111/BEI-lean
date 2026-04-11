@@ -41,8 +41,8 @@
 ### Priority 1: Real Cohen-Macaulay track
 
 Active follow-up work now lives in:
-- `guides/PROP_1_6_CM_TRANSFER.md`
-- `guides/cm_pr_26218/`
+- `guides/work_packages/PROP_1_6_CM_TRANSFER.md`
+- `guides/work_packages/cm_pr_26218/`
 
 Supporting files on this branch:
 - `BEI/PrimeDecompositionDimension.lean`
