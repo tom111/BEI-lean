@@ -74,6 +74,7 @@ At the time of this summary:
 - the Section 3 equidimensional surrogate consequences `corollary_3_4_equidim` and `corollary_3_7_equidim` are proved over the local equidimensional definition;
 - Section 4 now has the binary-output single-statement bridge, specification bridge, and transferred radicality / prime decomposition / minimal-prime theorems in `BEI/CIIdeals.lean`;
 - the direct equidimensional Proposition 1.6 route is now proved with no `sorry`;
+- the HH regularity infrastructure in `BEI/Equidim.lean` now reaches the iterated theorem `sum_XY_isSMulRegular_mod_diagonalSum`;
 - the remaining paper-level gap is that this still uses the local equidimensional surrogate rather than the paper's full depth-based CM theory.
 
 

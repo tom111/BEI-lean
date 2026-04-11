@@ -23,9 +23,9 @@
 | **§3 Lem 3.1** (height formula for `P_S`) | `BEI/PrimeIdeals.lean` | `[x]` proved |
 | **§3 Thm 3.2** (`J_G = ⋂ P_S`) | `BEI/PrimeDecomposition.lean` | `[x]` proved |
 | **§3 Cor 3.3** (dimension formula) | `BEI/PrimeDecompositionDimension.lean` | `[x]` proved |
-| **§3 Cor 3.4** (CM implies `dim = n + c`) | `BEI/PrimeDecompositionDimension.lean` | `[x]` proved |
+| **§3 Cor 3.4** (CM implies `dim = n + c`) | `BEI/PrimeDecompositionDimension.lean` | `[~]` equidimensional surrogate proved; full paper CM statement still open |
 | **§3 Prop 3.6** (prime iff components complete) | `BEI/PrimeDecomposition.lean` | `[x]` proved |
-| **§3 Cor 3.7** (cycle equivalences) | `BEI/PrimeDecomposition.lean`, `BEI/MinimalPrimes.lean`, `BEI/PrimeDecompositionDimension.lean` | `[x]` proved (all four branches) |
+| **§3 Cor 3.7** (cycle equivalences) | `BEI/PrimeDecomposition.lean`, `BEI/MinimalPrimes.lean`, `BEI/PrimeDecompositionDimension.lean` | `[~]` prime/unmixed/equidimensional branches proved; paper CM branch still surrogate-only |
 | **§3 Prop 3.8** (`P_T ⊆ P_S` characterization) | `BEI/MinimalPrimes.lean` | `[x]` proved |
 | **§3 Cor 3.9** (minimal primes via cut-point sets) | `BEI/MinimalPrimes.lean` | `[x]` proved |
 | **§4 Bridge** (CI ideal = BEI, single statement) | `BEI/CIIdeals.lean` | `[x]` proved |
@@ -66,9 +66,11 @@ degeneration route. It uses:
 4. `isEquidim_of_equidim_minimalPrimes` + `ringKrullDim_quot_primeComponent`
 
 The old paper-faithful route (HH bipartite graph → monomial ideal CM → transfer) is
-still present as infrastructure in `BEI/Equidim.lean` but `cm_transfer_initialIdeal`
-has been removed from the critical path. The Gröbner CM transfer theorem (Eisenbud 15.17)
-remains unformalized and the full paper Cohen–Macaulay statement is still open.
+still present as infrastructure in `BEI/Equidim.lean`. The iterated HH regularity theorem
+`sum_XY_isSMulRegular_mod_diagonalSum` is now proved there, but the code still lacks the
+final real-CM packaging theorem that turns this into the paper's bipartite
+Cohen–Macaulay statement. The Gröbner CM transfer theorem (Eisenbud 15.17) also remains
+unformalized, so the full paper Cohen–Macaulay statement is still open.
 
 The first two real CM foundation files have now landed:
 
@@ -78,13 +80,13 @@ The first two real CM foundation files have now landed:
    `ringDepth_quotSMulTop_succ_le`, and
    `isCohenMacaulayLocalRing_of_regular_quotient`
 
-At the moment this regular-quotient story is only one-directional. The next exact blocker
-is the missing forward depth inequality
+At the moment this regular-quotient story is only one-directional. The missing forward
+depth inequality
 
 `ringDepth R ≤ ringDepth (QuotSMulTop x R) + 1`
 
-for `x ∈ maximalIdeal R` regular, which is needed for the forward regular-quotient CM
-transfer.
+is still an important support theorem for one natural CM-packaging route, but it should
+not be confused with the whole remaining Proposition 1.6 gap by itself.
 
 Note: the direct proof uses the repo's local equidimensional surrogate for
 Cohen–Macaulayness. This does not yet count as a full formalization of the paper's
@@ -103,6 +105,9 @@ The minimal-prime transfer assumes a connected union graph, mirroring `corollary
 - `toMathlib/HeightAdditivity.lean` is still incomplete, but it is not currently on the
   critical path.
 - `Supplement/RauhApproach.lean` remains archived and off the main import path.
+- `lake build` succeeds for the whole project; the only remaining `sorry`s are the two
+  dormant ones in `toMathlib/HeightAdditivity.lean` and the two archived ones in
+  `Supplement/RauhApproach.lean`.
 
 ---
 

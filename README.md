@@ -15,6 +15,10 @@ equidimensional surrogate corollaries and the Section 4 CI-ideal transfers are n
 formalized. A direct equidimensional surrogate variant of Proposition 1.6 is also
 proved, but the full Cohen–Macaulay statement from the paper is still open.
 
+A full `lake build` currently succeeds. The only remaining `sorry`s live in the
+dormant infrastructure file `toMathlib/HeightAdditivity.lean` and the archived
+supplementary file `Supplement/RauhApproach.lean`, not on the active paper path.
+
 Documentation and blueprint scaffold:
 
 - [Formalization map](FORMALIZATION_MAP.md)

@@ -38,9 +38,9 @@ faithfully the current Lean statements match the paper.
 | Theorem 3.2 | `theorem_3_2` | `BEI/PrimeDecomposition.lean` | Exact | `J_G = ⨅ S, P_S(G)` |
 | Corollary 3.3 | `corollary_3_3` | `BEI/PrimeDecompositionDimension.lean` | Exact | Dimension formula proved directly in the quotient |
 | Corollary 3.3 (lower bound) | `corollary_3_3_lower_bound` | `BEI/PrimeDecompositionDimension.lean` | Exact | `dim ≥ |V| + c(G)` |
-| Corollary 3.4 | `corollary_3_4_equidim` | `BEI/PrimeDecompositionDimension.lean` | Partial | Equidimensional surrogate version proved; paper's full CM statement still depends on real CM theory |
+| Corollary 3.4 | `corollary_3_4_equidim` | `BEI/PrimeDecompositionDimension.lean` | Partial | Only the equidimensional surrogate consequence is proved; the paper's depth-based CM statement is still open |
 | Proposition 3.6 | `prop_3_6` | `BEI/PrimeDecomposition.lean` | Equivalent | Completeness of components phrased via reachability |
-| Corollary 3.7 | `corollary_3_7`, `corollary_3_7_unmixed`, `corollary_3_7_equidim` | `BEI/PrimeDecomposition.lean`, `BEI/MinimalPrimes.lean`, `BEI/PrimeDecompositionDimension.lean` | Partial | Prime, unmixed, and `|V| = 3` branches are paper-faithful; the CM branch is currently an equidimensional surrogate |
+| Corollary 3.7 | `corollary_3_7`, `corollary_3_7_unmixed`, `corollary_3_7_equidim` | `BEI/PrimeDecomposition.lean`, `BEI/MinimalPrimes.lean`, `BEI/PrimeDecompositionDimension.lean` | Partial | Prime and unmixed branches are formalized, and the CM branch is only represented by the local equidimensional surrogate |
 | Proposition 3.8 | `prop_3_8` | `BEI/MinimalPrimes.lean` | Equivalent | Rephrased using `SameComponent` |
 | Corollary 3.9 | `corollary_3_9` | `BEI/MinimalPrimes.lean` | Equivalent | Rephrased via `IsCutVertexRelative` |
 
@@ -61,9 +61,9 @@ faithfully the current Lean statements match the paper.
 
 | Paper endpoint | Current state |
 |---|---|
-| Proposition 1.6 | equidimensional surrogate proved directly; full paper CM statement still open |
-| Corollary 3.4 | **proved** |
-| Corollary 3.7 | **proved** (all branches) |
+| Proposition 1.6 | direct equidimensional surrogate proved; full paper CM statement still open |
+| Corollary 3.4 | only the equidimensional surrogate consequence is proved |
+| Corollary 3.7 | prime/unmixed branches are proved; the CM branch is only represented by the equidimensional surrogate |
 | Section 4 | complete: bridges, radicality, prime decomposition, and minimal-prime transfer all proved |
 
 ## Supporting `toMathlib` Progress
@@ -102,6 +102,14 @@ faithfully the current Lean statements match the paper.
 | Easy depth inequality | `ringDepth_quotSMulTop_succ_le` | `toMathlib/CohenMacaulay/Basic.lean` | proved | `depth(R/xR) + 1 ≤ depth(R)` for regular `x ∈ maximalIdeal R` |
 | Converse regular-quotient CM transfer | `isCohenMacaulayLocalRing_of_regular_quotient` | `toMathlib/CohenMacaulay/Basic.lean` | proved | CM quotient implies CM ring under regularity and Noetherianity |
 | Forward regular-quotient CM transfer | — | `toMathlib/CohenMacaulay/Basic.lean` | blocked | Missing the opposite depth inequality `depth(R) ≤ depth(R/xR) + 1` |
+
+### HH-side Proposition 1.6 infrastructure (`BEI/Equidim.lean`)
+
+| Result | Lean name(s) | File | Status | Notes |
+|--------|-------------|------|--------|-------|
+| HH graph conditions | `prop_1_6_herzogHibi` | `BEI/Equidim.lean` | proved | Packages the graph-combinatorial Herzog–Hibi conditions from the Proposition 1.6 setup |
+| Iterated diagonal regularity | `sum_XY_isSMulRegular_mod_diagonalSum` | `BEI/Equidim.lean` | proved | The successive diagonal sums are non-zero-divisors on the relevant HH quotients |
+| HH-side CM theorem | — | `BEI/Equidim.lean` / `toMathlib/CohenMacaulay/*` | blocked | The code has the regularity infrastructure, but not yet the final real-CM packaging theorem |
 
 ### Variable ideal dimension (`toMathlib/HeightVariableIdeal.lean`)
 

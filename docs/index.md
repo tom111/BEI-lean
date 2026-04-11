@@ -8,8 +8,9 @@ title: Binomial Edge Ideals
     <p class="landing-hero__lede">
       This site tracks the Lean formalization of
       <em>Binomial edge ideals and conditional independence statements</em>.
-      Sections 2, 3, and 4 are formalized. Section 1 is still open at
-      Proposition 1.6.
+      Sections 2 and 4 are formalized, and the Section 3 backbone is in place.
+      The remaining paper-level gaps are the Cohen–Macaulay branch around
+      Proposition 1.6 and the CM-shaped consequences tied to it.
     </p>
     <div class="quick-links quick-links--hero">
       <a href="{{ '/overview.html' | relative_url }}">Overview</a>
@@ -26,16 +27,17 @@ title: Binomial Edge Ideals
   </div>
   <div class="landing-summary">
     <div class="landing-summary__metric">
-      <span class="landing-summary__value">20 / 21</span>
+      <span class="landing-summary__value">18 / 21</span>
       <span class="landing-summary__label">main results completed</span>
     </div>
     <div class="landing-summary__metric">
-      <span class="landing-summary__value">1</span>
-      <span class="landing-summary__label">main theorem still open</span>
+      <span class="landing-summary__value">3</span>
+      <span class="landing-summary__label">paper-level gaps remain</span>
     </div>
     <div class="landing-summary__note">
-      <strong>Current status:</strong> 20 of the paper's 21 main results are
-      formalized. The remaining open theorem is Proposition 1.6 in Section 1.
+      <strong>Current status:</strong> 18 of the paper's 21 main results are
+      formalized at the paper level. The remaining gaps are Proposition 1.6 and
+      the depth-based CM branches behind Corollaries 3.4 and 3.7.
     </div>
   </div>
 </div>
@@ -60,8 +62,8 @@ title: Binomial Edge Ideals
   <div class="result-item result-item--done">
     <span class="result-item__icon" data-icon="&#10003;"></span>
     <div>
-      <strong>Section 3 complete</strong>
-      <span>Prime decomposition, dimension, minimal primes, and the cycle-graph Cohen–Macaulay result are formalized.</span>
+      <strong>Section 3 backbone in place</strong>
+      <span>Prime decomposition, dimension, minimal primes, and the non-CM cycle-graph branches are formalized; the CM-shaped consequences are still surrogate-only.</span>
     </div>
   </div>
   <div class="result-item result-item--done">
@@ -74,8 +76,8 @@ title: Binomial Edge Ideals
   <div class="result-item result-item--open">
     <span class="result-item__icon" data-icon="&#9675;"></span>
     <div>
-      <strong>One remaining paper-level gap</strong>
-      <span>Proposition 1.6 is still open.</span>
+      <strong>Remaining paper-level CM gaps</strong>
+      <span>Proposition 1.6 and the depth-based CM branches of Corollaries 3.4 and 3.7 are still open.</span>
     </div>
   </div>
 </div>
@@ -91,7 +93,7 @@ title: Binomial Edge Ideals
   <a class="section-card" href="{{ '/section-2.html' | relative_url }}">
     <span class="section-card__kicker">Section 2</span>
     <strong>Reduced Gröbner basis and radicality</strong>
-    <span class="section-card__meta">complete</span>
+    <span class="section-card__meta">backbone complete; CM branch partial</span>
   </a>
   <a class="section-card" href="{{ '/section-3.html' | relative_url }}">
     <span class="section-card__kicker">Section 3</span>

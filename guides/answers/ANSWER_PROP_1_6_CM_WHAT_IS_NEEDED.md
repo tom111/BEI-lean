@@ -27,6 +27,13 @@ For Proposition 1.6 itself, the two real gaps are:
 2. a Gröbner deformation transfer theorem
    `S / in_<(I) CM -> S / I CM`.
 
+Update after the current build verification:
+
+- the old HH regular-sequence blocker has now closed in code through
+  `sum_XY_isSMulRegular_mod_diagonalSum`;
+- so the first gap is now the final real-CM packaging step on top of that
+  completed HH regularity infrastructure, not the old nilradical sublemma.
+
 Everything else in the BEI-specific reduction is already proved.
 
 

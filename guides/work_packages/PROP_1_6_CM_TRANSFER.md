@@ -16,8 +16,8 @@ Everything internal to the BEI reduction is now proved:
 
 The remaining paper-level gaps are:
 
-1. formalize a Herzog–Hibi bipartite Cohen–Macaulay theorem strong enough for
-   the graph `Γ` already constructed in the repo;
+1. package the finished HH regularity infrastructure into a genuine
+   Herzog–Hibi bipartite Cohen–Macaulay theorem for the graph `Γ`;
 2. formalize a Gröbner-basis transfer theorem strong enough for Proposition 1.6.
 
 
@@ -29,6 +29,7 @@ The theorems
 
 - `bipartiteEdgeMonomialIdeal_isEquidim`
 - `monomialInitialIdeal_isEquidim`
+- `sum_XY_isSMulRegular_mod_diagonalSum`
 
 are proved.
 
@@ -65,7 +66,9 @@ then the quotient by the original ideal is Cohen–Macaulay.
 This should be approached in two layers:
 
 1. real CM foundations in a dedicated `toMathlib/CohenMacaulay/` area;
-2. then the smallest truthful transfer theorem actually needed for Proposition 1.6.
+2. an HH-side theorem that turns the completed regularity infrastructure into a
+   genuine CM conclusion;
+3. then the smallest truthful transfer theorem actually needed for Proposition 1.6.
 
 Important scope note:
 
@@ -85,8 +88,9 @@ The real CM foundation work in
 
 is useful and should continue as a separate supporting track.
 
-However, the missing forward depth inequality for regular quotients is **not**
-the immediate paper-critical blocker for Proposition 1.6.
+However, the missing forward depth inequality for regular quotients is only one
+possible support theorem for this route; it should not be confused with the
+whole remaining Proposition 1.6 gap by itself.
 
 That packet now lives as supporting infrastructure in:
 
@@ -97,8 +101,9 @@ That packet now lives as supporting infrastructure in:
 The actual remaining paper route consists of two isolated gaps:
 
 1. HH bipartite CM:
-   prove that the quotient by the bipartite edge ideal is genuinely
-   Cohen–Macaulay under the Herzog–Hibi conditions;
+   use the completed theorem `sum_XY_isSMulRegular_mod_diagonalSum` and the
+   real-CM layer to prove that the quotient by the bipartite edge ideal is
+   genuinely Cohen–Macaulay under the Herzog–Hibi conditions;
 2. Gröbner transfer:
    prove that Cohen–Macaulayness transfers from the initial ideal quotient back
    to the original ideal quotient.

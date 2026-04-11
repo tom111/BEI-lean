@@ -18,9 +18,10 @@
    usable real CM slice, and backport/import it cleanly.
 
 Current next concrete target:
-- [work_packages/HH_BIPARTITE_CM_REGULAR_SEQUENCE.md](work_packages/HH_BIPARTITE_CM_REGULAR_SEQUENCE.md)
-  The HH route now has individual non-zero-divisors; the next blocker is
-  regularity through the iterated quotients.
+- [work_packages/HH_BIPARTITE_CM_PACKAGING.md](work_packages/HH_BIPARTITE_CM_PACKAGING.md)
+  The iterated HH regularity theorem is proved; the next HH-side task is to
+  package it into a genuine Cohen–Macaulay conclusion, or isolate the exact
+  missing real-CM bridge.
 
 Supporting CM backport packet:
 - [work_packages/cm_pr_26218/BASIC_FORWARD_DEPTH.md](work_packages/cm_pr_26218/BASIC_FORWARD_DEPTH.md)

@@ -13,7 +13,7 @@ title: Section 1
 | Corollary 1.3 | `cor_1_3` and related wrappers | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Exact |
 | Proposition 1.4 | `prop_1_4` | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Equivalent |
 | Proposition 1.5 | `prop_1_5` | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Exact |
-| Proposition 1.6 | `prop_1_6_equidim`, `closedGraph_minimalPrime_componentCount_eq`, `closedGraph_cutVertex_preserved_of_erase` | [PrimeDecompositionDimension.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecompositionDimension.lean), [Equidim.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Equidim.lean) | Partial |
+| Proposition 1.6 | `prop_1_6_equidim`, `prop_1_6_herzogHibi`, `sum_XY_isSMulRegular_mod_diagonalSum` | [PrimeDecompositionDimension.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecompositionDimension.lean), [Equidim.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Equidim.lean) | Partial |
 
 ## Notes
 
@@ -62,13 +62,15 @@ What is already in place:
 - the graph-combinatorial reduction from the paper;
 - the monomial initial ideal and variable-shift reduction;
 - the Herzog-Hibi bipartite-graph side;
+- the iterated HH regularity theorem `sum_XY_isSMulRegular_mod_diagonalSum`;
 - the local equidimensional stand-in;
 - and a direct proof of the resulting equidimensional surrogate theorem.
 
 What is still missing:
 
 - the actual depth-based Cohen-Macaulay statement from the paper;
-- the separate paper-faithful transfer route through `cm_transfer_initialIdeal`;
+- the final HH-side real-CM packaging theorem built on the finished regularity infrastructure;
+- the separate paper-faithful Gröbner CM transfer theorem;
 - and the full Cohen-Macaulay theory needed to count the paper as fully formalized.
 
 So there are currently two distinct goals:

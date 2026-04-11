@@ -26,7 +26,10 @@ lake update
 lake clean
 ```
 
-There is no test suite — correctness is enforced by Lean's type checker. A successful `lake build` with no errors is required, and reducing the remaining `sorry`s is the current mathematical goal.
+There is no test suite. Correctness is enforced by Lean's type checker, so a successful
+`lake build` with no errors is required. At the current repo state the whole project
+builds; the only remaining `sorry`s are in dormant or archived files, and the main
+mathematical goal is the remaining paper-faithful Cohen–Macaulay branch.
 
 ## Project Structure
 
@@ -82,7 +85,7 @@ There is no test suite — correctness is enforced by Lean's type checker. A suc
 - Treat `BEI.tex` and the Lean files as the source of truth.
 - If a theorem is finished, moved, split across files, or downgraded from an earlier claim, update `TODO.md` and `FORMALIZATION_MAP.md` in the same round.
 - `IsEquidim` now has a real local working definition in `toMathlib/Equidim/Defs.lean`. The Section 3 equidimensional surrogate consequences `corollary_3_4_equidim` and `corollary_3_7_equidim` are proved, and Proposition 1.6 now has a direct equidimensional proof `prop_1_6_equidim` in `BEI/PrimeDecompositionDimension.lean`. This still does **not** count as a full formalization of the paper's depth-based Cohen–Macaulay statement.
-- The first two real Cohen–Macaulay foundation files have now landed in `toMathlib/CohenMacaulay/Defs.lean` and `toMathlib/CohenMacaulay/Basic.lean`, but the paper-faithful Proposition 1.6 route still needs the forward regular-quotient depth inequality before the CM induction story can move further.
+- The first two real Cohen–Macaulay foundation files have now landed in `toMathlib/CohenMacaulay/Defs.lean` and `toMathlib/CohenMacaulay/Basic.lean`. On the HH side, `BEI/Equidim.lean` now reaches the iterated regularity theorem `sum_XY_isSMulRegular_mod_diagonalSum`, but the paper-faithful Proposition 1.6 route still lacks the final real-CM packaging theorem on the bipartite side and the Gröbner CM transfer theorem.
 - Section 4 is fully landed in `BEI/CIIdeals.lean` at the current paper-facing level: the single-statement bridge, specification bridge, and transferred radicality / prime decomposition / minimal-prime theorems are all proved. The minimal-prime transfer keeps the connectedness hypothesis from `corollary_3_9`.
 - `OVERVIEW.md`, `NEXT_STEPS_PLAN.md`, and the public `docs/` pages should stay reader-facing; avoid turning them into internal blocker logs.
 
