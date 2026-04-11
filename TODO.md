@@ -77,11 +77,15 @@ The `IsWeaklyRegular` theorem `bipartiteEdgeMonomialIdeal_isWeaklyRegular` is no
 proved (0 sorries): the diagonal elements form a weakly regular sequence on the bipartite
 quotient under HH conditions.
 
+The quotient dimension formula is now proved:
+- `ringKrullDim_bipartiteEdgeMonomialIdeal`: `dim(S ⧸ I) = n + 1` under HH conditions
+- Uses `ringKrullDim_quotient_radical_equidim` (radical + equidim → dim = common value)
+- Supporting lemmas: `bipartiteEdgeMonomialIdeal_ne_top`, `minimalVertexCover_ncard_val`
+
 The next step toward a genuine `IsCohenMacaulayRing` conclusion requires:
-1. localizing the weakly regular sequence at primes (Mathlib has
-   `IsWeaklyRegular.isRegular_of_isLocalization_of_mem`)
-2. showing the localized dimension matches the sequence length
-3. applying `isCohenMacaulayLocalRing_of_weaklyRegular_length_eq_dim`
+1. proving `x_{n-1}` and `y_{n-1}` are NZDs on `S ⧸ (I + diag)` (free variable NZD)
+2. extending the weakly regular sequence from length `n-1` to `n+1 = dim`
+3. localizing and applying `isCohenMacaulayLocalRing_of_weaklyRegular_length_eq_dim`
 
 The Gröbner CM transfer theorem (Eisenbud 15.17) also remains unformalized, so the full
 paper Cohen–Macaulay statement is still open.

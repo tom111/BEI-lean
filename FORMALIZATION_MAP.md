@@ -114,10 +114,10 @@ faithfully the current Lean statements match the paper.
 | NZD transfer through double quotient | `isSMulRegular_of_doubleQuot` | `BEI/Equidim.lean` | proved | Transfers NZD from `R ⧸ (I ⊔ J)` to `(R ⧸ I) ⧸ J.map mk_I` |
 | Self-module ideal equality | `ideal_smul_top_self` | `BEI/Equidim.lean` | proved | `I • ⊤ = I` for self-module; bridges `IsWeaklyRegular` module quotients to ring quotients |
 | `IsWeaklyRegular` packaging | `bipartiteEdgeMonomialIdeal_isWeaklyRegular` | `BEI/Equidim.lean` | proved | Diagonal forms are a weakly regular sequence of length `n-1` on the bipartite quotient |
-| Dimension lower bound | `ringKrullDim_bipartiteEdgeMonomialIdeal_ge` | `BEI/Equidim.lean` | proved | `dim(R/P) ≤ dim(R/I)` for any minimal prime P of I |
-| Dimension equality (`dim = n+1`) | — | — | blocked | Needs `≤` direction: radical equidim dim theorem or monomial ideal combinatorics |
+| Dimension formula (`dim = n+1`) | `ringKrullDim_bipartiteEdgeMonomialIdeal` | `BEI/Equidim.lean` | proved | `dim(S ⧸ I) = n + 1` under HH conditions; uses radical equidim machinery |
+| Radical equidim dim theorem | `ringKrullDim_quotient_radical_equidim` | `BEI/Equidim.lean` | proved | For radical equidimensional ideal: `dim(R/I) = d` when all minimal primes give dim `d` |
 | NZD for free variables | — | — | blocked | Variables `x_{n-1}, y_{n-1}` extend the regular sequence to length `n+1 = dim` |
-| HH-side CM theorem | — | `BEI/Equidim.lean` / `toMathlib/CohenMacaulay/*` | blocked | Needs dim equality + free variable NZD + localization at irrelevant max |
+| HH-side CM theorem | — | `BEI/Equidim.lean` / `toMathlib/CohenMacaulay/*` | blocked | Needs free variable NZD + localization at irrelevant max |
 
 ### Variable ideal dimension (`toMathlib/HeightVariableIdeal.lean`)
 

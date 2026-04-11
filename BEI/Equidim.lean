@@ -7,6 +7,7 @@ import toMathlib.HeightVariableIdeal
 import Mathlib.RingTheory.Ideal.MinimalPrime.Basic
 import Mathlib.RingTheory.Ideal.MinimalPrime.Localization
 import Mathlib.RingTheory.Regular.RegularSequence
+import toMathlib.QuotientDimension
 
 variable {K : Type*} [Field K]
 variable {V : Type*} [LinearOrder V] [DecidableEq V] [Fintype V]
@@ -2623,36 +2624,109 @@ theorem diagElems_length {n : ℕ} :
 
 end WeaklyRegularPackaging
 
-/-! ### Krull dimension of the bipartite quotient -/
+/-! ### Krull dimension of radical equidimensional quotients -/
 
-section BipartiteDimension
+/-- For a radical ideal `I` in a Noetherian ring with all minimal prime
+quotients having the same Krull dimension `d`, the quotient `R ⧸ I` also
+has Krull dimension `d`.
+
+Uses `ringKrullDim_quotient_radical` (the sup formula) together with
+equidimensionality to compute the sup as a constant. -/
+theorem ringKrullDim_quotient_radical_equidim {R : Type*} [CommRing R]
+    [IsNoetherianRing R]
+    {I : Ideal R} (hne : I ≠ ⊤) (hrad : I.IsRadical)
+    {d : WithBot ℕ∞}
+    (hequidim : ∀ P ∈ I.minimalPrimes, ringKrullDim (R ⧸ P) = d) :
+    ringKrullDim (R ⧸ I) = d := by
+  -- minimalPrimes is nonempty since I ≠ ⊤
+  have hne_mp : I.minimalPrimes.Nonempty := by
+    rw [Set.nonempty_iff_ne_empty]
+    exact (Ideal.minimalPrimes_eq_empty_iff I).not.mpr hne
+  obtain ⟨P₀, hP₀⟩ := hne_mp
+  -- Use the sup formula
+  rw [ringKrullDim_quotient_radical I hrad]
+  apply le_antisymm
+  · -- ≤: every term in the sup equals d
+    exact iSup₂_le fun P hP => (hequidim P hP).le
+  · -- ≥: the sup is ≥ d (using P₀)
+    exact le_iSup₂_of_le P₀ hP₀ (hequidim P₀ hP₀).ge
+
+/-! ### HH quotient dimension formula -/
+
+section HHDimension
 
 variable {K : Type*} [Field K]
 
 open MvPolynomial
 
-/-- For ideals `I ≤ P`, the quotient `R ⧸ P` is a further quotient of `R ⧸ I`,
-so its Krull dimension is at most that of `R ⧸ I`. -/
-private lemma ringKrullDim_quotient_le_of_le {R : Type*} [CommRing R]
-    {I P : Ideal R} (hIP : I ≤ P) :
-    ringKrullDim (R ⧸ P) ≤ ringKrullDim (R ⧸ I) :=
-  ringKrullDim_le_of_surjective (Ideal.Quotient.factor hIP)
-    (Ideal.Quotient.factor_surjective hIP)
+/-- `{i : Fin n // i.val + 1 < n}` has cardinality `n - 1`. -/
+private lemma card_active_indices (n : ℕ) :
+    Nat.card {i : Fin n // i.val + 1 < n} = n - 1 := by
+  rw [Nat.card_eq_fintype_card, show Fintype.card {i : Fin n // i.val + 1 < n} =
+    Fintype.card (Fin (n - 1)) from ?_, Fintype.card_fin]
+  apply Fintype.card_congr
+  exact {
+    toFun := fun ⟨i, hi⟩ => ⟨i.val, by omega⟩
+    invFun := fun ⟨j, hj⟩ => ⟨⟨j, by omega⟩, by show j + 1 < n; omega⟩
+    left_inv := fun ⟨i, hi⟩ => by simp
+    right_inv := fun ⟨j, hj⟩ => by simp
+  }
 
-/-- The Krull dimension of the bipartite edge monomial ideal quotient is at
-least `n + 1` under HH conditions. This follows from the surjection to any
-minimal prime quotient, each of which has dimension `n + 1` (since the
-polynomial ring has `2n` variables and each minimal vertex cover has `n - 1`
-elements). -/
-theorem ringKrullDim_bipartiteEdgeMonomialIdeal_ge {n : ℕ}
+/-- Under HH conditions, any minimal vertex cover of `hhEdgeSet G` has exactly
+`n - 1` elements. -/
+private theorem minimalVertexCover_ncard_val {n : ℕ} {G : SimpleGraph (Fin n)}
+    (hHH : HerzogHibiConditions n G)
+    {S : Set (BinomialEdgeVars (Fin n))}
+    (hS : MvPolynomial.IsMinimalVertexCover (hhEdgeSet G) S) :
+    S.ncard = n - 1 := by
+  rw [← Nat.card_coe_set_eq S]
+  have hS_bij : Function.Bijective
+      (fun v : S => (⟨coverToIndex hS v, (coverToIndex_spec hS v).2⟩ :
+        {i : Fin n // i.val + 1 < n})) :=
+    ⟨fun a b h => coverToIndex_injective hHH hS (Subtype.ext_iff.mp h),
+     fun ⟨i, hi⟩ => by
+      obtain ⟨v, hv⟩ := (coverToIndex_range hHH hS ▸ hi : i ∈ Set.range (coverToIndex hS))
+      exact ⟨v, Subtype.ext hv⟩⟩
+  rw [Nat.card_eq_of_bijective _ hS_bij, card_active_indices]
+
+/-- The bipartite edge monomial ideal is a proper ideal. -/
+private lemma bipartiteEdgeMonomialIdeal_ne_top {n : ℕ} (G : SimpleGraph (Fin n)) :
+    bipartiteEdgeMonomialIdeal (K := K) G ≠ ⊤ := by
+  rw [bipartiteEdgeMonomialIdeal_eq_variablePairIdeal]
+  intro h
+  have hle : MvPolynomial.variablePairIdeal (R := K) (hhEdgeSet G) ≤
+      Ideal.span (MvPolynomial.X '' Set.univ) :=
+    MvPolynomial.variablePairIdeal_le_span_X_iff.mpr fun _ _ _ => Or.inl trivial
+  exact (MvPolynomial.isPrime_span_X_image_set (R := K)
+    (Set.univ : Set (BinomialEdgeVars (Fin n)))).ne_top
+    (eq_top_iff.mpr (h ▸ hle))
+
+/-- **HH quotient dimension formula**: Under HH conditions,
+`dim(S ⧸ bipartiteEdgeMonomialIdeal G) = n + 1`.
+
+Proof: the ideal is radical with equidimensional minimal primes. Each
+minimal prime `span(X '' C)` corresponds to a minimal vertex cover `C`
+with `n - 1` elements, yielding quotient dimension `2n - (n - 1) = n + 1`.
+The result follows from `ringKrullDim_quotient_radical_equidim`. -/
+theorem ringKrullDim_bipartiteEdgeMonomialIdeal {n : ℕ} (hn : 0 < n)
     {G : SimpleGraph (Fin n)}
-    {P : Ideal (MvPolynomial (BinomialEdgeVars (Fin n)) K)}
-    (hP : P ∈ Ideal.minimalPrimes (bipartiteEdgeMonomialIdeal (K := K) G)) :
-    ringKrullDim (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ P) ≤
+    (hHH : HerzogHibiConditions n G) :
     ringKrullDim (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸
-      bipartiteEdgeMonomialIdeal (K := K) G) :=
-  ringKrullDim_quotient_le_of_le hP.1.2
+      bipartiteEdgeMonomialIdeal (K := K) G) = ↑(n + 1 : ℕ) := by
+  apply ringKrullDim_quotient_radical_equidim
+    (bipartiteEdgeMonomialIdeal_ne_top G) (bipartiteEdgeMonomialIdeal_isRadical G)
+  intro P hP
+  obtain ⟨C, hCcover, rfl⟩ := (minimalPrime_bipartiteEdgeMonomialIdeal_iff G).mp hP
+  haveI : Fintype ↑C := Set.Finite.fintype (Set.toFinite C)
+  rw [show MvPolynomial.X '' C =
+      (↑C.toFinset : Set _).image MvPolynomial.X from by rw [Set.coe_toFinset]]
+  rw [MvPolynomial.ringKrullDim_quotient_span_X_image]
+  rw [Nat.card_eq_fintype_card, Fintype.card_subtype_compl, Fintype.card_coe]
+  have hncard := minimalVertexCover_ncard_val hHH hCcover
+  rw [Set.ncard_eq_toFinset_card' C] at hncard
+  rw [hncard]; simp only [BinomialEdgeVars, Fintype.card_sum, Fintype.card_fin]
+  congr 1; omega
 
-end BipartiteDimension
+end HHDimension
 
 end

@@ -7,8 +7,12 @@ Proved (0 sorries):
   regular sequence of length `n - 1` on `S ⧸ bipartiteEdgeMonomialIdeal G`
 - `bipartiteEdgeMonomialIdeal_equidimensional`: all minimal primes give the
   same quotient Krull dimension
-- `ringKrullDim_bipartiteEdgeMonomialIdeal_ge`: `dim(S ⧸ P) ≤ dim(S ⧸ I)`
-  for any minimal prime P
+- `ringKrullDim_bipartiteEdgeMonomialIdeal`: **`dim(S ⧸ I) = n + 1`** (DONE)
+- `ringKrullDim_quotient_radical_equidim`: general radical-equidim dimension
+  formula (DONE)
+- `bipartiteEdgeMonomialIdeal_ne_top`: the ideal is proper (DONE)
+- `minimalVertexCover_ncard_val`: every minimal vertex cover has `n - 1`
+  elements (DONE)
 
 ## The dimension mismatch
 
@@ -26,24 +30,13 @@ But the proved regular sequence has length `n - 1`, which is **less** than
 CM criterion cannot be applied directly.
 
 
-## Three independent blockers
+## Remaining blockers
 
-### Blocker 1: Compute `dim(S ⧸ I) = n + 1`
+### ~~Blocker 1: Compute `dim(S ⧸ I) = n + 1`~~ DONE
 
-The `≥` direction is proved (`ringKrullDim_bipartiteEdgeMonomialIdeal_ge`).
-The `≤` direction needs one of:
-
-**(a)** A general theorem: for radical equidimensional ideals in Noetherian
-rings, `dim(R ⧸ I) = dim(R ⧸ P)` for any minimal prime `P`.
-
-Proof sketch for the `≤` direction: every descending chain of primes in
-`R ⧸ I` has its bottom element containing some minimal prime `P`; mapping
-the chain to `R ⧸ P` preserves length; the chain length is thus bounded
-by `dim(R ⧸ P)`.
-
-**(b)** A direct combinatorial formula for squarefree monomial ideals:
-`dim(R ⧸ I) = max{|σ \ C| : C minimal vertex cover}`. Under HH conditions
-all `|C| = n - 1`, so `dim = 2n - (n-1) = n + 1`.
+Proved as `ringKrullDim_bipartiteEdgeMonomialIdeal` in `BEI/Equidim.lean`.
+Uses `ringKrullDim_quotient_radical_equidim` together with the radical,
+equidimensional, and minimal-vertex-cover cardinality infrastructure.
 
 ### Blocker 2: Extend the regular sequence by free variables
 
@@ -52,12 +45,22 @@ because they don't appear in any generator. The extended sequence
 `[x₀+y₀, ..., x_{n-2}+y_{n-2}, x_{n-1}, y_{n-1}]` has length `n + 1 = dim`.
 
 Proving the NZD property requires showing that a polynomial ring variable is
-a NZD on a quotient by an ideal that doesn't involve that variable. This is
-mathematically trivial but needs either:
-- A tensor product decomposition `S ⧸ (I + diag) ≅ R'[x_{n-1}, y_{n-1}]`
-- Or a direct argument about the grading/support of polynomials
+a NZD on a quotient by an ideal that doesn't involve that variable.
 
-### Blocker 3: Localize and apply the CM criterion
+**Recommended approach**: The existing `diagSubstHom` transfer technique can
+be reused. After applying `diagSubstHom (n-1)`, the image `I.map φ` is a
+monomial ideal whose generators don't involve `inl ⟨n-1, _⟩` or `inr ⟨n-1, _⟩`.
+Use `isSMulRegular_of_radical_step` (as in `isSMulRegular_map_diagSubstHom`)
+with:
+1. **Prime avoidance**: Show no minimal prime of `I.map φ` contains `X(inl ⟨n-1, _⟩)`.
+   Argument: if a minimal prime `span(X '' s)` contained the variable, removing
+   it from `s` would still cover all generators (since they don't use that
+   variable), contradicting minimality.
+2. **Nilradical NZD step**: For `c ∈ √(I.map φ)` with `X_v * c ∈ I.map φ`,
+   show `c ∈ I.map φ` using the monomial structure and the fact that generators
+   don't involve `v`.
+
+### Blocker 3: Convert the extended sequence into a CM theorem
 
 Once the extended regular sequence of length `n + 1 = dim` is established:
 
@@ -68,29 +71,34 @@ Once the extended regular sequence of length `n + 1 = dim` is established:
 4. Show `dim` at the localization equals `n + 1` (standard for graded rings)
 5. Apply `isCohenMacaulayLocalRing_of_weaklyRegular_length_eq_dim`
 
-This gives `IsCohenMacaulayLocalRing` at the irrelevant max. For global
-`IsCohenMacaulayRing`, additionally need "graded CM at irrelevant max implies
-global CM" (standard but needs graded ring infrastructure).
+This only gives a route to `IsCohenMacaulayLocalRing` at the irrelevant
+maximal ideal.
+
+To reach global `IsCohenMacaulayRing`, there is a further graded/local-to-global
+step. So this is really two sub-blockers:
+
+- local CM at the irrelevant maximal ideal;
+- then a graded local-to-global CM theorem.
 
 
 ## Recommended order
 
-1. **Blocker 1(a)**: Prove the general equidim radical dimension theorem.
-   This is a clean standalone commutative algebra result, ~50 lines,
-   using `Ideal.exists_minimalPrimes_le` and `Order.krullDim` chain bounds.
+1. ~~**Blocker 1**~~: DONE.
 
-2. **Blocker 2**: Prove NZD for free variables. The cleanest route is
-   probably to show that if `J` doesn't involve variable `v`, then `X v`
-   is a NZD on `MvPolynomial σ K ⧸ J`. This is a `toMathlib`-worthy lemma.
+2. **Blocker 2**: Prove NZD for free variables via the `diagSubstHom` transfer.
 
-3. **Blocker 3**: The localization step. This uses Mathlib's existing
-   localization infrastructure for regular sequences.
+3. **Blocker 3**: First the irrelevant-max localization step, then the
+   graded local-to-global CM step.
 
 
 ## Alternative route: Work in the smaller ring
 
 The paper works in `S' = K[x₁,...,x_{n-1}, y₁,...,y_{n-1}]` with `2(n-1)`
 variables. In `S'`, the regular sequence has length `n - 1 = dim(S'/I)`,
-so blockers 1 and 2 vanish. The cost is: define `I` in the smaller ring,
+so blockers 2 and 3 simplify. The cost is: define `I` in the smaller ring,
 prove the isomorphism `S ⧸ I ≅ (S'/I')[x_{n-1}, y_{n-1}]`, and use
 "polynomial extension preserves CM".
+
+This route is mathematically clean, but it is a strategic fork. Do not switch
+to it unless the full-ring route is sharply blocked, because the current code
+already has substantial infrastructure in the full `2n`-variable ring.
