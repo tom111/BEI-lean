@@ -18,15 +18,18 @@
    usable real CM slice, and backport/import it cleanly.
 
 Current next concrete target:
-- [work_packages/HH_CM_BRIDGE_LEMMAS.md](work_packages/HH_CM_BRIDGE_LEMMAS.md)
-  The bridge lemmas (double-quotient NZD transfer, self-module ideal equality)
-  are proved; the remaining step is list/Fin plumbing to assemble
-  `IsWeaklyRegular`.
+- [work_packages/HH_CM_TO_GLOBAL.md](work_packages/HH_CM_TO_GLOBAL.md)
+  Three independent blockers to pass from the proved `IsWeaklyRegular` to
+  `IsCohenMacaulayRing`: (1) dimension formula for radical equidim ideals,
+  (2) NZD for free polynomial variables, (3) localization at irrelevant max.
 
-Superseded (bridge lemmas now landed):
+Completed (bridge lemmas + IsWeaklyRegular now landed):
+- [work_packages/HH_CM_BRIDGE_LEMMAS.md](work_packages/HH_CM_BRIDGE_LEMMAS.md)
+  Steps A+B done; Step C (localization) documented in HH_CM_TO_GLOBAL.md.
+
+Superseded:
 - [work_packages/HH_BIPARTITE_CM_PACKAGING.md](work_packages/HH_BIPARTITE_CM_PACKAGING.md)
-  The blocker identified in this guide is now resolved by the three bridge
-  lemmas. See HH_CM_BRIDGE_LEMMAS.md for the remaining plumbing step.
+  Resolved by the bridge lemmas and IsWeaklyRegular theorem.
 
 Supporting CM backport packet:
 - [work_packages/cm_pr_26218/BASIC_FORWARD_DEPTH.md](work_packages/cm_pr_26218/BASIC_FORWARD_DEPTH.md)

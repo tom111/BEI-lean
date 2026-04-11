@@ -2617,6 +2617,42 @@ theorem bipartiteEdgeMonomialIdeal_isWeaklyRegular
   have : (⟨idx, hidxn⟩ : Fin n).val + 1 < n := by simp; omega
   exact sum_XY_isSMulRegular_mod_diagonalSum hHH ⟨idx, hidxn⟩ this le_rfl
 
+/-- The weakly regular sequence has length `n - 1`. -/
+theorem diagElems_length {n : ℕ} :
+    (diagElems (K := K) n).length = n - 1 := List.length_ofFn
+
 end WeaklyRegularPackaging
+
+/-! ### Krull dimension of the bipartite quotient -/
+
+section BipartiteDimension
+
+variable {K : Type*} [Field K]
+
+open MvPolynomial
+
+/-- For ideals `I ≤ P`, the quotient `R ⧸ P` is a further quotient of `R ⧸ I`,
+so its Krull dimension is at most that of `R ⧸ I`. -/
+private lemma ringKrullDim_quotient_le_of_le {R : Type*} [CommRing R]
+    {I P : Ideal R} (hIP : I ≤ P) :
+    ringKrullDim (R ⧸ P) ≤ ringKrullDim (R ⧸ I) :=
+  ringKrullDim_le_of_surjective (Ideal.Quotient.factor hIP)
+    (Ideal.Quotient.factor_surjective hIP)
+
+/-- The Krull dimension of the bipartite edge monomial ideal quotient is at
+least `n + 1` under HH conditions. This follows from the surjection to any
+minimal prime quotient, each of which has dimension `n + 1` (since the
+polynomial ring has `2n` variables and each minimal vertex cover has `n - 1`
+elements). -/
+theorem ringKrullDim_bipartiteEdgeMonomialIdeal_ge {n : ℕ}
+    {G : SimpleGraph (Fin n)}
+    {P : Ideal (MvPolynomial (BinomialEdgeVars (Fin n)) K)}
+    (hP : P ∈ Ideal.minimalPrimes (bipartiteEdgeMonomialIdeal (K := K) G)) :
+    ringKrullDim (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ P) ≤
+    ringKrullDim (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸
+      bipartiteEdgeMonomialIdeal (K := K) G) :=
+  ringKrullDim_quotient_le_of_le hP.1.2
+
+end BipartiteDimension
 
 end
