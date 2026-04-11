@@ -60,30 +60,55 @@ for the right `Fin n` index, which is a `Fin` arithmetic exercise.
 
 ### Step C: From `IsWeaklyRegular` to `IsCohenMacaulayRing`
 
-Once `IsWeaklyRegular` is established:
+**Status: Blocker identified. This step does NOT close cleanly.**
 
-1. Use `IsWeaklyRegular.isRegular_of_isLocalization_of_mem` (in Mathlib) to
-   localize the regular sequence at each prime
-2. Use `isCohenMacaulayLocalRing_of_weaklyRegular_length_eq_dim` to conclude
-   CM at each prime localization
-3. For this, need `dim((S'/I)_P) = n-1` when all diagonal elements are in `P`
-   — this follows from dimension additivity for regular sequences
-   (`ringKrullDim_add_length_eq_ringKrullDim_of_isRegular`)
+The Mathlib localization theorem
+`IsWeaklyRegular.isRegular_of_isLocalization_of_mem` localizes a weakly
+regular sequence to a regular sequence at a prime, but only for the elements
+that are in that prime.
 
-Step C involves localization infrastructure (checking elements are in the
-maximal ideal of localizations, dimension formulas at localizations). This is
-a separate nontrivial step beyond the `IsWeaklyRegular` plumbing.
+For `IsCohenMacaulayRing (S ⧸ I)`, we need CM at EVERY prime `p`:
+
+1. The sub-sequence of diagonal elements in `p` localizes to a regular
+   sequence at `(S ⧸ I)_p`.
+2. This sub-sequence has length equal to `dim((S ⧸ I)_p)`.
+3. All localized elements land in the maximal ideal of the local ring.
+4. Use `isCohenMacaulayLocalRing_of_weaklyRegular_length_eq_dim`.
+
+**The hard part is (2).** For primes `p` that don't contain all diagonal
+elements, only a sub-sequence contributes. Showing its length matches the
+local dimension requires understanding which diagonal elements are in which
+primes, and how the dimension at each prime relates to the number of
+"missing" diagonal elements.
+
+**Possible approaches:**
+
+- **Graded CM theorem**: For graded rings, CM at the irrelevant maximal ideal
+  implies global CM. All diagonal elements are in the irrelevant maximal
+  ideal, so the full sequence contributes. The dimension at the irrelevant
+  max is `n - 1` = sequence length, so CM there follows easily. But proving
+  "graded CM at irrelevant max ⟹ global CM" is itself non-trivial.
+
+- **Monomial ideal combinatorics**: Since `I` is a squarefree monomial ideal,
+  its minimal primes have a nice combinatorial description (vertex covers),
+  and the local dimensions can be computed explicitly. But this requires
+  linking the Stanley-Reisner theory to the regular sequence.
+
+- **Direct approach at each prime**: For each prime `p` of height `h`,
+  exactly `h` diagonal elements are in `p`, and these form a regular
+  sequence of length `h` at the localization. This is provable from the
+  combinatorics of bipartite graphs but requires significant infrastructure.
+
+**Recommendation**: The graded CM approach is the most economical.
+It requires one new theorem:
+```
+IsCohenMacaulayRing_of_graded_CM_at_irrelevant_max
+```
+plus showing the irrelevant maximal ideal exists and has the right
+dimension. This is a natural separate packet.
 
 
-## Recommended approach
+## Definition of done (updated)
 
-Focus on Steps A and B first (maybe 50–100 lines of Lean). They are pure
-plumbing with no mathematical risk. Once `IsWeaklyRegular` is established,
-Step C can be approached as a separate packet.
-
-
-## Definition of done
-
-- `bipartiteEdgeMonomialIdeal_isWeaklyRegular` is proved (0 sorries)
-- OR: the exact remaining list/Fin manipulation lemma is isolated with a
-  minimal sorry and clear type signature
+- ✅ Steps A and B: `bipartiteEdgeMonomialIdeal_isWeaklyRegular` is proved
+- ⬜ Step C: requires a graded CM theorem or per-prime dimension analysis
