@@ -15,14 +15,18 @@ title: Section 1
 | Proposition 1.5 | `prop_1_5` | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Exact |
 | Proposition 1.6 | `prop_1_6_equidim`, `prop_1_6_herzogHibi`, `sum_XY_isSMulRegular_mod_diagonalSum` | [PrimeDecompositionDimension.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecompositionDimension.lean), [Equidim.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Equidim.lean) | Partial |
 
-## Example Theorem Card
+## Paper vs Lean
 
-The theorem map stays in place for quick scanning. Below it is an example of the
-richer format: a side-by-side comparison between the paper statement and the Lean
-formalization.
+The theorem map stays in place for quick scanning. Below it is the full Section 1
+card set, with each paper result paired against the current Lean formalization.
 
-{% assign thm = site.data.section1.theorem_1_1 %}
-{% include theorem_compare.html item=thm %}
+<div class="theorem-stack">
+  {% assign section1_cards = "theorem_1_1,prop_1_2,cor_1_3,prop_1_4,prop_1_5,prop_1_6" | split: "," %}
+  {% for key in section1_cards %}
+    {% assign thm = site.data.section1[key] %}
+    {% include theorem_compare.html item=thm %}
+  {% endfor %}
+</div>
 
 ## Notes
 
