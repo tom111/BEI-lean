@@ -1,0 +1,36 @@
+<div class="theorem-compare">
+  <div class="theorem-compare__header">
+    <div>
+      <span class="theorem-compare__label">{{ include.item.paper_label }}</span>
+      <strong class="theorem-compare__title">{{ include.item.paper_title }}</strong>
+    </div>
+    <div class="theorem-compare__badges">
+      <span class="status-badge status-badge--{{ include.item.status | downcase }}">{{ include.item.status }}</span>
+      <span class="fidelity-badge">{{ include.item.fidelity }}</span>
+    </div>
+  </div>
+
+  <div class="theorem-compare__grid">
+    <section class="theorem-pane theorem-pane--paper">
+      <h3>Paper Statement</h3>
+      <div class="theorem-pane__body">
+        {{ include.item.paper_statement_tex }}
+      </div>
+    </section>
+
+    <section class="theorem-pane theorem-pane--lean">
+      <h3>Lean Formalization</h3>
+      <div class="theorem-pane__body">
+        <p><strong>{{ include.item.lean_name }}</strong></p>
+        <p>{{ include.item.lean_statement }}</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="theorem-compare__footer">
+    <a href="{{ include.item.lean_url }}">Proof In {{ include.item.lean_file_label }}</a>
+    {% if include.item.notes %}
+    <span class="theorem-compare__notes">{{ include.item.notes }}</span>
+    {% endif %}
+  </div>
+</div>

@@ -261,6 +261,128 @@ p, li {
   transform: translate(-50%, -50%);
 }
 
+.theorem-compare {
+  margin: 1.1rem 0 1.6rem 0;
+  border: 1px solid #d7e3ef;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbfd 100%);
+  box-shadow: 0 12px 28px rgba(23, 50, 77, 0.06);
+  overflow: hidden;
+}
+
+.theorem-compare__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+  padding: 1rem 1.1rem 0.95rem 1.1rem;
+  border-bottom: 1px solid #d7e3ef;
+  background: #f6f9fc;
+}
+
+.theorem-compare__label,
+.theorem-compare__title {
+  display: block;
+}
+
+.theorem-compare__label {
+  color: #1f5f8b;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.77rem;
+  font-weight: 700;
+  margin-bottom: 0.22rem;
+}
+
+.theorem-compare__title {
+  color: #17324d;
+  font-size: 1.05rem;
+}
+
+.theorem-compare__badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.status-badge,
+.fidelity-badge {
+  display: inline-block;
+  padding: 0.28rem 0.62rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-badge--proved {
+  background: #dff3e8;
+  color: #1f6a46;
+}
+
+.fidelity-badge {
+  background: #e8f1f8;
+  color: #1f5f8b;
+}
+
+.theorem-compare__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+}
+
+.theorem-pane {
+  padding: 1rem 1.1rem 1.05rem 1.1rem;
+}
+
+.theorem-pane--paper {
+  border-right: 1px solid #d7e3ef;
+}
+
+.theorem-pane h3 {
+  margin-top: 0;
+  margin-bottom: 0.7rem;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #53708b;
+}
+
+.theorem-pane__body p:last-child {
+  margin-bottom: 0;
+}
+
+.theorem-compare__footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+  padding: 0.95rem 1.1rem 1rem 1.1rem;
+  border-top: 1px solid #d7e3ef;
+  background: #fcfdff;
+}
+
+.theorem-compare__notes {
+  color: #4d647a;
+  font-size: 0.93rem;
+}
+
+@media (max-width: 760px) {
+  .theorem-compare__header,
+  .theorem-compare__footer {
+    flex-direction: column;
+  }
+
+  .theorem-compare__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .theorem-pane--paper {
+    border-right: 0;
+    border-bottom: 1px solid #d7e3ef;
+  }
+}
+
 .result-item--done {
   background: linear-gradient(180deg, #fbfffd 0%, #f3fbf7 100%);
   border-color: #c9e5d7;
