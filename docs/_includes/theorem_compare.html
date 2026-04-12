@@ -1,6 +1,7 @@
 <div class="theorem-compare">
   <div class="theorem-compare__header">
-    <div>
+    <div class="theorem-compare__identity">
+      <span class="theorem-compare__eyebrow">Paper vs Lean</span>
       <span class="theorem-compare__label">{{ include.item.paper_label }}</span>
       <strong class="theorem-compare__title">{{ include.item.paper_title }}</strong>
     </div>
@@ -12,24 +13,27 @@
 
   <div class="theorem-compare__grid">
     <section class="theorem-pane theorem-pane--paper">
-      <h3>Paper Statement</h3>
-      <div class="theorem-pane__body">
+      <div class="theorem-pane__heading">Paper Statement</div>
+      <div class="theorem-pane__body theorem-pane__body--math">
         {{ include.item.paper_statement_tex }}
       </div>
     </section>
 
     <section class="theorem-pane theorem-pane--lean">
-      <h3>Lean Formalization</h3>
+      <div class="theorem-pane__heading">Lean Formalization</div>
+      <div class="theorem-pane__lede">
+        <code>{{ include.item.lean_name | replace: "`", "" }}</code>
+      </div>
       <div class="theorem-pane__body">
-        <p><strong>{{ include.item.lean_name }}</strong></p>
         <p>{{ include.item.lean_statement }}</p>
       </div>
+      <a class="theorem-pane__link" href="{{ include.item.lean_url }}">View proof in {{ include.item.lean_file_label }}</a>
     </section>
   </div>
 
   <div class="theorem-compare__footer">
-    <a href="{{ include.item.lean_url }}">Proof In {{ include.item.lean_file_label }}</a>
     {% if include.item.notes %}
+    <strong>Notes</strong>
     <span class="theorem-compare__notes">{{ include.item.notes }}</span>
     {% endif %}
   </div>

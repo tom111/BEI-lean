@@ -15,10 +15,11 @@ title: Section 1
 | Proposition 1.5 | `prop_1_5` | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Exact |
 | Proposition 1.6 | `prop_1_6_equidim`, `prop_1_6_herzogHibi`, `sum_XY_isSMulRegular_mod_diagonalSum` | [PrimeDecompositionDimension.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecompositionDimension.lean), [Equidim.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Equidim.lean) | Partial |
 
-## Draft Theorem Card
+## Example Theorem Card
 
-This is a pilot implementation of the richer website format: a side-by-side
-comparison between the paper statement and the Lean formalization.
+The theorem map stays in place for quick scanning. Below it is an example of the
+richer format: a side-by-side comparison between the paper statement and the Lean
+formalization.
 
 {% assign thm = site.data.section1.theorem_1_1 %}
 {% include theorem_compare.html item=thm %}

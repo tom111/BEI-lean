@@ -262,11 +262,11 @@ p, li {
 }
 
 .theorem-compare {
-  margin: 1.1rem 0 1.6rem 0;
-  border: 1px solid #d7e3ef;
-  border-radius: 18px;
+  margin: 1.2rem 0 1.8rem 0;
+  border: 1px solid #cbdbe8;
+  border-radius: 20px;
   background: linear-gradient(180deg, #ffffff 0%, #f7fbfd 100%);
-  box-shadow: 0 12px 28px rgba(23, 50, 77, 0.06);
+  box-shadow: 0 18px 40px rgba(23, 50, 77, 0.08);
   overflow: hidden;
 }
 
@@ -275,9 +275,15 @@ p, li {
   justify-content: space-between;
   gap: 1rem;
   align-items: start;
-  padding: 1rem 1.1rem 0.95rem 1.1rem;
+  padding: 1.15rem 1.2rem 1.05rem 1.2rem;
   border-bottom: 1px solid #d7e3ef;
-  background: #f6f9fc;
+  background:
+    radial-gradient(circle at top right, rgba(91, 166, 132, 0.14), transparent 28%),
+    linear-gradient(135deg, #17324d 0%, #1d4861 100%);
+}
+
+.theorem-compare__identity {
+  min-width: 0;
 }
 
 .theorem-compare__label,
@@ -285,18 +291,29 @@ p, li {
   display: block;
 }
 
+.theorem-compare__eyebrow {
+  display: inline-block;
+  margin-bottom: 0.45rem;
+  color: #9fd7c0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
 .theorem-compare__label {
-  color: #1f5f8b;
+  color: rgba(255, 255, 255, 0.8);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  font-size: 0.77rem;
+  font-size: 0.8rem;
   font-weight: 700;
   margin-bottom: 0.22rem;
 }
 
 .theorem-compare__title {
-  color: #17324d;
-  font-size: 1.05rem;
+  color: #ffffff;
+  font-size: 1.2rem;
+  line-height: 1.25;
 }
 
 .theorem-compare__badges {
@@ -313,53 +330,100 @@ p, li {
   font-size: 0.82rem;
   font-weight: 700;
   white-space: nowrap;
+  border: 1px solid transparent;
 }
 
 .status-badge--proved {
   background: #dff3e8;
   color: #1f6a46;
+  border-color: #b9dec8;
 }
 
 .fidelity-badge {
-  background: #e8f1f8;
-  color: #1f5f8b;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.14);
 }
 
 .theorem-compare__grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0;
+  background: #ffffff;
 }
 
 .theorem-pane {
-  padding: 1rem 1.1rem 1.05rem 1.1rem;
+  padding: 1.15rem 1.2rem 1.2rem 1.2rem;
 }
 
 .theorem-pane--paper {
   border-right: 1px solid #d7e3ef;
+  background: linear-gradient(180deg, #fffdfa 0%, #fff9ef 100%);
 }
 
-.theorem-pane h3 {
+.theorem-pane--lean {
+  background: linear-gradient(180deg, #fcfeff 0%, #f4f9fd 100%);
+}
+
+.theorem-pane__heading {
   margin-top: 0;
-  margin-bottom: 0.7rem;
-  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.82rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   color: #53708b;
+  font-weight: 800;
+}
+
+.theorem-pane__lede {
+  margin-bottom: 0.8rem;
+}
+
+.theorem-pane__lede code {
+  display: inline-block;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: #eaf2f8;
+  color: #17324d;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.theorem-pane__body {
+  color: #20364d;
+}
+
+.theorem-pane__body--math {
+  font-size: 1.03rem;
+  line-height: 1.7;
 }
 
 .theorem-pane__body p:last-child {
   margin-bottom: 0;
 }
 
+.theorem-pane__link {
+  display: inline-block;
+  margin-top: 1rem;
+  color: #1f5f8b;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.theorem-pane__link:hover {
+  text-decoration: underline;
+}
+
 .theorem-compare__footer {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  align-items: start;
-  padding: 0.95rem 1.1rem 1rem 1.1rem;
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.95rem 1.2rem 1.05rem 1.2rem;
   border-top: 1px solid #d7e3ef;
   background: #fcfdff;
+}
+
+.theorem-compare__footer strong {
+  color: #17324d;
 }
 
 .theorem-compare__notes {
