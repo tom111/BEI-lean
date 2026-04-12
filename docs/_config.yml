@@ -4,6 +4,7 @@ theme: minima
 markdown: kramdown
 header_pages:
   - overview.md
+  - foundations.md
   - toMathlib.md
   - section-1.md
   - section-2.md

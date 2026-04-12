@@ -14,6 +14,7 @@ title: Binomial Edge Ideals
     </p>
     <div class="quick-links quick-links--hero">
       <a href="{{ '/overview.html' | relative_url }}">Overview</a>
+      <a href="{{ '/foundations.html' | relative_url }}">Definitions</a>
       <a href="{{ '/section-1.html' | relative_url }}">Section 1</a>
       <a href="{{ '/section-2.html' | relative_url }}">Section 2</a>
       <a href="{{ '/section-3.html' | relative_url }}">Section 3</a>
@@ -101,6 +102,11 @@ title: Binomial Edge Ideals
 ## Explore By Section
 
 <div class="section-grid">
+  <a class="section-card" href="{{ '/foundations.html' | relative_url }}">
+    <span class="section-card__kicker">Foundations</span>
+    <strong>Definitions, term order, and Gröbner setup</strong>
+    <span class="section-card__meta">core vocabulary and algebraic infrastructure</span>
+  </a>
   <a class="section-card" href="{{ '/section-1.html' | relative_url }}">
     <span class="section-card__kicker">Section 1</span>
     <strong>Closed graphs and quadratic Gröbner bases</strong>
