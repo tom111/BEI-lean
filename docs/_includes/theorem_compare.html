@@ -24,9 +24,14 @@
       <div class="theorem-pane__lede">
         <code>{{ include.item.lean_name | replace: "`", "" }}</code>
       </div>
-      <div class="theorem-pane__body">
+      {% if include.item.lean_snippet %}
+      <pre class="theorem-code"><code class="language-lean">{{ include.item.lean_snippet | escape }}</code></pre>
+      {% endif %}
+      {% if include.item.lean_statement %}
+      <div class="theorem-pane__body theorem-pane__body--secondary">
         <p>{{ include.item.lean_statement }}</p>
       </div>
+      {% endif %}
       <a class="theorem-pane__link" href="{{ include.item.lean_url }}">View proof in {{ include.item.lean_file_label }}</a>
     </section>
   </div>

@@ -398,8 +398,33 @@ p, li {
   line-height: 1.7;
 }
 
+.theorem-pane__body--secondary {
+  margin-top: 0.85rem;
+  font-size: 0.97rem;
+  color: #466078;
+}
+
 .theorem-pane__body p:last-child {
   margin-bottom: 0;
+}
+
+.theorem-code {
+  margin: 0;
+  padding: 0.95rem 1rem;
+  border-radius: 14px;
+  background: #132534;
+  color: #eef6fb;
+  overflow-x: auto;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.theorem-code code {
+  display: block;
+  background: transparent;
+  color: inherit;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  white-space: pre;
 }
 
 .theorem-pane__link {

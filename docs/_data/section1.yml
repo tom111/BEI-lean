@@ -10,10 +10,12 @@ theorem_1_1:
     $x_1 > \cdots > x_n > y_1 > \cdots > y_n$
     if and only if $G$ is closed with respect to the given labeling.
   lean_name: "`theorem_1_1`"
-  lean_statement: >
-    The Lean theorem formalizes the same equivalence: `IsClosedGraph G ↔` the
-    quadratic generators form a Gröbner basis for the binomial edge ideal under
-    the project’s fixed monomial order.
+  lean_snippet: |
+    theorem theorem_1_1 (G : SimpleGraph V) :
+        binomialEdgeMonomialOrder.IsGroebnerBasis (generatorSet (K := K) G)
+          (binomialEdgeIdeal (K := K) G) ↔
+        IsClosedGraph G :=
+      ⟨groebner_implies_closed G, closed_implies_groebner G⟩
   lean_file_label: "ClosedGraphs.lean"
   lean_url: "https://github.com/tom111/BEI-lean/blob/master/BEI/ClosedGraphs.lean"
   notes: >
