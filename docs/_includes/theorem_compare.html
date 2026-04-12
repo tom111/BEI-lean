@@ -32,7 +32,15 @@
         <p>{{ include.item.lean_statement }}</p>
       </div>
       {% endif %}
+      {% if include.item.lean_links %}
+      <div class="theorem-link-list">
+        {% for link in include.item.lean_links %}
+        <a class="theorem-pane__link" href="{{ link.url }}">View proof in {{ link.label }}</a>
+        {% endfor %}
+      </div>
+      {% else %}
       <a class="theorem-pane__link" href="{{ include.item.lean_url }}">View proof in {{ include.item.lean_file_label }}</a>
+      {% endif %}
     </section>
   </div>
 

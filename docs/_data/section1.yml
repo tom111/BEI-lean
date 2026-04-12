@@ -22,3 +22,127 @@ theorem_1_1:
     This is the central entry point for the Section 1 formalization. The paper
     statement is represented directly rather than through a surrogate or weaker
     wrapper.
+
+prop_1_2:
+  paper_label: "Proposition 1.2"
+  paper_title: "Closed Graphs Are Chordal and Claw-Free"
+  status: "proved"
+  fidelity: "Exact"
+  paper_statement_tex: >
+    If $G$ is closed, then $G$ is chordal and has no induced claw.
+  lean_name: "`prop_1_2`"
+  lean_snippet: |
+    theorem prop_1_2 (G : SimpleGraph V) (h : IsClosedGraph G) :
+        IsChordal G ∧ IsClawFree G :=
+      ⟨closedGraph_isChordal G h, closedGraph_isClawFree G h⟩
+  lean_file_label: "GraphProperties.lean"
+  lean_url: "https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean"
+  notes: >
+    The Lean conclusion packages the paper's two graph-theoretic consequences as
+    `IsChordal G ∧ IsClawFree G`.
+
+cor_1_3:
+  paper_label: "Corollary 1.3"
+  paper_title: "Closed Bipartite Graphs Are Paths"
+  status: "proved"
+  fidelity: "Exact"
+  paper_statement_tex: >
+    A bipartite graph is closed if and only if it is a line.
+  lean_name: "`cor_1_3`, `cor_1_3_connected_forward`, `pathGraph_isClosedGraph`"
+  lean_snippet: |
+    theorem cor_1_3 (G : SimpleGraph V) [Fintype V] [DecidableRel G.Adj]
+        (hBip : ∃ (φ : V → Bool), ∀ ⦃u v : V⦄, G.Adj u v → φ u ≠ φ v)
+        (hClosed : IsClosedGraph G) :
+        G.IsAcyclic ∧ ∀ v, G.degree v ≤ 2 := by
+
+    theorem cor_1_3_connected_forward (G : SimpleGraph V) [Fintype V] [DecidableRel G.Adj]
+        (hBip : ∃ (φ : V → Bool), ∀ ⦃u v : V⦄, G.Adj u v → φ u ≠ φ v)
+        (hClosed : IsClosedGraph G) (hConn : G.Connected) :
+        IsPathGraph G := by
+
+    theorem pathGraph_isClosedGraph (n : ℕ) :
+        IsClosedGraph (pathGraph n) := by
+  lean_file_label: "GraphProperties.lean"
+  lean_url: "https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean"
+  notes: >
+    The paper's "line graph" formulation is formalized through a connected path-graph
+    wrapper plus the converse theorem for the canonical path graph.
+
+prop_1_4:
+  paper_label: "Proposition 1.4"
+  paper_title: "Characterization by Directed Shortest Paths"
+  status: "proved"
+  fidelity: "Equivalent"
+  paper_statement_tex: >
+    A graph $G$ on $[n]$ is closed with respect to the given labeling if and only if,
+    for any two distinct vertices $i \neq j$ of the associated directed graph $G^*$,
+    all shortest paths from $i$ to $j$ are directed.
+  lean_name: "`prop_1_4`"
+  lean_snippet: |
+    theorem prop_1_4 (G : SimpleGraph V) :
+        IsClosedGraph G ↔
+        ∀ (i j : V), i < j →
+        ∀ (w : G.Walk i j), w.length = G.dist i j → IsDirectedWalk G w.support := by
+  lean_file_label: "GraphProperties.lean"
+  lean_url: "https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean"
+  notes: >
+    This is equivalent rather than verbatim: the paper quantifies over all distinct
+    vertices, while the Lean statement fixes the orientation by requiring `i < j`.
+
+prop_1_5:
+  paper_label: "Proposition 1.5"
+  paper_title: "Unique Minimal Closed Supergraph"
+  status: "proved"
+  fidelity: "Exact"
+  paper_statement_tex: >
+    For every simple graph $G$ on $[n]$, there exists a unique minimal graph
+    $\bar{G}$ on $[n]$ that is closed with respect to the given labeling and
+    contains $G$ as a subgraph.
+  lean_name: "`prop_1_5`"
+  lean_snippet: |
+    theorem prop_1_5 (G : SimpleGraph V) :
+        ∃! H : SimpleGraph V,
+          G ≤ H ∧ IsClosedGraph H ∧
+          ∀ H' : SimpleGraph V, G ≤ H' → IsClosedGraph H' → H ≤ H' := by
+  lean_file_label: "GraphProperties.lean"
+  lean_url: "https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean"
+  notes: >
+    Lean names the closure construction explicitly and proves the same uniqueness and
+    minimality statement as in the paper.
+
+prop_1_6:
+  paper_label: "Proposition 1.6"
+  paper_title: "A Sufficient Cohen–Macaulay Criterion"
+  status: "partial"
+  fidelity: "Partial"
+  paper_statement_tex: >
+    Let $G$ be a connected graph on $[n]$ that is closed with respect to the given
+    labeling. Suppose further that whenever $\{i,j+1\}$ with $i < j$ and
+    $\{j,k+1\}$ with $j < k$ are edges of $G$, then $\{i,k+1\}$ is an edge of $G$.
+    Then $S/J_G$ is Cohen--Macaulay.
+  lean_name: "`prop_1_6_herzogHibi`, `sum_XY_isSMulRegular_mod_diagonalSum`, `prop_1_6_equidim`"
+  lean_snippet: |
+    theorem prop_1_6_herzogHibi (n : ℕ) (G : SimpleGraph (Fin n))
+        (hConn : G.Connected) (hClosed : IsClosedGraph G)
+        (hCond : SatisfiesProp1_6Condition n G) :
+        HerzogHibiConditions n G := by
+
+    theorem sum_XY_isSMulRegular_mod_diagonalSum {n : ℕ} {G : SimpleGraph (Fin n)}
+        (hHH : HerzogHibiConditions n G) (i : Fin n) (hi : i.val + 1 < n)
+        (hik : k ≤ i.val) :
+        IsSMulRegular ... := by
+
+    theorem prop_1_6_equidim (n : ℕ) (_hn : 0 < n) (G : SimpleGraph (Fin n))
+        (hConn : G.Connected) (hClosed : IsClosedGraph G)
+        (hCond : SatisfiesProp1_6Condition n G) :
+        IsEquidim
+          (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ binomialEdgeIdeal G) := by
+  lean_links:
+    - label: "Equidim.lean"
+      url: "https://github.com/tom111/BEI-lean/blob/master/BEI/Equidim.lean"
+    - label: "PrimeDecompositionDimension.lean"
+      url: "https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecompositionDimension.lean"
+  notes: >
+    The full paper statement is still open. The current Lean development has the
+    Herzog--Hibi reduction, the diagonal regularity theorem, and an equidimensional
+    surrogate, but not yet the final Cohen--Macaulay theorem.

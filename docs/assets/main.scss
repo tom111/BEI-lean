@@ -339,6 +339,12 @@ p, li {
   border-color: #b9dec8;
 }
 
+.status-badge--partial {
+  background: #fdebc2;
+  color: #8c5a00;
+  border-color: #efcf8f;
+}
+
 .fidelity-badge {
   background: rgba(255, 255, 255, 0.12);
   color: #ffffff;
@@ -439,6 +445,17 @@ p, li {
   text-decoration: underline;
 }
 
+.theorem-link-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+  margin-top: 1rem;
+}
+
+.theorem-link-list .theorem-pane__link {
+  margin-top: 0;
+}
+
 .theorem-compare__footer {
   display: grid;
   gap: 0.25rem;
@@ -490,6 +507,16 @@ p, li {
 .result-item--open .result-item__icon {
   color: #9a5b00;
   background: #fdebc2;
+}
+
+.theorem-stack {
+  display: grid;
+  gap: 1rem;
+  margin: 1rem 0 1.8rem 0;
+}
+
+.theorem-stack .theorem-compare {
+  margin: 0;
 }
 
 .reference-strip {

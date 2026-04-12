@@ -82,6 +82,22 @@ title: Binomial Edge Ideals
   </div>
 </div>
 
+## Section 1 Cards
+
+<div class="intro-card">
+  Section 1 now appears on the homepage in the paper-vs-Lean format. Each card shows
+  the paper statement alongside the actual Lean declaration that currently carries the
+  formalization.
+</div>
+
+<div class="theorem-stack">
+  {% assign section1_cards = "theorem_1_1,prop_1_2,cor_1_3,prop_1_4,prop_1_5,prop_1_6" | split: "," %}
+  {% for key in section1_cards %}
+    {% assign thm = site.data.section1[key] %}
+    {% include theorem_compare.html item=thm %}
+  {% endfor %}
+</div>
+
 ## Explore By Section
 
 <div class="section-grid">
