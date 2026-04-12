@@ -1,10 +1,27 @@
 # Guide: From IsWeaklyRegular to IsCohenMacaulayRing for the bipartite quotient
 
+## Status note
+
+This packet is now mostly consumed.
+
+The diagonal regularity, free-variable NZD steps, full weakly regular sequence,
+and local CM theorem at the augmentation ideal are all proved.
+
+The remaining HH-side global CM step is currently tracked in:
+
+- [CM_LOCALIZES.md](CM_LOCALIZES.md)
+
+That guide records the current recommended route.  If a smaller honest global
+CM argument is found, prefer updating the active packet rather than returning to
+this one.
+
 ## Current state
 
 Proved (0 sorries):
 - `bipartiteEdgeMonomialIdeal_isWeaklyRegular`: diagonal forms are a weakly
   regular sequence of length `n - 1` on `S ⧸ bipartiteEdgeMonomialIdeal G`
+- `bipartiteEdgeMonomialIdeal_isWeaklyRegular_full`: full weakly regular
+  sequence of length `n + 1`
 - `bipartiteEdgeMonomialIdeal_equidimensional`: all minimal primes give the
   same quotient Krull dimension
 - `ringKrullDim_bipartiteEdgeMonomialIdeal`: **`dim(S ⧸ I) = n + 1`** (DONE)
@@ -13,6 +30,7 @@ Proved (0 sorries):
 - `bipartiteEdgeMonomialIdeal_ne_top`: the ideal is proper (DONE)
 - `minimalVertexCover_ncard_val`: every minimal vertex cover has `n - 1`
   elements (DONE)
+- `isCohenMacaulayLocalRing_at_augIdeal`: local CM at the augmentation ideal
 
 ## The dimension mismatch
 
@@ -38,27 +56,17 @@ Proved as `ringKrullDim_bipartiteEdgeMonomialIdeal` in `BEI/Equidim.lean`.
 Uses `ringKrullDim_quotient_radical_equidim` together with the radical,
 equidimensional, and minimal-vertex-cover cardinality infrastructure.
 
-### Blocker 2: Extend the regular sequence by free variables
+### ~~Blocker 2: Extend the regular sequence by free variables~~ DONE
 
-The variables `x_{n-1}` and `y_{n-1}` are non-zero-divisors on `S ⧸ (I + diag)`
-because they don't appear in any generator. The extended sequence
-`[x₀+y₀, ..., x_{n-2}+y_{n-2}, x_{n-1}, y_{n-1}]` has length `n + 1 = dim`.
+Proved as:
+- `X_inl_last_isSMulRegular_mod_diagonalSum`: `x_{n-1}` is NZD on
+  `S ⧸ (I ⊔ diag_{n-1})`
+- `X_inr_last_isSMulRegular_mod_diagonalSum_sup`: `y_{n-1}` is NZD on
+  `S ⧸ (I ⊔ diag_{n-1} ⊔ ⟨x_{n-1}⟩)`
 
-Proving the NZD property requires showing that a polynomial ring variable is
-a NZD on a quotient by an ideal that doesn't involve that variable.
-
-**Recommended approach**: The existing `diagSubstHom` transfer technique can
-be reused. After applying `diagSubstHom (n-1)`, the image `I.map φ` is a
-monomial ideal whose generators don't involve `inl ⟨n-1, _⟩` or `inr ⟨n-1, _⟩`.
-Use `isSMulRegular_of_radical_step` (as in `isSMulRegular_map_diagSubstHom`)
-with:
-1. **Prime avoidance**: Show no minimal prime of `I.map φ` contains `X(inl ⟨n-1, _⟩)`.
-   Argument: if a minimal prime `span(X '' s)` contained the variable, removing
-   it from `s` would still cover all generators (since they don't use that
-   variable), contradicting minimality.
-2. **Nilradical NZD step**: For `c ∈ √(I.map φ)` with `X_v * c ∈ I.map φ`,
-   show `c ∈ I.map φ` using the monomial structure and the fact that generators
-   don't involve `v`.
+Both use the `diagSubstHom` transfer + monomial divisibility argument
+(simpler than the `x_i + y_i` case because a single variable has 0 exponent
+in all generators, avoiding the radical/nilradical step entirely).
 
 ### Blocker 3: Convert the extended sequence into a CM theorem
 
@@ -85,10 +93,20 @@ step. So this is really two sub-blockers:
 
 1. ~~**Blocker 1**~~: DONE.
 
-2. **Blocker 2**: Prove NZD for free variables via the `diagSubstHom` transfer.
+2. ~~**Blocker 2**~~: DONE.
 
-3. **Blocker 3**: First the irrelevant-max localization step, then the
-   graded local-to-global CM step.
+3. ~~**Blocker 2.5**~~: DONE.
+   Proved as `bipartiteEdgeMonomialIdeal_isWeaklyRegular_full`:
+   full weakly regular sequence of length `n + 1 = dim` on `S ⧸ I`.
+
+4. **Blocker 3** (partially done):
+   - ~~Local CM at irrelevant max~~: DONE.
+     Proved as `isCohenMacaulayLocalRing_at_augIdeal`: `IsCohenMacaulayLocalRing`
+     at the augmentation ideal (kernel of `constantCoeff`) via regular-sequence
+     localization + dimension sandwich argument.
+   - Global CM step: STILL OPEN.
+     The current recommended packet is `CM_LOCALIZES.md`, which treats
+     localization of CM local rings as the next theorem to isolate or prove.
 
 
 ## Alternative route: Work in the smaller ring

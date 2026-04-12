@@ -41,10 +41,13 @@
 ### Priority 1: Real Cohen-Macaulay track
 
 Active follow-up work now lives in:
-- `guides/work_packages/PROP_1_6_CM_TRANSFER.md`
-- `guides/work_packages/HH_CM_TO_GLOBAL.md`
-- `guides/work_packages/GROEBNER_CM_TRANSFER.md`
-- `guides/work_packages/cm_pr_26218/`
+- `guides/work_packages/CM_LOCALIZES.md` — current recommended packet for the
+  remaining HH-side global CM step; presently framed as proving "CM localizes"
+  (localization of a CM local ring at a prime is CM)
+- `guides/work_packages/GROEBNER_CM_TRANSFER.md` — the Gröbner deformation transfer
+- `guides/work_packages/PROP_1_6_CM_TRANSFER.md` — overall CM transfer strategy
+- `guides/work_packages/HH_CM_TO_GLOBAL.md` — HH-side route (now mostly consumed)
+- `guides/work_packages/cm_pr_26218/` — supporting CM backport
 
 Supporting files on this branch:
 - `BEI/PrimeDecompositionDimension.lean`
@@ -84,12 +87,24 @@ The quotient dimension formula is now proved:
 - Uses `ringKrullDim_quotient_radical_equidim` (radical + equidim → dim = common value)
 - Supporting lemmas: `bipartiteEdgeMonomialIdeal_ne_top`, `minimalVertexCover_ncard_val`
 
-The next step toward a genuine `IsCohenMacaulayRing` conclusion requires:
-1. proving `x_{n-1}` and `y_{n-1}` are NZDs on `S ⧸ (I + diag)` (free variable NZD)
-2. extending the weakly regular sequence from length `n-1` to `n+1 = dim`
-3. proving local CM at the irrelevant maximal ideal via
-   `isCohenMacaulayLocalRing_of_weaklyRegular_length_eq_dim`
-4. closing the graded local-to-global CM packaging step
+The free variable NZD steps are now proved:
+- `X_inl_last_isSMulRegular_mod_diagonalSum`: `x_{n-1}` is NZD on `S ⧸ (I ⊔ diag_{n-1})`
+- `X_inr_last_isSMulRegular_mod_diagonalSum_sup`: `y_{n-1}` is NZD on `S ⧸ (I ⊔ diag_{n-1} ⊔ ⟨x_{n-1}⟩)`
+
+The full regular sequence and local CM at the augmentation ideal are now proved:
+- `bipartiteEdgeMonomialIdeal_isWeaklyRegular_full`: full weakly regular sequence of
+  length `n + 1 = dim` on `S ⧸ I` (diagonal sums + two free variables)
+- `isCohenMacaulayLocalRing_at_augIdeal`: `IsCohenMacaulayLocalRing` at the
+  augmentation ideal (kernel of constant-coefficient map) under HH conditions
+
+The remaining HH-side step toward a genuine `IsCohenMacaulayRing` conclusion is
+currently packaged as:
+1. the "CM localizes" theorem: prove that localization of a CM local ring at
+   a prime is CM. This is the current best-identified route and requires either:
+   - the forward CM transfer (CM R + x regular → CM R/(x)), which needs the
+     hard depth inequality (depth(R) ≤ depth(R/(x)) + 1, i.e., Rees theorem); OR
+   - an alternative approach (direct monomial-ideal argument, field independence)
+   See `guides/work_packages/CM_LOCALIZES.md` for details.
 
 The Gröbner CM transfer theorem (Eisenbud 15.17) also remains unformalized, so the full
 paper Cohen–Macaulay statement is still open even after the HH-side CM theorem lands.

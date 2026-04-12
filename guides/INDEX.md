@@ -18,12 +18,17 @@
    usable real CM slice, and backport/import it cleanly.
 
 Current next concrete target:
+- [work_packages/CM_LOCALIZES.md](work_packages/CM_LOCALIZES.md)
+  Current recommended packet for the remaining HH-side global CM step:
+  isolate or prove a theorem strong enough to pass from the proved
+  `IsCohenMacaulayLocalRing` at the augmentation ideal to a global
+  `IsCohenMacaulayRing` theorem for the HH quotient.  Right now this is framed
+  as "CM localizes".
+
+Consumed packet:
 - [work_packages/HH_CM_TO_GLOBAL.md](work_packages/HH_CM_TO_GLOBAL.md)
-  Remaining HH-side route from the proved `IsWeaklyRegular` theorem to a genuine
-  Cohen–Macaulay theorem: (1) prove the two free-variable NZD steps, (2) extend
-  the regular sequence from length `n - 1` to length `n + 1 = dim`, (3) do the
-  local CM step at the irrelevant maximal ideal, and then (4) close the graded
-  local-to-global CM packaging.
+  The HH regular-sequence and local-CM work is done there; the remaining global
+  CM step is tracked separately in CM_LOCALIZES.md.
 
 Completed (bridge lemmas + IsWeaklyRegular now landed):
 - [work_packages/HH_CM_BRIDGE_LEMMAS.md](work_packages/HH_CM_BRIDGE_LEMMAS.md)

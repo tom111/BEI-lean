@@ -61,7 +61,7 @@ faithfully the current Lean statements match the paper.
 
 | Paper endpoint | Current state |
 |---|---|
-| Proposition 1.6 | direct equidimensional surrogate proved; HH weakly-regular and dimension infrastructure proved; full paper CM statement still open |
+| Proposition 1.6 | equidimensional surrogate proved; HH-side `IsCohenMacaulayLocalRing` at augmentation ideal proved; remaining global HH CM step currently tracked by `CM_LOCALIZES.md`, plus the Gröbner CM transfer |
 | Corollary 3.4 | only the equidimensional surrogate consequence is proved |
 | Corollary 3.7 | prime/unmixed branches are proved; the CM branch is only represented by the equidimensional surrogate |
 | Section 4 | complete: bridges, radicality, prime decomposition, and minimal-prime transfer all proved |
@@ -116,9 +116,12 @@ faithfully the current Lean statements match the paper.
 | `IsWeaklyRegular` packaging | `bipartiteEdgeMonomialIdeal_isWeaklyRegular` | `BEI/Equidim.lean` | proved | Diagonal forms are a weakly regular sequence of length `n-1` on the bipartite quotient |
 | Dimension formula (`dim = n+1`) | `ringKrullDim_bipartiteEdgeMonomialIdeal` | `BEI/Equidim.lean` | proved | `dim(S ⧸ I) = n + 1` under HH conditions; uses radical equidim machinery |
 | Radical equidim dim theorem | `ringKrullDim_quotient_radical_equidim` | `BEI/Equidim.lean` | proved | For radical equidimensional ideal: `dim(R/I) = d` when all minimal primes give dim `d` |
-| NZD for free variables | — | — | blocked | Variables `x_{n-1}, y_{n-1}` extend the regular sequence to length `n+1 = dim` |
-| HH-side local/graded CM packaging | — | `BEI/Equidim.lean` / `toMathlib/CohenMacaulay/*` | blocked | After free-variable NZD, still need local CM at the irrelevant maximal ideal and a graded local-to-global CM step |
-| HH-side CM theorem | — | `BEI/Equidim.lean` / `toMathlib/CohenMacaulay/*` | blocked | Depends on free-variable NZD plus the local/graded CM packaging |
+| NZD for `x_{n-1}` | `X_inl_last_isSMulRegular_mod_diagonalSum` | `BEI/Equidim.lean` | proved | `X(inl ⟨n-1⟩)` is NZD on `S ⧸ (I ⊔ diag_{n-1})`; uses monomial divisibility argument |
+| NZD for `y_{n-1}` | `X_inr_last_isSMulRegular_mod_diagonalSum_sup` | `BEI/Equidim.lean` | proved | `X(inr ⟨n-1⟩)` is NZD on `S ⧸ (I ⊔ diag_{n-1} ⊔ ⟨x_{n-1}⟩)`; extended ideal handling |
+| Extended `IsWeaklyRegular` (length `n+1`) | `bipartiteEdgeMonomialIdeal_isWeaklyRegular_full` | `BEI/Equidim.lean` | proved | Diagonal sums + two free variables; length = `n + 1 = dim` |
+| Local CM at augmentation ideal | `isCohenMacaulayLocalRing_at_augIdeal` | `BEI/Equidim.lean` | proved | `IsCohenMacaulayLocalRing` at `ker(constantCoeff)` via regular-sequence localization + dimension sandwich |
+| HH-side global CM step | — | — | blocked | Current recommended packet is `CM_LOCALIZES.md`; the exact smallest final theorem may still be refined |
+| HH-side global CM theorem | — | — | blocked | Depends on resolving the remaining global HH CM step |
 
 ### Variable ideal dimension (`toMathlib/HeightVariableIdeal.lean`)
 
