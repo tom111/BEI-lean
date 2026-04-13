@@ -1,0 +1,27 @@
+<article class="theorem-highlight">
+  <div class="theorem-highlight__header">
+    <div>
+      <span class="theorem-highlight__section">{{ include.item.section }}</span>
+      <strong class="theorem-highlight__label">{{ include.item.paper_label }}</strong>
+      <span class="theorem-highlight__title">{{ include.item.paper_title }}</span>
+    </div>
+    <div class="theorem-highlight__badges">
+      <span class="status-badge status-badge--{{ include.item.status | downcase }}">{{ include.item.status }}</span>
+      <span class="fidelity-badge">{{ include.item.fidelity }}</span>
+    </div>
+  </div>
+
+  <div class="theorem-highlight__body">
+    <div class="theorem-highlight__paper">
+      <div class="theorem-highlight__heading">Paper</div>
+      <div class="theorem-highlight__math">{{ include.item.paper_statement_tex }}</div>
+    </div>
+
+    <div class="theorem-highlight__lean">
+      <div class="theorem-highlight__heading">Lean</div>
+      <div class="theorem-highlight__name"><code>{{ include.item.lean_name | replace: "`", "" }}</code></div>
+      <pre class="theorem-highlight__code"><code class="language-lean">{{ include.item.lean_snippet | escape }}</code></pre>
+      <a class="theorem-pane__link" href="{{ include.item.lean_url }}">View proof in {{ include.item.lean_file_label }}</a>
+    </div>
+  </div>
+</article>

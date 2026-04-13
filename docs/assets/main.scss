@@ -261,6 +261,159 @@ p, li {
   transform: translate(-50%, -50%);
 }
 
+.featured-theorems {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1rem 0 2rem 0;
+}
+
+.theorem-highlight {
+  border: 1px solid #d7e3ef;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbfd 100%);
+  box-shadow: 0 12px 28px rgba(23, 50, 77, 0.06);
+  overflow: hidden;
+}
+
+.theorem-highlight__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+  padding: 1rem 1rem 0.9rem 1rem;
+  border-bottom: 1px solid #d7e3ef;
+  background: #f4f9fc;
+}
+
+.theorem-highlight__section,
+.theorem-highlight__label,
+.theorem-highlight__title {
+  display: block;
+}
+
+.theorem-highlight__section {
+  color: #1f5f8b;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-size: 0.73rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.theorem-highlight__label {
+  color: #17324d;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.theorem-highlight__title {
+  margin-top: 0.18rem;
+  color: #486176;
+  font-size: 0.95rem;
+}
+
+.theorem-highlight__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.theorem-highlight .fidelity-badge {
+  background: #e8f1f8;
+  color: #17324d;
+  border-color: #c9dbe8;
+}
+
+.theorem-highlight__body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.theorem-highlight__paper,
+.theorem-highlight__lean {
+  padding: 0.95rem 1rem 1rem 1rem;
+}
+
+.theorem-highlight__paper {
+  border-right: 1px solid #e3ecf3;
+}
+
+.theorem-highlight__heading {
+  color: #5b748c;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-bottom: 0.45rem;
+}
+
+.theorem-highlight__math {
+  color: #17324d;
+  line-height: 1.55;
+}
+
+.theorem-highlight__name {
+  margin-bottom: 0.55rem;
+}
+
+.theorem-highlight__code {
+  margin: 0 0 0.8rem 0;
+  padding: 0.85rem 0.95rem;
+  border-radius: 12px;
+  background: #0f2233;
+  color: #f4fbff;
+  overflow-x: auto;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.blocker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1rem 0 1.9rem 0;
+}
+
+.blocker-card {
+  border: 1px solid #d7e3ef;
+  border-radius: 16px;
+  padding: 1rem 1rem 0.95rem 1rem;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(23, 50, 77, 0.05);
+}
+
+.blocker-card__kicker {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: #8b5a1f;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.blocker-card strong {
+  display: block;
+  color: #17324d;
+  margin-bottom: 0.35rem;
+}
+
+.blocker-card p {
+  margin: 0 0 0.8rem 0;
+  color: #4d647a;
+}
+
+.blocker-card a {
+  color: #1f5f8b;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.blocker-card a:hover {
+  text-decoration: underline;
+}
+
 .theorem-compare {
   margin: 1.2rem 0 1.8rem 0;
   border: 1px solid #cbdbe8;
@@ -602,11 +755,22 @@ blockquote {
 @media (max-width: 820px) {
   .landing-hero,
   .result-board,
-  .section-grid {
+  .section-grid,
+  .featured-theorems,
+  .blocker-grid {
     grid-template-columns: 1fr;
   }
 
   .landing-hero {
     padding: 1rem;
+  }
+
+  .theorem-highlight__body {
+    grid-template-columns: 1fr;
+  }
+
+  .theorem-highlight__paper {
+    border-right: 0;
+    border-bottom: 1px solid #e3ecf3;
   }
 }

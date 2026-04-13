@@ -1,0 +1,67 @@
+theorem_1_1:
+  section: "Section 1"
+  paper_label: "Theorem 1.1"
+  paper_title: "Closed Graphs and Quadratic Gröbner Bases"
+  status: "proved"
+  fidelity: "Exact"
+  paper_statement_tex: >
+    The quadratic generators of $J_G$ form a Gröbner basis for the lexicographic
+    order $x_1 > \cdots > x_n > y_1 > \cdots > y_n$ if and only if $G$ is closed.
+  lean_name: "`theorem_1_1`"
+  lean_snippet: |
+    theorem theorem_1_1 (G : SimpleGraph V) :
+        binomialEdgeMonomialOrder.IsGroebnerBasis (generatorSet (K := K) G)
+          (binomialEdgeIdeal (K := K) G) ↔
+        IsClosedGraph G :=
+      ⟨groebner_implies_closed G, closed_implies_groebner G⟩
+  lean_file_label: "ClosedGraphs.lean"
+  lean_url: "https://github.com/tom111/BEI-lean/blob/master/BEI/ClosedGraphs.lean"
+
+corollary_2_2:
+  section: "Section 2"
+  paper_label: "Corollary 2.2"
+  paper_title: "Radicality of the Binomial Edge Ideal"
+  status: "proved"
+  fidelity: "Exact"
+  paper_statement_tex: >
+    The binomial edge ideal $J_G$ is radical.
+  lean_name: "`corollary_2_2`"
+  lean_snippet: |
+    theorem corollary_2_2 (G : SimpleGraph V) :
+        (binomialEdgeIdeal (K := K) G).IsRadical := by
+  lean_file_label: "Radical.lean"
+  lean_url: "https://github.com/tom111/BEI-lean/blob/master/BEI/Radical.lean"
+
+theorem_3_2:
+  section: "Section 3"
+  paper_label: "Theorem 3.2"
+  paper_title: "Prime Decomposition"
+  status: "proved"
+  fidelity: "Exact"
+  paper_statement_tex: >
+    The binomial edge ideal decomposes as
+    $J_G = \bigcap_{S \subseteq V(G)} P_S(G)$.
+  lean_name: "`theorem_3_2`"
+  lean_snippet: |
+    theorem theorem_3_2 (G : SimpleGraph V) :
+        binomialEdgeIdeal (K := K) G =
+          ⨅ S : Finset V, primeComponent (K := K) G S := by
+  lean_file_label: "PrimeDecomposition.lean"
+  lean_url: "https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecomposition.lean"
+
+ci_bridge:
+  section: "Section 4"
+  paper_label: "Section 4 Bridge"
+  paper_title: "Conditional Independence Ideals as Binomial Edge Ideals"
+  status: "proved"
+  fidelity: "Exact"
+  paper_statement_tex: >
+    For a binary-output robustness specification, the conditional independence
+    ideal equals the binomial edge ideal of the associated union graph.
+  lean_name: "`ciIdealSpec_eq_binomialEdgeIdeal`"
+  lean_snippet: |
+    theorem ciIdealSpec_eq_binomialEdgeIdeal (stmt : ι → CIStatement Ω) :
+        (ciIdealSpec stmt : Ideal (MvPolynomial (BinomialEdgeVars Ω) K)) =
+        binomialEdgeIdeal (ciGraphSpec stmt) := by
+  lean_file_label: "CIIdeals.lean"
+  lean_url: "https://github.com/tom111/BEI-lean/blob/master/BEI/CIIdeals.lean"

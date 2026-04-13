@@ -112,3 +112,45 @@ title: Binomial Edge Ideals
     <span class="section-card__meta">bridge theorems and the main binary-output results are complete</span>
   </a>
 </div>
+
+## Featured Theorems
+
+<div class="featured-theorems">
+  {% assign featured_keys = "theorem_1_1,corollary_2_2,theorem_3_2,ci_bridge" | split: "," %}
+  {% for key in featured_keys %}
+    {% assign item = site.data.homepage_featured[key] %}
+    {% include theorem_highlight.html item=item %}
+  {% endfor %}
+</div>
+
+## Current Paper-Level Gaps
+
+<div class="blocker-grid">
+  <article class="blocker-card blocker-card--open">
+    <span class="blocker-card__kicker">Proposition 1.6</span>
+    <strong>Final Cohen–Macaulay step</strong>
+    <p>The direct equidimensional substitute is proved. The paper-faithful Cohen–Macaulay route still needs the last HH globalization step and the Gröbner transfer back to the original ideal.</p>
+    <a href="{{ '/section-1.html' | relative_url }}">See Section 1</a>
+  </article>
+  <article class="blocker-card blocker-card--open">
+    <span class="blocker-card__kicker">Corollary 3.4</span>
+    <strong>Dimension from Cohen–Macaulayness</strong>
+    <p>The project proves the equidimensional consequence. The paper's Cohen–Macaulay implication is still waiting on Proposition 1.6.</p>
+    <a href="{{ '/section-3.html' | relative_url }}">See Section 3</a>
+  </article>
+  <article class="blocker-card blocker-card--open">
+    <span class="blocker-card__kicker">Corollary 3.7</span>
+    <strong>Cycle-graph CM branch</strong>
+    <p>The prime and unmixed branches are formalized. The Cohen–Macaulay branch remains open for the same reason as Proposition 1.6.</p>
+    <a href="{{ '/section-3.html' | relative_url }}">See Section 3</a>
+  </article>
+</div>
+
+## Code And Status
+
+<div class="quick-links">
+  <a href="https://github.com/tom111/BEI-lean/tree/master/BEI">Lean files</a>
+  <a href="https://github.com/tom111/BEI-lean/tree/master/toMathlib">Supporting library</a>
+  <a href="https://github.com/tom111/BEI-lean/blob/master/FORMALIZATION_MAP.md">Formalization map</a>
+  <a href="https://github.com/tom111/BEI-lean/blob/master/TODO.md">Current task list</a>
+</div>
