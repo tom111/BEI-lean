@@ -17,7 +17,11 @@
    Smallest active HH-side packet: turn augmentation-ideal CM into a genuine
    global `IsCohenMacaulayRing` theorem for the HH quotient.
 
-3. [work_packages/GROEBNER_CM_TRANSFER.md](work_packages/GROEBNER_CM_TRANSFER.md)
+3. [work_packages/DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md](work_packages/DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md)
+   Supporting theorem packet for the last HH-side branch: dehomogenization /
+   Laurent-extension infrastructure for the `p ⊄ augIdeal` case.
+
+4. [work_packages/GROEBNER_CM_TRANSFER.md](work_packages/GROEBNER_CM_TRANSFER.md)
    Dormant paper-critical packet: after the HH-side global CM theorem lands,
    transfer Cohen–Macaulayness from the initial ideal quotient back to the
    original quotient.

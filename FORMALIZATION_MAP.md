@@ -61,7 +61,7 @@ faithfully the current Lean statements match the paper.
 
 | Paper endpoint | Current state |
 |---|---|
-| Proposition 1.6 | equidimensional surrogate proved; HH-side `IsCohenMacaulayLocalRing` at augmentation ideal proved; the CM-localization backport is now complete; remaining HH gap is the graded local-to-global CM step, plus the Gröbner CM transfer |
+| Proposition 1.6 | equidimensional surrogate proved; HH-side `IsCohenMacaulayLocalRing` at augmentation ideal proved; the CM-localization backport is complete; one active `sorry` remains in the HH global-CM theorem, currently isolated to the `p ⊄ augIdeal` dehomogenization / Laurent-extension branch; Gröbner CM transfer also remains |
 | Corollary 3.4 | only the equidimensional surrogate consequence is proved |
 | Corollary 3.7 | prime/unmixed branches are proved; the CM branch is only represented by the equidimensional surrogate |
 | Section 4 | complete: bridges, radicality, prime decomposition, and minimal-prime transfer all proved |
@@ -123,8 +123,8 @@ faithfully the current Lean statements match the paper.
 | NZD for `y_{n-1}` | `X_inr_last_isSMulRegular_mod_diagonalSum_sup` | `BEI/Equidim.lean` | proved | `X(inr ⟨n-1⟩)` is NZD on `S ⧸ (I ⊔ diag_{n-1} ⊔ ⟨x_{n-1}⟩)`; extended ideal handling |
 | Extended `IsWeaklyRegular` (length `n+1`) | `bipartiteEdgeMonomialIdeal_isWeaklyRegular_full` | `BEI/Equidim.lean` | proved | Diagonal sums + two free variables; length = `n + 1 = dim` |
 | Local CM at augmentation ideal | `isCohenMacaulayLocalRing_at_augIdeal` | `BEI/Equidim.lean` | proved | `IsCohenMacaulayLocalRing` at `ker(constantCoeff)` via regular-sequence localization + dimension sandwich |
-| HH-side global CM step | — | — | blocked | `CM_LOCALIZES.md` is now complete; the remaining HH blocker is the graded local-to-global packet in `GRADED_CM_LOCAL_TO_GLOBAL.md` |
-| HH-side global CM theorem | — | — | blocked | Depends on resolving the remaining global HH CM step |
+| HH-side global CM step | `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal` | `BEI/Equidim.lean` | Sorry | Two-case split implemented; the `p ≤ augIdeal` branch is proved and the `p ⊄ augIdeal` branch is the only remaining sorry |
+| Dehomogenization support packet | — | — | blocked | Remaining support theorem family: dehomogenization / Laurent-extension infrastructure for the `p ⊄ augIdeal` branch |
 
 ### Variable ideal dimension (`toMathlib/HeightVariableIdeal.lean`)
 

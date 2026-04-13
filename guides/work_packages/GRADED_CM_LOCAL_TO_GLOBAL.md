@@ -42,8 +42,13 @@ The new theorem `CM localizes` does **not** by itself bridge that gap, because:
 
 So the remaining HH-side blocker is now:
 
-**a graded / standard-graded local-to-global CM theorem, or another honest theorem
-specialized to this quotient that serves the same role.**
+**the case of primes not contained in the irrelevant / augmentation ideal.**
+
+More precisely:
+
+- primes `p ⊆ m⁺` are already handled in `BEI/Equidim.lean` by localization
+  transitivity plus `isCohenMacaulayLocalRing_localization_atPrime`;
+- primes `p ⊄ m⁺` are still open.
 
 
 ## Current verified state
@@ -82,7 +87,7 @@ This packet is done. The remaining HH problem is no longer “prove CM localizes
 
 ## Recommended next theorem
 
-The most honest next target is a theorem of the form:
+The broad mathematical target is still a theorem of the form:
 
 ```text
 If R is a standard graded finitely generated K-algebra and
@@ -90,8 +95,14 @@ R localized at the irrelevant maximal ideal is Cohen–Macaulay,
 then R is Cohen–Macaulay.
 ```
 
-For the current repo, an even narrower theorem is acceptable if it is sufficient
-for the HH quotient and stays mathematically truthful.
+For the current repo, the preferred target is now narrower:
+
+```text
+For the HH quotient, if p is a prime with p ⊄ m⁺,
+then the localization at p is Cohen–Macaulay.
+```
+
+Any theorem proving that fact honestly is acceptable.
 
 Examples of acceptable target shapes:
 
@@ -108,8 +119,14 @@ The current smaller active work packet is now:
 
 - [HH_GLOBAL_CM_FROM_AUGIDEAL.md](HH_GLOBAL_CM_FROM_AUGIDEAL.md)
 
-That guide should be preferred for the next implementation round. This file is
-kept as the broader mathematical context memo.
+The current supporting theorem packet for the still-open branch is now:
+
+- [DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md](DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md)
+
+That guide now documents six fully proved structural lemmas (variable existence,
+unit in localization, neighbor killing, HH diagonal elimination) and two
+targeted sorry branches, of which the `p ≤ augIdeal` branch is already closed.
+This file is kept as the broader mathematical context memo.
 
 
 ## What to avoid
@@ -134,5 +151,6 @@ Best outcome:
 
 Minimum acceptable outcome:
 
-- the exact smallest graded local-to-global theorem needed is isolated cleanly,
-  with a new support packet if necessary.
+- the exact smallest dehomogenization / Laurent-extension theorem needed is
+  isolated cleanly, with a support packet that is genuinely narrower than a
+  full graded-CM theory.

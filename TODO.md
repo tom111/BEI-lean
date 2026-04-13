@@ -41,8 +41,12 @@
 ### Priority 1: Real Cohen-Macaulay track
 
 Active follow-up work now lives in:
-- `guides/work_packages/GRADED_CM_LOCAL_TO_GLOBAL.md` — current recommended
+- `guides/work_packages/HH_GLOBAL_CM_FROM_AUGIDEAL.md` — current consumer
   packet for the remaining HH-side global CM step
+- `guides/work_packages/DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md` — new
+  support packet for the last `p ⊄ augIdeal` branch
+- `guides/work_packages/GRADED_CM_LOCAL_TO_GLOBAL.md` — broader theorem-context
+  memo for the remaining HH-side global CM step
 - `guides/work_packages/CM_LOCALIZES.md` — completed theorem packet: the
   local CM localization/globalization slice is now landed
 - `guides/work_packages/GROEBNER_CM_TRANSFER.md` — the Gröbner deformation transfer
@@ -113,12 +117,20 @@ because `isCohenMacaulayLocalRing_at_augIdeal` only proves CM at the
 augmentation ideal, not at every prime.
 
 The remaining HH-side step toward a genuine `IsCohenMacaulayRing` conclusion is
-now the graded local-to-global step:
-1. a truthful theorem turning augmentation-ideal / irrelevant-maximal CM into a
-   global CM statement for the standard graded HH quotient;
-2. or another equally honest specialization sufficient for the HH quotient.
+now down to one active `sorry` in `BEI/Equidim.lean`.
 
-See `guides/work_packages/GRADED_CM_LOCAL_TO_GLOBAL.md`.
+Its current shape is:
+1. the branch `p ≤ augIdeal`: closed;
+2. the branch `p ⊄ augIdeal`: still open.
+
+The currently best-identified route for that last branch is the
+dehomogenization / Laurent-extension packet:
+
+- `guides/work_packages/DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md`
+
+with broader context in:
+
+- `guides/work_packages/GRADED_CM_LOCAL_TO_GLOBAL.md`
 
 The Gröbner CM transfer theorem (Eisenbud 15.17) also remains unformalized, so the full
 paper Cohen–Macaulay statement is still open even after the HH-side CM theorem lands.
@@ -184,13 +196,13 @@ Some of these splits still need cleanup, but these are the current live location
 
 | File | Sorries | Notes |
 |---|---:|---|
-| `BEI/Equidim.lean` | 0 | paper-faithful CM-transfer route kept as future infrastructure |
+| `BEI/Equidim.lean` | 1 | paper-faithful CM-transfer route active again; one remaining HH global-CM sorry |
 | `BEI/PrimeDecompositionDimension.lean` | 0 | direct equidimensional Prop. 1.6 route complete |
 | `BEI/PrimeDecomposition.lean` | 0 | |
 | `toMathlib/CohenMacaulay/Localization.lean` | 0 | completed CM-localization backport |
 | `toMathlib/HeightAdditivity.lean` | 2 | dormant infrastructure |
 | `Supplement/RauhApproach.lean` | 2 | archived, not on main path |
-| **Active total** | **0** | excluding dormant `HeightAdditivity` and archived `RauhApproach` |
+| **Active total** | **1** | excluding dormant `HeightAdditivity` and archived `RauhApproach` |
 
 ---
 

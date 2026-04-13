@@ -123,14 +123,27 @@ Most of the old internal HH blockers are now closed:
 3. local CM at the irrelevant / augmentation ideal: DONE;
 4. CM-localization backport: DONE.
 
-The remaining HH-side internal blocker is now:
+The remaining HH-side internal blocker is now a single sorry branch:
 
-5. a graded local-to-global CM step turning augmentation-ideal CM into a
-   genuine global `IsCohenMacaulayRing` theorem for the HH quotient.
+5a. ~~`p ⊆ m⁺`~~: **CLOSED** — CM transfer through localization-localization
+    `AlgEquiv` using `isCohenMacaulayLocalRing_of_ringEquiv`.
+5b. `p ⊄ m⁺`: CM of the localized HH quotient after inverting a variable
+    and killing neighbors. The current best-identified route is now the
+    dehomogenization / Laurent-extension packet.
 
-The smallest active implementation packet for that step is now:
+New infrastructure proved in the `CMTransfer` section of `BEI/Equidim.lean`:
+- `isWeaklyRegular_map_ringEquiv`: weak regularity transfers through `RingEquiv`
+- `isCohenMacaulayLocalRing_of_ringEquiv`: CM transfers through `RingEquiv`
+
+Six structural lemmas for the `p ⊄ m⁺` case are fully proved.
+
+The smallest active implementation packet is:
 
 - [HH_GLOBAL_CM_FROM_AUGIDEAL.md](HH_GLOBAL_CM_FROM_AUGIDEAL.md)
+
+The current supporting theorem packet for the last HH-side branch is:
+
+- [DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md](DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md)
 
 The Gröbner-transfer gap should be treated as its own theorem packet:
 
