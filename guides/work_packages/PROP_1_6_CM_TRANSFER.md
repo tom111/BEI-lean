@@ -128,8 +128,8 @@ The remaining HH-side internal blocker is now a single sorry branch:
 5a. ~~`p ⊆ m⁺`~~: **CLOSED** — CM transfer through localization-localization
     `AlgEquiv` using `isCohenMacaulayLocalRing_of_ringEquiv`.
 5b. `p ⊄ m⁺`: CM of the localized HH quotient after inverting a variable
-    and killing neighbors. The current best-identified route is now the
-    dehomogenization / Laurent-extension packet.
+    and killing neighbors. The current best-identified route is now graded CM
+    induction via a homogeneous regular-element lemma.
 
 New infrastructure proved in the `CMTransfer` section of `BEI/Equidim.lean`:
 - `isWeaklyRegular_map_ringEquiv`: weak regularity transfers through `RingEquiv`
@@ -142,6 +142,11 @@ The smallest active implementation packet is:
 - [HH_GLOBAL_CM_FROM_AUGIDEAL.md](HH_GLOBAL_CM_FROM_AUGIDEAL.md)
 
 The current supporting theorem packet for the last HH-side branch is:
+
+- [GRADED_CM_INDUCTION.md](GRADED_CM_INDUCTION.md)
+
+The dehomogenization packet is now superseded and kept only as a record of a
+route that was investigated but is no longer the active plan:
 
 - [DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md](DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md)
 

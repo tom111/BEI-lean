@@ -17,9 +17,9 @@
    Smallest active HH-side packet: turn augmentation-ideal CM into a genuine
    global `IsCohenMacaulayRing` theorem for the HH quotient.
 
-3. [work_packages/DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md](work_packages/DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md)
-   Supporting theorem packet for the last HH-side branch: dehomogenization /
-   Laurent-extension infrastructure for the `p ⊄ augIdeal` case.
+3. [work_packages/GRADED_CM_INDUCTION.md](work_packages/GRADED_CM_INDUCTION.md)
+   **Active route decision**: graded CM induction for the `p ⊄ augIdeal` case.
+   This is the current implementation packet for the last HH-side branch.
 
 4. [work_packages/GROEBNER_CM_TRANSFER.md](work_packages/GROEBNER_CM_TRANSFER.md)
    Dormant paper-critical packet: after the HH-side global CM theorem lands,
@@ -30,6 +30,10 @@
 
 - [work_packages/GRADED_CM_LOCAL_TO_GLOBAL.md](work_packages/GRADED_CM_LOCAL_TO_GLOBAL.md)
   Broader theorem-context memo for the remaining HH-side global CM step.
+
+- [work_packages/DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md](work_packages/DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md)
+  Superseded route memo; kept only as a record of the dehomogenization branch
+  that was investigated and then rejected as the active path.
 
 - [work_packages/CM_LOCALIZES.md](work_packages/CM_LOCALIZES.md)
   Completed theorem-context memo for the now-landed CM-localization packet.

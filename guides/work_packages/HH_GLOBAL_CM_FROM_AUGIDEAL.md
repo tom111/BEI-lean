@@ -54,8 +54,7 @@ Fully proved via:
 
 ### Blocker B: `p ⊄ augIdeal` — CM of the localized HH quotient
 
-**Mathematical gap: now isolated as a dehomogenization / Laurent-extension
-packet.**
+**Mathematical gap: now isolated as a graded-induction packet.**
 
 **Important negative result**: The approach via minimal primes below `p` does
 NOT work. If `q ⊆ p` with `q` a minimal prime, then `q ⊆ augIdeal` (minimal
@@ -65,33 +64,27 @@ primes of a monomial ideal are variable-generated, hence below augIdeal), and
 derive `R_p` CM from `R_q` CM by the "CM localizes" theorem. The correct
 direction for localization transitivity is `p ⊆ q`, not `q ⊆ p`.
 
-**The correct standard argument** (Bruns–Herzog 2.1.3, Goto–Watanabe):
+**Current active route**:
 
-For a standard graded K-algebra `R = K ⊕ R₁ ⊕ R₂ ⊕ ...` with `R₀ = K`:
-1. Since `p ⊄ augIdeal = R₊`, some degree-1 element `r ∈ R₊ \ p` is a unit
-   in `R_p`.
-2. **Dehomogenize**: `R[r⁻¹] ≅ R[r⁻¹]₀[r, r⁻¹]` (Laurent polynomial over
-   the degree-0 part). The degree-0 ring `R[r⁻¹]₀` is a polynomial ring
-   quotient.
-3. `R_{augIdeal} ≅ (R[r⁻¹]₀)_{m₀}` for the augmentation ideal `m₀` of the
-   degree-0 part. Since `R_{augIdeal}` is CM by hypothesis, so is
-   `(R[r⁻¹]₀)_{m₀}`.
-4. For the prime `p₀` of `R[r⁻¹]₀` corresponding to `p`, we have `p₀ ⊆ m₀`.
-   By `p ≤ augIdeal` case of `R[r⁻¹]₀`, `(R[r⁻¹]₀)_{p₀}` is CM.
-5. `R_p ≅ (R[r⁻¹]₀)_{p₀}[r, r⁻¹]`. The Laurent extension preserves CM.
+Use graded induction on `dim(R_{augIdeal})`, with the already-proved forward
+and converse CM transfer theorems.
 
-**What's needed to formalize this**:
-- Graded ring structure for `MvPolynomial` quotients
-- Dehomogenization isomorphism `R[r⁻¹] ≅ R[r⁻¹]₀[r, r⁻¹]`
-- CM preservation under Laurent polynomial extension
-- The identification `R_{augIdeal} ≅ (R[r⁻¹]₀)_{m₀}`
+For the remaining hard case `p ⊄ augIdeal` with positive height:
 
-This is general commutative-algebra infrastructure, not specific to the HH case.
-The variable-inversion structural lemmas (exists_var_not_mem, isUnit_algebraMap_mkI_X,
-algebraMap_mkI_X_eq_zero_of_edge) capture the first step but the full
-dehomogenization isomorphism is not yet formalized in this repo.
+1. find a homogeneous non-zero-divisor `r ∈ p`;
+2. use forward CM transfer to show `(R/(r))_{augIdeal/(r)}` is CM;
+3. apply the induction hypothesis to `R/(r)`;
+4. localize at `p/(r)` and use converse CM transfer to recover CM of `R_p`.
+
+The only genuinely new theorem family now identified is:
+
+- a graded prime-avoidance / homogeneous regular-element lemma for the HH quotient.
 
 The active supporting packet for this branch is now:
+
+- [GRADED_CM_INDUCTION.md](GRADED_CM_INDUCTION.md)
+
+The earlier dehomogenization route is kept only as a superseded reference:
 
 - [DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md](DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md)
 
@@ -103,3 +96,5 @@ The active supporting packet for this branch is now:
 - Do not switch to the Gröbner CM transfer yet (that is a separate downstream gap).
 - Do not reopen the already-closed `p ≤ augIdeal` branch.
 - Do not restart the failed minimal-prime route.
+- Do not restart the superseded dehomogenization route unless the graded
+  induction packet fails sharply.

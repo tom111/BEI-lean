@@ -115,17 +115,18 @@ Examples of acceptable target shapes:
 
 ## Active execution packet
 
-The current smaller active work packet is now:
+The current consumer packet is now:
 
 - [HH_GLOBAL_CM_FROM_AUGIDEAL.md](HH_GLOBAL_CM_FROM_AUGIDEAL.md)
 
 The current supporting theorem packet for the still-open branch is now:
 
+- [GRADED_CM_INDUCTION.md](GRADED_CM_INDUCTION.md)
+
+The earlier dehomogenization packet is now only a superseded route memo:
+
 - [DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md](DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md)
 
-That guide now documents six fully proved structural lemmas (variable existence,
-unit in localization, neighbor killing, HH diagonal elimination) and two
-targeted sorry branches, of which the `p ≤ augIdeal` branch is already closed.
 This file is kept as the broader mathematical context memo.
 
 
@@ -151,6 +152,5 @@ Best outcome:
 
 Minimum acceptable outcome:
 
-- the exact smallest dehomogenization / Laurent-extension theorem needed is
-  isolated cleanly, with a support packet that is genuinely narrower than a
-  full graded-CM theory.
+- the exact smallest theorem needed for the `p ⊄ m⁺` case is isolated cleanly,
+  with a support packet that stays narrower than a full graded-CM library.

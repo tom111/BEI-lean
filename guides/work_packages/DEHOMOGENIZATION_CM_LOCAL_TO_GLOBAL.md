@@ -1,5 +1,15 @@
 # Guide: Dehomogenization Packet for HH Global CM
 
+## Status: superseded route memo
+
+This guide is no longer the active packet for the last HH-side blocker.
+
+It is kept only as a record of the dehomogenization / Laurent-extension route
+that was investigated and then set aside in favor of the graded-induction
+route in:
+
+- [GRADED_CM_INDUCTION.md](GRADED_CM_INDUCTION.md)
+
 ## Task
 
 This is the new supporting packet for the last HH-side blocker in
