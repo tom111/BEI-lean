@@ -2,7 +2,8 @@
 
 ## Task
 
-Finish the remaining HH-side global Cohen–Macaulay step for Proposition 1.6.
+This file is now mainly the theorem-context memo for the remaining HH-side
+global Cohen–Macaulay step.
 
 The new CM backport packet in
 [toMathlib/CohenMacaulay/Localization.lean](/home/tom/BEI-lean/toMathlib/CohenMacaulay/Localization.lean)
@@ -99,6 +100,16 @@ Examples of acceptable target shapes:
 2. a theorem directly for homogeneous ideals in a polynomial ring;
 3. a theorem specialized even further to the HH quotient, if the specialization
    is mathematically clean and clearly documented.
+
+
+## Active execution packet
+
+The current smaller active work packet is now:
+
+- [HH_GLOBAL_CM_FROM_AUGIDEAL.md](HH_GLOBAL_CM_FROM_AUGIDEAL.md)
+
+That guide should be preferred for the next implementation round. This file is
+kept as the broader mathematical context memo.
 
 
 ## What to avoid

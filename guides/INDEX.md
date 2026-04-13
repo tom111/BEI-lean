@@ -13,28 +13,27 @@
    Bring real Cohen–Macaulay theory into the repo far enough to finish the
    paper-faithful Proposition 1.6 track.
 
-2. [work_packages/cm_pr_26218/MINIMAL_IMPORT_AND_BACKPORT.md](work_packages/cm_pr_26218/MINIMAL_IMPORT_AND_BACKPORT.md)
-   Supporting general-CM subtrack: inspect PR `#26218`, identify the smallest
-   usable real CM slice, and backport/import it cleanly.
+2. [work_packages/HH_GLOBAL_CM_FROM_AUGIDEAL.md](work_packages/HH_GLOBAL_CM_FROM_AUGIDEAL.md)
+   Smallest active HH-side packet: turn augmentation-ideal CM into a genuine
+   global `IsCohenMacaulayRing` theorem for the HH quotient.
 
-Current next concrete target:
-- [work_packages/cm_pr_28599/BACKPORT_CM_LOCALIZES.md](work_packages/cm_pr_28599/BACKPORT_CM_LOCALIZES.md)
-  COMPLETE: the CM-localization backport packet is now landed in
-  `toMathlib/CohenMacaulay/Localization.lean`.
+3. [work_packages/GROEBNER_CM_TRANSFER.md](work_packages/GROEBNER_CM_TRANSFER.md)
+   Dormant paper-critical packet: after the HH-side global CM theorem lands,
+   transfer Cohen–Macaulayness from the initial ideal quotient back to the
+   original quotient.
 
-Theorem-context memo:
-- [work_packages/CM_LOCALIZES.md](work_packages/CM_LOCALIZES.md)
-  Records the now-completed CM-localization theorem packet.
+## Proposition 1.6 Context
 
-Current next concrete target:
 - [work_packages/GRADED_CM_LOCAL_TO_GLOBAL.md](work_packages/GRADED_CM_LOCAL_TO_GLOBAL.md)
-  Remaining HH-side blocker: turn augmentation-ideal CM into a genuine global
-  `IsCohenMacaulayRing` theorem for the HH quotient.
+  Broader theorem-context memo for the remaining HH-side global CM step.
+
+- [work_packages/CM_LOCALIZES.md](work_packages/CM_LOCALIZES.md)
+  Completed theorem-context memo for the now-landed CM-localization packet.
 
 Consumed packet:
 - [work_packages/HH_CM_TO_GLOBAL.md](work_packages/HH_CM_TO_GLOBAL.md)
   The HH regular-sequence and local-CM work is done there; the remaining global
-  CM step is tracked separately in CM_LOCALIZES.md.
+  CM step is tracked separately in `HH_GLOBAL_CM_FROM_AUGIDEAL.md`.
 
 Completed (bridge lemmas + IsWeaklyRegular now landed):
 - [work_packages/HH_CM_BRIDGE_LEMMAS.md](work_packages/HH_CM_BRIDGE_LEMMAS.md)
@@ -45,14 +44,17 @@ Superseded:
   Resolved by the bridge lemmas and IsWeaklyRegular theorem.
 
 Supporting CM backport packet:
+- [work_packages/cm_pr_26218/MINIMAL_IMPORT_AND_BACKPORT.md](work_packages/cm_pr_26218/MINIMAL_IMPORT_AND_BACKPORT.md)
+  Historical/supporting backport-planning packet; no longer the immediate
+  Proposition 1.6 coding target.
+
 - [work_packages/cm_pr_26218/BASIC_FORWARD_DEPTH.md](work_packages/cm_pr_26218/BASIC_FORWARD_DEPTH.md)
   Useful general CM infrastructure, but not the immediate paper-critical task.
 
-Dormant paper-critical packet:
-- [work_packages/GROEBNER_CM_TRANSFER.md](work_packages/GROEBNER_CM_TRANSFER.md)
-  The second remaining Proposition 1.6 gap after the HH-side CM theorem:
-  transfer Cohen–Macaulayness from the initial ideal quotient back to the
-  original quotient.
+Completed backport packet:
+- [work_packages/cm_pr_28599/BACKPORT_CM_LOCALIZES.md](work_packages/cm_pr_28599/BACKPORT_CM_LOCALIZES.md)
+  Completed CM-localization backport, now landed in
+  `toMathlib/CohenMacaulay/Localization.lean`.
 
 ## Answers And Decision Notes
 

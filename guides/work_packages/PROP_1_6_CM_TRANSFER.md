@@ -114,6 +114,7 @@ The HH-side packet now lives concretely in:
 
 - [HH_CM_TO_GLOBAL.md](HH_CM_TO_GLOBAL.md)
 - [GRADED_CM_LOCAL_TO_GLOBAL.md](GRADED_CM_LOCAL_TO_GLOBAL.md)
+- [HH_GLOBAL_CM_FROM_AUGIDEAL.md](HH_GLOBAL_CM_FROM_AUGIDEAL.md)
 
 Most of the old internal HH blockers are now closed:
 
@@ -126,6 +127,10 @@ The remaining HH-side internal blocker is now:
 
 5. a graded local-to-global CM step turning augmentation-ideal CM into a
    genuine global `IsCohenMacaulayRing` theorem for the HH quotient.
+
+The smallest active implementation packet for that step is now:
+
+- [HH_GLOBAL_CM_FROM_AUGIDEAL.md](HH_GLOBAL_CM_FROM_AUGIDEAL.md)
 
 The Gröbner-transfer gap should be treated as its own theorem packet:
 
