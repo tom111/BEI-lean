@@ -4,6 +4,10 @@ title: Section 4
 
 # Section 4: Conditional Independence Ideals and Robustness
 
+Section 4 identifies the conditional-independence ideals from the paper with
+binomial edge ideals and then transfers the algebraic results from the earlier
+sections.
+
 ## Theorem map
 
 | Paper result | Lean declaration(s) | Lean file | Fidelity |
@@ -19,14 +23,11 @@ title: Section 4
 
 ## Notes
 
-Section 4 connects the conditional-independence side of the paper to the earlier
-binomial-edge-ideal results:
+The formalization proves:
 
 - CI ideals in the binary-output setting are defined directly;
 - the single-statement and specification-level ideals are identified with binomial edge ideals;
 - radicality, prime decomposition, and minimal-prime results are then transferred from Sections 2 and 3.
-
-Section 4 is complete at the current paper-facing level used in this project.
 
 The current minimal-prime theorem keeps the connectedness hypothesis from Corollary 3.9,
 so that restriction remains part of the present Lean statement.

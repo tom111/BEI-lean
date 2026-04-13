@@ -5,11 +5,9 @@ title: Foundations
 # Foundations and Definitions
 
 <div class="intro-card">
-This page collects the main objects that the formalization is built on: the
-polynomial ring, the binomial edge ideal, the closed-graph condition, the
-project's monomial order, and the core Gröbner-basis API. It is the right entry
-point if you want the vocabulary of the development before reading the section
-pages.
+This page lists the main objects used throughout the formalization: the
+polynomial ring, the binomial edge ideal, the closed-graph condition, the term
+order, and the Gröbner-basis statements built on them.
 </div>
 
 ## Core Algebraic Setup
@@ -33,13 +31,13 @@ pages.
 
 ## Monomial Order
 
-The paper works with the lexicographic order
+The paper uses the lexicographic order
 $$
 x_1 > \cdots > x_n > y_1 > \cdots > y_n.
 $$
 
-This is formalized in Lean by first fixing a `LinearOrder` on the variable type
-`BinomialEdgeVars V`, and then using Mathlib's lexicographic monomial order.
+Lean fixes a linear order on `BinomialEdgeVars V` and then uses the usual
+lexicographic monomial order.
 
 | Mathematical object | Lean declaration(s) | File | Notes |
 |---|---|---|---|
@@ -63,24 +61,12 @@ theorem fij_degree (i j : V) (hij : i < j) :
 
 ## Gröbner-Basis Layer
 
-The project uses a small local API over Mathlib's multivariate polynomial
-division and `sPolynomial` infrastructure.
+The Gröbner-basis proofs use explicit remainder computations and Buchberger's
+criterion for the binomial generators.
 
 | Mathematical object | Lean declaration(s) | File | Notes |
 |---|---|---|---|
-| Polynomial remainder | `MonomialOrder.IsRemainder` | [GroebnerAPI.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GroebnerAPI.lean) | Encodes remainder computations against a set of generators |
-| Gröbner basis predicate | `MonomialOrder.IsGroebnerBasis` | [GroebnerAPI.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GroebnerAPI.lean) | The project-facing predicate used throughout Section 1 and Section 2 |
+| Polynomial remainder | `MonomialOrder.IsRemainder` | [GroebnerAPI.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GroebnerAPI.lean) | Records when a polynomial is a remainder with respect to a generating set |
+| Gröbner basis predicate | `MonomialOrder.IsGroebnerBasis` | [GroebnerAPI.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GroebnerAPI.lean) | The predicate used in the Section 1 and Section 2 theorems |
 | Buchberger criterion | `MonomialOrder.isGroebnerBasis_iff_sPolynomial_isRemainder` | [GroebnerAPI.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GroebnerAPI.lean) | The main bridge used in the formal proof of Theorem 1.1 |
 | Closed-graph theorem | `closed_implies_groebner`, `groebner_implies_closed`, `theorem_1_1` | [ClosedGraphs.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/ClosedGraphs.lean) | Main Section 1 theorem in both directions |
-
-## Why This Page Exists
-
-The section pages are theorem maps. This page is different: it is the shared
-dictionary underneath those theorem maps.
-
-Use it when you want to know:
-
-- which Lean declaration corresponds to a paper definition;
-- where the term order is formalized;
-- where the project's Gröbner basis API begins;
-- and which files define the common vocabulary reused across Sections 1–4.

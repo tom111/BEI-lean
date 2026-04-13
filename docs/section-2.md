@@ -4,6 +4,9 @@ title: Section 2
 
 # Section 2: Reduced Gröbner Basis and Radicality
 
+Section 2 proves that the quadratic generators give a reduced Gröbner basis and
+then deduces that the binomial edge ideal is radical.
+
 ## Theorem map
 
 | Paper result | Lean declaration(s) | Lean file | Fidelity |
@@ -13,13 +16,8 @@ title: Section 2
 
 ## Notes
 
-The mathematics of Section 2 is substantially in place.
-
-The main paper theorem is represented in Lean by a split proof architecture:
+The main theorem is split across two files:
 
 - `theorem_2_1` for the Gröbner-basis property;
 - `theorem_2_1_reduced` for reducedness;
 - and `theorem_2_1_isReducedGroebnerBasis` as the paper-facing wrapper.
-
-The code organization is still being cleaned up, but the theorem-level story is already
-in place.

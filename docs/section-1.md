@@ -4,6 +4,10 @@ title: Section 1
 
 # Section 1: Closed Graphs and Quadratic Gröbner Bases
 
+Section 1 proves that closed graphs are exactly the graphs whose quadratic
+binomials form a Gröbner basis. It also records the main graph-theoretic
+consequences and the closure construction.
+
 ## Theorem map
 
 | Paper result | Lean declaration(s) | Lean file | Fidelity |
@@ -17,8 +21,7 @@ title: Section 1
 
 ## Paper vs Lean
 
-The theorem map stays in place for quick scanning. Below it is the full Section 1
-card set, with each paper result paired against the current Lean formalization.
+Each card below places the paper statement next to the current Lean theorem.
 
 <div class="theorem-stack">
   {% assign section1_cards = "theorem_1_1,prop_1_2,cor_1_3,prop_1_4,prop_1_5,prop_1_6" | split: "," %}
@@ -32,65 +35,37 @@ card set, with each paper result paired against the current Lean formalization.
 
 ### Theorem 1.1
 
-This is the central theorem of Section 1: the quadratic generators form a Gröbner basis
-if and only if the graph is closed.
+Closed graphs are characterized by the quadratic generators of the binomial
+edge ideal forming a Gröbner basis.
 
 ### Corollary 1.3
 
-This is the main Section 1 packaging subtlety.
-
-The paper states, informally:
-
-> A bipartite graph is closed if and only if it is a line.
-
-The Lean development now packages the result in a paper-faithful connected-graph form,
-while making the connectedness and labeling subtleties explicit.
+The Lean statement keeps the connected-graph hypothesis explicit and spells out
+the path-graph conclusion directly.
 
 ### Examples 1.7
 
-The supporting Section 1 examples are formalized at the local equidimensional surrogate level:
+The supporting examples are formalized at the equidimensional level:
 
 - Example 1.7(a): `complete_isEquidim` in `BEI/Equidim.lean`
 - Example 1.7(b): `path_isEquidim` in `BEI/PrimeDecompositionDimension.lean`
 
 ### Proposition 1.6
 
-The Proposition 1.6 branch is only partially formalized.
+This branch is still partial.
 
-The current state is as follows.
-
-The theorem from the paper is not yet fully formalized.
-
-The full depth-based Cohen-Macaulay theory used in the paper is not available in the
-pinned Mathlib version for this project. Relevant upstream work exists, and the main
-reference for this repository is Mathlib PR
-[`#26218`](https://github.com/leanprover-community/mathlib4/pull/26218).
-
-As a partial substitute, the current code also studies an equidimensional variant,
-implemented via the temporary local definition in
-`toMathlib/Equidim/Defs.lean`.
-
-What is already in place:
+Already proved:
 
 - the graph-combinatorial reduction from the paper;
 - the monomial initial ideal and variable-shift reduction;
 - the Herzog-Hibi bipartite-graph side;
 - the iterated HH regularity theorem `sum_XY_isSMulRegular_mod_diagonalSum`;
-- the local equidimensional stand-in;
-- and a direct proof of the resulting equidimensional surrogate theorem.
+- a direct equidimensional substitute in `PrimeDecompositionDimension.lean`;
+- and most of the real Cohen–Macaulay infrastructure behind the HH side.
 
-What is still missing:
+Still open:
 
 - the actual depth-based Cohen-Macaulay statement from the paper;
-- the final HH-side real-CM packaging theorem built on the finished regularity infrastructure;
+- the last HH-side global Cohen–Macaulay step in `Equidim.lean`;
 - the separate paper-faithful Gröbner CM transfer theorem;
-- and the full Cohen-Macaulay theory needed to count the paper as fully formalized.
-
-So there are currently two distinct goals:
-
-- keep the proved equidimensional surrogate in place;
-- later replace that stand-in with a real Cohen-Macaulay formalization, likely via
-  newer Mathlib or a backport from Mathlib PR `#26218`.
-
-This page therefore does not claim that either Proposition 1.6 itself or the paper's
-full Cohen-Macaulay statement has been completed yet.
+- and therefore the full paper statement of Proposition 1.6.

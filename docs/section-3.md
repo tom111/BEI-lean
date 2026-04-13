@@ -4,6 +4,10 @@ title: Section 3
 
 # Section 3: Prime Decomposition, Dimension, Minimal Primes
 
+Section 3 contains the algebraic core of the paper: the prime ideals `P_S`,
+the decomposition of `J_G`, the dimension formula, and the description of the
+minimal primes.
+
 ## Theorem map
 
 | Paper result | Lean declaration(s) | Lean file | Fidelity |
@@ -20,18 +24,12 @@ title: Section 3
 
 ## Notes
 
-Section 3 contains the algebraic core of the project:
-
-- the prime components `P_S(G)`,
-- the prime decomposition of `J_G`,
-- the description of minimal primes;
-- and the Krull-dimension formula from Corollary 3.3.
-
-Section 3 is complete for prime decomposition, minimal primes, and the dimension formula.
-Its former Cohen–Macaulay branch is only complete at the local equidimensional surrogate level:
+Prime decomposition, minimal primes, and the dimension formula are formalized.
+The Cohen–Macaulay consequences are still partial:
 
 - the prime decomposition is formalized;
 - the dimension consequences are formalized;
 - the minimal-prime characterization is formalized;
 - the prime and unmixed cycle-graph equivalences are formalized exactly;
-- and the remaining CM-shaped consequences are currently represented by `corollary_3_4_equidim` and `corollary_3_7_equidim`.
+- and the remaining Cohen–Macaulay statements are currently represented by
+  `corollary_3_4_equidim` and `corollary_3_7_equidim`.

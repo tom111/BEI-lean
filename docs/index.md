@@ -6,11 +6,11 @@ title: Binomial Edge Ideals
   <div class="landing-hero__main">
     <div class="landing-hero__eyebrow">Formalization of Herzog–Hibi–Hreinsdóttir–Kahle–Rauh (2010)</div>
     <p class="landing-hero__lede">
-      This site tracks the Lean formalization of
+      This site follows the Lean formalization of
       <em>Binomial edge ideals and conditional independence statements</em>.
-      Sections 2 and 4 are formalized, and the Section 3 backbone is in place.
-      The remaining paper-level gaps are the Cohen–Macaulay branch around
-      Proposition 1.6 and the CM-shaped consequences tied to it.
+      Sections 2 and 4 are complete. Section 3 has the prime decomposition,
+      dimension formula, and minimal-prime results. The remaining paper-level
+      gap is the Cohen–Macaulay route around Proposition 1.6.
     </p>
     <div class="quick-links quick-links--hero">
       <a href="{{ '/overview.html' | relative_url }}">Overview</a>
@@ -38,7 +38,7 @@ title: Binomial Edge Ideals
     <div class="landing-summary__note">
       <strong>Current status:</strong> 18 of the paper's 21 main results are
       formalized at the paper level. The remaining gaps are Proposition 1.6 and
-      the depth-based CM branches behind Corollaries 3.4 and 3.7.
+      the depth-based Cohen–Macaulay branches behind Corollaries 3.4 and 3.7.
     </div>
   </div>
 </div>
@@ -89,7 +89,7 @@ title: Binomial Edge Ideals
   <a class="section-card" href="{{ '/foundations.html' | relative_url }}">
     <span class="section-card__kicker">Foundations</span>
     <strong>Definitions, term order, and Gröbner setup</strong>
-    <span class="section-card__meta">core vocabulary and algebraic infrastructure</span>
+    <span class="section-card__meta">the main objects and theorems used across the project</span>
   </a>
   <a class="section-card" href="{{ '/section-1.html' | relative_url }}">
     <span class="section-card__kicker">Section 1</span>
@@ -99,12 +99,12 @@ title: Binomial Edge Ideals
   <a class="section-card" href="{{ '/section-2.html' | relative_url }}">
     <span class="section-card__kicker">Section 2</span>
     <strong>Reduced Gröbner basis and radicality</strong>
-    <span class="section-card__meta">backbone complete; CM branch partial</span>
+    <span class="section-card__meta">complete</span>
   </a>
   <a class="section-card" href="{{ '/section-3.html' | relative_url }}">
     <span class="section-card__kicker">Section 3</span>
     <strong>Prime decomposition, dimension, minimal primes</strong>
-    <span class="section-card__meta">complete</span>
+    <span class="section-card__meta">prime and dimension results complete; CM branch partial</span>
   </a>
   <a class="section-card" href="{{ '/section-4.html' | relative_url }}">
     <span class="section-card__kicker">Section 4</span>
