@@ -113,13 +113,19 @@ The actual remaining paper route consists of two isolated gaps:
 The HH-side packet now lives concretely in:
 
 - [HH_CM_TO_GLOBAL.md](HH_CM_TO_GLOBAL.md)
+- [GRADED_CM_LOCAL_TO_GLOBAL.md](GRADED_CM_LOCAL_TO_GLOBAL.md)
 
-Its remaining internal blockers are now:
+Most of the old internal HH blockers are now closed:
 
-1. free-variable NZD for `x_{n-1}` and `y_{n-1}`;
-2. extension of the regular sequence from length `n - 1` to `n + 1 = dim`;
-3. local CM at the irrelevant maximal ideal;
-4. a graded local-to-global CM step.
+1. free-variable NZD for `x_{n-1}` and `y_{n-1}`: DONE;
+2. extension of the regular sequence from length `n - 1` to `n + 1 = dim`: DONE;
+3. local CM at the irrelevant / augmentation ideal: DONE;
+4. CM-localization backport: DONE.
+
+The remaining HH-side internal blocker is now:
+
+5. a graded local-to-global CM step turning augmentation-ideal CM into a
+   genuine global `IsCohenMacaulayRing` theorem for the HH quotient.
 
 The Gröbner-transfer gap should be treated as its own theorem packet:
 

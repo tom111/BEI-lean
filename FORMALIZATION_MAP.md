@@ -61,7 +61,7 @@ faithfully the current Lean statements match the paper.
 
 | Paper endpoint | Current state |
 |---|---|
-| Proposition 1.6 | equidimensional surrogate proved; HH-side `IsCohenMacaulayLocalRing` at augmentation ideal proved; remaining global HH CM step currently tracked by `CM_LOCALIZES.md`, plus the Gröbner CM transfer |
+| Proposition 1.6 | equidimensional surrogate proved; HH-side `IsCohenMacaulayLocalRing` at augmentation ideal proved; the CM-localization backport is now complete; remaining HH gap is the graded local-to-global CM step, plus the Gröbner CM transfer |
 | Corollary 3.4 | only the equidimensional surrogate consequence is proved |
 | Corollary 3.7 | prime/unmixed branches are proved; the CM branch is only represented by the equidimensional surrogate |
 | Section 4 | complete: bridges, radicality, prime decomposition, and minimal-prime transfer all proved |
@@ -103,7 +103,10 @@ faithfully the current Lean statements match the paper.
 | Converse regular-quotient CM transfer | `isCohenMacaulayLocalRing_of_regular_quotient` | `toMathlib/CohenMacaulay/Basic.lean` | proved | CM quotient implies CM ring under regularity and Noetherianity |
 | CM from regular sequence of max length | `isCohenMacaulayLocalRing_of_weaklyRegular_length_eq_dim` | `toMathlib/CohenMacaulay/Basic.lean` | proved | Weakly regular seq of length = dim implies CM |
 | 0-dimensional CM | `isCohenMacaulayLocalRing_of_ringKrullDim_eq_zero` | `toMathlib/CohenMacaulay/Basic.lean` | proved | 0-dim Noetherian local ring is CM |
-| Forward regular-quotient CM transfer | — | `toMathlib/CohenMacaulay/Basic.lean` | blocked | Missing the opposite depth inequality `depth(R) ≤ depth(R/xR) + 1` |
+| Forward regular-quotient CM transfer | `isCohenMacaulayLocalRing_quotient` | `toMathlib/CohenMacaulay/Localization.lean` | proved | Uses Ext/Rees machinery and the hard depth inequality |
+| CM localizes | `isCohenMacaulayLocalRing_localization_atPrime` | `toMathlib/CohenMacaulay/Localization.lean` | proved | Localization of a CM local ring at a prime is CM |
+| Global CM from local ring CM | `IsCohenMacaulayRing.of_isCohenMacaulayLocalRing` | `toMathlib/CohenMacaulay/Localization.lean` | proved | Wrapper using `CM localizes` for already-local rings |
+| Unmixedness of CM local rings | `associatedPrimes_subset_minimalPrimes_of_isCohenMacaulayLocalRing` | `toMathlib/CohenMacaulay/Localization.lean` | proved | Associated primes of a CM local ring are minimal |
 
 ### HH-side Proposition 1.6 infrastructure (`BEI/Equidim.lean`)
 
@@ -120,7 +123,7 @@ faithfully the current Lean statements match the paper.
 | NZD for `y_{n-1}` | `X_inr_last_isSMulRegular_mod_diagonalSum_sup` | `BEI/Equidim.lean` | proved | `X(inr ⟨n-1⟩)` is NZD on `S ⧸ (I ⊔ diag_{n-1} ⊔ ⟨x_{n-1}⟩)`; extended ideal handling |
 | Extended `IsWeaklyRegular` (length `n+1`) | `bipartiteEdgeMonomialIdeal_isWeaklyRegular_full` | `BEI/Equidim.lean` | proved | Diagonal sums + two free variables; length = `n + 1 = dim` |
 | Local CM at augmentation ideal | `isCohenMacaulayLocalRing_at_augIdeal` | `BEI/Equidim.lean` | proved | `IsCohenMacaulayLocalRing` at `ker(constantCoeff)` via regular-sequence localization + dimension sandwich |
-| HH-side global CM step | — | — | blocked | Current recommended packet is `CM_LOCALIZES.md`; the exact smallest final theorem may still be refined |
+| HH-side global CM step | — | — | blocked | `CM_LOCALIZES.md` is now complete; the remaining HH blocker is the graded local-to-global packet in `GRADED_CM_LOCAL_TO_GLOBAL.md` |
 | HH-side global CM theorem | — | — | blocked | Depends on resolving the remaining global HH CM step |
 
 ### Variable ideal dimension (`toMathlib/HeightVariableIdeal.lean`)
@@ -154,6 +157,7 @@ faithfully the current Lean statements match the paper.
 - `toMathlib/Equidim/Defs.lean` carries the local working equidimensional definition currently used in the project.
 - `toMathlib/CohenMacaulay/Defs.lean` carries the first real Cohen–Macaulay foundation layer, kept separate from the equidimensional surrogate.
 - `toMathlib/CohenMacaulay/Basic.lean` carries the quotient-local-ring setup, the easy depth inequality for regular quotients, and the converse regular-quotient CM transfer.
+- `toMathlib/CohenMacaulay/Localization.lean` carries the Ext/Rees bridge, the hard depth inequality, forward CM transfer, unmixedness, and the CM localization/globalization theorems for local rings.
 - `toMathlib/MonomialIdeal.lean` carries `Ideal.IsMonomial`, `MvPolynomial.isPrime_span_X_image_set` (Set version), `Ideal.exists_variable_mem_of_monomial_mem_prime`, `Ideal.IsMonomial.isPrime_iff_eq_span_X_image` (prime monomial ideals = variable ideals), `Ideal.IsMonomial.span_X_image`, `coeff_pow_lexMax`, `Ideal.IsMonomial.radical_isMonomial`, `Ideal.isPrimary_monomial_criterion`, `Ideal.IsMonomial.isPrimary_radical_eq_span_X`, the structural outside-`s` membership lemmas, the general support-extraction lemma `Ideal.not_mem_exists_monomial_notMem`, the converse helper `Ideal.mem_of_mul_mem_of_lexMax_outside`, and the full primary iff `Ideal.IsMonomial.isPrimary_iff`.
 - `toMathlib/SquarefreeMonomialPrimes.lean` carries `variablePairIdeal`, `IsVertexCover`, `IsMinimalVertexCover`, and the complete minimal prime ↔ minimal vertex cover characterization for edge ideals.
 - `toMathlib/HeightVariableIdeal.lean` carries the variable-killing map, the quotient equivalence for variable ideals, and the resulting quotient-dimension formulas.

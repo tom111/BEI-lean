@@ -1,4 +1,4 @@
-# Guide: CM Localizes — current packet for the HH global CM step
+# Guide: CM Localizes — completed theorem packet
 
 ## Context
 
@@ -8,6 +8,27 @@
 
 To close the HH-side CM theorem, we need `IsCohenMacaulayRing` (CM at
 **every** prime localization), not just at the augmentation ideal.
+
+## Status note
+
+This packet is now **complete**.
+
+The theorem it targeted has landed in
+[toMathlib/CohenMacaulay/Localization.lean](/home/tom/BEI-lean/toMathlib/CohenMacaulay/Localization.lean),
+including:
+
+- forward CM transfer to regular quotients;
+- unmixedness for CM local rings;
+- `CM localizes`;
+- and the local-ring wrapper
+  `IsCohenMacaulayRing.of_isCohenMacaulayLocalRing`.
+
+So this guide is no longer the active HH blocker packet. It remains here as the
+mathematical context for what was proved.
+
+The remaining HH-side global CM step is now tracked in:
+
+- [GRADED_CM_LOCAL_TO_GLOBAL.md](GRADED_CM_LOCAL_TO_GLOBAL.md)
 
 
 ## Why the augmentation ideal does not suffice
@@ -22,9 +43,9 @@ For primes `p ⊆ m`: `(S/I)_p ≅ ((S/I)_m)_{p'}` where `p' = p(S/I)_m`.
 So CM at `m` gives CM at `p` **if** we know the following theorem.
 
 
-## Current recommended theorem packet
+## Theorem packet that landed
 
-The current best-identified next theorem is:
+The theorem that was needed, and is now proved, is:
 
 **Theorem (CM localizes):**
 If `(R, m)` is a Noetherian CM local ring and `p` is a prime of `R`,
@@ -45,6 +66,9 @@ algebra.  It is **not** currently available in Lean/Mathlib.
 This guide treats it as the current recommended blocker packet for finishing the
 HH-side global CM step.  If a smaller honest route is later found, that should
 replace this packet rather than being forced into its framing.
+
+In the current repo, this landed through the local backport in
+`toMathlib/CohenMacaulay/Localization.lean`.
 
 
 ## What is available
@@ -115,7 +139,7 @@ But the proof of this result also requires "CM localizes" (for primes of
 `R[x]` not of the form `pR[x]`), so this doesn't bypass the blocker.
 
 
-## Recommended approach
+## Historical note on approach
 
 ### Shortest path: Prove the forward CM transfer directly for CM rings
 
@@ -144,7 +168,7 @@ Required new infrastructure (minimal list):
 3. **CM localizes** (from forward CM transfer by induction, choosing regular
    elements outside the target prime).
 
-### Estimated scope
+### Historical estimated scope
 
 - Step 1 (unmixedness): ~50 lines.  Needs `Ideal.IsPrime` membership of
   associated primes, Krull's PIT, and depth-0 characterization.
@@ -154,7 +178,7 @@ Required new infrastructure (minimal list):
 
 Total: ~130 lines of new infrastructure in `toMathlib/CohenMacaulay/`.
 
-### Alternative: axiomatize and move forward
+### Historical alternative: axiomatize and move forward
 
 If the full CM-localizes proof is too costly, consider:
 

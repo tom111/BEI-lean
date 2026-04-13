@@ -44,6 +44,7 @@ depth-based Cohen–Macaulay definition from commutative algebra.
 |---|---|---|---|
 | [toMathlib/CohenMacaulay/Defs.lean](https://github.com/tom111/BEI-lean/blob/master/toMathlib/CohenMacaulay/Defs.lean) | `ringDepth`, `IsCohenMacaulayLocalRing`, `IsCohenMacaulayRing`, `weaklyRegular_length_le_ringKrullDim`, `ringDepth_le_ringKrullDim` | formalized | First real CM definition layer in the repo |
 | [toMathlib/CohenMacaulay/Basic.lean](https://github.com/tom111/BEI-lean/blob/master/toMathlib/CohenMacaulay/Basic.lean) | `quotSMulTop_nontrivial`, `quotSMulTopLocalRing`, `ringDepth_quotSMulTop_succ_le`, `isCohenMacaulayLocalRing_of_regular_quotient` | formalized | Quotient-local-ring setup, the easy depth inequality, and the converse regular-quotient CM transfer |
+| [toMathlib/CohenMacaulay/Localization.lean](https://github.com/tom111/BEI-lean/blob/master/toMathlib/CohenMacaulay/Localization.lean) | `isCohenMacaulayLocalRing_quotient`, `associatedPrimes_subset_minimalPrimes_of_isCohenMacaulayLocalRing`, `isCohenMacaulayLocalRing_localization_atPrime`, `IsCohenMacaulayRing.of_isCohenMacaulayLocalRing` | formalized | Ext/Rees machinery, forward CM transfer, unmixedness, and localization/globalization for CM local rings |
 
 ### Notes
 
@@ -53,9 +54,13 @@ finish the paper's CM branch.
 In particular:
 
 - `Defs.lean` gives a local working CM definition via regular-sequence depth;
-- `Basic.lean` currently provides only the converse regular-quotient direction;
-- the forward regular-quotient direction and the paper-critical Proposition 1.6
-  CM route remain open.
+- `Basic.lean` sets up the quotient-local-ring layer and the basic local criteria;
+- `Localization.lean` now completes the local CM localization packet.
+
+This still does **not** mean the paper's full Proposition 1.6 CM route is done:
+the remaining HH-side gap is now the graded local-to-global step from
+augmentation-ideal CM to a genuine global CM theorem for the HH quotient, plus
+the separate Gröbner CM transfer theorem.
 
 ### Provenance
 

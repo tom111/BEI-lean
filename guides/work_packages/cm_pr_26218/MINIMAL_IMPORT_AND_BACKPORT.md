@@ -29,6 +29,14 @@ The equidimensional surrogate track is now complete, but the paper's actual
 Cohen–Macaulay track is still open. The goal here is to add real CM foundations
 without needlessly destabilizing the rest of the project.
 
+Status update:
+
+- the first `#26218`-based CM slice is already landed locally in
+  `toMathlib/CohenMacaulay/Defs.lean` and `toMathlib/CohenMacaulay/Basic.lean`;
+- the current preferred next import target is no longer “some CM code in
+  general”, but specifically the localization/globalization slice visible in
+  upstream PR `#28599`, which depends on `#26218`.
+
 
 ## Core policy
 
@@ -158,7 +166,12 @@ Current status:
 
 - `toMathlib/CohenMacaulay/Defs.lean` is now landed
 - `toMathlib/CohenMacaulay/Basic.lean` is now landed
-- the next exact blocker is the forward depth inequality for regular quotients
+- `toMathlib/CohenMacaulay/Localization.lean` is now landed as the
+  localization/globalization slice mined from PR `#28599`
+- the `CM localizes` execution packet is now complete:
+  - [../cm_pr_28599/BACKPORT_CM_LOCALIZES.md](../cm_pr_28599/BACKPORT_CM_LOCALIZES.md)
+- the remaining paper-facing blocker is now downstream of the backport:
+  the HH graded local-to-global CM step
 
 
 ## Phase 4: preserve provenance

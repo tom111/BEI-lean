@@ -9,7 +9,7 @@ and local CM theorem at the augmentation ideal are all proved.
 
 The remaining HH-side global CM step is currently tracked in:
 
-- [CM_LOCALIZES.md](CM_LOCALIZES.md)
+- [GRADED_CM_LOCAL_TO_GLOBAL.md](GRADED_CM_LOCAL_TO_GLOBAL.md)
 
 That guide records the current recommended route.  If a smaller honest global
 CM argument is found, prefer updating the active packet rather than returning to
@@ -105,8 +105,8 @@ step. So this is really two sub-blockers:
      at the augmentation ideal (kernel of `constantCoeff`) via regular-sequence
      localization + dimension sandwich argument.
    - Global CM step: STILL OPEN.
-     The current recommended packet is `CM_LOCALIZES.md`, which treats
-     localization of CM local rings as the next theorem to isolate or prove.
+     The current recommended packet is `GRADED_CM_LOCAL_TO_GLOBAL.md`, since
+     the CM-localization packet has now landed.
 
 
 ## Alternative route: Work in the smaller ring

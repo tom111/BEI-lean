@@ -18,12 +18,18 @@
    usable real CM slice, and backport/import it cleanly.
 
 Current next concrete target:
+- [work_packages/cm_pr_28599/BACKPORT_CM_LOCALIZES.md](work_packages/cm_pr_28599/BACKPORT_CM_LOCALIZES.md)
+  COMPLETE: the CM-localization backport packet is now landed in
+  `toMathlib/CohenMacaulay/Localization.lean`.
+
+Theorem-context memo:
 - [work_packages/CM_LOCALIZES.md](work_packages/CM_LOCALIZES.md)
-  Current recommended packet for the remaining HH-side global CM step:
-  isolate or prove a theorem strong enough to pass from the proved
-  `IsCohenMacaulayLocalRing` at the augmentation ideal to a global
-  `IsCohenMacaulayRing` theorem for the HH quotient.  Right now this is framed
-  as "CM localizes".
+  Records the now-completed CM-localization theorem packet.
+
+Current next concrete target:
+- [work_packages/GRADED_CM_LOCAL_TO_GLOBAL.md](work_packages/GRADED_CM_LOCAL_TO_GLOBAL.md)
+  Remaining HH-side blocker: turn augmentation-ideal CM into a genuine global
+  `IsCohenMacaulayRing` theorem for the HH quotient.
 
 Consumed packet:
 - [work_packages/HH_CM_TO_GLOBAL.md](work_packages/HH_CM_TO_GLOBAL.md)
@@ -69,6 +75,12 @@ Dormant paper-critical packet:
 - [cleanup/MONOMIAL_AND_FINSUPP_API.md](cleanup/MONOMIAL_AND_FINSUPP_API.md)
 - [cleanup/FILE_SPLITTING_PLAN.md](cleanup/FILE_SPLITTING_PLAN.md)
 - [cleanup/LINTER_AND_STYLE_CLEANUP.md](cleanup/LINTER_AND_STYLE_CLEANUP.md)
+
+## Website Plans
+
+- [website/HOMEPAGE_MATH_CONTEXT_PLAN.md](website/HOMEPAGE_MATH_CONTEXT_PLAN.md)
+  Plan for a richer public-facing site with theorem-driven section pages and
+  side-by-side paper/Lean comparison cards.
 
 ## Process
 
