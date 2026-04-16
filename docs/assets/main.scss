@@ -368,6 +368,43 @@ p, li {
   line-height: 1.45;
 }
 
+.theorem-highlight__code code,
+.theorem-highlight__code .w {
+  color: #f4fbff !important;
+  background: transparent;
+}
+
+.theorem-highlight__code .k,
+.theorem-highlight__code .kd,
+.theorem-highlight__code .kt {
+  color: #8fd3ff !important;
+}
+
+.theorem-highlight__code .n,
+.theorem-highlight__code .nf,
+.theorem-highlight__code .nc,
+.theorem-highlight__code .nn {
+  color: #f4fbff !important;
+}
+
+.theorem-highlight__code .s,
+.theorem-highlight__code .s1,
+.theorem-highlight__code .s2 {
+  color: #b6f0c1 !important;
+}
+
+.theorem-highlight__code .mi,
+.theorem-highlight__code .mf,
+.theorem-highlight__code .m {
+  color: #ffd280 !important;
+}
+
+.theorem-highlight__code .c,
+.theorem-highlight__code .c1,
+.theorem-highlight__code .cm {
+  color: #93aabd !important;
+}
+
 .blocker-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
