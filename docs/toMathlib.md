@@ -4,10 +4,12 @@ title: toMathlib
 
 # toMathlib: Supporting Infrastructure
 
-This page lists the supporting material in `toMathlib/`: local backports,
-general algebra lemmas, and project-specific results used by the main BEI files.
+This page records the supporting algebra that sits behind the main BEI files.
+It is mainly for readers who want to know what general-purpose commutative
+algebra and monomial-ideal infrastructure had to be added locally in order to
+formalize the paper.
 
-## Scope
+## How to read this page
 
 The `toMathlib/` directory has three roles:
 
@@ -16,7 +18,8 @@ The `toMathlib/` directory has three roles:
    [`#26218`](https://github.com/leanprover-community/mathlib4/pull/26218);
 3. **project-specific algebra and combinatorics** needed for the BEI proofs.
 
-This page records what is formalized now.
+If you only want the mathematical results from the paper, the section pages are
+the better starting point. This page is about the support layer behind them.
 
 ## Equidimensional surrogate support
 
@@ -43,10 +46,10 @@ work:
 - `Basic.lean` sets up the quotient-local-ring layer and the basic local criteria;
 - `Localization.lean` now completes the local CM localization packet.
 
-This still does **not** finish the paper's Proposition 1.6 route:
-the remaining HH-side gap is now the graded local-to-global step from
-augmentation-ideal CM to a genuine global CM theorem for the HH quotient, plus
-the separate Gröbner CM transfer theorem.
+This still does **not** by itself finish the paper's Proposition 1.6 route.
+The remaining work is in the project files, where these general theorems are
+applied to the Herzog–Hibi side and then transferred back to the original
+binomial edge ideal.
 
 ## Monomial ideal infrastructure
 

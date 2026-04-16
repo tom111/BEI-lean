@@ -6,11 +6,12 @@ title: Binomial Edge Ideals
   <div class="landing-hero__main">
     <div class="landing-hero__eyebrow">Formalization of Herzog–Hibi–Hreinsdóttir–Kahle–Rauh (2010)</div>
     <p class="landing-hero__lede">
-      This site follows the Lean formalization of
-      <em>Binomial edge ideals and conditional independence statements</em>.
-      Sections 2 and 4 are complete. Section 3 has the prime decomposition,
-      dimension formula, and minimal-prime results. The remaining paper-level
-      gap is the Cohen–Macaulay route around Proposition 1.6.
+      This project formalizes the main algebraic results of
+      <em>Binomial edge ideals and conditional independence statements</em> in Lean.
+      The Gröbner basis, radicality, prime decomposition, dimension, and
+      conditional-independence bridge are formalized. The remaining paper-level
+      gap is the Cohen–Macaulay step around Proposition 1.6 and the corollaries
+      that depend on it.
     </p>
     <div class="quick-links quick-links--hero">
       <a href="{{ '/overview.html' | relative_url }}">Overview</a>
@@ -36,12 +37,24 @@ title: Binomial Edge Ideals
       <span class="landing-summary__label">paper-level gaps remain</span>
     </div>
     <div class="landing-summary__note">
-      <strong>Current status:</strong> 18 of the paper's 21 main results are
-      formalized at the paper level. The remaining gaps are Proposition 1.6 and
-      the depth-based Cohen–Macaulay branches behind Corollaries 3.4 and 3.7.
+      <strong>Current status:</strong> the project already covers the main
+      Gröbner, radicality, prime-decomposition, and conditional-independence
+      results from the paper. What remains is the depth-based
+      Cohen–Macaulay route behind Proposition 1.6 and its consequences.
     </div>
   </div>
 </div>
+
+## Start Here
+
+Binomial edge ideals attach a quadratic binomial ideal to a graph. The paper
+studies when these ideals admit quadratic Gröbner bases, how their prime
+decomposition reflects the graph, and how they connect to conditional
+independence statements from algebraic statistics.
+
+This site is organized by the paper's four sections. Each section page lists
+the paper results, the corresponding Lean declarations, and how closely the
+formal statement matches the published one.
 
 ## Main Results
 
@@ -49,8 +62,8 @@ title: Binomial Edge Ideals
   <div class="result-item result-item--done">
     <span class="result-item__icon" data-icon="&#10003;"></span>
     <div>
-      <strong>Section 1 backbone</strong>
-      <span>Theorem 1.1, Propositions 1.2, 1.4, 1.5, and Corollary 1.3 are formalized.</span>
+      <strong>Closed graphs and quadratic Gröbner bases</strong>
+      <span>Theorem 1.1 and the main Section 1 graph-theoretic consequences are formalized.</span>
     </div>
   </div>
   <div class="result-item result-item--done">
@@ -63,8 +76,8 @@ title: Binomial Edge Ideals
   <div class="result-item result-item--done">
     <span class="result-item__icon" data-icon="&#10003;"></span>
     <div>
-      <strong>Section 3 backbone in place</strong>
-      <span>Prime decomposition, dimension, minimal primes, and the non-CM cycle-graph branches are formalized; the CM-shaped consequences are still surrogate-only.</span>
+      <strong>Prime decomposition and dimension theory</strong>
+      <span>The prime ideals, prime decomposition, dimension formula, minimal primes, and non-Cohen–Macaulay cycle branches are formalized.</span>
     </div>
   </div>
   <div class="result-item result-item--done">
@@ -77,8 +90,8 @@ title: Binomial Edge Ideals
   <div class="result-item result-item--open">
     <span class="result-item__icon" data-icon="&#9675;"></span>
     <div>
-      <strong>Remaining paper-level CM gaps</strong>
-      <span>Proposition 1.6 and the depth-based CM branches of Corollaries 3.4 and 3.7 are still open.</span>
+      <strong>Remaining Cohen–Macaulay step</strong>
+      <span>The paper-faithful Cohen–Macaulay proof of Proposition 1.6, and the downstream CM branches of Corollaries 3.4 and 3.7, are still open.</span>
     </div>
   </div>
 </div>
@@ -115,6 +128,10 @@ title: Binomial Edge Ideals
 
 ## Featured Theorems
 
+Each card shows a paper statement and the corresponding Lean theorem. The Lean
+side includes the declaration name and a representative snippet, but the section
+pages give the fuller context.
+
 <div class="featured-theorems">
   {% assign featured_keys = "theorem_1_1,corollary_2_2,theorem_3_2,ci_bridge" | split: "," %}
   {% for key in featured_keys %}
@@ -129,7 +146,7 @@ title: Binomial Edge Ideals
   <article class="blocker-card blocker-card--open">
     <span class="blocker-card__kicker">Proposition 1.6</span>
     <strong>Final Cohen–Macaulay step</strong>
-    <p>The direct equidimensional substitute is proved. The paper-faithful Cohen–Macaulay route still needs the last HH globalization step and the Gröbner transfer back to the original ideal.</p>
+    <p>The graph reduction and most of the Herzog–Hibi side are formalized. The remaining step is the final Cohen–Macaulay base case on the HH side, followed by the transfer back to the original ideal.</p>
     <a href="{{ '/section-1.html' | relative_url }}">See Section 1</a>
   </article>
   <article class="blocker-card blocker-card--open">

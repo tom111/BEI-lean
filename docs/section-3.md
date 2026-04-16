@@ -8,6 +8,11 @@ Section 3 contains the algebraic core of the paper: the prime ideals `P_S`,
 the decomposition of `J_G`, the dimension formula, and the description of the
 minimal primes.
 
+For mathematicians, this is the page that explains how the graph controls the
+prime ideals of the binomial edge ideal. The complete prime decomposition and
+dimension formula are formalized. What remains open is not the prime theory
+itself, but the later Cohen–Macaulay consequences derived from it.
+
 ## Theorem map
 
 | Paper result | Lean declaration(s) | Lean file | Fidelity |
@@ -21,6 +26,14 @@ minimal primes.
 | Corollary 3.7 | `corollary_3_7`, `corollary_3_7_unmixed`, `corollary_3_7_equidim` | [PrimeDecomposition.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecomposition.lean), [MinimalPrimes.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/MinimalPrimes.lean), [PrimeDecompositionDimension.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecompositionDimension.lean) | Partial |
 | Proposition 3.8 | `prop_3_8` | [MinimalPrimes.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/MinimalPrimes.lean) | Equivalent |
 | Corollary 3.9 | `corollary_3_9` | [MinimalPrimes.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/MinimalPrimes.lean) | Equivalent |
+
+## Reading the table
+
+- `Exact` means the Lean theorem follows the paper statement closely.
+- `Equivalent` means the same mathematics is formalized, but the Lean theorem is
+  packaged differently.
+- `Partial` means a paper statement has only been reached through an
+  equidimensional or otherwise incomplete substitute so far.
 
 ## Notes
 
