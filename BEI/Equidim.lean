@@ -3666,20 +3666,20 @@ private theorem isCohenMacaulayLocalRing_quot_lastInl {n : ℕ} (hn : 2 ≤ n)
     (isSMulRegular_X_inl_last_at_augIdeal hn hHH)
     (X_inl_last_mem_maximalIdeal (by omega) G)
 
-/-- `X(inr last)` is `IsSMulRegular` in `(A_H)_aug ⧸ (X(inl last))`. -/
+/-- `X(inr last)` is `IsSMulRegular` on `QuotSMulTop x_last Rp` (as Rp-module). -/
 private lemma isSMulRegular_X_inr_last_quot_lastInl {n : ℕ} (hn : 2 ≤ n)
     {G : SimpleGraph (Fin n)} (hHH : HerzogHibiConditions n G) :
     IsSMulRegular
-      (QuotSMulTop (algebraMap _ (Localization.AtPrime (augIdeal (K := K) G))
-        (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K) G)
-          (X (Sum.inl ⟨n - 1, by omega⟩))))
+      (QuotSMulTop
+        (algebraMap _ (Localization.AtPrime (augIdeal (K := K) G))
+          (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K) G)
+            (X (Sum.inl ⟨n - 1, by omega⟩))))
         (Localization.AtPrime (augIdeal (K := K) G)))
       (algebraMap _ (Localization.AtPrime (augIdeal (K := K) G))
         (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K) G)
           (X (Sum.inr ⟨n - 1, by omega⟩)))) := by
   have hwreg := lastPair_prefix_isWeaklyRegular_at_augIdeal (K := K) hn hHH
   simp only [List.cons_append, List.nil_append] at hwreg
-  -- Apply cons_iff twice
   rw [RingTheory.Sequence.isWeaklyRegular_cons_iff] at hwreg
   obtain ⟨_, hwreg2⟩ := hwreg
   rw [RingTheory.Sequence.isWeaklyRegular_cons_iff] at hwreg2
@@ -3694,6 +3694,7 @@ private lemma X_inr_last_mem_maximalIdeal {n : ℕ} (hn : 1 ≤ n)
       IsLocalRing.maximalIdeal (Localization.AtPrime (augIdeal (K := K) G)) := by
   rw [← Localization.AtPrime.map_eq_maximalIdeal]
   exact Ideal.mem_map_of_mem _ (mkI_X_mem_augIdeal G _)
+
 
 end AugmentationCM
 
