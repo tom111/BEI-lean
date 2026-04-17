@@ -3626,6 +3626,75 @@ private lemma lastPair_prefix_isWeaklyRegular_at_augIdeal {n : ℕ} (hn : 2 ≤ 
   -- Apply permutation lemma
   exact IsLocalRing.isWeaklyRegular_of_perm_of_subset_maximalIdeal hwreg hperm hmem
 
+/-- Extract the first IsSMulRegular from the permuted regular sequence: `X(inl last)`
+is `IsSMulRegular` in `(A_H)_aug`. -/
+private lemma isSMulRegular_X_inl_last_at_augIdeal {n : ℕ} (hn : 2 ≤ n)
+    {G : SimpleGraph (Fin n)} (hHH : HerzogHibiConditions n G) :
+    IsSMulRegular (Localization.AtPrime (augIdeal (K := K) G))
+      (algebraMap _ (Localization.AtPrime (augIdeal (K := K) G))
+        (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K) G)
+          (X (Sum.inl ⟨n - 1, by omega⟩)))) := by
+  have hwreg := lastPair_prefix_isWeaklyRegular_at_augIdeal (K := K) hn hHH
+  simp only [List.cons_append, List.nil_append] at hwreg
+  rw [RingTheory.Sequence.isWeaklyRegular_cons_iff] at hwreg
+  exact hwreg.1
+
+/-- `X(inl last)` lies in the maximal ideal of `(A_H)_aug`. -/
+private lemma X_inl_last_mem_maximalIdeal {n : ℕ} (hn : 1 ≤ n)
+    (G : SimpleGraph (Fin n)) :
+    (algebraMap _ (Localization.AtPrime (augIdeal (K := K) G))
+      (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K) G)
+        (X (Sum.inl ⟨n - 1, by omega⟩)))) ∈
+      IsLocalRing.maximalIdeal (Localization.AtPrime (augIdeal (K := K) G)) := by
+  rw [← Localization.AtPrime.map_eq_maximalIdeal]
+  exact Ideal.mem_map_of_mem _ (mkI_X_mem_augIdeal G _)
+
+/-- **Reduced HH CM, half 1**: quotient of `(A_H)_aug` by `X(inl last)` is CM local. -/
+private theorem isCohenMacaulayLocalRing_quot_lastInl {n : ℕ} (hn : 2 ≤ n)
+    {G : SimpleGraph (Fin n)} (hHH : HerzogHibiConditions n G) :
+    haveI : IsCohenMacaulayLocalRing (Localization.AtPrime (augIdeal (K := K) G)) :=
+      isCohenMacaulayLocalRing_at_augIdeal hn hHH
+    haveI := quotSMulTopLocalRing (X_inl_last_mem_maximalIdeal (K := K) (by omega) G)
+    IsCohenMacaulayLocalRing (QuotSMulTop
+      (algebraMap _ (Localization.AtPrime (augIdeal (K := K) G))
+        (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K) G)
+          (X (Sum.inl ⟨n - 1, by omega⟩))))
+      (Localization.AtPrime (augIdeal (K := K) G))) := by
+  haveI : IsCohenMacaulayLocalRing (Localization.AtPrime (augIdeal (K := K) G)) :=
+    isCohenMacaulayLocalRing_at_augIdeal hn hHH
+  exact isCohenMacaulayLocalRing_quotient
+    (isSMulRegular_X_inl_last_at_augIdeal hn hHH)
+    (X_inl_last_mem_maximalIdeal (by omega) G)
+
+/-- `X(inr last)` is `IsSMulRegular` in `(A_H)_aug ⧸ (X(inl last))`. -/
+private lemma isSMulRegular_X_inr_last_quot_lastInl {n : ℕ} (hn : 2 ≤ n)
+    {G : SimpleGraph (Fin n)} (hHH : HerzogHibiConditions n G) :
+    IsSMulRegular
+      (QuotSMulTop (algebraMap _ (Localization.AtPrime (augIdeal (K := K) G))
+        (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K) G)
+          (X (Sum.inl ⟨n - 1, by omega⟩))))
+        (Localization.AtPrime (augIdeal (K := K) G)))
+      (algebraMap _ (Localization.AtPrime (augIdeal (K := K) G))
+        (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K) G)
+          (X (Sum.inr ⟨n - 1, by omega⟩)))) := by
+  have hwreg := lastPair_prefix_isWeaklyRegular_at_augIdeal (K := K) hn hHH
+  simp only [List.cons_append, List.nil_append] at hwreg
+  -- Apply cons_iff twice
+  rw [RingTheory.Sequence.isWeaklyRegular_cons_iff] at hwreg
+  obtain ⟨_, hwreg2⟩ := hwreg
+  rw [RingTheory.Sequence.isWeaklyRegular_cons_iff] at hwreg2
+  exact hwreg2.1
+
+/-- `X(inr last)` lies in the maximal ideal of `(A_H)_aug`. -/
+private lemma X_inr_last_mem_maximalIdeal {n : ℕ} (hn : 1 ≤ n)
+    (G : SimpleGraph (Fin n)) :
+    (algebraMap _ (Localization.AtPrime (augIdeal (K := K) G))
+      (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K) G)
+        (X (Sum.inr ⟨n - 1, by omega⟩)))) ∈
+      IsLocalRing.maximalIdeal (Localization.AtPrime (augIdeal (K := K) G)) := by
+  rw [← Localization.AtPrime.map_eq_maximalIdeal]
+  exact Ideal.mem_map_of_mem _ (mkI_X_mem_augIdeal G _)
+
 end AugmentationCM
 
 /-! ### Cohen–Macaulay transfer through ring equivalence -/
