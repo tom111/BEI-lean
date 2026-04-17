@@ -3585,6 +3585,47 @@ theorem isCohenMacaulayLocalRing_at_augIdeal {n : ℕ} (hn : 2 ≤ n)
     (show ringKrullDim Rₚ = ↑(rs.map (algebraMap _ Rₚ)).length by
       rw [hdim, hlen])
 
+/-! #### Last-pair permutation: [X(inl last), X(inr last), diagElems…] weakly regular -/
+
+open List in
+/-- The fullRegSeq permuted to have the last pair first is still weakly regular on
+`(A_H)_aug`. This is a direct application of
+`IsLocalRing.isWeaklyRegular_of_perm_of_subset_maximalIdeal`. -/
+private lemma lastPair_prefix_isWeaklyRegular_at_augIdeal {n : ℕ} (hn : 2 ≤ n)
+    {G : SimpleGraph (Fin n)} (hHH : HerzogHibiConditions n G) :
+    let mk := Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K) G)
+    let Rp := Localization.AtPrime (augIdeal (K := K) G)
+    let last : Fin n := ⟨n - 1, by omega⟩
+    let rs_perm : List Rp :=
+      [algebraMap _ Rp (mk (X (Sum.inl last))),
+       algebraMap _ Rp (mk (X (Sum.inr last)))] ++
+      ((diagElems n).map mk).map (algebraMap _ Rp)
+    RingTheory.Sequence.IsWeaklyRegular Rp rs_perm := by
+  intro mk Rp last rs_perm
+  set p := augIdeal (K := K) G
+  -- Start from the regular sequence on Rp
+  set rs : List Rp := ((fullRegSeq (K := K) n hn).map mk).map (algebraMap _ Rp)
+  have hreg_R := bipartiteEdgeMonomialIdeal_isWeaklyRegular_full (K := K) hn hHH
+  have hmem_p := fullRegSeq_mem_augIdeal (K := K) hn G
+  have hwreg : RingTheory.Sequence.IsWeaklyRegular Rp rs :=
+    (IsWeaklyRegular.isRegular_of_isLocalization_of_mem Rp p hreg_R hmem_p).toIsWeaklyRegular
+  have hmem : ∀ r ∈ rs, r ∈ IsLocalRing.maximalIdeal Rp := by
+    intro r hr
+    obtain ⟨s, hs, rfl⟩ := List.mem_map.mp hr
+    rw [← Localization.AtPrime.map_eq_maximalIdeal]
+    exact Ideal.mem_map_of_mem _ (hmem_p s hs)
+  -- rs.Perm rs_perm: the two differ by moving last two elements to the front
+  have hperm : rs.Perm rs_perm := by
+    -- fullRegSeq = diagElems ++ [X(inl last)] ++ [X(inr last)]
+    -- rs = mapped(diagElems ++ [X(inl last), X(inr last)])
+    -- rs_perm = [X(inl last), X(inr last)] ++ mapped diagElems
+    simp only [rs, rs_perm, fullRegSeq, List.map_append, List.map_cons, List.map_nil]
+    -- Goal: ((diagElems n).map mk).map alg ++ [alg (mk X(inl)), alg (mk X(inr))] ~
+    --       [alg (mk X(inl)), alg (mk X(inr))] ++ ((diagElems n).map mk).map alg
+    exact List.perm_append_comm
+  -- Apply permutation lemma
+  exact IsLocalRing.isWeaklyRegular_of_perm_of_subset_maximalIdeal hwreg hperm hmem
+
 end AugmentationCM
 
 /-! ### Cohen–Macaulay transfer through ring equivalence -/
