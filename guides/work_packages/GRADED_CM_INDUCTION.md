@@ -1,5 +1,11 @@
 # Guide: Graded CM Induction for HH Global CM
 
+## Status: superseded route memo
+
+This file is kept as a record of the graded-induction branch that narrowed the
+last HH-side blocker. The active support packet is now
+[GRADED_CONTRACTION_NZD.md](GRADED_CONTRACTION_NZD.md).
+
 ## Task
 
 Close the last sorry in `BEI/Equidim.lean`:

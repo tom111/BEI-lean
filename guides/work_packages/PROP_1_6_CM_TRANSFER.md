@@ -127,9 +127,10 @@ The remaining HH-side internal blocker is now a single sorry branch:
 
 5a. ~~`p ⊆ m⁺`~~: **CLOSED** — CM transfer through localization-localization
     `AlgEquiv` using `isCohenMacaulayLocalRing_of_ringEquiv`.
-5b. `p ⊄ m⁺`: CM of the localized HH quotient after inverting a variable
-    and killing neighbors. The current best-identified route is now graded CM
-    induction via a homogeneous regular-element lemma.
+5b. `p ⊄ m⁺`: CM of the localized HH quotient. The graded contraction step and
+    the main inductive step are now understood. The remaining HH-side gap is
+    the base case where the localized HH quotient collapses to a localization
+    of a polynomial ring over a field, so we need a polynomial-ring CM theorem.
 
 New infrastructure proved in the `CMTransfer` section of `BEI/Equidim.lean`:
 - `isWeaklyRegular_map_ringEquiv`: weak regularity transfers through `RingEquiv`
@@ -143,11 +144,19 @@ The smallest active implementation packet is:
 
 The current supporting theorem packet for the last HH-side branch is:
 
+- [POLYNOMIAL_RING_CM_BASE_CASE.md](POLYNOMIAL_RING_CM_BASE_CASE.md)
+
+That packet is now partially landed in
+`toMathlib/CohenMacaulay/Polynomial.lean`; the immediate critical path is to
+finish the final remaining sorry in
+`isCohenMacaulayRing_polynomial_of_isCohenMacaulayRing_domain`, and only then
+return to the HH base-case ring isomorphism in `BEI/Equidim.lean`.
+
+Completed / superseded support packets kept for reference:
+
+- [CM_PARAMETER_PREFIX_UNMIXED.md](CM_PARAMETER_PREFIX_UNMIXED.md)
+- [GRADED_CONTRACTION_NZD.md](GRADED_CONTRACTION_NZD.md)
 - [GRADED_CM_INDUCTION.md](GRADED_CM_INDUCTION.md)
-
-The dehomogenization packet is now superseded and kept only as a record of a
-route that was investigated but is no longer the active plan:
-
 - [DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md](DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md)
 
 The Gröbner-transfer gap should be treated as its own theorem packet:

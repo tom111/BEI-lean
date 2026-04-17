@@ -17,9 +17,10 @@
    Smallest active HH-side packet: turn augmentation-ideal CM into a genuine
    global `IsCohenMacaulayRing` theorem for the HH quotient.
 
-3. [work_packages/GRADED_CM_INDUCTION.md](work_packages/GRADED_CM_INDUCTION.md)
-   **Active route decision**: graded CM induction for the `p ⊄ augIdeal` case.
-   This is the current implementation packet for the last HH-side branch.
+3. [work_packages/POLYNOMIAL_RING_CM_BASE_CASE.md](work_packages/POLYNOMIAL_RING_CM_BASE_CASE.md)
+   **Active support packet**: the polynomial CM infrastructure is now landed in
+   `toMathlib/CohenMacaulay/Polynomial.lean`; finish the final remaining sorry
+   in the polynomial-extension theorem, then use it in the HH base case.
 
 4. [work_packages/GROEBNER_CM_TRANSFER.md](work_packages/GROEBNER_CM_TRANSFER.md)
    Dormant paper-critical packet: after the HH-side global CM theorem lands,
@@ -30,6 +31,18 @@
 
 - [work_packages/GRADED_CM_LOCAL_TO_GLOBAL.md](work_packages/GRADED_CM_LOCAL_TO_GLOBAL.md)
   Broader theorem-context memo for the remaining HH-side global CM step.
+
+- [work_packages/GRADED_CM_INDUCTION.md](work_packages/GRADED_CM_INDUCTION.md)
+  Superseded route memo; kept as a record of the graded-induction branch that
+  narrowed the problem before the current graded-contraction route.
+
+- [work_packages/GRADED_CONTRACTION_NZD.md](work_packages/GRADED_CONTRACTION_NZD.md)
+  Completed support packet; the contraction theorem is proved and the
+  remaining HH-side blocker is now the polynomial-ring base case.
+
+- [work_packages/CM_PARAMETER_PREFIX_UNMIXED.md](work_packages/CM_PARAMETER_PREFIX_UNMIXED.md)
+  Superseded route memo; the broad parameter-prefix strategy was narrowed and
+  then replaced by the polynomial-CM base-case route.
 
 - [work_packages/DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md](work_packages/DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md)
   Superseded route memo; kept only as a record of the dehomogenization branch

@@ -121,10 +121,11 @@ The current consumer packet is now:
 
 The current supporting theorem packet for the still-open branch is now:
 
+- [GRADED_CONTRACTION_NZD.md](GRADED_CONTRACTION_NZD.md)
+
+Older route memos are kept only as references:
+
 - [GRADED_CM_INDUCTION.md](GRADED_CM_INDUCTION.md)
-
-The earlier dehomogenization packet is now only a superseded route memo:
-
 - [DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md](DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md)
 
 This file is kept as the broader mathematical context memo.

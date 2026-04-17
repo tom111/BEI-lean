@@ -1,100 +1,84 @@
 # Guide: HH Global CM from the Augmentation Ideal
 
-## Status: 1 sorry — only the `p ⊄ m⁺` case remains
+## Status: 1 sorry — the final polynomial-ring base case
 
 The theorem `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal` is
 stated in `BEI/Equidim.lean` with a two-case split. The `p ⊆ m⁺` case is
-**fully proved**; the `p ⊄ m⁺` case has one remaining sorry.
+**fully proved**. The `p ⊄ m⁺` case has one remaining sorry, now isolated to
+the base case where the localized HH quotient collapses to a localization of a
+polynomial ring over a field.
 
 
 ## What is proved
 
-### In `BEI/Equidim.lean` — structural lemmas (all proved):
+### Graded contraction section (all proved):
 
-1. **`augIdeal_le_of_forall_mkI_X_mem`**: If all variable images `mk(X v)` lie in
-   a prime `p`, then `augIdeal ≤ p`. Uses `MvPolynomial.mem_ideal_span_X_image`.
+1. **`homogeneousComponent_mul_eq_zero_of_low_degrees`**: Degree-counting core.
+2. **`homogeneousComponent_sum_low_eq`**: Component recovery for sums.
+3. **`mem_of_mul_mem_of_isUnit_constantCoeff`**: **Graded contraction theorem.**
+4. **`bipartiteEdgeMonomialIdeal_isMonomial`**: HH ideal is monomial.
+5. **`isMonomial_homogeneousComponent_mem`**: Monomial ideals are homogeneous.
 
-2. **`exists_var_not_mem_of_not_le_augIdeal`**: If `p ⊄ augIdeal`, then some
-   variable image `mk(X v) ∉ p`. By contrapositive of (1) + maximality of
-   `augIdeal`.
+### Structural lemmas (all proved):
 
-3. **`isUnit_algebraMap_mkI_X`**: A variable image not in `p` becomes a unit in
-   `Localization.AtPrime p`. By `IsLocalization.map_units`.
+6. **`exists_var_not_mem_of_not_le_augIdeal`**: Variable outside `p`.
+7. **`isUnit_algebraMap_mkI_X`**: Variable unit in `R_p`.
+8. **`algebraMap_mkI_X_eq_zero_of_edge`**: Edge partner killed.
+9. **`algebraMap_mkI_y_eq_zero_of_x_not_mem`** / `..._x_eq_zero_of_y_not_mem`.
 
-4. **`algebraMap_mkI_X_eq_zero_of_edge`**: If `X v * X w ∈ I` (an edge of the HH
-   bipartite graph) and `X v$ is a unit in `R_p`, then `X w` maps to zero.
-   By `IsUnit.mul_right_eq_zero`.
+### Regular sequence infrastructure (all proved):
 
-5. **`algebraMap_mkI_y_eq_zero_of_x_not_mem`**: Under HH conditions, if `x_i ∉ p`
-   then `y_i = 0` in `R_p`. Uses the HH diagonal edge `x_i · y_i ∈ I`.
-
-6. **`algebraMap_mkI_x_eq_zero_of_y_not_mem`**: Symmetric version.
-
-### In `BEI/Equidim.lean` — already proved:
-- `isCohenMacaulayLocalRing_at_augIdeal`: CM at the augmentation ideal.
-
-### In `toMathlib/CohenMacaulay/Localization.lean`:
-- `isCohenMacaulayLocalRing_localization_atPrime`: CM localizes (complete).
-- `IsCohenMacaulayRing.of_isCohenMacaulayLocalRing`: global CM from local CM (complete).
+10. **`fullRegSeq_isWeaklyRegular_localization`**: Full reg seq weakly regular
+    on `R_p` for ALL primes (flat base change).
+11. **`minimalPrime_le_augIdeal`**: Minimal primes ⊆ augIdeal.
+12. **`isCohenMacaulayLocalRing_at_augIdeal`**: CM at augIdeal.
 
 
-## The exact remaining blockers
+## The exact remaining blocker
 
 ### ~~Blocker A: `p ≤ augIdeal`~~ — **CLOSED**
+### ~~Blocker B1: Graded contraction lemma~~ — **CLOSED**
 
-Fully proved via:
-1. `isWeaklyRegular_map_ringEquiv`: transfers weak regularity through `RingEquiv`
-   by chaining `LinearEquiv.isWeaklyRegular_congr` (module transfer) with
-   `isWeaklyRegular_map_algebraMap_iff` (scalar tower transfer).
-2. `isCohenMacaulayLocalRing_of_ringEquiv`: transfers CM local ring through
-   `RingEquiv`, using (1) for the depth direction and
-   `ringKrullDim_eq_of_ringEquiv` for the dimension direction.
-3. The main proof uses `IsLocalization.localizationLocalizationAtPrimeIsoLocalization`
-   to get `R_p ≃ (R_m)_{p'}`, then transfers CM via (2).
+### Blocker B2: polynomial-ring base case
 
-### Blocker B: `p ⊄ augIdeal` — CM of the localized HH quotient
+The main inductive step is now understood. The only remaining gap is the
+base case `ℓ = 0`.
 
-**Mathematical gap: now isolated as a graded-induction packet.**
+In that base case:
+1. all parameter elements are units in `R_p`;
+2. by the HH local-ring dichotomy, every variable becomes `0` or a unit;
+3. all monomial relations vanish;
+4. `R_p` identifies with a localization of a polynomial ring over the field
+   `K`;
+5. need: such a localization is Cohen–Macaulay.
 
-**Important negative result**: The approach via minimal primes below `p` does
-NOT work. If `q ⊆ p` with `q` a minimal prime, then `q ⊆ augIdeal` (minimal
-primes of a monomial ideal are variable-generated, hence below augIdeal), and
-`R_q` is CM. However, the localization direction is WRONG: `q ⊆ p` gives
-`R_q` as a further localization of `R_p` (not the other way), so we cannot
-derive `R_p` CM from `R_q` CM by the "CM localizes" theorem. The correct
-direction for localization transitivity is `p ⊆ q`, not `q ⊆ p`.
+### Key resources for this base case
 
-**Current active route**:
+- structural localization lemmas already proved in `BEI/Equidim.lean`;
+- the graded contraction theorem;
+- `isCohenMacaulayLocalRing_localization_atPrime`;
+- a still-missing theorem showing polynomial rings over fields are CM.
 
-Use graded induction on `dim(R_{augIdeal})`, with the already-proved forward
-and converse CM transfer theorems.
+The current smallest support packet for this step is:
 
-For the remaining hard case `p ⊄ augIdeal` with positive height:
+- [POLYNOMIAL_RING_CM_BASE_CASE.md](POLYNOMIAL_RING_CM_BASE_CASE.md)
 
-1. find a homogeneous non-zero-divisor `r ∈ p`;
-2. use forward CM transfer to show `(R/(r))_{augIdeal/(r)}` is CM;
-3. apply the induction hypothesis to `R/(r)`;
-4. localize at `p/(r)` and use converse CM transfer to recover CM of `R_p`.
+Current execution order:
 
-The only genuinely new theorem family now identified is:
-
-- a graded prime-avoidance / homogeneous regular-element lemma for the HH quotient.
-
-The active supporting packet for this branch is now:
-
-- [GRADED_CM_INDUCTION.md](GRADED_CM_INDUCTION.md)
-
-The earlier dehomogenization route is kept only as a superseded reference:
-
-- [DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md](DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md)
+1. finish the final remaining sorry in
+   `toMathlib/CohenMacaulay/Polynomial.lean`;
+2. then build the HH base-case ring isomorphism
+   `R_p ≅ (MvPolynomial σ' K)_q`;
+3. then close the last sorry in `BEI/Equidim.lean`.
 
 
 ## What NOT to do
 
 - Do not present `isCohenMacaulayLocalRing_at_augIdeal` as global CM.
 - Do not reopen the CM localization backport.
-- Do not switch to the Gröbner CM transfer yet (that is a separate downstream gap).
-- Do not reopen the already-closed `p ≤ augIdeal` branch.
-- Do not restart the failed minimal-prime route.
-- Do not restart the superseded dehomogenization route unless the graded
-  induction packet fails sharply.
+- Do not switch to the Gröbner CM transfer yet.
+- Do not reopen the `p ≤ augIdeal` branch.
+- Do not restart the minimal-prime, graded-induction, dehomogenization, or
+  broad parameter-prefix routes.
+- Do not broaden into regular-local / embedding-dimension infrastructure unless
+  the polynomial-CM route sharply fails.

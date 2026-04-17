@@ -53,6 +53,7 @@ mathematical goal is the remaining paper-faithful Cohen–Macaulay branch.
 - `toMathlib/CohenMacaulay/Defs.lean` — first real Cohen–Macaulay foundation layer: `ringDepth`, `IsCohenMacaulayLocalRing`, `IsCohenMacaulayRing`, and the basic inequality `ringDepth ≤ ringKrullDim`
 - `toMathlib/CohenMacaulay/Basic.lean` — quotient-local-ring setup, the easy depth inequality for regular quotients, and the converse regular-quotient CM transfer
 - `toMathlib/CohenMacaulay/Localization.lean` — forward CM transfer, unmixedness, `CM localizes`, and the local-ring global-CM wrapper; the file is now fully proved
+- `toMathlib/CohenMacaulay/Polynomial.lean` — `isCohenMacaulayRing_of_isField`, `isCohenMacaulayRing_polynomial_of_isCohenMacaulayRing_domain` (2 sorries: X∈P quotient CM identification and X∉P case), `isCohenMacaulayRing_mvPolynomial_field`; public `isCohenMacaulayLocalRing_of_ringEquiv'` and `isWeaklyRegular_map_ringEquiv`
 - `toMathlib/MonomialIdeal.lean` — monomial ideals in `MvPolynomial`, variable-generated prime ideals, the prime classification for monomial ideals, `coeff_pow_lexMax`, `radical_isMonomial`, the full primary monomial ideal characterization (`isPrimary_iff`), and supporting structural lemmas
 - `toMathlib/SquarefreeMonomialPrimes.lean` — variable-pair ideals (edge ideals), vertex covers, and minimal prime ↔ minimal vertex cover classification
 - `toMathlib/HeightVariableIdeal.lean` — quotients by variable ideals, quotient equivalences, and Krull-dimension formulas used in the Proposition 1.6 CM branch
