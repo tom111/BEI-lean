@@ -4140,6 +4140,151 @@ private theorem isMonomial_homogeneousComponent_mem {n : ℕ}
     rw [MvPolynomial.C_mul_monomial, mul_one]]
   exact Ideal.mul_mem_left _ _ hmon
 
+/-! #### F2 route scaffolding: unit set, neighborhood, survivors -/
+
+/-- Neighborhood of `U` in the HH bipartite graph (undirected). -/
+private def hhNbhd {n : ℕ} (G : SimpleGraph (Fin n))
+    (U : Set (BinomialEdgeVars (Fin n))) : Set (BinomialEdgeVars (Fin n)) :=
+  { w | ∃ u ∈ U, (u, w) ∈ hhEdgeSet G ∨ (w, u) ∈ hhEdgeSet G }
+
+/-- `U` is independent in the HH bipartite graph. -/
+private def hhIndep {n : ℕ} (G : SimpleGraph (Fin n))
+    (U : Set (BinomialEdgeVars (Fin n))) : Prop :=
+  ∀ ⦃u v⦄, u ∈ U → v ∈ U → (u, v) ∉ hhEdgeSet G
+
+/-- Survivor set: vertices neither in `U` nor adjacent to `U`. -/
+private def hhSurvivors {n : ℕ} (G : SimpleGraph (Fin n))
+    (U : Set (BinomialEdgeVars (Fin n))) : Set (BinomialEdgeVars (Fin n)) :=
+  (U ∪ hhNbhd G U)ᶜ
+
+/-! #### Lemma 3 — one-sided survivors are isolated in `Γ_W` -/
+
+/-- **Lemma 3 (x-case)**: Under HH conditions, if `x_i` is a survivor but `y_i` is not,
+then every HH-neighbor of `x_i` is outside the survivor set. -/
+private lemma hhSurvivor_x_isolated {n : ℕ} {G : SimpleGraph (Fin n)}
+    (hHH : HerzogHibiConditions n G)
+    {U : Set (BinomialEdgeVars (Fin n))}
+    {i : Fin n}
+    (hxi : (Sum.inl i : BinomialEdgeVars (Fin n)) ∈ hhSurvivors G U)
+    (hyi : (Sum.inr i : BinomialEdgeVars (Fin n)) ∉ hhSurvivors G U)
+    {j : Fin n} (hedge : (Sum.inl i, Sum.inr j) ∈ hhEdgeSet G) :
+    (Sum.inr j : BinomialEdgeVars (Fin n)) ∉ hhSurvivors G U := by
+  -- Unpack the edge data
+  obtain ⟨i', j', hj', hadj_ij, hij, heq⟩ := hedge
+  rw [Prod.mk.injEq] at heq
+  obtain ⟨hil, hir⟩ := heq
+  have hii' : i = i' := Sum.inl.inj hil
+  have hjj' : j = j' := Sum.inr.inj hir
+  subst hii'; subst hjj'
+  -- Diagonal edge at i exists: hedge forces i.val + 1 < n
+  have hi_succ : i.val + 1 < n := by
+    have : i.val + 1 ≤ j.val + 1 := by exact_mod_cast Nat.succ_le_succ hij
+    omega
+  -- hyi: inr i ∉ (U ∪ N)ᶜ, so inr i ∈ U ∪ N
+  have hy_in : (Sum.inr i : BinomialEdgeVars (Fin n)) ∈ U ∪ hhNbhd G U := by
+    by_contra h; exact hyi h
+  -- Case analysis on how inr i fails to be a survivor
+  rcases hy_in with hy_U | hy_N
+  · -- inr i ∈ U: the diagonal edge (inl i, inr i) forces inl i ∈ N(U), contradicting inl i ∈ W
+    exfalso
+    apply hxi
+    refine Or.inr ⟨Sum.inr i, hy_U, Or.inr ?_⟩
+    exact ⟨i, i, hi_succ, hHH.diagonal i hi_succ, le_refl i, rfl⟩
+  · -- inr i ∈ N(U): choose u ∈ U adjacent to inr i.
+    obtain ⟨u, hu_U, hu_adj⟩ := hy_N
+    rcases hu_adj with he1 | he2
+    · -- (u, inr i) ∈ hhEdgeSet: u = Sum.inl a, and the edge is (inl a, inr i)
+      obtain ⟨a, i'', hi_succ', hadj_ai, h_ai, heq_ai⟩ := he1
+      have hu_eq : u = Sum.inl a := (Prod.mk.inj heq_ai).1
+      have hi_eq : i = i'' := Sum.inr.inj (Prod.mk.inj heq_ai).2
+      subst hi_eq
+      -- a ≤ i; a ≠ i because inl a ∈ U and inl i ∈ W
+      have ha_ne_i : a ≠ i := by
+        rintro rfl
+        apply hxi
+        exact Or.inl (hu_eq ▸ hu_U)
+      have ha_lt_i : a < i := lt_of_le_of_ne h_ai ha_ne_i
+      -- Split on whether j = i
+      by_cases hji : j = i
+      · rw [hji]; exact hyi
+      · have hi_lt_j : i < j := lt_of_le_of_ne hij (Ne.symm hji)
+        -- HH transitivity on a < i < j
+        have hadj_aj : G.Adj a ⟨j.val + 1, hj'⟩ :=
+          hHH.transitivity a i j hi_succ' hj' ha_lt_i hi_lt_j hadj_ai hadj_ij
+        -- Therefore (inl a, inr j) ∈ hhEdgeSet, so inr j ∈ N(U) via u = inl a
+        intro hj_W
+        apply hj_W
+        refine Or.inr ⟨Sum.inl a, hu_eq ▸ hu_U, Or.inl ?_⟩
+        refine ⟨a, j, hj', hadj_aj, ?_, rfl⟩
+        exact le_of_lt (lt_of_lt_of_le ha_lt_i hij)
+    · -- (inr i, u) ∈ hhEdgeSet: impossible since edges are (inl _, inr _)
+      exfalso
+      obtain ⟨i'', j'', _, _, _, heq_bad⟩ := he2
+      exact Sum.inl_ne_inr ((Prod.mk.inj heq_bad).1.symm)
+
+/-- **Lemma 3 (y-case)**: symmetric to the x-case. If `y_i` is a survivor but `x_i` is not,
+then every HH-neighbor of `y_i` is outside the survivor set. -/
+private lemma hhSurvivor_y_isolated {n : ℕ} {G : SimpleGraph (Fin n)}
+    (hHH : HerzogHibiConditions n G)
+    {U : Set (BinomialEdgeVars (Fin n))}
+    {i : Fin n}
+    (hyi : (Sum.inr i : BinomialEdgeVars (Fin n)) ∈ hhSurvivors G U)
+    (hxi : (Sum.inl i : BinomialEdgeVars (Fin n)) ∉ hhSurvivors G U)
+    {j : Fin n} (hedge : (Sum.inl j, Sum.inr i) ∈ hhEdgeSet G) :
+    (Sum.inl j : BinomialEdgeVars (Fin n)) ∉ hhSurvivors G U := by
+  obtain ⟨j', i', hi', hadj_ji, hji, heq⟩ := hedge
+  rw [Prod.mk.injEq] at heq
+  obtain ⟨hil, hir⟩ := heq
+  have hjj' : j = j' := Sum.inl.inj hil
+  have hii' : i = i' := Sum.inr.inj hir
+  subst hjj'; subst hii'
+  -- Diagonal edge at i exists (hedge needs i.val + 1 < n directly)
+  -- hxi: inl i ∉ (U ∪ N)ᶜ, so inl i ∈ U ∪ N
+  have hx_in : (Sum.inl i : BinomialEdgeVars (Fin n)) ∈ U ∪ hhNbhd G U := by
+    by_contra h; exact hxi h
+  rcases hx_in with hx_U | hx_N
+  · -- inl i ∈ U: diagonal (inl i, inr i) forces inr i ∈ N, contradicting inr i ∈ W
+    exfalso
+    apply hyi
+    refine Or.inr ⟨Sum.inl i, hx_U, Or.inl ?_⟩
+    exact ⟨i, i, hi', hHH.diagonal i hi', le_refl i, rfl⟩
+  · -- inl i ∈ N(U): choose u ∈ U adjacent to inl i
+    obtain ⟨u, hu_U, hu_adj⟩ := hx_N
+    rcases hu_adj with he1 | he2
+    · -- (u, inl i) ∈ hhEdgeSet: impossible (edges go inl → inr)
+      exfalso
+      obtain ⟨i'', j'', _, _, _, heq_bad⟩ := he1
+      exact Sum.inl_ne_inr ((Prod.mk.inj heq_bad).2)
+    · -- (inl i, u) ∈ hhEdgeSet: u = Sum.inr b, and the edge is (inl i, inr b)
+      obtain ⟨i'', b, hb_succ, hadj_ib, h_ib, heq_ib⟩ := he2
+      have hi_eq : i = i'' := Sum.inl.inj (Prod.mk.inj heq_ib).1
+      have hu_eq : u = Sum.inr b := (Prod.mk.inj heq_ib).2
+      subst hi_eq
+      -- i ≤ b; b ≠ i because inr b ∈ U and inr i ∈ W
+      have hb_ne_i : b ≠ i := by
+        rintro rfl
+        apply hyi
+        exact Or.inl (hu_eq ▸ hu_U)
+      have hi_lt_b : i < b := lt_of_le_of_ne h_ib (Ne.symm hb_ne_i)
+      -- Split on whether j = i
+      by_cases hji_eq : j = i
+      · rw [hji_eq]; exact hxi
+      · have hj_lt_i : j < i := lt_of_le_of_ne hji hji_eq
+        -- HH transitivity on j < i < b
+        have hadj_jb : G.Adj j ⟨b.val + 1, hb_succ⟩ :=
+          hHH.transitivity j i b hi' hb_succ hj_lt_i hi_lt_b hadj_ji hadj_ib
+        -- Therefore (inl j, inr b) ∈ hhEdgeSet, so inl j ∈ N(U) via u = inr b
+        intro hj_W
+        apply hj_W
+        refine Or.inr ⟨Sum.inr b, hu_eq ▸ hu_U, Or.inr ?_⟩
+        refine ⟨j, b, hb_succ, hadj_jb, ?_, rfl⟩
+        exact le_of_lt (lt_of_lt_of_le hj_lt_i h_ib)
+
+/-! #### Lemmas 1, 2, 4, 5, 6, 7 — scaffolding for the F2 route
+
+Statements only; proofs are deferred. See
+`guides/work_packages/HH_GLOBAL_CM_FROM_AUGIDEAL.md` for the full plan. -/
+
 /-! #### Main theorem -/
 
 /-- **Graded local-to-global for the HH quotient**: Under HH conditions, the quotient
