@@ -41,19 +41,14 @@
 ### Priority 1: Real Cohen-Macaulay track
 
 Active follow-up work now lives in:
+- `guides/work_packages/FULL_PROP_1_6_PLAN.md` — overall 3-phase plan
 - `guides/work_packages/HH_GLOBAL_CM_FROM_AUGIDEAL.md` — current consumer
-  packet for the remaining HH-side global CM step
-- `guides/work_packages/DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md` — new
-  support packet for the last `p ⊄ augIdeal` branch
-- `guides/work_packages/GRADED_CM_LOCAL_TO_GLOBAL.md` — broader theorem-context
-  memo for the remaining HH-side global CM step
-- `guides/work_packages/CM_LOCALIZES.md` — completed theorem packet: the
-  local CM localization/globalization slice is now landed
-- `guides/work_packages/GROEBNER_CM_TRANSFER.md` — the Gröbner deformation transfer
+  packet for the remaining HH-side global CM step (tracks the active sorry)
 - `guides/work_packages/PROP_1_6_CM_TRANSFER.md` — overall CM transfer strategy
-- `guides/work_packages/HH_CM_TO_GLOBAL.md` — HH-side route (now mostly consumed)
-- `guides/work_packages/cm_pr_26218/` — supporting CM backport
-- `guides/work_packages/cm_pr_28599/` — completed CM-localization backport packet
+- `guides/work_packages/GROEBNER_CM_TRANSFER.md` — the Gröbner deformation transfer (Phase 2)
+
+Completed / superseded packets are now under `guides/archive/` (see
+`guides/INDEX.md`).
 
 Supporting files on this branch:
 - `BEI/PrimeDecompositionDimension.lean`
@@ -123,14 +118,11 @@ Its current shape is:
 1. the branch `p ≤ augIdeal`: closed;
 2. the branch `p ⊄ augIdeal`: still open.
 
-The currently best-identified route for that last branch is the
-dehomogenization / Laurent-extension packet:
-
-- `guides/work_packages/DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md`
-
-with broader context in:
-
-- `guides/work_packages/GRADED_CM_LOCAL_TO_GLOBAL.md`
+The current route for that last branch, along with the backported polynomial-CM
+infrastructure it depends on, is tracked in
+`guides/work_packages/HH_GLOBAL_CM_FROM_AUGIDEAL.md` and the umbrella plan
+`guides/work_packages/FULL_PROP_1_6_PLAN.md`. Earlier dehomogenization / graded-
+local-to-global route memos are preserved in `guides/archive/`.
 
 The Gröbner CM transfer theorem (Eisenbud 15.17) also remains unformalized, so the full
 paper Cohen–Macaulay statement is still open even after the HH-side CM theorem lands.
