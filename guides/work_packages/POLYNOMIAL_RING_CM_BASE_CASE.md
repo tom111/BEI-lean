@@ -17,6 +17,10 @@ verifies with only `propext`, `Classical.choice`, `Quot.sound`.
 - `cm_localize_polynomial_of_cm_aux` — induction on primeHeight.
 - `isCohenMacaulayRing_polynomial_of_isCohenMacaulayRing_domain` — the
   polynomial extension theorem for CM domains.
+- `isCohenMacaulayRing_polynomial_of_isCohenMacaulayRing` and
+  `isCohenMacaulayRing_mvPolynomial_of_isCohenMacaulayRing` — the
+  general (non-domain) polynomial CM extension, backported from
+  Mathlib PR #28599 (2026-04-18).
 - **`isCohenMacaulayRing_mvPolynomial_field`** — MvPolynomial rings over
   fields are CM.
 - Public ring-equiv CM transfer: `isCohenMacaulayLocalRing_of_ringEquiv'`,
@@ -30,14 +34,9 @@ base case "polynomial rings over a field are CM". See
 current state of the F2 plan; the polynomial CM result is a DONE input
 to that larger plan.
 
-## Known limitation
+## Known limitation (RESOLVED 2026-04-18)
 
-The theorem requires `A` to be a **domain** (`[IsDomain A]`). For the F2
-route's L7 (tensor-CM base lemma), we need polynomial CM for non-domain
-CM local rings — specifically for `A = A_H^red` localized at its
-augmentation, which is CM local but not a domain (Stanley-Reisner rings
-with multiple minimal primes).
-
-Generalizing to non-domain A is a separate project (substantial rewrite
-of the X ∉ Q branch) and is tracked under L7 in
-`HH_GLOBAL_CM_FROM_AUGIDEAL.md`.
+Previously the domain-only version required `[IsDomain A]`. The PR #28599
+backport lifts this restriction: `isCohenMacaulayRing_polynomial_of_isCohenMacaulayRing`
+takes only `[IsNoetherianRing R] [IsCohenMacaulayRing R]`. Stanley-Reisner
+CM quotients (not domains) are now covered.

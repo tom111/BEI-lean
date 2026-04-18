@@ -39,10 +39,15 @@ The seven lemmas and their status:
   Lemma `polynomialAwayTensorEquiv` in `toMathlib/PolynomialAwayTensor.lean`.
 - **L7** (pending — largest risk). Tensor-CM base lemma: for CM local
   K-algebra A and polynomial-ring localization B = K[τ][b⁻¹], the
-  localization `(A ⊗_K B)_P` at a prime over m_A is CM. Needs either:
-  (a) the flat-local CM criterion (not in Mathlib), or
-  (b) generalizing `isCohenMacaulayRing_polynomial_of_isCohenMacaulayRing_domain`
-      to non-domain CM rings.
+  localization `(A ⊗_K B)_P` at a prime over m_A is CM. Since 2026-04-18
+  the non-domain polynomial CM extension is DONE
+  (`isCohenMacaulayRing_polynomial_of_isCohenMacaulayRing`, PR #28599
+  backport); this does not on its own give L7, since A ⊗_K B localized
+  is not quite a polynomial over A, but combined with an A-globally-CM
+  step (by induction on graph size, Strategy I in
+  `questions/HH_QUOTIENT_CM_AT_NON_AUGIDEAL.md`) it can be closed.
+  The remaining risk is the flat-base-change step and the structural
+  decomposition, not a polynomial CM extension.
 
 ## What else is proved (pre-F2 infrastructure)
 
