@@ -4635,16 +4635,27 @@ theorem isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal
         change IsCohenMacaulayLocalRing (Localization q.primeCompl) =
           IsCohenMacaulayLocalRing (Localization p.primeCompl)
         rw [hpc]) hCM_q
-  · -- Case p ⊄ augIdeal: reduce to "polynomial rings over fields are CM."
+  · -- Case p ⊄ augIdeal: F2 decomposition.
     --
-    -- By the HH structure + local-ring dichotomy (ab = 0, a + b unit ⟹
-    -- one is 0), every variable is either 0 or a unit in R_p.  The monomial
-    -- generators of I each have at least one zero factor, so they vanish.
-    -- The ring R_p is therefore isomorphic to a localization of
-    -- K[surviving variables] — a polynomial ring in the unit variables.
-    -- CM then follows from the standard fact that polynomial rings over
-    -- fields are Cohen–Macaulay (equivalently: regular local rings are CM),
-    -- which is not yet in Mathlib.
+    -- The earlier sketch "R_p is a localization of K[surviving variables]"
+    -- is FALSE in general (counterexample n = 4, G = K_4,
+    -- p = (x_0, x_1, y_0, y_1, y_2, x_3 − 1) where R_p is a localization of
+    -- A^red_{K_3} ⊗_K K[x_2, x_3, y_3] rather than a plain polynomial
+    -- localization).
+    --
+    -- The validated route (see guides/work_packages/HH_GLOBAL_CM_FROM_AUGIDEAL.md
+    -- and guides/answers/ANSWER_HH_QUOTIENT_CM_AT_NON_AUGIDEAL.md):
+    --   1. [L1] R[s_U⁻¹] ≅ (K[W] / I(Γ_G|_W)) ⊗_K K[U][s_U⁻¹]  with
+    --      U = unit variables in R_p, W = surviving nonunit variables.
+    --   2. [L2] localize L1 at p.
+    --   3. [L4] K[W] / I(Γ_G|_W) ≅ A^red_{G'} ⊗_K K[Λ]  where G' is the
+    --      canonical smaller HH graph on the paired-survivor indices.
+    --   4. [L5, proved] A^red_{G'} at its augmentation ideal is CM local.
+    --   5. [L7 replacement] For A CM and B = K[τ][s⁻¹], every localization
+    --      of A ⊗_K B at a prime is CM; close via
+    --      `A ⊗_K K[τ][s⁻¹] ≅ A[τ][s_A⁻¹]` +
+    --      `isCohenMacaulayRing_mvPolynomial_of_isCohenMacaulayRing` +
+    --      CM localizes.
     sorry
 
 end GlobalCM

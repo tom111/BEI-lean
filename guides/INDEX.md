@@ -27,6 +27,14 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 
 ## Answers And Decision Notes
 
+- [answers/ANSWER_HH_QUOTIENT_CM_AT_NON_AUGIDEAL.md](answers/ANSWER_HH_QUOTIENT_CM_AT_NON_AUGIDEAL.md)
+  Validated F2 strategy for the `p ⊄ m⁺` branch: reject Strategy I
+  (induction on n); keep F2 decomposition but replace L7 with a small
+  tensor-polynomial-localisation CM lemma using the backported
+  polynomial-over-CM. Includes a corrected decomposition
+  `R_p ≅ (A^red_{G', m} ⊗_K K[Λ ⊔ U][s_U⁻¹])_𝔓` with explicit generator
+  formulas and a counterexample check (n=4, K_4).
+
 - [answers/ANSWER_PROP_1_6_CM_WHAT_IS_NEEDED.md](answers/ANSWER_PROP_1_6_CM_WHAT_IS_NEEDED.md)
   Decision note: the paper-critical gaps are the HH bipartite CM theorem and the Gröbner transfer theorem.
 
