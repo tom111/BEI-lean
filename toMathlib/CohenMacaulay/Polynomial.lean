@@ -1309,4 +1309,331 @@ theorem isCohenMacaulayRing_mvPolynomial_field (n : ℕ) :
 
 end MvPolynomial
 
+/-! ### Polynomial ring over a general CM Noetherian ring is CM
+
+This section proves the general (no IsDomain assumption) theorem that
+`R[X]` is Cohen-Macaulay when `R` is a Noetherian CM ring. This backports
+mathlib PR #28599 (Nailin Guan, Yongle Hu) to the v4.28.0 API of this project.
+
+The key differences from upstream:
+- Our `ringDepth` is defined directly as the sSup of regular sequence lengths,
+  so we skip the `depth_eq_sSup_length_regular` rewrite.
+- We use `isCohenMacaulayLocalRing_of_weaklyRegular_length_eq_dim` (feeding it
+  an explicit regular sequence of length `= dim`) instead of the upstream
+  `isCohenMacaulayLocalRing_of_ringKrullDim_le_depth`. -/
+
+section PolynomialGeneralCM
+
+open IsLocalRing RingTheory.Sequence Polynomial Ideal
+
+variable (R : Type u) [CommRing R]
+
+/-- In a field polynomial ring, any nonzero ideal contains a monic element.
+This is the translation of upstream `Polynomial.exist_monic_mem`. -/
+private lemma polynomial_exist_monic_mem {F : Type u} [Field F] {I : Ideal F[X]} (ne : I ≠ ⊥) :
+    ∃ f ∈ I, f.Monic := by
+  obtain ⟨g, gmem, gne⟩ : ∃ g ∈ I, g ≠ 0 := by
+    by_contra!
+    exact ne ((Submodule.eq_bot_iff I).mpr this)
+  refine ⟨C g.leadingCoeff⁻¹ * g, mul_mem_left I (C g.leadingCoeff⁻¹) gmem, ?_⟩
+  simpa [Monic] using inv_mul_cancel₀ (leadingCoeff_ne_zero.mpr gne)
+
+/-- Extract a weakly regular sequence in the maximal ideal witnessing the depth,
+for a CM Noetherian local ring. Returns `rs` with `rs.length = ringKrullDim R`
+as a natural number. -/
+private lemma exists_weaklyRegular_length_eq_ringKrullDim_of_isCohenMacaulayLocalRing
+    [IsNoetherianRing R] [IsCohenMacaulayLocalRing R] :
+    ∃ (rs : List R), IsWeaklyRegular R rs ∧ (∀ r ∈ rs, r ∈ maximalIdeal R) ∧
+      ringKrullDim R = (rs.length : ℕ∞) := by
+  -- ringDepth R = sSup of lengths of regular sequences in the maximal ideal.
+  -- Claim: this sSup is attained.
+  have hne : {(n : ℕ∞) | ∃ (rs : List R),
+      (rs.length : ℕ∞) = n ∧ IsWeaklyRegular R rs ∧
+      ∀ r ∈ rs, r ∈ maximalIdeal R}.Nonempty :=
+    ⟨0, [], rfl, IsWeaklyRegular.nil R R, fun _ h => nomatch h⟩
+  -- ringDepth R < ⊤ in ℕ∞ (from ringDepth ≤ ringKrullDim and ringKrullDim < ⊤)
+  have hdim_lt : ringKrullDim R < (⊤ : WithBot ℕ∞) := ringKrullDim_lt_top
+  have hdepth_le_dim : (ringDepth R : WithBot ℕ∞) ≤ ringKrullDim R :=
+    ringDepth_le_ringKrullDim R
+  have hdepth_lt_top : ringDepth R < (⊤ : ℕ∞) := by
+    -- ringDepth R ≤ ringKrullDim R < ⊤, so ringDepth R < ⊤ in ℕ∞
+    have h1 : (ringDepth R : WithBot ℕ∞) < ⊤ := lt_of_le_of_lt hdepth_le_dim hdim_lt
+    -- h1 : (↑(ringDepth R) : WithBot ℕ∞) < ⊤
+    -- Deduce ringDepth R < ⊤
+    by_contra h
+    push_neg at h
+    have : ringDepth R = ⊤ := top_le_iff.mp h
+    rw [this] at h1
+    exact lt_irrefl _ (by exact_mod_cast h1)
+  -- Now apply ENat.sSup_mem_of_nonempty_of_lt_top
+  haveI : Nonempty _ := Set.Nonempty.to_subtype hne
+  have hmem := @ENat.sSup_mem_of_nonempty_of_lt_top _ this hdepth_lt_top
+  -- hmem : sSup _ ∈ _, i.e., ringDepth R is attained
+  obtain ⟨rs, hlen, hreg, hmem'⟩ : ∃ rs : List R, (rs.length : ℕ∞) = ringDepth R ∧
+      IsWeaklyRegular R rs ∧ ∀ r ∈ rs, r ∈ maximalIdeal R := hmem
+  refine ⟨rs, hreg, hmem', ?_⟩
+  -- ringKrullDim R = ringDepth R (CM) = rs.length
+  have hCMeq : ringKrullDim R = ringDepth R := IsCohenMacaulayLocalRing.depth_eq_dim
+  rw [hCMeq, ← hlen]
+
+-- Increased heartbeat limit: this proof case-splits on X ∈ p vs X ∉ p and
+-- builds explicit regular sequences in each branch; each branch does substantial
+-- simp/rewrite work on quotient-localization identifications.
+set_option maxHeartbeats 800000 in
+/-- **Core lemma**: if `R` is a CM Noetherian local ring and `p` is a prime of `R[X]`
+whose contraction to `R` is the maximal ideal, then the localization `R[X]_p` is
+Cohen-Macaulay local.
+
+This is the translation of upstream `Polynomial.localization_at_comap_maximal_isCM_isCM`
+to the v4.28.0 API. -/
+private lemma localization_at_comap_maximal_isCM_isCM_local [IsNoetherianRing R]
+    [IsCohenMacaulayLocalRing R] (p : Ideal R[X]) [p.IsPrime]
+    (max : p.comap C = maximalIdeal R) :
+    IsCohenMacaulayLocalRing (Localization.AtPrime p) := by
+  set q := (maximalIdeal R).map C with q_def
+  have qle : q ≤ p := by simpa [q, ← max] using map_comap_le
+  have ker : RingHom.ker (Polynomial.mapRingHom (IsLocalRing.residue R)) = q := by
+    simpa only [residue, ker_mapRingHom, q] using congrArg (Ideal.map C) (Quotient.mkₐ_ker R _)
+  -- Get a regular sequence witnessing the depth of R
+  obtain ⟨rs, reg, mem, hlen⟩ :=
+    exists_weaklyRegular_length_eq_ringKrullDim_of_isCohenMacaulayLocalRing R
+  -- hlen : ringKrullDim R = ↑rs.length
+  -- The elements of (rs.map algebraMap) are in maximalIdeal (Localization.AtPrime p)
+  have mem' : ∀ a ∈ (rs.map (algebraMap R (Localization.AtPrime p))),
+      a ∈ maximalIdeal (Localization.AtPrime p) := by
+    simp only [List.mem_map, forall_exists_index, and_imp, forall_apply_eq_imp_iff₂]
+    intro r hr
+    rw [IsScalarTower.algebraMap_eq R R[X], RingHom.comp_apply]
+    apply Ideal.mem_comap.mp
+    rw [IsLocalization.AtPrime.comap_maximalIdeal (Localization.AtPrime p) p, ← Ideal.mem_comap,
+      Polynomial.algebraMap_eq, max]
+    exact mem r hr
+  -- Module.Flat R (Localization.AtPrime p)
+  haveI : Module.Flat R (Localization.AtPrime p) := Module.Flat.trans R R[X] _
+  -- Krull dim equality: ringKrullDim (Loc.AtPrime p) = p.height
+  haveI : IsNoetherianRing (Localization.AtPrime p) :=
+    IsLocalization.isNoetherianRing p.primeCompl _ inferInstance
+  have hdimeq : ringKrullDim (Localization.AtPrime p) = (p.height : WithBot ℕ∞) :=
+    IsLocalization.AtPrime.ringKrullDim_eq_height p (Localization.AtPrime p)
+  -- Now case split: X ∈ P (upstream `eq0`) vs X ∉ P
+  by_cases eq0 : p.map (Polynomial.mapRingHom (IsLocalRing.residue R)) = ⊥
+  · -- Case X ∈ p: the regular sequence rs.map algebraMap works as-is
+    have reg_loc : IsWeaklyRegular (Localization.AtPrime p)
+        (rs.map (algebraMap R (Localization.AtPrime p))) :=
+      IsWeaklyRegular.of_flat reg
+    -- p = q
+    have eq : p = q := le_antisymm (by simpa [← ker, ← Ideal.map_eq_bot_iff_le_ker]) qle
+    -- p.height = (maximalIdeal R).height = rs.length
+    have hpheight : p.height = (maximalIdeal R).height := by
+      rw [eq, Polynomial.height_map_C (maximalIdeal R)]
+    have hmaxht : (maximalIdeal R).height = (rs.length : ℕ∞) := by
+      have h1 : ((IsLocalRing.maximalIdeal R).height : WithBot ℕ∞) = ringKrullDim R :=
+        IsLocalRing.maximalIdeal_height_eq_ringKrullDim
+      rw [hlen] at h1
+      exact_mod_cast h1
+    have hdim : ringKrullDim (Localization.AtPrime p) =
+        ((rs.map (algebraMap R (Localization.AtPrime p))).length : ℕ∞) := by
+      rw [hdimeq, hpheight, hmaxht, List.length_map]
+    exact isCohenMacaulayLocalRing_of_weaklyRegular_length_eq_dim reg_loc mem' hdim
+  · -- Case X ∉ p: append a lifted monic polynomial f to rs.map algebraMap
+    rcases polynomial_exist_monic_mem eq0 with ⟨g, gmem, mong⟩
+    have glift : g ∈ lifts (IsLocalRing.residue R) :=
+      map_surjective _ IsLocalRing.residue_surjective _
+    rcases Polynomial.lifts_and_natDegree_eq_and_monic glift mong with ⟨f, hf, _deg, monf⟩
+    have fmem : f ∈ p := by
+      simp only [← hf, ← coe_mapRingHom, ← mem_comap] at gmem
+      rw [comap_map_of_surjective' _ (map_surjective _ IsLocalRing.residue_surjective),
+        sup_of_le_left (by simpa [ker_mapRingHom, ker_residue] using qle)] at gmem
+      exact gmem
+    -- rs.map algebraMap to R[X] is weakly regular
+    have reg'' : IsWeaklyRegular R[X] (rs.map (algebraMap R R[X])) :=
+      IsWeaklyRegular.of_flat reg
+    -- rs.map algebraMap ++ [f] is weakly regular in R[X]
+    have reg' : IsWeaklyRegular R[X] ((rs.map (algebraMap R R[X])) ++ [f]) := by
+      refine ⟨fun i hi => ?_⟩
+      simp only [List.length_append, List.length_cons, List.length_nil, zero_add,
+        Nat.lt_succ_iff] at hi
+      rw [List.take_append_of_le_length hi]
+      rcases lt_or_eq_of_le hi with lt|eq
+      · simpa only [← List.getElem_append_left' lt [f]] using reg''.1 i lt
+      · rw [List.getElem_concat_length eq, List.take_of_length_le (ge_of_eq eq), smul_eq_mul,
+          mul_top, ← map_ofList, algebraMap_eq]
+        let _inst : Algebra R[X] (R ⧸ Ideal.ofList rs)[X] := RingHom.toAlgebra
+          (Polynomial.mapRingHom (Ideal.Quotient.mk _))
+        apply (Equiv.isSMulRegular_congr (r := f) (s := f)
+          (e := (Ideal.polynomialQuotientEquivQuotientPolynomial (Ideal.ofList rs)).toEquiv)
+          (fun x => by
+            -- Goal: e (f • x) = f • e x, where
+            -- LHS smul: f • x in (R/ofList rs)[X] via _inst = mapRingHom (Quotient.mk _) f * x
+            -- RHS smul: f • e(x) in R[X] ⧸ map C (ofList rs) via default = Quotient.mk f * e(x)
+            set e := Ideal.polynomialQuotientEquivQuotientPolynomial (Ideal.ofList rs)
+            have heq : e.toEquiv (f • x) = e (f • x) := rfl
+            have heq2 : e.toEquiv x = e x := rfl
+            rw [heq, heq2]
+            rw [show (f • x : (R ⧸ Ideal.ofList rs)[X]) =
+              Polynomial.map (Ideal.Quotient.mk (Ideal.ofList rs)) f * x from rfl]
+            rw [map_mul, Ideal.polynomialQuotientEquivQuotientPolynomial_map_mk]
+            change Ideal.Quotient.mk _ f * e x = f • e x
+            rfl)).mp
+        apply IsSMulRegular.of_right_eq_zero_of_smul
+        simpa [Algebra.smul_def, algebraMap_def, Ideal.Quotient.algebraMap_eq, coe_mapRingHom]
+          using (mem_nonZeroDivisors_iff.mp
+            (monf.map (Ideal.Quotient.mk (Ideal.ofList rs))).mem_nonZeroDivisors).1
+    -- All elements of ((rs.map algebraMap) ++ [f]).map algebraMap_toLoc
+    -- are in maximalIdeal (Loc.AtPrime p)
+    have mem'' : ∀ r ∈ (((rs.map (algebraMap R R[X])) ++ [f]).map
+        (algebraMap R[X] (Localization.AtPrime p))),
+        r ∈ maximalIdeal (Localization.AtPrime p) := by
+      intro r hr
+      simp only [List.map_append, List.map_map, List.map_cons, List.map_nil, List.mem_append,
+        List.mem_map, Function.comp_apply, List.mem_cons, List.not_mem_nil, or_false,
+        ← RingHom.comp_apply, ← IsScalarTower.algebraMap_eq] at hr
+      rcases hr with isrs|isf
+      · exact mem' _ (List.mem_map.mpr isrs)
+      · simpa only [isf, ← mem_comap, IsLocalization.AtPrime.comap_maximalIdeal _ p]
+    -- The extended sequence is weakly regular in Loc.AtPrime p
+    have reg_loc : IsWeaklyRegular (Localization.AtPrime p)
+        (((rs.map (algebraMap R R[X])) ++ [f]).map (algebraMap R[X] (Localization.AtPrime p))) :=
+      IsWeaklyRegular.of_flat reg'
+    -- Upper bound on p.height
+    have ht2 : p.height ≤ (maximalIdeal R).height + 1 := by
+      rw [← WithBot.coe_le_coe, WithBot.coe_add, maximalIdeal_height_eq_ringKrullDim,
+          Ideal.height_eq_primeHeight, WithBot.coe_one]
+      -- Goal: (p.primeHeight : WithBot ℕ∞) ≤ ringKrullDim R[X]... wait, we need Loc.AtPrime p
+      -- Actually the goal after the rewrites is:
+      --   ↑p.primeHeight ≤ ringKrullDim R + ↑1
+      -- Use: ringKrullDim R[X] = ringKrullDim R + 1 (for Noetherian) + p.primeHeight ≤ dim R[X]
+      have h1 : (p.primeHeight : WithBot ℕ∞) ≤ ringKrullDim R[X] :=
+        Ideal.primeHeight_le_ringKrullDim
+      have h2 : ringKrullDim R[X] = ringKrullDim R + 1 := by
+        rw [Polynomial.ringKrullDim_of_isNoetherianRing]
+      exact h2 ▸ h1
+    -- Length of extended sequence is rs.length + 1
+    have hextlen : (((rs.map (algebraMap R R[X])) ++ [f]).map
+        (algebraMap R[X] (Localization.AtPrime p))).length = rs.length + 1 := by
+      simp [List.length_append, List.length_map]
+    -- Get the dimension equality for Loc.AtPrime p
+    have hmaxht : (maximalIdeal R).height = (rs.length : ℕ∞) := by
+      have h1 : ((IsLocalRing.maximalIdeal R).height : WithBot ℕ∞) = ringKrullDim R :=
+        IsLocalRing.maximalIdeal_height_eq_ringKrullDim
+      rw [hlen] at h1
+      exact_mod_cast h1
+    -- p.height ≤ rs.length + 1 (as ℕ∞)
+    have ht2' : p.height ≤ (rs.length : ℕ∞) + 1 := by
+      rw [hmaxht] at ht2; exact_mod_cast ht2
+    -- Lower bound: length ≤ dim (via regular sequence)
+    have hdimlb : ((rs.length + 1 : ℕ) : ℕ∞) ≤ p.height := by
+      -- Regular sequence of length rs.length+1 in Loc.AtPrime p, all in maximalIdeal
+      -- Length ≤ Krull dim of Loc.AtPrime p, and Krull dim of Loc.AtPrime p = p.height.
+      have hreg_len : ((((rs.map (algebraMap R R[X])) ++ [f]).map
+          (algebraMap R[X] (Localization.AtPrime p))).length : WithBot ℕ∞)
+          ≤ ringKrullDim (Localization.AtPrime p) :=
+        weaklyRegular_length_le_ringKrullDim _ reg_loc mem''
+      rw [hextlen] at hreg_len
+      rw [hdimeq] at hreg_len
+      have hleq : ((rs.length + 1 : ℕ) : WithBot ℕ∞) ≤ (p.height : WithBot ℕ∞) := by
+        push_cast; exact_mod_cast hreg_len
+      exact_mod_cast hleq
+    -- Combine: p.height = rs.length + 1
+    have hpheight : p.height = ((rs.length + 1 : ℕ) : ℕ∞) := by
+      apply le_antisymm
+      · have : ((rs.length : ℕ∞) + 1) = ((rs.length + 1 : ℕ) : ℕ∞) := by push_cast; rfl
+        rw [this] at ht2'; exact ht2'
+      · exact hdimlb
+    -- Now the dimension equality as needed by of_weaklyRegular_length_eq_dim
+    have hdim : ringKrullDim (Localization.AtPrime p) =
+        ((((rs.map (algebraMap R R[X])) ++ [f]).map
+          (algebraMap R[X] (Localization.AtPrime p))).length : ℕ∞) := by
+      rw [hdimeq, hpheight, hextlen]
+    exact isCohenMacaulayLocalRing_of_weaklyRegular_length_eq_dim reg_loc mem'' hdim
+
+-- Increased heartbeat limit: constructs the pS prime and the pS.comap C = maxIdeal
+-- equation through several IsLocalization comap/map identifications.
+set_option maxHeartbeats 800000 in
+/-- **Polynomial ring over a CM Noetherian ring is CM** (no IsDomain assumption).
+
+This is the translation of upstream `Polynomial.isCM_of_isCM` (mathlib PR #28599)
+to the v4.28.0 API of this project. -/
+theorem isCohenMacaulayRing_polynomial_of_isCohenMacaulayRing
+    [IsNoetherianRing R] [IsCohenMacaulayRing R] :
+    IsCohenMacaulayRing R[X] := by
+  refine ⟨fun p _ => ?_⟩
+  set q := p.comap (C : R →+* R[X]) with q_def
+  haveI : q.IsPrime := Ideal.IsPrime.comap _
+  -- Give Polynomial.algebra as local instance so subsequent typeclass synthesis works.
+  letI algS : Algebra R[X] (Localization.AtPrime q)[X] :=
+    Polynomial.algebra R (Localization.AtPrime q)
+  set pc : Submonoid R[X] :=
+    Submonoid.map (Polynomial.C : R →+* R[X]).toMonoidHom q.primeCompl with pc_def
+  haveI : IsLocalization pc (Localization.AtPrime q)[X] :=
+    Polynomial.isLocalization q.primeCompl _
+  set pS : Ideal (Localization.AtPrime q)[X] :=
+    p.map (algebraMap R[X] (Localization.AtPrime q)[X]) with pS_def
+  have disj : Disjoint (pc : Set R[X]) (p : Set R[X]) := by
+    simpa [pc, q] using Set.disjoint_image_left.mpr
+      (Set.disjoint_compl_left_iff_subset.mpr (fun _ a => a))
+  haveI : pS.IsPrime := IsLocalization.isPrime_of_isPrime_disjoint pc _ _ ‹_› disj
+  haveI : IsLocalization.AtPrime (Localization.AtPrime pS) p := by
+    convert IsLocalization.isLocalization_isLocalization_atPrime_isLocalization pc
+      (Localization.AtPrime pS) pS
+    exact (IsLocalization.comap_map_of_isPrime_disjoint pc _ ‹_› disj).symm
+  -- R_q is CM Noetherian local
+  haveI hCMq : IsCohenMacaulayLocalRing (Localization.AtPrime q) :=
+    IsCohenMacaulayRing.CM_localize q
+  haveI : IsNoetherianRing (Localization.AtPrime q) :=
+    IsLocalization.isNoetherianRing q.primeCompl _ inferInstance
+  -- The key hypothesis: pS.comap C = maximalIdeal (R_q)
+  have hmax : Ideal.comap (Polynomial.C : (Localization.AtPrime q) →+*
+        (Localization.AtPrime q)[X]) pS = maximalIdeal (Localization.AtPrime q) := by
+    rw [← IsLocalization.map_comap q.primeCompl (Localization.AtPrime q)
+          (Ideal.comap Polynomial.C pS),
+      ← IsLocalization.map_comap q.primeCompl (Localization.AtPrime q)
+          (maximalIdeal (Localization.AtPrime q))]
+    simp only [Ideal.comap_comap, pS]
+    rw [← Polynomial.algebraMap_eq (R := Localization.AtPrime q),
+      ← IsScalarTower.algebraMap_eq R (Localization.AtPrime q) (Localization.AtPrime q)[X],
+      IsScalarTower.algebraMap_eq R R[X] (Localization.AtPrime q)[X], ← Ideal.comap_comap,
+      IsLocalization.comap_map_of_isPrime_disjoint pc _ ‹_› disj,
+      IsLocalization.AtPrime.comap_maximalIdeal (Localization.AtPrime q) q]
+    rfl
+  -- Apply the core lemma
+  have hCM_pS := localization_at_comap_maximal_isCM_isCM_local
+    (Localization.AtPrime q) pS hmax
+  -- Transfer via IsLocalization.algEquiv to Localization.AtPrime p
+  exact isCohenMacaulayLocalRing_of_ringEquiv' hCM_pS
+    (IsLocalization.algEquiv p.primeCompl
+      (Localization.AtPrime pS) (Localization.AtPrime p)).toRingEquiv
+
+/-- `MvPolynomial (Fin n) R` is Cohen-Macaulay when `R` is CM Noetherian.
+Translation of upstream `MvPolynomial.fin_isCM_of_isCM`. -/
+private lemma mvPolynomial_fin_isCM_of_isCM_local
+    [IsNoetherianRing R] [IsCohenMacaulayRing R] (n : ℕ) :
+    IsCohenMacaulayRing (MvPolynomial (Fin n) R) := by
+  induction n with
+  | zero =>
+    exact isCohenMacaulayRing_of_ringEquiv (MvPolynomial.isEmptyRingEquiv R (Fin 0)).symm
+  | succ n ih =>
+    haveI := ih
+    haveI : IsNoetherianRing (MvPolynomial (Fin n) R) := MvPolynomial.isNoetherianRing
+    haveI : IsCohenMacaulayRing (Polynomial (MvPolynomial (Fin n) R)) :=
+      isCohenMacaulayRing_polynomial_of_isCohenMacaulayRing (MvPolynomial (Fin n) R)
+    exact isCohenMacaulayRing_of_ringEquiv (MvPolynomial.finSuccEquiv R n).toRingEquiv.symm
+
+/-- **Multivariate polynomial ring over a CM Noetherian ring (finite variables) is CM**.
+
+This is the translation of upstream `MvPolynomial.isCM_of_isCM_of_finite` (mathlib
+PR #28599) to the v4.28.0 API of this project.
+
+Universe restriction: the index type `ι` must share the universe `u` of `R`;
+this is a local limitation of `isCohenMacaulayRing_of_ringEquiv` (which requires
+both rings in the same universe) and is not present upstream. -/
+theorem isCohenMacaulayRing_mvPolynomial_of_isCohenMacaulayRing
+    [IsNoetherianRing R] [IsCohenMacaulayRing R] (ι : Type u) [Finite ι] :
+    IsCohenMacaulayRing (MvPolynomial ι R) := by
+  haveI := mvPolynomial_fin_isCM_of_isCM_local R (Nat.card ι)
+  exact isCohenMacaulayRing_of_ringEquiv
+    (MvPolynomial.renameEquiv R (Finite.equivFin ι)).toRingEquiv.symm
+
+end PolynomialGeneralCM
+
 end

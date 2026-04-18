@@ -106,6 +106,96 @@ See `memory/bridge_QuotSMulTop_idealQuotient.md` for two reusable tricks:
    `BEI/Equidim.lean:isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`
    on the `p ⊄ m⁺` branch.
 
+## L7 blocker analysis (2026-04-18)
+
+A focused Mathlib survey (see session at 2026-04-18) found:
+
+1. **Flat-local CM criterion is absent** from Mathlib v4.28.0 and from the
+   local `toMathlib/CohenMacaulay/` backport. There is no theorem shaped like
+   `isCohenMacaulay_of_flat_local`, no depth identity under flat maps, and
+   no `isCohenMacaulay_baseChange` / `tensorProduct` lemma.
+
+2. **Ingredients that do exist** (Mathlib): `IsWeaklyRegular.of_flat`,
+   `IsWeaklyRegular.of_flat_of_isBaseChange`, `IsRegular.of_faithfullyFlat`,
+   `IsSMulRegular.of_flat`. These move regular sequences across flat maps,
+   which is one ingredient of a flat-local CM proof, but on their own are
+   not the theorem.
+
+3. **The local backport** has `isCohenMacaulayLocalRing_of_regular_quotient`
+   (converse transfer), `isCohenMacaulayLocalRing_quotient` (forward transfer),
+   and `isCohenMacaulayLocalRing_localization_atPrime`. A flat-local CM
+   proof can be built on top, but requires a flat-local dim identity
+   `dim R_P = dim A + dim fiber_{P'}` which itself is not in Mathlib.
+
+4. **Polynomial CM extension now available without `IsDomain`**
+   (RESOLVED 2026-04-18). The domain-only theorem
+   `isCohenMacaulayRing_polynomial_of_isCohenMacaulayRing_domain`
+   (`toMathlib/CohenMacaulay/Polynomial.lean:1161`) has been complemented
+   by the backport of Mathlib PR #28599 ("polynomial over CM ring is CM"):
+   - `isCohenMacaulayRing_polynomial_of_isCohenMacaulayRing`
+     (`toMathlib/CohenMacaulay/Polynomial.lean:1557`)
+   - `isCohenMacaulayRing_mvPolynomial_of_isCohenMacaulayRing`
+     (`toMathlib/CohenMacaulay/Polynomial.lean:1630`)
+   Both take only `[IsNoetherianRing R] [IsCohenMacaulayRing R]` — no
+   `IsDomain` hypothesis. The reduced HH ring is no longer an obstacle on
+   the polynomial-extension side.
+
+5. **"A is a polynomial-ring localization" shortcut does not apply.**
+   If `A` in L7 were itself a localization of `K[α]` at a prime, then
+   `A ⊗_K B` with `B = Localization.Away m` of `K[β]` would collapse via
+   `toMathlib/PolynomialAwayTensor.lean` to a localization of `K[α ⊔ β]`,
+   and `isCohenMacaulayRing_mvPolynomial_field` + CM-localizes would close
+   immediately. But the HH `A` in L7 is the reduced HH ring `K[C]/I(Γ_C)`,
+   which is a Stanley-Reisner quotient, not a polynomial localization.
+
+### Rough effort estimate
+
+- **Flat-local CM from scratch** (mirrors the structure of
+  `cm_localize_polynomial_of_cm_aux`, adapted to a general flat local map):
+  ~500-900 lines spread over (i) A-flatness of `A ⊗_K B` from K-flatness
+  of `B`, (ii) fiber identification as `B ⊗_K (A/m_A) ≅ B` when residue
+  field is K, (iii) dimension identity for flat local maps, (iv) regular
+  sequence concatenation.
+- **Non-domain polynomial CM extension**: same order of magnitude; the
+  domain hypothesis is genuine in the current proof skeleton.
+
+### Options for the user
+
+1. **Invest in the flat-local CM criterion.** ~500-900 lines of new
+   infrastructure. Reusable across Lean mathematical libraries. Highest
+   value, highest cost.
+
+2. **Non-domain polynomial CM extension (DONE).** Now available as
+   `isCohenMacaulayRing_polynomial_of_isCohenMacaulayRing` /
+   `isCohenMacaulayRing_mvPolynomial_of_isCohenMacaulayRing`. Still does
+   not directly close L7 as stated (A_H^red ⊗ poly localized is not quite
+   poly over A_H^red), but it unblocks the **Strategy I** route: induct on
+   graph size `n`, at each step use this theorem to handle polynomial
+   tensor factors on top of a globally-CM smaller HH ring. See the open
+   deep-model question at `questions/HH_QUOTIENT_CM_AT_NON_AUGIDEAL.md`
+   for the structural decomposition that Strategy I still requires.
+
+3. **Rethink F2.** Abandon the tensor route. Candidates:
+   - Direct Stanley-Reisner CM argument for `S ⧸ bipartiteEdgeMonomialIdeal G`
+     via Reisner's criterion or shellability. Requires a lot of
+     simplicial-complex infrastructure, likely not in Mathlib either.
+   - Gröbner degeneration from `J_G` to its initial ideal, inheriting CM
+     via upper semicontinuity. Not in Mathlib.
+   - Leave global CM as a paper-faithful open branch and ship the
+     equidimensional surrogate as the formalized substitute (already
+     done in `PrimeDecompositionDimension.lean`).
+
+4. **Narrow scope.** Target only the closed-graph sub-case of Prop 1.6,
+   where stronger structure (quadratic Gröbner basis on `J_G`) might make
+   CM easier to access directly. Does not close the full Prop 1.6.
+
+### Recommendation
+
+Given the cost, option 3 or 4 is probably the pragmatic call. Option 1
+(build the flat-local CM criterion) unlocks this and any future CM-via-
+base-change claim, so if the project expects more such claims, it pays
+back. Option 2 alone does not close L7.
+
 ## What NOT to do
 
 - Do not present `isCohenMacaulayLocalRing_at_augIdeal` as global CM.
