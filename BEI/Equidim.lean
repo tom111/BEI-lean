@@ -3695,6 +3695,30 @@ private lemma X_inr_last_mem_maximalIdeal {n : ℕ} (hn : 1 ≤ n)
   rw [← Localization.AtPrime.map_eq_maximalIdeal]
   exact Ideal.mem_map_of_mem _ (mkI_X_mem_augIdeal G _)
 
+set_option synthInstance.maxHeartbeats 400000 in
+/-- `mk y_last` (image of `X(inr last)` in the first quotient) is `IsSMulRegular`
+on `QuotSMulTop x_last Rp`, extracted via the *primed* cons_iff lemma which
+produces the correct scalar type. -/
+private lemma isSMulRegular_mk_y_last {n : ℕ} (hn : 2 ≤ n)
+    {G : SimpleGraph (Fin n)} (hHH : HerzogHibiConditions n G) :
+    let Rp := Localization.AtPrime (augIdeal (K := K) G)
+    let x_last : Rp := algebraMap _ Rp
+      (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K) G)
+        (X (Sum.inl ⟨n - 1, by omega⟩)))
+    let y_last : Rp := algebraMap _ Rp
+      (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K) G)
+        (X (Sum.inr ⟨n - 1, by omega⟩)))
+    IsSMulRegular (QuotSMulTop x_last Rp)
+      (Ideal.Quotient.mk (Ideal.span {x_last}) y_last) := by
+  intro Rp x_last y_last
+  have hwreg := lastPair_prefix_isWeaklyRegular_at_augIdeal (K := K) hn hHH
+  simp only [List.cons_append, List.nil_append] at hwreg
+  rw [RingTheory.Sequence.isWeaklyRegular_cons_iff'] at hwreg
+  obtain ⟨_, hwreg2⟩ := hwreg
+  simp only [List.map_cons] at hwreg2
+  rw [RingTheory.Sequence.isWeaklyRegular_cons_iff'] at hwreg2
+  exact hwreg2.1
+
 
 end AugmentationCM
 
