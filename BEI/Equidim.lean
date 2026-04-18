@@ -3719,6 +3719,43 @@ private lemma isSMulRegular_mk_y_last {n : ℕ} (hn : 2 ≤ n)
   rw [RingTheory.Sequence.isWeaklyRegular_cons_iff'] at hwreg2
   exact hwreg2.1
 
+open scoped Pointwise in
+/-- Bridging lemma: `(x • ⊤ : Submodule R R) = Ideal.span {x}` as ideals. This lets
+us identify `QuotSMulTop x R` with `R ⧸ Ideal.span {x}`. -/
+private lemma smul_top_eq_span_singleton {R : Type*} [CommRing R] (x : R) :
+    ((x • (⊤ : Submodule R R)) : Ideal R) = Ideal.span {x} := by
+  apply le_antisymm
+  · rintro y ⟨z, _, rfl⟩
+    show (DistribSMul.toLinearMap R R x) z ∈ Ideal.span {x}
+    exact Ideal.mem_span_singleton'.mpr ⟨z, by simp [mul_comm]⟩
+  · intro y hy
+    rcases Ideal.mem_span_singleton'.mp hy with ⟨z, rfl⟩
+    refine ⟨z, Submodule.mem_top, ?_⟩
+    show (DistribSMul.toLinearMap R R x) z = z * x
+    simp [mul_comm]
+
+open scoped Pointwise in
+/-- Ring equivalence between the two quotient views: `QuotSMulTop x R ≃+* R ⧸ Ideal.span {x}`.
+Since `Ideal R = Submodule R R` definitionally, this is just `Ideal.quotEquivOfEq` applied
+to `smul_top_eq_span_singleton`. -/
+private noncomputable def quotSMulTopRingEquivIdealQuotient
+    {R : Type*} [CommRing R] (x : R) :
+    QuotSMulTop x R ≃+* R ⧸ Ideal.span {x} :=
+  Ideal.quotEquivOfEq (smul_top_eq_span_singleton x)
+
+/-- `Ideal.span {x_last}` is proper (x_last is not a unit since it's in maximalIdeal). -/
+private lemma span_x_inl_last_ne_top {n : ℕ} (hn : 1 ≤ n) (G : SimpleGraph (Fin n)) :
+    Ideal.span {algebraMap _ (Localization.AtPrime (augIdeal (K := K) G))
+      (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K) G)
+        (X (Sum.inl ⟨n - 1, by omega⟩)))} ≠ (⊤ : Ideal _) := by
+  intro htop
+  have hunit : IsUnit (algebraMap _ (Localization.AtPrime (augIdeal (K := K) G))
+      (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K) G)
+        (X (Sum.inl ⟨n - 1, by omega⟩)))) :=
+    Ideal.span_singleton_eq_top.mp htop
+  exact (IsLocalRing.mem_maximalIdeal _).mp
+    (X_inl_last_mem_maximalIdeal (K := K) hn G) hunit
+
 end AugmentationCM
 
 /-! ### Cohen–Macaulay transfer through ring equivalence -/
@@ -3789,6 +3826,52 @@ end CMTransfer
 section GlobalCM
 
 open IsLocalRing
+
+variable {K' : Type*} [Field K']
+
+/-- CM of `Rp ⧸ Ideal.span {x_last}` (ideal-quotient form), transferred from CM of
+`QuotSMulTop x_last Rp` via the bridging ring equiv. This unsticks the `Ideal` vs
+`Submodule` quotient type mismatch for the second quotient iteration. -/
+private theorem isCohenMacaulayLocalRing_idealQuot_lastInl {n : ℕ} (hn : 2 ≤ n)
+    {G : SimpleGraph (Fin n)} (hHH : HerzogHibiConditions n G) :
+    haveI : Nontrivial (Localization.AtPrime (augIdeal (K := K') G) ⧸
+        Ideal.span {algebraMap _ (Localization.AtPrime (augIdeal (K := K') G))
+          (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K') G)
+            (X (Sum.inl ⟨n - 1, by omega⟩)))}) :=
+      Ideal.Quotient.nontrivial (span_x_inl_last_ne_top (K := K') (by omega) G)
+    haveI : IsLocalRing (Localization.AtPrime (augIdeal (K := K') G) ⧸
+        Ideal.span {algebraMap _ (Localization.AtPrime (augIdeal (K := K') G))
+          (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K') G)
+            (X (Sum.inl ⟨n - 1, by omega⟩)))}) :=
+      IsLocalRing.of_surjective'
+        (Ideal.Quotient.mk (Ideal.span {algebraMap _
+          (Localization.AtPrime (augIdeal (K := K') G))
+          (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K') G)
+            (X (Sum.inl ⟨n - 1, by omega⟩)))}))
+        Ideal.Quotient.mk_surjective
+    IsCohenMacaulayLocalRing (Localization.AtPrime (augIdeal (K := K') G) ⧸
+      Ideal.span {algebraMap _ (Localization.AtPrime (augIdeal (K := K') G))
+        (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K') G)
+          (X (Sum.inl ⟨n - 1, by omega⟩)))}) := by
+  haveI := quotSMulTopLocalRing (X_inl_last_mem_maximalIdeal (K := K') (by omega) G)
+  haveI : Nontrivial (Localization.AtPrime (augIdeal (K := K') G) ⧸
+      Ideal.span {algebraMap _ (Localization.AtPrime (augIdeal (K := K') G))
+        (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K') G)
+          (X (Sum.inl ⟨n - 1, by omega⟩)))}) :=
+    Ideal.Quotient.nontrivial (span_x_inl_last_ne_top (K := K') (by omega) G)
+  haveI : IsLocalRing (Localization.AtPrime (augIdeal (K := K') G) ⧸
+      Ideal.span {algebraMap _ (Localization.AtPrime (augIdeal (K := K') G))
+        (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K') G)
+          (X (Sum.inl ⟨n - 1, by omega⟩)))}) :=
+    IsLocalRing.of_surjective'
+      (Ideal.Quotient.mk (Ideal.span {algebraMap _
+        (Localization.AtPrime (augIdeal (K := K') G))
+        (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K') G)
+          (X (Sum.inl ⟨n - 1, by omega⟩)))}))
+      Ideal.Quotient.mk_surjective
+  haveI := isCohenMacaulayLocalRing_quot_lastInl (K := K') hn hHH
+  exact isCohenMacaulayLocalRing_of_ringEquiv
+    (quotSMulTopRingEquivIdealQuotient _)
 
 variable {K : Type*} [Field K]
 
