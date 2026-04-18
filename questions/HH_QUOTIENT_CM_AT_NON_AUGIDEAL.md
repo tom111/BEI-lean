@@ -89,4 +89,79 @@ We are looking for an approach that
 
 **Q6 (tensor / base-change CM).** If the right picture is `R_p ≅ A ⊗_K K[σ''] ` (localized), we would need: `A` CM local + polynomial base change + further localization ⟹ CM. Is there a clean statement of the form "CM local ring ⊗_K polynomial ring, localized at a prime, is CM" that we can target as the key lemma?
 
+## Update 2026-04-18 — PR #28599 changes the landscape
+
+Mathlib PR #28599 (`polynomial-over-CM-ring-is-CM`, depends on #26218) proves
+GLOBAL CM of the polynomial ring over a CM ring — **without an `IsDomain`
+hypothesis on the base**:
+
+```
+theorem Polynomial.isCM_of_isCM [IsNoetherianRing R] [IsCohenMacaulayRing R] :
+    IsCohenMacaulayRing R[X]
+
+theorem MvPolynomial.isCM_of_isCM_of_finite [IsNoetherianRing R] [IsCohenMacaulayRing R]
+    (ι : Type*) [Finite ι] : IsCohenMacaulayRing (MvPolynomial ι R)
+```
+
+All of PR #28599's dependencies (Flat base-change of weakly regular sequences,
+`polynomialQuotientEquivQuotientPolynomial`, `height_map_C`, `lifts_and_natDegree_eq_and_monic`,
+`isLocalization_isLocalization_atPrime_isLocalization`, `IsLocalRing.maximalIdeal_height_eq_ringKrullDim`)
+are present in Mathlib v4.28.0. The only gap is that PR #28599 uses the upstream
+Ext-based depth from #26218, while our local backport (`toMathlib/CohenMacaulay/Defs.lean`)
+defines `ringDepth` as the sSup of regular-sequence lengths directly — so the
+upstream invocation `depth_eq_sSup_length_regular` is trivial in our setup. Backport
+estimate: **150-300 LOC** of adaptation.
+
+**Q7 (induction on n).** Given the above is backportable, a candidate clean route
+is:
+
+```
+Induct on n (the size of the HH graph).
+- Base n = 1: I = ⊥, R = K[X₀, Y₀], polynomial, CM globally by MvPolynomial.isCM_of_isCM_of_finite.
+- Step: assume R_{n'} CM globally for n' < n. For prime p of R_n:
+    - p ⊆ augIdeal: CM localizes from the proved R_{n,augIdeal} CM.
+    - p ⊄ augIdeal: decompose R_p ≅ (R_{n'} localized) ⊗_K (K[free vars, inverted monomials]),
+      where R_{n'} is a smaller HH ring.
+      Globally CM of smaller HH ring: induction hypothesis.
+      Global CM of polynomial extension: PR #28599.
+      Localize at target prime: CM localizes.
+```
+
+For this route to work we need:
+(a) The specific identification: for p ⊄ augIdeal in the HH bipartite quotient R_n
+    satisfying HH conditions, there IS a clean ring iso
+    `R_p ≅ (R_{n'})_{p'} ⊗_K (Localization.Away monomial of MvPolynomial (free vars) K)`
+    where R_{n'} is an HH ring for a smaller graph G' still satisfying HH conditions.
+
+(b) The smaller graph G' and its vertex subset can be extracted canonically from
+    the data (p, G) — specifically from the "unit set" U = vars not in p, their
+    neighbors N(U) ⊆ p, and the one-sided-vs-paired survivor classification
+    (F2's L3 already proved).
+
+**Questions for the deep-thinking model:**
+
+1. Is the induction route (Q7) the right strategy given PR #28599 is available?
+2. The key step (a) is essentially F2's L1+L2+L4 (pending) + a "global" version of
+   L5 (locally CM at augmentation of the smaller HH ring becomes GLOBAL CM of the
+   smaller ring via induction). Can you confirm this decomposition holds **for all**
+   p ⊄ augIdeal, not just favorable cases? Specifically for the counterexample
+   with n=4, G=K_4, p = (x_0, x_1, y_0, y_1, y_2, x_3 - 1): does the decomposition
+   give R_p ≅ (R_3 for triangle graph at augmentation) ⊗_K (K[x_3][x_3 - 1 ↦ 0]-style)?
+3. What is the smallest, cleanest mathematical statement that captures step (a) that
+   we can target as the key ring-iso lemma? Please write it with full Lean-ready
+   precision (types, multiplicative sets, primes).
+4. Does the smaller graph G' ALWAYS satisfy the Herzog–Hibi / Prop 1.6 conditions
+   when G does? If not, the induction hypothesis application fails. Please confirm
+   or provide the argument.
+5. Is there a simpler alternative route that leverages PR #28599 without needing
+   a structural decomposition — e.g., a direct argument that R = S/I is CM by
+   "existence of a regular system of parameters at every prime" without going
+   through induction?
+
+Please give the precise mathematical statement(s) that should be formalized and
+a sketch of the proof, keeping in mind we want the smallest infrastructure that
+closes the gap rather than a full Stanley–Reisner / depth-theoretic framework.
+
+## Original problem context below
+
 Please give the precise mathematical statement(s) that should be formalized and a sketch of the proof, keeping in mind we want the smallest infrastructure that closes the gap rather than a full Stanley–Reisner / depth-theoretic framework.
