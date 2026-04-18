@@ -1,6 +1,6 @@
 # Guide: HH Global CM from the Augmentation Ideal
 
-## Status: 1 sorry remains — F2 route, pending L1, L2, L4, and an L7 replacement lemma
+## Status: 1 sorry remains — F2 route, pending L1, L2, L4 (L7 replacement now DONE)
 
 The theorem `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`
 in `BEI/Equidim.lean` has a two-case split. The `p ⊆ m⁺` case is fully
@@ -73,23 +73,23 @@ All six targets come with explicit generator formulas in the answer file.
   Formalised as `isCohenMacaulayLocalRing_reducedHH_at_augIdeal` in
   `BEI/Equidim.lean`.
 
-- **L6 / L7 replacement** (pending). **Tensor-polynomial-localisation CM**:
+- **L6 / L7 replacement** — **DONE** (`302a55c`). Tensor-polynomial-localisation CM:
 
-  > Let `A` be a Noetherian `K`-algebra with `IsCohenMacaulayRing A`,
-  > `τ` a finite type, `s ∈ K[τ]`, and `B := K[τ][s⁻¹]`. Then for every
-  > prime `𝔓 ⊂ A ⊗_K B`, the localisation `(A ⊗_K B)_𝔓` is Cohen–Macaulay.
+      isCohenMacaulayRing_tensor_away :
+        [CommRing A] [Algebra K A] [IsNoetherianRing A] [IsCohenMacaulayRing A]
+          [Finite τ] → (s : MvPolynomial τ K) →
+        IsCohenMacaulayRing (TensorProduct K A (Localization.Away s))
 
-  Proof: use `A ⊗_K K[τ] ≅ A[τ]` and `A ⊗_K K[τ][s⁻¹] ≅ A[τ][s_A⁻¹]`;
-  `A[τ]` CM by `isCohenMacaulayRing_mvPolynomial_of_isCohenMacaulayRing`
-  (backported PR #28599 — already in `toMathlib/CohenMacaulay/Polynomial.lean`);
-  CM-localises closes it. The only genuinely new algebra lemma to
-  formalise is the ring iso `A ⊗_K K[τ][s⁻¹] ≅ A[τ][s_A⁻¹]`, which is a
-  straightforward generalisation of the existing `polynomialAwayTensorEquiv`
-  in `toMathlib/PolynomialAwayTensor.lean`.
+  Formalised in `toMathlib/CohenMacaulay/TensorPolynomialAway.lean` (200 LOC,
+  0 sorries, propext/Classical.choice/Quot.sound only). The A-algebra iso
+  `A ⊗_K K[τ][s⁻¹] ≅ Localization.Away (map s)` is the new `tensorAwayEquiv`,
+  mirroring `polynomialAwayTensorEquiv`. The support lemma
+  `isCohenMacaulayRing_localization` (localisation of globally CM is globally
+  CM) is also exported.
 
-  To apply this to L7: take `A = A^red_{G', m^red_{G'}}` promoted to a
-  global `IsCohenMacaulayRing` via CM-localises on the formalised local
-  CM at the augmentation. Take `B = K[Λ ⊔ U][s_U⁻¹]`.
+  Application to L7: take `A = A^red_{G', m^red_{G'}}` promoted to a global
+  `IsCohenMacaulayRing` via CM-localises on the formalised local CM at the
+  augmentation. Take `B = K[Λ ⊔ U][s_U⁻¹]`.
 
 ## What is already proved (pre-F2 infrastructure, unchanged)
 
@@ -139,15 +139,23 @@ See `memory/bridge_QuotSMulTop_idealQuotient.md` for two reusable tricks:
 
 ## Execution order for remaining work
 
-1. **L6 / L7 replacement first** (low-risk, small). Tensor-polynomial-
-   localisation CM via the generalised `polynomialAwayTensorEquiv` plus the
-   already-backported polynomial-over-CM and CM-localises.
-2. **L4** — uses L3 (done). Surviving-graph decomposition. Also checks
-   G' satisfies HH.
-3. **L1** — monomial localisation ring iso.
-4. **L2** — localisation of L1 at `p`.
-5. **Final chain** — compose L1, L2, L4, L5, L6/L7 replacement to close the
-   sorry at `BEI/Equidim.lean:isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`
+1. **L6 / L7 replacement** — DONE (`302a55c`).
+2. **L4** — uses L3 (done). Surviving-graph decomposition:
+   `K[W] / I(Γ_G|_W) ≅ A^red_{G'} ⊗_K K[Λ]`. Also checks G' satisfies HH.
+   The concrete setup in `BEI/Equidim.lean` already has `hhSurvivors`,
+   `hhNbhd`, `hhIndep` and the L3 one-sided-isolation lemmas
+   `hhSurvivor_x_isolated`, `hhSurvivor_y_isolated`. Still needed:
+   define the abstract reduced HH ring `A^red_G` for any HH graph,
+   define the canonical smaller-graph construction `G'` from `(G, C)`
+   where `C` is the paired-survivor index set, prove G' is HH, then
+   construct the ring iso.
+3. **L1** — monomial localisation ring iso. Parametrises
+   `U ⊆ σ` independent in `Γ_G`, sets `s_U := ∏_{u ∈ U} u`, and gives
+   `R[s_U⁻¹] ≅ (K[W] / I(Γ_G|_W)) ⊗_K K[U][s_U⁻¹]`.
+4. **L2** — routine localisation-of-localisation on L1 at `p`.
+5. **Final chain** — compose L1, L2, L4, L5, L6/L7 replacement to close
+   the sorry at
+   `BEI/Equidim.lean:isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`
    on the `p ⊄ m⁺` branch.
 
 ## What NOT to do
