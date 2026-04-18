@@ -4558,7 +4558,21 @@ private lemma hhSurvivor_y_isolated {n : ℕ} {G : SimpleGraph (Fin n)}
 /-! #### Lemmas 1, 2, 4, 5, 6, 7 — scaffolding for the F2 route
 
 Statements only; proofs are deferred. See
-`guides/work_packages/HH_GLOBAL_CM_FROM_AUGIDEAL.md` for the full plan. -/
+`guides/work_packages/HH_GLOBAL_CM_FROM_AUGIDEAL.md` for the full plan.
+
+L7 (tensor-CM base lemma) target:
+
+  For any CM local `K`-algebra `A` with residue field `K`, any
+  finite type `β` with a nonzero `m : MvPolynomial β K`, and any prime
+  `P : Ideal (A ⊗[K] Localization.Away m)` whose contraction to `A`
+  equals `IsLocalRing.maximalIdeal A`, the ring
+  `Localization.AtPrime P` is Cohen–Macaulay local.
+
+Blocker (2026-04-18): No flat-local CM criterion exists in Mathlib
+v4.28.0 or the local `toMathlib/CohenMacaulay/` backport. A from-scratch
+proof is estimated at ~500-900 lines (A-flatness via K-flatness of B,
+fiber identification, flat local dim identity, regular-sequence
+concatenation). See the guide for options. -/
 
 /-! #### Main theorem -/
 
