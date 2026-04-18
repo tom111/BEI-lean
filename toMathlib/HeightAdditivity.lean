@@ -137,7 +137,7 @@ private lemma comap_C_map_map_algebraMap_eq_bot
   -- sends C(l) to 1 ⊗ l, then apply faithful flatness of K[σ]/I over K.
   set Q := MvPolynomial σ K ⧸ I
   set π : MvPolynomial σ K →+* Q := Ideal.Quotient.mk I
-  haveI : Nontrivial Q := Ideal.Quotient.nontrivial hI
+  haveI : Nontrivial Q := Ideal.Quotient.nontrivial_iff.mpr hI
   haveI : Module.Free K Q := Module.Free.of_divisionRing K Q
   haveI : Module.FaithfullyFlat K Q := inferInstance
   -- ψ evaluates coefficients via includeRight and variables via i ↦ π(Xᵢ) ⊗ 1

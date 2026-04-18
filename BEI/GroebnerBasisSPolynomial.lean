@@ -248,7 +248,7 @@ theorem theorem_2_1 (G : SimpleGraph V) :
         rw [heq]; exact isRemainder_neg' _ _ h
       obtain ⟨τ, hτ_head, hτ_last, hτ_nd, hτ_walk, hτ_verts⟩ :
           ∃ τ : List V, τ.head? = some j ∧ τ.getLast? = some l ∧ τ.Nodup ∧
-          τ.Chain' (fun u v => G.Adj u v) ∧
+          τ.IsChain (fun u v => G.Adj u v) ∧
           (∀ v ∈ internalVertices τ,
             v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = i) := by
         exact walk_from_shared_first G i j l π σ
@@ -305,7 +305,7 @@ theorem theorem_2_1 (G : SimpleGraph V) :
       -- Symmetric: walk from l to j through shared vertex i
       obtain ⟨τ, hτ_head, hτ_last, hτ_nd, hτ_walk, hτ_verts⟩ :
           ∃ τ : List V, τ.head? = some l ∧ τ.getLast? = some j ∧ τ.Nodup ∧
-          τ.Chain' (fun u v => G.Adj u v) ∧
+          τ.IsChain (fun u v => G.Adj u v) ∧
           (∀ v ∈ internalVertices τ,
             v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = i) := by
         obtain ⟨τ', h1, h2, h3, h4, h5⟩ := walk_from_shared_first G i l j σ π
@@ -433,7 +433,7 @@ theorem theorem_2_1 (G : SimpleGraph V) :
         rw [heq]; exact h
       obtain ⟨τ, hτ_head, hτ_last, hτ_nd, hτ_walk, hτ_verts⟩ :
           ∃ τ : List V, τ.head? = some i ∧ τ.getLast? = some k ∧ τ.Nodup ∧
-          τ.Chain' (fun u v => G.Adj u v) ∧
+          τ.IsChain (fun u v => G.Adj u v) ∧
           (∀ v ∈ internalVertices τ,
             v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = j) := by
         -- Reverse paths: π.reverse goes j→i, σ.reverse goes j→k
@@ -504,7 +504,7 @@ theorem theorem_2_1 (G : SimpleGraph V) :
         rw [heq]; exact isRemainder_neg' _ _ h
       obtain ⟨τ, hτ_head, hτ_last, hτ_nd, hτ_walk, hτ_verts⟩ :
           ∃ τ : List V, τ.head? = some k ∧ τ.getLast? = some i ∧ τ.Nodup ∧
-          τ.Chain' (fun u v => G.Adj u v) ∧
+          τ.IsChain (fun u v => G.Adj u v) ∧
           (∀ v ∈ internalVertices τ,
             v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = j) := by
         -- Reverse paths: π.reverse goes j→i, σ.reverse goes j→k

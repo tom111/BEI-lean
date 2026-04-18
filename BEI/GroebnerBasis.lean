@@ -460,7 +460,7 @@ private lemma groebnerElement_reduced_same_endpoints (G : SimpleGraph V)
     have hdrop_ne : π₂.drop n ≠ [] := by rw [ne_eq, List.drop_eq_nil_iff]; omega
     rw [List.getLast?_append, List.getLast?_drop, if_neg (by omega), hπ₂_last]
     simp
-  have hπ'_chain : π'.Chain' (fun a b => G.Adj a b) := by
+  have hπ'_chain : π'.IsChain (fun a b => G.Adj a b) := by
     change (π₂.take k ++ π₂.drop n).IsChain (fun a b => G.Adj a b)
     rw [List.isChain_append]
     refine ⟨List.IsChain.take hπ₂_chain k,
