@@ -1,73 +1,43 @@
 # Guide: Polynomial Ring CM Base Case for HH Global CM
 
-## Status: 1 sorry remains, technical and isolated
+## Status: COMPLETED — sorry-free
 
-The polynomial CM infrastructure is in `toMathlib/CohenMacaulay/Polynomial.lean`.
-The file builds cleanly. The proof architecture is complete; one final dim-1
-corner-case sorry remains.
+`toMathlib/CohenMacaulay/Polynomial.lean` has **0 sorries** and builds cleanly.
+The main theorem `isCohenMacaulayRing_mvPolynomial_field` is fully proved and
+verifies with only `propext`, `Classical.choice`, `Quot.sound`.
 
+## What is provided
 
-## What is fully proved
+- `isCohenMacaulayRing_of_isField` — fields are CM rings.
+- `height_eq_one_of_comap_C_eq_bot` — height-1 primes over ⊥ in domains.
+- `quotSMulTopPolynomialLocalizationEquiv` — `A[X]_P/(X) ≃+* A_{P∩A}`.
+- `exists_smulRegular_of_isCohenMacaulayRing` — NZD in prime of positive
+  height.
+- `isCohenMacaulayRing_quotient_of_smulRegular` — CM / NZD is CM.
+- `cm_localize_polynomial_of_cm_aux` — induction on primeHeight.
+- `isCohenMacaulayRing_polynomial_of_isCohenMacaulayRing_domain` — the
+  polynomial extension theorem for CM domains.
+- **`isCohenMacaulayRing_mvPolynomial_field`** — MvPolynomial rings over
+  fields are CM.
+- Public ring-equiv CM transfer: `isCohenMacaulayLocalRing_of_ringEquiv'`,
+  `isWeaklyRegular_map_ringEquiv`.
 
-- **All ring-equiv CM infrastructure** (public).
-- **`isCohenMacaulayRing_of_isField`**: fields are CM rings.
-- **`height_eq_one_of_comap_C_eq_bot`**: height-1 for primes over ⊥ in domains.
-- **`quotSMulTopPolynomialLocalizationEquiv`**: `A[X]_P/(X) ≃+* A_{P∩A}`.
-- **`exists_smulRegular_of_isCohenMacaulayRing`**: NZD in a prime of pos height
-  (modulo sorry 1 below).
-- **`isCohenMacaulayRing_quotient_of_smulRegular`**: quotient of CM ring by NZD
-  is CM (modulo sorry 2 below).
-- **`cm_localize_polynomial_of_cm_aux`**: full induction on primeHeight
-  with positive-height case (modulo sorry 3) and height-zero case (modulo sorry 4).
-- **`isCohenMacaulayRing_polynomial_of_isCohenMacaulayRing_domain`**: X∈P case
-  fully proved; X∉P case delegates to the auxiliary lemma.
-- **`isCohenMacaulayRing_mvPolynomial_field`**: by induction + ring equiv.
+## Usage in the F2 route
 
+This theorem feeds into the reduced-HH-at-augmentation CM chain as the
+base case "polynomial rings over a field are CM". See
+[HH_GLOBAL_CM_FROM_AUGIDEAL.md](HH_GLOBAL_CM_FROM_AUGIDEAL.md) for the
+current state of the F2 plan; the polynomial CM result is a DONE input
+to that larger plan.
 
-## Remaining sorry
+## Known limitation
 
-The only remaining sorry is the dim-1 corner case in the `X ∉ Q` branch.
+The theorem requires `A` to be a **domain** (`[IsDomain A]`). For the F2
+route's L7 (tensor-CM base lemma), we need polynomial CM for non-domain
+CM local rings — specifically for `A = A_H^red` localized at its
+augmentation, which is CM local but not a domain (Stanley-Reisner rings
+with multiple minimal primes).
 
-Current form of the subcase:
-
-- `Q.primeHeight = 1`;
-- `q := Q.comap C` has prime height `0`;
-- `X ∉ Q`.
-
-What is already done:
-
-- the quotient/localization commutation lemmas are proved;
-- the polynomial quotient/localization equivalence is proved;
-- the `X ∈ Q` branch is proved;
-- the broad structural proof of the polynomial CM theorem is complete.
-
-Current preferred route:
-
-- work directly in the height-1, `X ∉ Q` corner;
-- produce an element of `Q` that is regular on `B[X]_Q`;
-- use the already-proved 1-element weakly regular-sequence criterion in
-  dimension `1` to conclude Cohen–Macaulayness.
-
-Rejected route:
-
-- direct monic-lift from `B/q` was too optimistic because `B/q` need not be a
-  field.
-
-Current mathematical route:
-
-- use associated-prime control for `B[X]` in this branch to find
-  `g ∈ Q \ q.map C` that is regular;
-- then conclude CM of the 1-dimensional local ring.
-
-
-## Dependency chain to BEI
-
-After this final sorry is filled:
-1. `isCohenMacaulayRing_mvPolynomial_field` becomes sorry-free.
-2. Closing `BEI/Equidim.lean:4214` then requires the HH ring isomorphism
-   `R_p ≅ (MvPolynomial σ' K)_q` for `p ⊄ augIdeal`.
-
-Immediate work order:
-
-1. complete the final polynomial-CM subcase;
-2. only then return to the HH ring isomorphism in `BEI/Equidim.lean`.
+Generalizing to non-domain A is a separate project (substantial rewrite
+of the X ∉ Q branch) and is tracked under L7 in
+`HH_GLOBAL_CM_FROM_AUGIDEAL.md`.

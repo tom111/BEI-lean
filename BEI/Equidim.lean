@@ -3838,7 +3838,7 @@ private theorem isCohenMacaulayLocalRing_idealQuot_lastInl {n : ℕ} (hn : 2 ≤
         Ideal.span {algebraMap _ (Localization.AtPrime (augIdeal (K := K') G))
           (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K') G)
             (X (Sum.inl ⟨n - 1, by omega⟩)))}) :=
-      Ideal.Quotient.nontrivial (span_x_inl_last_ne_top (K := K') (by omega) G)
+      Ideal.Quotient.nontrivial_iff.mpr (span_x_inl_last_ne_top (K := K') (by omega) G)
     haveI : IsLocalRing (Localization.AtPrime (augIdeal (K := K') G) ⧸
         Ideal.span {algebraMap _ (Localization.AtPrime (augIdeal (K := K') G))
           (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K') G)
@@ -3858,7 +3858,7 @@ private theorem isCohenMacaulayLocalRing_idealQuot_lastInl {n : ℕ} (hn : 2 ≤
       Ideal.span {algebraMap _ (Localization.AtPrime (augIdeal (K := K') G))
         (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K') G)
           (X (Sum.inl ⟨n - 1, by omega⟩)))}) :=
-    Ideal.Quotient.nontrivial (span_x_inl_last_ne_top (K := K') (by omega) G)
+    Ideal.Quotient.nontrivial_iff.mpr (span_x_inl_last_ne_top (K := K') (by omega) G)
   haveI : IsLocalRing (Localization.AtPrime (augIdeal (K := K') G) ⧸
       Ideal.span {algebraMap _ (Localization.AtPrime (augIdeal (K := K') G))
         (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K') G)
@@ -3888,7 +3888,7 @@ private theorem isCohenMacaulayLocalRing_reducedHH_at_augIdeal {n : ℕ} (hn : 2
         (X (Sum.inr ⟨n - 1, by omega⟩)))
     let RpQ := Rp ⧸ Ideal.span {xL}
     let mkyL : RpQ := Ideal.Quotient.mk (Ideal.span {xL}) yL
-    haveI : Nontrivial RpQ := Ideal.Quotient.nontrivial
+    haveI : Nontrivial RpQ := Ideal.Quotient.nontrivial_iff.mpr
       (span_x_inl_last_ne_top (K := K') (by omega) G)
     haveI : IsLocalRing RpQ :=
       IsLocalRing.of_surjective' (Ideal.Quotient.mk _) Ideal.Quotient.mk_surjective
@@ -3903,7 +3903,7 @@ private theorem isCohenMacaulayLocalRing_reducedHH_at_augIdeal {n : ℕ} (hn : 2
     haveI := quotSMulTopLocalRing hmem_max
     IsCohenMacaulayLocalRing (QuotSMulTop mkyL RpQ) := by
   intros Rp xL yL RpQ mkyL
-  haveI : Nontrivial RpQ := Ideal.Quotient.nontrivial
+  haveI : Nontrivial RpQ := Ideal.Quotient.nontrivial_iff.mpr
     (span_x_inl_last_ne_top (K := K') (by omega) G)
   haveI : IsLocalRing RpQ :=
     IsLocalRing.of_surjective' (Ideal.Quotient.mk _) Ideal.Quotient.mk_surjective
