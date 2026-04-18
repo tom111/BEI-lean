@@ -3873,6 +3873,64 @@ private theorem isCohenMacaulayLocalRing_idealQuot_lastInl {n : ℕ} (hn : 2 ≤
   exact isCohenMacaulayLocalRing_of_ringEquiv
     (quotSMulTopRingEquivIdealQuotient _)
 
+set_option synthInstance.maxHeartbeats 400000 in
+/-- **L5 CM corollary**: the reduced HH ring at its augmentation is Cohen–Macaulay.
+Specifically, `(Rp ⧸ x_last) ⧸ (mk y_last)` is CM local. This is the reduced HH ring
+(HH ring with the trailing isolated pair dropped) localized at its own augmentation. -/
+private theorem isCohenMacaulayLocalRing_reducedHH_at_augIdeal {n : ℕ} (hn : 2 ≤ n)
+    {G : SimpleGraph (Fin n)} (hHH : HerzogHibiConditions n G) :
+    let Rp := Localization.AtPrime (augIdeal (K := K') G)
+    let xL : Rp := algebraMap _ Rp
+      (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K') G)
+        (X (Sum.inl ⟨n - 1, by omega⟩)))
+    let yL : Rp := algebraMap _ Rp
+      (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K') G)
+        (X (Sum.inr ⟨n - 1, by omega⟩)))
+    let RpQ := Rp ⧸ Ideal.span {xL}
+    let mkyL : RpQ := Ideal.Quotient.mk (Ideal.span {xL}) yL
+    haveI : Nontrivial RpQ := Ideal.Quotient.nontrivial
+      (span_x_inl_last_ne_top (K := K') (by omega) G)
+    haveI : IsLocalRing RpQ :=
+      IsLocalRing.of_surjective' (Ideal.Quotient.mk _) Ideal.Quotient.mk_surjective
+    haveI hmem_max : mkyL ∈ IsLocalRing.maximalIdeal RpQ := by
+      have hlocal : IsLocalHom (Ideal.Quotient.mk (Ideal.span {xL})) :=
+        IsLocalHom.of_surjective _ Ideal.Quotient.mk_surjective
+      rw [IsLocalRing.mem_maximalIdeal]
+      intro hunit
+      have hmem := X_inr_last_mem_maximalIdeal (K := K') (by omega) G
+      rw [IsLocalRing.mem_maximalIdeal] at hmem
+      exact hmem (hlocal.map_nonunit _ hunit)
+    haveI := quotSMulTopLocalRing hmem_max
+    IsCohenMacaulayLocalRing (QuotSMulTop mkyL RpQ) := by
+  intros Rp xL yL RpQ mkyL
+  haveI : Nontrivial RpQ := Ideal.Quotient.nontrivial
+    (span_x_inl_last_ne_top (K := K') (by omega) G)
+  haveI : IsLocalRing RpQ :=
+    IsLocalRing.of_surjective' (Ideal.Quotient.mk _) Ideal.Quotient.mk_surjective
+  haveI : IsCohenMacaulayLocalRing RpQ := isCohenMacaulayLocalRing_idealQuot_lastInl hn hHH
+  have hmem_max : mkyL ∈ IsLocalRing.maximalIdeal RpQ := by
+    have hlocal : IsLocalHom (Ideal.Quotient.mk (Ideal.span {xL})) :=
+      IsLocalHom.of_surjective _ Ideal.Quotient.mk_surjective
+    rw [IsLocalRing.mem_maximalIdeal]
+    intro hunit
+    have hmem := X_inr_last_mem_maximalIdeal (K := K') (by omega) G
+    rw [IsLocalRing.mem_maximalIdeal] at hmem
+    exact hmem (hlocal.map_nonunit _ hunit)
+  -- IsSMulRegular of mkyL on RpQ as self-scalar
+  have hreg : IsSMulRegular RpQ mkyL := by
+    -- Step 1: transfer IsSMulRegular of yL (Rp-scalar) from QuotSMulTop to RpQ
+    have hreg_Rp : IsSMulRegular RpQ yL := by
+      have h := isSMulRegular_X_inr_last_quot_lastInl (K := K') hn hHH
+      exact (LinearEquiv.isSMulRegular_congr
+        (Submodule.quotEquivOfEq _ _ (smul_top_eq_span_singleton _)) _).mp h
+    -- Step 2: convert Rp-scalar to self-scalar
+    exact (isSMulRegular_map (a := yL)
+      (fun r : Rp => (Ideal.Quotient.mk (Ideal.span {xL}) r))
+      (fun _ => rfl)).mpr hreg_Rp
+  exact isCohenMacaulayLocalRing_quotient hreg hmem_max
+
+
+
 variable {K : Type*} [Field K]
 
 /-! #### Structural lemmas for the graded local-to-global step -/
