@@ -3719,7 +3719,6 @@ private lemma isSMulRegular_mk_y_last {n : ℕ} (hn : 2 ≤ n)
   rw [RingTheory.Sequence.isWeaklyRegular_cons_iff'] at hwreg2
   exact hwreg2.1
 
-
 end AugmentationCM
 
 /-! ### Cohen–Macaulay transfer through ring equivalence -/
