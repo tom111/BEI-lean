@@ -1,6 +1,65 @@
 # Guide: HH Global CM from the Augmentation Ideal
 
-## Status: 1 sorry remains — F2 route, pending L1, L2, L4 (L7 replacement now DONE)
+## Status: 1 sorry remains — F2 route, L1/L4/L7-replacement all DONE, final chain blocked on L5 form bridge
+
+**Progress 2026-04-18**: L7 replacement (`302a55c`), L4 (`a1a8d26`,
+`7499999`), and L1 (`30860bb`) have all landed. The remaining work is a
+**final chain composition** that needs an additional bridge lemma to
+reconcile L5's current form with the abstract `reducedHHRing` on
+`Fin r` for the smaller HH graph `G'`.
+
+### The L5 form mismatch (new blocker)
+
+L5 as formalised (`isCohenMacaulayLocalRing_reducedHH_at_augIdeal`)
+proves CM of
+
+    QuotSMulTop (mk y_last) ((Localization.AtPrime (augIdeal G)) ⧸ span{x_last})
+
+for the **full HH ring** of the original graph `G` on `Fin n`. The
+final chain needs CM of
+
+    Localization.AtPrime (m^red_{G'}) (reducedHHRing G')
+
+where `G' = smallerHHGraph G U` is on `Fin (r + 1)` with
+`r = pairedCount G U`, and `reducedHHRing G'` is the abstract reduced
+HH ring on `BinomialEdgeVars (Fin r)` from `BEI/ReducedHH.lean`.
+
+These two rings are only isomorphic via a substantial **trailing-pair
+decomposition** iso:
+
+    R ≅ reducedHHRing G ⊗_K K[x_last, y_last]
+
+This is true because the bipartite edge monomial ideal of `G` contains
+no generator involving `x_{n-1}` or `y_{n-1}` (both indices are
+"trailing isolated" — no edges in `hhEdgeSet` reach index `n − 1` on
+either side). But formalising the iso + transporting CM through it is
+a significant piece of new work.
+
+### Remaining worklist for the final chain
+
+Estimated total: **600–1100 LOC** of new Lean, split into three
+sessions:
+
+- **Session A** (~150 LOC): the trailing-pair iso
+  `R ≅ reducedHHRing G ⊗_K K[x_last, y_last]` as a K-algebra iso, plus
+  the CM transport `Localization.AtPrime augIdeal R / ⟨x_last, y_last⟩ ≅
+  Localization.AtPrime m^red (reducedHHRing G)`. Lives in
+  `BEI/ReducedHH.lean` or a new `BEI/ReducedHHIsom.lean`.
+- **Session B** (~150–300 LOC): promoting local CM of `reducedHHRing G'`
+  at its augmentation to **globally CM** of `reducedHHRing G'`. Either
+  via well-founded induction on `r` (with recursive restructuring of
+  `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`), or
+  via an entirely new polynomial-descent CM theorem.
+- **Session C** (~200–400 LOC): the final chain composition, using:
+  L1Iso + L4Iso + polynomialAwayTensorEquiv (L6) merging `K[Λ] ⊗
+  K[U][s_U⁻¹]` into a single polynomial-localisation, then
+  `isCohenMacaulayRing_tensor_away` (L7 replacement) + `CM_localize` +
+  `isCohenMacaulayLocalRing_of_ringEquiv'` + localization-of-
+  localization to close the sorry at `BEI/Equidim.lean:6723`.
+
+The L1/L4/L7-replacement pieces that landed in this session are
+reusable across any future strategy — they are not wasted if the
+session-A/B bridge is replaced by a different approach.
 
 The theorem `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`
 in `BEI/Equidim.lean` has a two-case split. The `p ⊆ m⁺` case is fully
