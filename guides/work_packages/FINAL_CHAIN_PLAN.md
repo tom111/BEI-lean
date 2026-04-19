@@ -1,4 +1,4 @@
-# Plan: Close the HH `p ⊄ m⁺` sorry — final chain
+# Plan: Close the HH `p ⊄ m⁺` sorry — final chain (revised 2026-04-18)
 
 ## Context
 
@@ -9,218 +9,234 @@ six of seven pieces:
 |---|---|---|
 | L3 (one-sided survivors isolated) | ✓ done | `hhSurvivor_{x,y}_isolated` |
 | L4 (surviving-graph decomposition) | ✓ done | `L4Iso`, `BEI/Equidim.lean` |
-| L5 (reduced HH at aug is CM) | ✓ done — but **wrong form** | `isCohenMacaulayLocalRing_reducedHH_at_augIdeal` |
+| L5 (reduced HH at aug is CM, current form) | ✓ done — **wrong form** | `isCohenMacaulayLocalRing_reducedHH_at_augIdeal` |
 | L6 (polynomial-away tensor merge) | ✓ done | `polynomialAwayTensorEquiv` |
 | L7 replacement (tensor-poly-loc CM) | ✓ done | `isCohenMacaulayRing_tensor_away` |
 | L1 (monomial-localisation iso) | ✓ done | `L1Iso`, `BEI/Equidim.lean` |
 | **Final chain** | pending | `BEI/Equidim.lean:6723` |
 
 The sole remaining sorry is the `p ⊄ m⁺` branch of
-`isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`. The
-chain would compose L1 → L4 → L6 → L7 replacement to conclude CM —
-except that the L7 replacement asks for a globally-CM `A`, and the
-only CM fact we currently have about `reducedHHRing G'` is the L5
-statement for the **full** HH ring of the original graph `G`, not
-for the abstract reduced HH ring of the smaller graph `G'`.
+`isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`.
 
-## The L5 form mismatch
+## Revision note (2026-04-18, post thinking-model consult)
 
-L5 (currently formalised) proves
+A deep-model consultation produced two refinements to the original plan:
 
-    QuotSMulTop (mk y_last)
-      ((Localization.AtPrime (augIdeal G) R_G) ⧸ span{x_last})
-    is Cohen–Macaulay local
+1. **Session A is simpler than the full trailing-pair tensor iso**. The
+   direct bridge `((R_G)_m ⧸ x_r) ⧸ y_r  ≅  (reducedHHRing G)_{m_red}`
+   suffices; the full iso `R_G ≅ reducedHHRing G ⊗_K K[Fin 2]` is not
+   needed. This uses the same underlying no-last-pair fact but avoids
+   building a tensor decomposition at the ring level.
 
-where `R_G = MvPolynomial σ K ⧸ bipartiteEdgeMonomialIdeal G` for
-the **original** graph `G` on `Fin n`.
+2. **A new micro-lemma — "tensor-left-localisation bridge" — is
+   needed** as part of Session C: for a K-algebra `A`, a K-algebra `B`,
+   and a prime `𝔓 ⊂ A ⊗_K B` with `𝔓 ∩ A = m`,
 
-What the final chain needs is
+       (A ⊗_K B)_𝔓  ≅  (A_m ⊗_K B)_𝔓'.
 
-    Localization.AtPrime (augIdealReduced G')
-      (reducedHHRing G')
-    is Cohen–Macaulay local
+   Without this, L7 applies to the wrong ring: the L1/L4/L6 chain
+   lands in `(reducedHHRing G' ⊗ B)_𝔓`, but our CM input is for
+   `(reducedHHRing G')_m` (the localised form from Session A).
 
-for the **abstract** reduced HH ring of the smaller graph `G'`
-(`= smallerHHGraph G U`, on `Fin (r + 1)` with `r = pairedCount G U`).
+## The L5 form mismatch (recap)
 
-The bridge between these two forms is the trailing-pair decomposition
+L5 currently proves CM of
 
-    R_G  ≃ₐ[K]  reducedHHRing G  ⊗_K  MvPolynomial (Fin 2) K
+    ((R_G ⊗ localisation at augIdeal) ⧸ x_last) ⧸ y_last  (in L5's specific form)
 
-This iso exists because `bipartiteEdgeMonomialIdeal G` has no
-generator involving `x_{n-1}` or `y_{n-1}` — an edge of `hhEdgeSet`
-requires `i ≤ j, j+1 < n`, so `i, j < n-1`, and neither last-index
-variable appears as an endpoint.
+for the **original** HH ring `R_G`. What we need is
 
-## Proposed three-session plan
+    Localization.AtPrime (augIdealReduced G') (reducedHHRing G')  is CM local
 
-### Session A — trailing-pair iso and L5 transport (~150–250 LOC)
+for the **abstract** reduced HH ring of the smaller graph `G'`.
 
-**Goal**: prove, for any HH graph `G` on `Fin (r + 1)` with `r + 1 ≥ 2`,
-that `Localization.AtPrime (augIdealReduced G) (reducedHHRing G)` is
-Cohen–Macaulay local.
+## Revised three-session plan
 
-**Location**: `BEI/ReducedHH.lean` (augmenting the abstract reduced HH
-infrastructure) OR a new `BEI/ReducedHHIsom.lean` if the Session-A
-content is large enough to merit separation.
+### Session A′ — reduced-augmentation CM bridge (~100–200 LOC)
 
-**Deliverables**:
+**Goal**: prove directly
 
-1. **`R_G ≅ reducedHHRing G ⊗_K MvPolynomial (Fin 2) K`** — a `K`-algebra
-   iso. Constructed via `MvPolynomial.sumAlgEquiv`-style decompositions:
-   - `BinomialEdgeVars (Fin (r+1)) ≃ BinomialEdgeVars (Fin r) ⊕ Fin 2`
-     (where `Fin 2` indexes `(x_last, y_last)`).
-   - `MvPolynomial (A ⊕ B) K ≃ₐ[K] MvPolynomial A K ⊗_K MvPolynomial B K`
-     (via Mathlib's tensor-polynomial identifications).
-   - The bipartiteEdgeMonomialIdeal on `σ` factors through the σ' side
-     (no last-pair involvement), so the quotient descends cleanly.
+    isCohenMacaulayLocalRing_at_augIdealReduced
+      (G : SimpleGraph (Fin (r + 1))) [HH G] :
+      IsCohenMacaulayLocalRing
+        (Localization.AtPrime (augIdealReduced G) (reducedHHRing G))
 
-2. **Transported L5**: combine the trailing-pair iso with the existing
-   `isCohenMacaulayLocalRing_reducedHH_at_augIdeal` to conclude CM of
-   `Localization.AtPrime (augIdealReduced G) (reducedHHRing G)` for any
-   HH graph `G` on `Fin (r + 1)` with `r ≥ 1`.
+**Approach**:
 
-3. **Base case `r = 0`**: `reducedHHRing G` is `MvPolynomial (Fin 0) K = K`;
-   `augIdealReduced G = ⊥`; `Localization.AtPrime ⊥ K = K`, which is CM
-   local trivially. Handle with `isCohenMacaulayLocalRing_of_isField`.
+- Use the quotient-by-last-pair bridge:
 
-**Risk**: moderate. The `BinomialEdgeVars (Fin (r+1)) ≃ BinomialEdgeVars (Fin r) ⊕ Fin 2` iso looks easy but needs care with index arithmetic. The quotient-through-tensor step may need a small lemma.
+      ((R_G)_m ⧸ ⟨x_last⟩) ⧸ ⟨y_last⟩
+        ≅ (R_G ⧸ ⟨x_last, y_last⟩)_{m ⧸ ⟨x_last, y_last⟩}
+        ≅ (reducedHHRing G)_{augIdealReduced G}
 
-### Session B — promote local CM to global CM of the tensor factor (~50–100 LOC)
+  The final step uses the no-last-pair fact: `bipartiteEdgeMonomialIdeal G`
+  has no generator involving `x_last` or `y_last`, so `R_G ⧸ ⟨x_last, y_last⟩`
+  is exactly `reducedHHRing G`. Induced by `x_i ↦ x_i (i < r)`, `x_r ↦ 0`,
+  similarly for `y`.
 
-**Goal**: prove that `Localization.AtPrime (augIdealReduced G) (reducedHHRing G)`, which is a CM local ring by Session A, is also **globally** Cohen–Macaulay (as an `IsCohenMacaulayRing`).
+- Apply the existing L5 (`isCohenMacaulayLocalRing_reducedHH_at_augIdeal`)
+  through this bridge. L5 gives CM of `((R_G)_m ⧸ x_last) ⧸ y_last`;
+  transport through the bridge iso gives CM of the reduced augmentation
+  localisation.
 
-**Location**: `BEI/ReducedHH.lean` or `BEI/Equidim.lean` (wherever Session A lands).
+- **Base case `r = 0`**: handle uniformly inside the theorem.
+  `reducedHHRing G` for `G : SimpleGraph (Fin 1)` is `MvPolynomial (Fin 0) K ⧸ ⊥`,
+  which via `MvPolynomial.isEmptyAlgEquiv` is CM-equivalent to `K`.
+  `augIdealReduced` is `⊥`, `Localization.AtPrime ⊥ K = K`, trivially
+  CM local. Split with `by_cases hr : r = 0` inside the theorem.
 
-**Deliverables**:
+**Location**: `BEI/ReducedHH.lean` (extend the existing file).
 
-- Apply `IsCohenMacaulayRing.of_isCohenMacaulayLocalRing` (already in
-  `toMathlib/CohenMacaulay/Localization.lean:761`) to Session A's
-  conclusion. This should be near-mechanical — ~10–20 LOC once the
-  prerequisites are in scope.
+**Risk**: low-to-moderate. The bridge is mechanical once the
+"no-last-pair in the edge ideal" fact is stated cleanly.
 
-**Risk**: low.
+### Session B — promote local CM to global CM (~20–50 LOC)
 
-### Session C — final chain composition (~200–400 LOC)
+**Goal**:
 
-**Goal**: close the sorry at `BEI/Equidim.lean:6723`.
+    isCohenMacaulayRing_of_augIdealReduced_localisation
+      (G : SimpleGraph (Fin (r + 1))) [HH G] :
+      IsCohenMacaulayRing
+        (Localization.AtPrime (augIdealReduced G) (reducedHHRing G))
 
-**Strategy**:
+via `IsCohenMacaulayRing.of_isCohenMacaulayLocalRing` applied to
+Session A′'s conclusion. Near-mechanical.
 
-1. Given `p : Ideal R` with `¬ p ≤ augIdeal G`, define
-   `U : Finset (BinomialEdgeVars (Fin n))` as unit variables at `p`.
-   Prove `U` is independent in `Γ_G` (via primality: any edge among
-   units would force one unit to be zero in `R_p`, contradicting
-   non-membership in `p`).
+**Location**: same file as Session A′.
 
-2. Compose the ring equivalences into a single `RingEquiv` from
-   `Localization.AtPrime p R` to the target CM ring:
+**Risk**: trivial.
 
-   - `R_p ≅ (R[mkI s_U⁻¹])_{p'}` via
-     `IsLocalization.localizationLocalizationAtPrimeIsoLocalization`
-     (possible because `mkI s_U ∉ p`).
+### Session C — final chain composition (~250–450 LOC)
 
-   - `R[mkI s_U⁻¹] ≅ restrictedHHRing G W ⊗_K Localization.Away s_U^U`
-     via `L1Iso`.
+Broken into three sub-sessions as the thinking-model recommended.
 
-   - `restrictedHHRing G W ≅ reducedHHRing G' ⊗_K MvPolynomial Λ K`
-     via `L4Iso`.
+#### Session C1 — bundled unlocalised equivalence (~100–180 LOC)
 
-   - Combine the rightmost two tensor factors via
-     `polynomialAwayTensorEquiv` (L6):
-     `MvPolynomial Λ K ⊗_K Localization.Away s_U^U ≃ₐ[K]
-      Localization.Away (rename Sum.inr s_U^U : MvPolynomial (Λ ⊔ U) K)`.
+Build a **single** ring/algebra equivalence:
 
-   - Transport through `Algebra.TensorProduct.congr` or explicit
-     `AlgEquiv.trans`:
-     `R[mkI s_U⁻¹] ≅ reducedHHRing G' ⊗_K Localization.Away (something on Λ ⊔ U)`.
+    E_U : R[(mkI s_U)⁻¹]  ≅ₐ[K]  reducedHHRing G' ⊗_K Localization.Away s_ΛU
 
-3. Localise further and split: the inner prime `p'` pulls back through
-   the tensor to give primes on each factor. Use CM-localises to
-   reduce to showing the global ring is CM.
+where `s_ΛU : MvPolynomial (lambdaSet G U ⊔ U) K` is the renamed
+product of U-variables. Construct via a chain of existing isos:
 
-4. Apply L7 replacement with
-   `A := Localization.AtPrime (augIdealReduced G') (reducedHHRing G')`
-   (globally CM by Session A + B) and `τ := Λ ⊔ U`, `s := rename s_U^U`:
-   `A ⊗_K Localization.Away s` is globally CM.
+- `L1Iso` : `R[(mkI s_U)⁻¹] ≅ restrictedHHRing G (hhSurvivors G U) ⊗_K Localization.Away s_U^U`.
+- `L4Iso` applied to the left tensor factor:
+  `restrictedHHRing G (hhSurvivors G U) ≅ reducedHHRing G' ⊗_K MvPolynomial (lambdaSet G U) K`.
+- `polynomialAwayTensorEquiv` (L6) applied to the rightmost two tensor
+  factors after re-associating:
+  `MvPolynomial Λ K ⊗_K Localization.Away s_U^U ≅ Localization.Away s_ΛU`.
+- `Algebra.TensorProduct.assoc`, `congr`, etc. for the re-associations.
 
-5. `Localization.AtPrime p' (A ⊗_K ...)` is CM by
-   `IsCohenMacaulayRing.CM_localize`.
+**Location**: `BEI/Equidim.lean`, immediately before the main theorem.
 
-6. Transport CM back to `Localization.AtPrime p R` via the composed
-   RingEquiv using `isCohenMacaulayLocalRing_of_ringEquiv'`.
+**Risk**: moderate. Mostly mechanical tensor-associativity and
+`AlgEquiv.trans` gluing, but with heavy universe/instance pressure.
 
-**Subtleties**:
+#### Session C2 — tensor-left-localisation bridge (~80–150 LOC)
 
-- Aligning the tensor `(reducedHHRing G') ⊗_K (MvPolynomial Λ K ⊗_K
-  Localization.Away s_U^U)` with the L7-replacement hypothesis shape
-  `A ⊗_K Localization.Away s` requires `Algebra.TensorProduct.assoc`.
-- The prime `𝔓` in the target tensor ring needs to be produced
-  explicitly — it is the image of `p` under the composed iso.
-- Base case `r = 0`: the reduced HH factor vanishes (`reducedHHRing G' = K`),
-  and the whole chain simplifies to `R_p ≅ (K ⊗_K Localization.Away ...)_𝔓
-  ≅ Localization.Away...`, which is a localisation of a polynomial ring
-  over `K` (CM). Handle as a `by_cases r = 0` split at the start of
-  Session C.
+Build a new reusable lemma:
 
-**Risk**: moderate to high due to tensor-associativity bookkeeping
-and prime transport across multiple isos.
+    tensor_left_localisation_of_comap_eq_maximal
+      {K A B : Type*} [Field K] [CommRing A] [Algebra K A]
+      [CommRing B] [Algebra K B]
+      (m : Ideal A) [m.IsMaximal]
+      (𝔓 : Ideal (TensorProduct K A B)) [𝔓.IsPrime]
+      (h : 𝔓.comap (includeLeft) = m) :
+      Localization.AtPrime 𝔓
+        ≃+* Localization.AtPrime
+          (Ideal.map (someTensorLocAlgebra) 𝔓)
+
+**Mathematical content**: localising `A ⊗_K B` at a prime `𝔓` whose
+contraction to `A` is `m` is the same as first localising the `A`
+factor at `m` (yielding `A_m ⊗_K B`) and then localising at the
+induced prime.
+
+**Location**: `toMathlib/CohenMacaulay/TensorPolynomialAway.lean`
+(augmenting the existing L7 replacement file) or a new
+`toMathlib/TensorLocalisation.lean` if there are more such bridges.
+
+**Risk**: moderate. Conceptually clean, but the Mathlib API for
+tensor-product localisations may not offer exactly this shape — may
+need `IsLocalization` instance composition by hand.
+
+**Alternative** (worth considering): restate L7 replacement to accept
+`A_m ⊗_K B` form directly — i.e.,
+
+    isCohenMacaulayRing_tensor_away_of_maximal
+      ... (m : Ideal A) [m.IsMaximal] (h : IsCohenMacaulayLocalRing A_m)
+          (𝔓 : Ideal (A ⊗_K B)) (h𝔓 : 𝔓.comap includeLeft = m) ...
+
+This internalises the bridge inside L7. Fewer external dependencies
+but more invasive edit of `toMathlib/CohenMacaulay/TensorPolynomialAway.lean`.
+
+Recommendation: prove the bridge as a standalone lemma; easier to
+reason about and reuse.
+
+#### Session C3 — assembly and close the sorry (~70–120 LOC)
+
+Inside the main theorem's `p ⊄ augIdeal` branch:
+
+1. Define `U := unit variables at p` (`Finset.univ.filter`).
+2. Show `hhIndep G (U : Set _)` via primality.
+3. Apply `IsLocalization.localizationLocalizationAtPrimeIsoLocalization`
+   to get `R_p ≅ (R[(mkI s_U)⁻¹])_{p'}`.
+4. Apply `E_U` from Session C1 via localisation-of-equivalence to get
+   `(R[(mkI s_U)⁻¹])_{p'} ≅ (reducedHHRing G' ⊗_K B)_𝔓` where
+   `𝔓 = E_U.map p'`.
+5. Show `𝔓.comap includeLeft = augIdealReduced G'` (= `m` in the
+   bridge). By construction: every reduced HH variable maps to a paired
+   survivor, which is in `W ⊆ p`, so its image in the tensor lies in
+   `𝔓`. Hence `augIdealReduced ⊆ 𝔓.comap`. Since `augIdealReduced` is
+   maximal and `𝔓.comap` is proper, equality.
+6. Apply Session C2's bridge: `(reducedHHRing G' ⊗_K B)_𝔓 ≅
+   ((reducedHHRing G')_m ⊗_K B)_𝔓'`.
+7. Apply L7 replacement with `A := (reducedHHRing G')_m` (globally CM
+   by Session B) and `s := s_ΛU` to conclude `IsCohenMacaulayRing ((reducedHHRing G')_m ⊗_K B)`.
+8. Apply `IsCohenMacaulayRing.CM_localize` at `𝔓'`.
+9. Transport CM back to `Localization.AtPrime p R` through the composed
+   RingEquiv via `isCohenMacaulayLocalRing_of_ringEquiv'`.
+
+**Risk**: moderate. Bookkeeping heavy, but each step has a direct
+Lean analogue.
 
 ### Total effort
 
-- Session A: ~150–250 LOC (moderate risk).
-- Session B: ~50–100 LOC (low risk).
-- Session C: ~200–400 LOC (moderate-high risk).
-- **Total**: ~400–750 LOC.
+- Session A′: ~100–200 LOC (low-to-moderate risk).
+- Session B: ~20–50 LOC (trivial).
+- Session C1: ~100–180 LOC (moderate).
+- Session C2: ~80–150 LOC (moderate).
+- Session C3: ~70–120 LOC (moderate).
+- **Total**: ~370–700 LOC.
+
+Lower bound than the original estimate (~400–750), with the risk
+more evenly distributed across five smaller sub-sessions.
 
 ## Execution order
 
 Strongly recommend:
-1. Session A first (enables B).
-2. Session B (trivial once A lands).
-3. Session C last (consumes A + B).
+1. Session A′ first (enables B; smaller than the old Session A).
+2. Session B (trivial once A′ lands).
+3. Session C1 (bundled equivalence; can be attempted in parallel with C2).
+4. Session C2 (tensor-left-localisation bridge; independent).
+5. Session C3 (consumes B, C1, C2 to close the sorry).
 
-Each session builds cleanly on its predecessor; no interleaving
-required.
+## Notes from the thinking-model consult
 
-## Open questions for the thinking model
+- **Trailing-pair iso form**: mathematically exactly right; the full
+  tensor iso `R_G ≅ reducedHHRing G ⊗_K K[Fin 2]` is correct but
+  heavier than necessary. Use the direct quotient bridge instead.
+- **Prime transport**: bundle L1/L4/L6 before localising. One prime
+  comap suffices for the whole chain, plus one extra for the
+  tensor-left-localisation bridge.
+- **Base case `r = 0`**: no mathematical risk. Handle uniformly
+  inside Session A′ via `by_cases hr : r = 0`.
+- **Instance / universe hygiene**: `Fintype` / `DecidableEq` on
+  `Λ ⊔ U` should be routine. May need explicit local instances for
+  instance search speed.
 
-The following questions would confirm no hidden obstructions before
-committing engineering effort. Consider attaching this plan document
-when asking.
+## Open risk (documented for posterity)
 
-1. **Trailing-pair iso form**: is
-   `R_G ≅ reducedHHRing G ⊗_K MvPolynomial (Fin 2) K` exactly right,
-   or does the iso have a subtly different form (e.g. the HH ideal
-   restricted to σ' coincides with our `reducedHHIdeal` only up to a
-   relabelling)? In particular: our `reducedHHEdgeSet G` for
-   `G : SimpleGraph (Fin (r + 1))` asks for
-   `G.Adj a.castSucc ⟨b.val + 1, hb⟩` with `0 ≤ a ≤ b < r`, variables
-   on `BinomialEdgeVars (Fin r)`. The "σ' bipartite edge set" from
-   cutting out the last pair of the full HH on `Fin (r + 1)` asks for
-   `G.Adj i ⟨j.val + 1, hj⟩` with `i ≤ j`, `j.val + 1 < r + 1`,
-   variables on `BinomialEdgeVars (Fin r)` after discarding index r.
-   These look equal, but the exact identification may need spelling
-   out. Please confirm.
-
-2. **Alternative to Session A**: is there a conceptually cleaner way
-   to prove `Localization.AtPrime (augIdealReduced G) (reducedHHRing G)`
-   is CM local — e.g., directly recurse on the main theorem (treating
-   the main theorem itself as inductive on `n`), or a non-obvious
-   shortcut using the L5 statement as-is without going through the
-   trailing-pair iso?
-
-3. **Prime transport in Session C**: the chain hops across 4–5 ring
-   equivalences, each potentially changing the prime. Is there a
-   clean way to bundle this — e.g., a single "factor through all the
-   isos and localise at the end" recipe — or is per-iso comap
-   necessary?
-
-4. **Base case `r = 0`**: is there a risk that the chain construction
-   silently fails when `pairedSurvivors G U = ∅` (e.g., a tensor with
-   `reducedHHRing` on `Fin 0`, which is `K`, triggering some implicit
-   definitional issue)? Are there edge cases worth anticipating?
-
-5. **Any other obstruction** we haven't considered — e.g., whether
-   the `Finite` / `DecidableEq` hypotheses of the L7 replacement play
-   cleanly with the `Λ ⊔ U` index type obtained after merging?
+The tensor-left-localisation bridge (Session C2) is the single most
+likely source of a nasty Lean surprise. If Mathlib's `IsLocalization`
+machinery does not compose cleanly for this specific shape, the
+bridge may balloon from ~100 LOC to ~300+ LOC.
