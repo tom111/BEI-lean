@@ -12,6 +12,7 @@ import toMathlib.QuotientDimension
 import toMathlib.CohenMacaulay.Defs
 import toMathlib.CohenMacaulay.Basic
 import toMathlib.CohenMacaulay.Localization
+import toMathlib.PolynomialAwayTensor
 import Mathlib.RingTheory.Regular.Flat
 import Mathlib.RingTheory.Ideal.Quotient.Nilpotent
 import Mathlib.RingTheory.GradedAlgebra.Radical
@@ -7981,6 +7982,61 @@ private theorem isCohenMacaulayRing_at_augIdealReduced
       (Localization.AtPrime (BEI.augIdealReduced (K := K) G)) := by
   haveI := isCohenMacaulayLocalRing_at_augIdealReduced (K := K) hHH
   exact IsCohenMacaulayRing.of_isCohenMacaulayLocalRing
+
+/-! #### Session C1: the bundled equiv `E_U`.
+
+Composing `L1Iso`, `L4Iso`, the tensor associator, and `polynomialAwayTensorEquiv`,
+we obtain a single K-algebra equivalence from the monomial localisation of the
+HH quotient at `s_U` to
+`reducedHHRing G' ⊗[K] Localization.Away (rename Sum.inr (hhUnitProductSub U))`,
+where `G' = smallerHHGraph G (↑U)` and the `Sum.inr` embeds the `U`-index into
+`↑(lambdaSet G (↑U)) ⊕ ↑(U : Set _)`. -/
+set_option maxHeartbeats 400000 in
+/-- **Session C1: the bundled monomial-localisation equiv `E_U`** for an
+independent finset `U`. Specialised to `K : Type` (universe 0) so that it can
+be composed with `polynomialAwayTensorEquiv`, which requires all type arguments
+in a single universe. All downstream callers instantiate `K` at universe 0. -/
+private noncomputable def E_U {K : Type} [Field K]
+    {n : ℕ} {G : SimpleGraph (Fin n)}
+    (hHH : HerzogHibiConditions n G)
+    (U : Finset (BinomialEdgeVars (Fin n)))
+    (hU : hhIndep G (U : Set _)) :
+    Localization.Away
+        (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K) G)
+          (hhUnitProduct U))
+      ≃ₐ[K]
+      TensorProduct K
+        (BEI.reducedHHRing (K := K) (smallerHHGraph G (U : Set _)))
+        (Localization.Away
+          (rename (R := K)
+            (σ := ↑((U : Set (BinomialEdgeVars (Fin n)))))
+            (τ := ↑(lambdaSet G (U : Set _)) ⊕
+              ↑((U : Set (BinomialEdgeVars (Fin n)))))
+            Sum.inr
+            (hhUnitProductSub (K := K) U))) := by
+  classical
+  -- Abbreviations for readability and to pin down types for typeclass search.
+  let Uset : Set (BinomialEdgeVars (Fin n)) := ↑U
+  let G' := smallerHHGraph G Uset
+  let Λ : Set (BinomialEdgeVars (Fin n)) := lambdaSet G Uset
+  let A := BEI.reducedHHRing (K := K) G'
+  let P := MvPolynomial (↑Λ) K
+  let Lsub := Localization.Away (hhUnitProductSub (K := K) U)
+  -- Step 1: L1 iso.
+  refine (L1Iso (K := K) G U hU).trans ?_
+  -- Step 2: apply L4Iso to the left tensor factor.
+  refine (Algebra.TensorProduct.congr
+      (L4Iso (K := K) hHH Uset hU)
+      (AlgEquiv.refl (R := K) (A₁ := Lsub))).trans ?_
+  -- Step 3: reassociate the triple tensor.
+  refine (Algebra.TensorProduct.assoc K K K A P Lsub).trans ?_
+  -- Step 4: merge the polynomial factor with the localisation.
+  exact Algebra.TensorProduct.congr
+    (AlgEquiv.refl (R := K) (A₁ := A))
+    (polynomialAwayTensorEquiv
+      (K := K) (α := (Λ : Type _))
+      (β := ((U : Set (BinomialEdgeVars (Fin n))) : Type _))
+      (hhUnitProductSub (K := K) U))
 
 end GlobalCM
 
