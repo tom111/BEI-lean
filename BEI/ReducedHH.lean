@@ -97,13 +97,13 @@ private lemma reducedHHIdeal_le_ker_constantCoeff {r : ℕ}
   simp [constantCoeff_X]
 
 /-- The factored constant coefficient map `MvPolynomial _ / reducedHHIdeal → K`. -/
-private noncomputable def quotConstCoeffReduced {r : ℕ} (G' : SimpleGraph (Fin (r + 1))) :
+noncomputable def quotConstCoeffReduced {r : ℕ} (G' : SimpleGraph (Fin (r + 1))) :
     reducedHHRing (K := K) G' →+* K :=
   Ideal.Quotient.lift _ MvPolynomial.constantCoeff
     (reducedHHIdeal_le_ker_constantCoeff G')
 
 /-- The factored constant coefficient map is surjective (via `C`). -/
-private lemma quotConstCoeffReduced_surjective {r : ℕ} (G' : SimpleGraph (Fin (r + 1))) :
+lemma quotConstCoeffReduced_surjective {r : ℕ} (G' : SimpleGraph (Fin (r + 1))) :
     Function.Surjective (quotConstCoeffReduced (K := K) G') := by
   intro k
   exact ⟨Ideal.Quotient.mk _ (C k), by simp [quotConstCoeffReduced, constantCoeff_C]⟩
