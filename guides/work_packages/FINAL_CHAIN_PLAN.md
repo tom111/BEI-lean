@@ -1,19 +1,20 @@
-# Plan: Close the HH `p ⊄ m⁺` sorry — final chain (revised 2026-04-18)
+# Plan: Close the HH `p ⊄ m⁺` sorry — final chain (revised 2026-04-19)
 
 ## Context
 
 The F2 route to Proposition 1.6 CM at non-augmentation primes has landed
-six of seven pieces:
+seven of the eight pre-assembly pieces:
 
 | Piece | Status | Name / location |
 |---|---|---|
 | L3 (one-sided survivors isolated) | ✓ done | `hhSurvivor_{x,y}_isolated` |
 | L4 (surviving-graph decomposition) | ✓ done | `L4Iso`, `BEI/Equidim.lean` |
-| L5 (reduced HH at aug is CM, current form) | ✓ done — **wrong form** | `isCohenMacaulayLocalRing_reducedHH_at_augIdeal` |
+| L5 (reduced HH at aug is CM, original form) | ✓ done | `isCohenMacaulayLocalRing_reducedHH_at_augIdeal` |
 | L6 (polynomial-away tensor merge) | ✓ done | `polynomialAwayTensorEquiv` |
 | L7 replacement (tensor-poly-loc CM) | ✓ done | `isCohenMacaulayRing_tensor_away` |
 | L1 (monomial-localisation iso) | ✓ done | `L1Iso`, `BEI/Equidim.lean` |
-| **Final chain** | pending | `BEI/Equidim.lean:6723` |
+| Session A′ (reduced-HH aug-ideal CM bridge) | ✓ done | `isCohenMacaulayLocalRing_at_augIdealReduced` (r = 0 base + inductive step, `BEI/Equidim.lean`) |
+| **Sessions B, C1, C2, C3 (global CM + final chain)** | pending | `BEI/Equidim.lean:6786` |
 
 The sole remaining sorry is the `p ⊄ m⁺` branch of
 `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`.
@@ -69,44 +70,48 @@ Exports:
 - `isCohenMacaulayLocalRing_at_augIdealReduced_base` — the `r = 0`
   base case, via `isCohenMacaulayLocalRing_of_ringKrullDim_eq_zero`.
 
-#### Session A′.2 — inductive case `r ≥ 1` (~400–700 LOC)
+#### Session A′.2 — inductive case `r ≥ 1` (DONE, ~1100 LOC including already-drafted support)
 
-**Goal**: prove
+**Status**: landed in commit `9067040`.
 
-    isCohenMacaulayLocalRing_at_augIdealReduced
-      {r : ℕ} {G : SimpleGraph (Fin (r + 1))}
-      (hr : 1 ≤ r) (hHH : HerzogHibiConditions (r + 1) G) :
-      IsCohenMacaulayLocalRing
-        (Localization.AtPrime (augIdealReduced (K := K) G))
+Exports:
+- `isCohenMacaulayLocalRing_at_augIdealReduced_step` — inductive case
+  (`hr : 1 ≤ r`), via the 4-step bridge.
+- `isCohenMacaulayLocalRing_at_augIdealReduced` — the combined
+  `hr`-free version (base + step).
 
-then combine with the base case (A′.1) for an `hr`-free version.
+Support infrastructure added in the same session:
+`killLastPairIdeal`, `killLastPairPoly*`, `killLastPairEquiv`,
+`augIdealQuot`, `RpModLastPairEquivLoc`, and
+`locAugIdealQuotEquivLocAugIdealReduced`.
 
-**Bridge**: 4 non-trivial ring equivalences plus a transport of L5:
+**Bridge (as landed)**: 4 non-trivial ring equivalences plus a transport of L5:
 
-1. `QuotSMulTop mkyL RpQ ≃+* (Rp ⧸ span{xL}) ⧸ span{mkyL}` —
-   already available as `quotSMulTopRingEquivIdealQuotient`.
+1. `QuotSMulTop mkyL RpQ ≃+* (Rp ⧸ span{xL}) ⧸ span{mkyL}` — via
+   `quotSMulTopRingEquivIdealQuotient`.
 2. `(Rp ⧸ span{xL}) ⧸ span{mkyL} ≃+* Rp ⧸ span{xL, yL}` — via
-   `DoubleQuot.quotQuotEquivQuotSup` plus ideal-image manipulation
-   (~50–100 LOC of ideal arithmetic).
-3. `Rp ⧸ span{xL, yL} ≃+* (R_G ⧸ span{x_last, y_last})_{augIdeal image}` —
-   localisation-quotient commutation. The hardest step; may need a
-   new support lemma in `toMathlib/` if Mathlib doesn't cover this
-   shape directly (~100–200 LOC).
-4. `R_G ⧸ span{x_last, y_last} ≃+* reducedHHRing G` — the core
-   no-last-pair fact, implemented as a polynomial-level `aeval` +
-   quotient factorisation, with image-of-augIdeal matching
-   `augIdealReduced` (~150–300 LOC).
+   `DoubleQuot.quotQuotEquivQuotSup`, then `Ideal.quotEquivOfEq`
+   (with `Set.insert_eq` + `Ideal.span_union`) to reshape
+   `span{xL} ⊔ span{yL}` into `span {xL, yL}`.
+3. `Rp ⧸ span{xL, yL} ≃+* Localization.AtPrime augIdealQuot`
+   (on `R_G ⧸ killLastPairIdeal`) — **built by hand** using
+   `Localization.localRingHom` with explicit surjectivity/injectivity
+   arguments. No clean Mathlib candidate matched this shape.
+4. `Localization.AtPrime augIdealQuot ≃+* Localization.AtPrime augIdealReduced` —
+   via `killLastPairEquiv` (polynomial-level `aeval` + quotient descent)
+   and `IsLocalization.algEquiv` to transport the localisation across
+   the primes (Step 4 implementation is in
+   `locAugIdealQuotEquivLocAugIdealReduced`).
 
-Then apply `isCohenMacaulayLocalRing_of_ringEquiv'` with the existing
+Then `isCohenMacaulayLocalRing_of_ringEquiv'` composes Steps 1–4 with
 L5 as the CM hypothesis.
 
-**Location**: primarily `BEI/Equidim.lean` (after `isCohenMacaulayLocalRing_reducedHH_at_augIdeal`). Step 3 may spin out a `toMathlib/LocalizationQuotient.lean` helper if the commutation lemma is reusable.
-
-**Risk**: moderate-high. Step 3 (localisation-quotient commutation) is
-the single biggest unknown — if Mathlib's `IsLocalization` API cannot
-express this directly, a bespoke proof could push this step to 200+ LOC.
-
-**Recommendation**: attempt step 3 first in isolation. If it's tractable, the full bridge follows routinely.
+**Retrospective note on Step 3**: Mathlib does not (in this snapshot)
+offer a direct lemma for "localisation of quotient = quotient of
+localisation of a prime containing the quotienting ideal." Building
+it inline via `Localization.localRingHom` + bijectivity was the
+pragmatic choice. If the pattern recurs, it would be worth factoring
+out a `toMathlib/LocalizationQuotient.lean` helper.
 
 ### Session B — promote local CM to global CM (~20–50 LOC)
 

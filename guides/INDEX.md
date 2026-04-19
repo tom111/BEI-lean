@@ -16,13 +16,16 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 1. [work_packages/FULL_PROP_1_6_PLAN.md](work_packages/FULL_PROP_1_6_PLAN.md)
    Overall 3-phase plan for paper-exact Proposition 1.6 (HH global CM → Gröbner degeneration → assembly).
 
-2. [work_packages/HH_GLOBAL_CM_FROM_AUGIDEAL.md](work_packages/HH_GLOBAL_CM_FROM_AUGIDEAL.md)
-   **Active sorry (`BEI/Equidim.lean:4648`)**: turn augmentation-ideal CM into a global `IsCohenMacaulayRing` theorem for the HH quotient. Tracks the F2 route and the Strategy I alternative.
+2. [work_packages/FINAL_CHAIN_PLAN.md](work_packages/FINAL_CHAIN_PLAN.md)
+   **Active**: three-to-five-session plan for closing `BEI/Equidim.lean:6786`. Sessions A′.1 and A′.2 are now DONE; the remaining work is Session B (trivial promotion), C1 (bundled equivalence), C2 (tensor-left-localisation bridge), C3 (final assembly).
 
-3. [work_packages/PROP_1_6_CM_TRANSFER.md](work_packages/PROP_1_6_CM_TRANSFER.md)
+3. [work_packages/HH_GLOBAL_CM_FROM_AUGIDEAL.md](work_packages/HH_GLOBAL_CM_FROM_AUGIDEAL.md)
+   Higher-level narrative of the F2 route. Superseded as a sequencing plan by `FINAL_CHAIN_PLAN.md`; retained for decomposition context and lemma references.
+
+4. [work_packages/PROP_1_6_CM_TRANSFER.md](work_packages/PROP_1_6_CM_TRANSFER.md)
    Remaining paper-faithful algebra track for Prop 1.6: packaging the HH regularity infrastructure, invoking the Gröbner transfer, and writing the final statement.
 
-4. [work_packages/GROEBNER_CM_TRANSFER.md](work_packages/GROEBNER_CM_TRANSFER.md)
+5. [work_packages/GROEBNER_CM_TRANSFER.md](work_packages/GROEBNER_CM_TRANSFER.md)
    Phase 2 packet: transfer Cohen–Macaulayness from the initial ideal quotient back to the original quotient (upper semicontinuity of depth).
 
 ## Answers And Decision Notes
@@ -77,3 +80,4 @@ Completed / superseded packets, retained for historical context only. Do not tre
 - `archive/POLYNOMIAL_RING_CM_BASE_CASE.md` — polynomial CM extension landed (domain + non-domain versions both in `toMathlib/CohenMacaulay/Polynomial.lean`).
 - `archive/cm_pr_26218/` — Cohen–Macaulay backport from Mathlib PR #26218, landed.
 - `archive/cm_pr_28599/` — CM-localization backport from Mathlib PR #28599, landed (companion to the polynomial PR #28599 slice now directly in `toMathlib/CohenMacaulay/Polynomial.lean`).
+- `archive/SESSION_A2_HANDOFF.md` — Session A′.2 handoff brief, consumed by commit `9067040`.
