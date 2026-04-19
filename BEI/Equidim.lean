@@ -6785,6 +6785,88 @@ theorem isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal
     --      CM localizes.
     sorry
 
+/-! ### Session A′: the reduced HH ring at its augmentation is CM local
+
+The goal is
+
+    IsCohenMacaulayLocalRing (Localization.AtPrime (augIdealReduced G))
+
+for any HH graph `G` on `Fin (r + 1)`.
+
+**Base case `r = 0`**: the reduced HH ring on no variables is `K` (a field),
+`augIdealReduced = ⊥`, and `Localization.AtPrime ⊥ (field)` is CM local.
+
+**Inductive case `r ≥ 1`**: bridge from L5 CM output to
+`Localization.AtPrime (augIdealReduced G)` via the chain
+  (L5) = (Rp ⧸ x_last) ⧸ y_last
+       ≅ Rp ⧸ ⟨x_last, y_last⟩
+       ≅ (R_G ⧸ ⟨x_last, y_last⟩)_{augIdeal / ...}
+       ≅ Localization.AtPrime (augIdealReduced G)
+where each step uses either `DoubleQuot`, quotient/localization commutation,
+or the polynomial-level "kill last pair" ring equivalence.
+-/
+
+/-! #### Base case `r = 0`: reduced HH ring is the field `K` -/
+
+/-- For `r = 0`, the index type `BinomialEdgeVars (Fin 0)` is empty. -/
+private instance isEmpty_binomialEdgeVars_fin_zero :
+    IsEmpty (BinomialEdgeVars (Fin 0)) :=
+  inferInstanceAs (IsEmpty (Fin 0 ⊕ Fin 0))
+
+/-- When the index type is empty, the reduced HH ideal has no generators, so it equals `⊥`. -/
+private theorem reducedHHIdeal_eq_bot_of_r_zero {K : Type*} [Field K]
+    (G' : SimpleGraph (Fin 1)) :
+    BEI.reducedHHIdeal (K := K) G' = ⊥ := by
+  unfold BEI.reducedHHIdeal MvPolynomial.variablePairIdeal
+  rw [Ideal.span_eq_bot]
+  rintro x ⟨a, _, _, _⟩
+  exact (IsEmpty.false a).elim
+
+/-- The reduced HH ring is isomorphic to `K` when `r = 0`. -/
+private noncomputable def reducedHHRing_equiv_K_of_r_zero {K : Type*} [Field K]
+    (G' : SimpleGraph (Fin 1)) : BEI.reducedHHRing (K := K) G' ≃ₐ[K] K :=
+  (Ideal.quotientEquivAlgOfEq K (reducedHHIdeal_eq_bot_of_r_zero G')).trans <|
+    (AlgEquiv.quotientBot K _).trans
+      (MvPolynomial.isEmptyAlgEquiv K (BinomialEdgeVars (Fin 0)))
+
+/-- `augIdealReduced G' = ⊥` when `r = 0`: in a field, every proper ideal is `⊥`. -/
+private theorem augIdealReduced_eq_bot_of_r_zero {K : Type*} [Field K]
+    (G' : SimpleGraph (Fin 1)) :
+    BEI.augIdealReduced (K := K) G' = ⊥ := by
+  -- reducedHHRing G' is a field (via iso to K), hence every proper ideal is ⊥.
+  have hfield : IsField (BEI.reducedHHRing (K := K) G') :=
+    (reducedHHRing_equiv_K_of_r_zero G').toRingEquiv.toMulEquiv.isField
+      (Field.toIsField K)
+  letI : Field (BEI.reducedHHRing (K := K) G') := hfield.toField
+  have hmax : (BEI.augIdealReduced (K := K) G').IsMaximal := BEI.augIdealReduced_isMaximal G'
+  have hne_top : BEI.augIdealReduced (K := K) G' ≠ ⊤ := hmax.ne_top
+  rcases Ideal.eq_bot_or_top (BEI.augIdealReduced (K := K) G') with heq | heq
+  · exact heq
+  · exact absurd heq hne_top
+
+/-- **Base case** (`r = 0`): the localization of the reduced HH ring at its
+augmentation ideal is CM local. Proof: `reducedHHRing G'` is a field, the
+augmentation ideal is `⊥`, and the localization has Krull dimension 0. -/
+private theorem isCohenMacaulayLocalRing_at_augIdealReduced_base {K : Type*} [Field K]
+    (G' : SimpleGraph (Fin 1)) :
+    IsCohenMacaulayLocalRing
+      (Localization.AtPrime (BEI.augIdealReduced (K := K) G')) := by
+  -- reducedHHRing G' is a field.
+  have hfield : IsField (BEI.reducedHHRing (K := K) G') :=
+    (reducedHHRing_equiv_K_of_r_zero G').toRingEquiv.toMulEquiv.isField
+      (Field.toIsField K)
+  letI : Field (BEI.reducedHHRing (K := K) G') := hfield.toField
+  -- Krull dim of localization = height of augIdealReduced = 0 (since augIdealReduced = ⊥).
+  apply isCohenMacaulayLocalRing_of_ringKrullDim_eq_zero
+  rw [IsLocalization.AtPrime.ringKrullDim_eq_height (BEI.augIdealReduced (K := K) G')
+      (Localization.AtPrime (BEI.augIdealReduced (K := K) G')),
+    Ideal.height_eq_primeHeight]
+  have h : (BEI.augIdealReduced (K := K) G').primeHeight = 0 :=
+    Ideal.primeHeight_eq_zero_iff.mpr (by
+      rw [augIdealReduced_eq_bot_of_r_zero, IsDomain.minimalPrimes_eq_singleton_bot,
+        Set.mem_singleton_iff])
+  rw [h]; rfl
+
 end GlobalCM
 
 end
