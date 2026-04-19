@@ -52,43 +52,61 @@ for the **abstract** reduced HH ring of the smaller graph `G'`.
 
 ## Revised three-session plan
 
-### Session A′ — reduced-augmentation CM bridge (~100–200 LOC)
+### Session A′ — reduced-augmentation CM bridge
 
-**Goal**: prove directly
+Split into two sub-sessions after a size-estimate reality-check (the
+original "100-200 LOC" substantially underestimated the inductive
+bridge).
+
+#### Session A′.1 — augIdealReduced + base case (DONE, ~130 LOC)
+
+**Status**: landed in commit `6c47f83`.
+
+Exports:
+- `augIdealReduced G'` (definition) + `_isMaximal` / `_isPrime` /
+  `mkI_X_mem_` (all in `BEI/ReducedHH.lean`).
+- `reducedHHRing_equiv_K_of_r_zero` (base-case iso in `BEI/Equidim.lean`).
+- `isCohenMacaulayLocalRing_at_augIdealReduced_base` — the `r = 0`
+  base case, via `isCohenMacaulayLocalRing_of_ringKrullDim_eq_zero`.
+
+#### Session A′.2 — inductive case `r ≥ 1` (~400–700 LOC)
+
+**Goal**: prove
 
     isCohenMacaulayLocalRing_at_augIdealReduced
-      (G : SimpleGraph (Fin (r + 1))) [HH G] :
+      {r : ℕ} {G : SimpleGraph (Fin (r + 1))}
+      (hr : 1 ≤ r) (hHH : HerzogHibiConditions (r + 1) G) :
       IsCohenMacaulayLocalRing
-        (Localization.AtPrime (augIdealReduced G) (reducedHHRing G))
+        (Localization.AtPrime (augIdealReduced (K := K) G))
 
-**Approach**:
+then combine with the base case (A′.1) for an `hr`-free version.
 
-- Use the quotient-by-last-pair bridge:
+**Bridge**: 4 non-trivial ring equivalences plus a transport of L5:
 
-      ((R_G)_m ⧸ ⟨x_last⟩) ⧸ ⟨y_last⟩
-        ≅ (R_G ⧸ ⟨x_last, y_last⟩)_{m ⧸ ⟨x_last, y_last⟩}
-        ≅ (reducedHHRing G)_{augIdealReduced G}
+1. `QuotSMulTop mkyL RpQ ≃+* (Rp ⧸ span{xL}) ⧸ span{mkyL}` —
+   already available as `quotSMulTopRingEquivIdealQuotient`.
+2. `(Rp ⧸ span{xL}) ⧸ span{mkyL} ≃+* Rp ⧸ span{xL, yL}` — via
+   `DoubleQuot.quotQuotEquivQuotSup` plus ideal-image manipulation
+   (~50–100 LOC of ideal arithmetic).
+3. `Rp ⧸ span{xL, yL} ≃+* (R_G ⧸ span{x_last, y_last})_{augIdeal image}` —
+   localisation-quotient commutation. The hardest step; may need a
+   new support lemma in `toMathlib/` if Mathlib doesn't cover this
+   shape directly (~100–200 LOC).
+4. `R_G ⧸ span{x_last, y_last} ≃+* reducedHHRing G` — the core
+   no-last-pair fact, implemented as a polynomial-level `aeval` +
+   quotient factorisation, with image-of-augIdeal matching
+   `augIdealReduced` (~150–300 LOC).
 
-  The final step uses the no-last-pair fact: `bipartiteEdgeMonomialIdeal G`
-  has no generator involving `x_last` or `y_last`, so `R_G ⧸ ⟨x_last, y_last⟩`
-  is exactly `reducedHHRing G`. Induced by `x_i ↦ x_i (i < r)`, `x_r ↦ 0`,
-  similarly for `y`.
+Then apply `isCohenMacaulayLocalRing_of_ringEquiv'` with the existing
+L5 as the CM hypothesis.
 
-- Apply the existing L5 (`isCohenMacaulayLocalRing_reducedHH_at_augIdeal`)
-  through this bridge. L5 gives CM of `((R_G)_m ⧸ x_last) ⧸ y_last`;
-  transport through the bridge iso gives CM of the reduced augmentation
-  localisation.
+**Location**: primarily `BEI/Equidim.lean` (after `isCohenMacaulayLocalRing_reducedHH_at_augIdeal`). Step 3 may spin out a `toMathlib/LocalizationQuotient.lean` helper if the commutation lemma is reusable.
 
-- **Base case `r = 0`**: handle uniformly inside the theorem.
-  `reducedHHRing G` for `G : SimpleGraph (Fin 1)` is `MvPolynomial (Fin 0) K ⧸ ⊥`,
-  which via `MvPolynomial.isEmptyAlgEquiv` is CM-equivalent to `K`.
-  `augIdealReduced` is `⊥`, `Localization.AtPrime ⊥ K = K`, trivially
-  CM local. Split with `by_cases hr : r = 0` inside the theorem.
+**Risk**: moderate-high. Step 3 (localisation-quotient commutation) is
+the single biggest unknown — if Mathlib's `IsLocalization` API cannot
+express this directly, a bespoke proof could push this step to 200+ LOC.
 
-**Location**: `BEI/ReducedHH.lean` (extend the existing file).
-
-**Risk**: low-to-moderate. The bridge is mechanical once the
-"no-last-pair in the edge ideal" fact is stated cleanly.
+**Recommendation**: attempt step 3 first in isolation. If it's tractable, the full bridge follows routinely.
 
 ### Session B — promote local CM to global CM (~20–50 LOC)
 
@@ -199,17 +217,21 @@ Inside the main theorem's `p ⊄ augIdeal` branch:
 **Risk**: moderate. Bookkeeping heavy, but each step has a direct
 Lean analogue.
 
-### Total effort
+### Total effort (revised after Session A′.1 landed)
 
-- Session A′: ~100–200 LOC (low-to-moderate risk).
+- Session A′.1 (DONE): ~130 LOC.
+- Session A′.2 inductive bridge: ~400–700 LOC (moderate-high risk).
 - Session B: ~20–50 LOC (trivial).
 - Session C1: ~100–180 LOC (moderate).
 - Session C2: ~80–150 LOC (moderate).
 - Session C3: ~70–120 LOC (moderate).
-- **Total**: ~370–700 LOC.
+- **Total remaining**: ~670–1200 LOC.
 
-Lower bound than the original estimate (~400–750), with the risk
-more evenly distributed across five smaller sub-sessions.
+Upper-range estimate revised upward: the Session A′ inductive bridge
+was substantially underestimated. Step 3 (localisation-quotient
+commutation) is the single biggest unknown — if Mathlib's
+`IsLocalization` API cannot express this directly, a bespoke proof
+could push the session further still.
 
 ## Execution order
 
