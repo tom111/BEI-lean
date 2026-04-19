@@ -7969,6 +7969,19 @@ private theorem isCohenMacaulayLocalRing_at_augIdealReduced
   · exact isCohenMacaulayLocalRing_at_augIdealReduced_step (K := K)
       (by omega) hHH
 
+/-! #### Session B: promote local CM at `augIdealReduced` to global CM. -/
+
+/-- **Session B**: The localisation of the reduced HH ring at its augmentation
+ideal is globally Cohen–Macaulay. Immediate from Session A′ and
+`IsCohenMacaulayRing.of_isCohenMacaulayLocalRing`. -/
+private theorem isCohenMacaulayRing_at_augIdealReduced
+    {r : ℕ} {G : SimpleGraph (Fin (r + 1))}
+    (hHH : HerzogHibiConditions (r + 1) G) :
+    IsCohenMacaulayRing
+      (Localization.AtPrime (BEI.augIdealReduced (K := K) G)) := by
+  haveI := isCohenMacaulayLocalRing_at_augIdealReduced (K := K) hHH
+  exact IsCohenMacaulayRing.of_isCohenMacaulayLocalRing
+
 end GlobalCM
 
 end
