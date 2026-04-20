@@ -425,6 +425,14 @@ instance polyT_isScalarTower (n : ℕ) :
     polyTInclude (K := K) n (algebraMap K (PolyT K) r)
   simp [polyTInclude]
 
+/-- `PolyT K = MvPolynomial Unit K` is a PID, via transport from `Polynomial K`
+    along `MvPolynomial.pUnitAlgEquiv`. In particular, it is a Bezout domain
+    and a Dedekind domain, so the Mathlib "torsion-free ↔ flat" characterization
+    applies to modules over `PolyT K`. -/
+noncomputable instance : IsPrincipalIdealRing (PolyT K) :=
+  let e : PolyT K ≃+* Polynomial K := (MvPolynomial.pUnitAlgEquiv K).toRingEquiv
+  IsPrincipalIdealRing.of_surjective e.symm.toRingHom e.symm.surjective
+
 /-- The image of `t - 1 ∈ K[t]` under the `K[t]`-algebra map into `S[t] ⧸ Ĩ`
     is the class of `tDef n - 1`. -/
 lemma algebraMap_polyT_tMinusOne {n : ℕ} (G : SimpleGraph (Fin n)) :
@@ -466,29 +474,77 @@ theorem tildeJ_quotient_isCohenMacaulay
     IsCohenMacaulayRing (DefRing n K ⧸ tildeJ (K := K) G) := by
   sorry
 
-/-- **R1.d (refined: the isolated technical heart)**: the deformation
-    `S[t] ⧸ Ĩ` is flat as a `K[t]`-module.
+/-- **R1.d colon-ideal sub-sorry**: for every nonzero polynomial `q ∈ K[t]`,
+    the ideal `Ĩ` is saturated with respect to `polyTInclude q`.
+
+    This is the BEI-specific content of `tildeJ_flat_over_polyT`: since
+    `PolyT K = K[t]` is a PID, flatness of `DefRing n K ⧸ Ĩ` over `PolyT K`
+    reduces to torsion-freeness, which in turn reduces to the statement below
+    (via `Module.IsTorsionFree.mk` together with the fact that in a domain
+    every regular element is nonzero).
 
     Classical proof (Eisenbud 15.17): `{f̃_{i,j}}` is a Gröbner basis of `Ĩ`
-    whose leading terms `x_i y_j` contain no `t`, so the standard monomials of
-    `J_G` form a free `K[t]`-basis of `S[t] ⧸ Ĩ`. Free ⟹ flat.
-
-    An equivalent formulation: since `K[t]` is a PID, flatness is
-    `Submodule.torsion (PolyT K) (DefRing n K ⧸ tildeJ G) = ⊥`
-    (via `Module.Flat.flat_iff_torsion_eq_bot_of_isBezout`). In this shape, the
-    Gröbner-basis argument only has to produce, for each
-    `c ∈ DefRing n K ∖ tildeJ G`, a witness that `q · c ∉ tildeJ G` for all
-    nonzero `q ∈ PolyT K`.
+    whose leading terms `x_i y_j` contain no `t`. The normal form of any
+    `c ∈ DefRing n K` modulo `Ĩ` is a `K[t]`-linear combination of standard
+    monomials of `J_G`. Multiplying by `polyTInclude q` (a pure-`t` polynomial)
+    preserves the "standard monomial" support. If `polyTInclude q · c ∈ Ĩ`,
+    the product's normal form is zero, so each `K[t]`-coefficient times `q` is
+    zero; by `K[t]`-domain and `q ≠ 0`, each coefficient is zero, hence the
+    normal form of `c` is zero, i.e. `c ∈ Ĩ`.
 
     **Status**: not yet formalized. This is the single remaining paper-critical
-    sorry on the R1.d branch; the `IsSMulRegular` lemmas `tildeJ_t_isSMulRegular`
-    and `tildeJ_tMinusOne_isSMulRegular` below are closed conditional on this
-    flatness lemma, and `groebnerDeformation_cm_transfer` then closes R1 fully
-    modulo only this flatness statement and `tildeJ_quotient_isCohenMacaulay`. -/
+    sorry on the R1.d branch, and by design is a purely BEI-specific Gröbner
+    statement rather than a general commutative-algebra one. -/
+theorem tildeJ_polyT_colon_eq
+    {n : ℕ} (G : SimpleGraph (Fin n))
+    (q : PolyT K) (_hq : q ≠ 0)
+    (c : DefRing n K) (_hmul : polyTInclude (K := K) n q * c ∈ tildeJ (K := K) G) :
+    c ∈ tildeJ (K := K) G := by
+  sorry
+
+/-- **R1.d (refined)**: the deformation `S[t] ⧸ Ĩ` is flat as a `K[t]`-module.
+
+    The proof reduces to the colon-ideal sub-sorry `tildeJ_polyT_colon_eq`
+    via two Mathlib principles:
+
+    - `Module.Flat.instOfIsDedekindDomainOfIsTorsionFree`: over a Dedekind
+      domain (here `PolyT K = K[t]`, which is a PID hence Dedekind), being
+      torsion-free implies being flat.
+    - `Module.IsTorsionFree.mk`: torsion-freeness is constructed from
+      `∀ r, IsRegular r → IsSMulRegular M r`.
+
+    For `R = PolyT K` a domain, `IsRegular r ↔ r ≠ 0`, and `IsSMulRegular` of
+    `r` on `DefRing n K ⧸ Ĩ` unfolds (via the algebra structure and quotient
+    laws) to exactly the statement `tildeJ_polyT_colon_eq`. -/
 theorem tildeJ_flat_over_polyT
     {n : ℕ} (G : SimpleGraph (Fin n)) :
     Module.Flat (PolyT K) (DefRing n K ⧸ tildeJ (K := K) G) := by
-  sorry
+  -- It suffices to show torsion-freeness over the Dedekind domain `PolyT K`.
+  haveI hTF : Module.IsTorsionFree (PolyT K) (DefRing n K ⧸ tildeJ (K := K) G) := by
+    refine Module.IsTorsionFree.mk ?_
+    intro q hReg
+    -- `q` is a nonzero element of `PolyT K` (a domain).
+    have hqne : q ≠ 0 := hReg.ne_zero
+    -- `IsSMulRegular` for scalar mul by `q` on the quotient.
+    intro c d hcd
+    change q • c = q • d at hcd
+    obtain ⟨c', rfl⟩ := Ideal.Quotient.mk_surjective c
+    obtain ⟨d', rfl⟩ := Ideal.Quotient.mk_surjective d
+    rw [Algebra.smul_def, Algebra.smul_def] at hcd
+    -- Rewrite `algebraMap (PolyT K) (quot) q = mk (polyTInclude n q)`.
+    have hAlg : algebraMap (PolyT K) (DefRing n K ⧸ tildeJ (K := K) G) q
+        = (Ideal.Quotient.mk (tildeJ (K := K) G)) (polyTInclude (K := K) n q) := by
+      rw [← Ideal.Quotient.mk_comp_algebraMap]
+      rfl
+    rw [hAlg, ← map_mul, ← map_mul, Ideal.Quotient.eq] at hcd
+    rw [Ideal.Quotient.eq]
+    have hfactor :
+        polyTInclude (K := K) n q * c' - polyTInclude (K := K) n q * d'
+          = polyTInclude (K := K) n q * (c' - d') := by ring
+    rw [hfactor] at hcd
+    exact tildeJ_polyT_colon_eq G q hqne _ hcd
+  -- Torsion-free + Dedekind ⟹ Flat (Mathlib instance).
+  infer_instance
 
 /-- Scalar multiplication by `X () - 1 ∈ K[t]` on `S[t] ⧸ Ĩ` agrees with
     ring multiplication by the class of `tDef n - 1`. -/

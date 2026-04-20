@@ -590,19 +590,27 @@ landed in `toMathlib/` and/or `BEI/`. Depth semicontinuity is not required.
     regular-quotient lift via `t`. Depends on the dormant Case-C sorry of
     `GradedCM.lean`.
   - ~~`tildeJ_tMinusOne_isSMulRegular` (R1.d, the technical heart)~~: the
-    `IsSMulRegular` step is **CLOSED conditional on flatness**: proved from
-    `tildeJ_flat_over_polyT` via `Module.Flat.isSMulRegular_of_isRegular`
-    (regular element `X () - 1 ∈ K[t]`, then translated via
-    `isSMulRegular_map`). The sibling `tildeJ_t_isSMulRegular` (for the
-    `t = 0` fiber) is also proved. The `K[t]`-algebra structure on
-    `DefRing n K` is now registered globally via `polyTInclude = rename Sum.inr`,
-    with scalar tower `K → PolyT K → DefRing n K`.
-  - `tildeJ_flat_over_polyT` (R1.d, the isolated technical heart):
-    flatness of `S[t] ⧸ Ĩ` over `K[t] = MvPolynomial Unit K`.
-    Classical proof: standard monomials of `J_G` form a `K[t]`-basis of
-    `S[t] ⧸ Ĩ` (free ⇒ flat), via the reduced Gröbner basis of `J_G`.
+    `IsSMulRegular` step is **CLOSED conditional on colon-ideal sub-sorry**.
+    The `K[t]`-algebra structure on `DefRing n K` is registered globally via
+    `polyTInclude = rename Sum.inr`, with scalar tower
+    `K → PolyT K → DefRing n K`.
+  - ~~`tildeJ_flat_over_polyT` (R1.d)~~: flatness **CLOSED conditional on
+    `tildeJ_polyT_colon_eq`**. Derivation: `PolyT K = MvPolynomial Unit K` is
+    a PID (via `pUnitAlgEquiv` transport), hence a Dedekind domain;
+    `Module.IsTorsionFree.mk` constructs torsion-freeness from the
+    colon-ideal saturation condition; `Module.Flat.instOfIsDedekindDomainOfIsTorsionFree`
+    closes the gap. So `tildeJ_flat_over_polyT` is no longer the leaf sorry
+    on this branch.
+  - `tildeJ_polyT_colon_eq` (R1.d leaf sorry): the BEI-specific
+    statement that for every nonzero `q ∈ K[t]` and every `c ∈ DefRing n K`,
+    `polyTInclude q · c ∈ Ĩ ⟹ c ∈ Ĩ`. Classical Gröbner-basis proof: the
+    leading monomials of `{f̃_{i,j}}` contain no `t`, so multiplying by a
+    pure-`t` polynomial `q` preserves standard-monomial support; combined
+    with `K[t]` being a domain, the coefficients of the normal form of `c`
+    must all be zero.
 - Total active sorries after this round: **2** in `BEI/GroebnerDeformation.lean`
-  (graded LTG + `K[t]`-flatness), **0** elsewhere on the critical path.
+  (graded LTG + BEI colon-ideal Gröbner statement), **0** elsewhere on the
+  critical path.
 
 ### Note on route 2b (routing around `GradedCM.lean` Case C)
 
