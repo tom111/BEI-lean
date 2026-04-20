@@ -40,12 +40,15 @@
 
 ### Priority 1: Real Cohen-Macaulay track
 
+**HH-side global CM theorem is now fully proved (2026-04-20).**
+`isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal` closes with
+axioms `{propext, Classical.choice, Quot.sound}`. No `sorry` remains on
+the critical path inside `BEI/`.
+
 Active follow-up work now lives in:
-- `guides/work_packages/FULL_PROP_1_6_PLAN.md` — overall 3-phase plan
-- `guides/work_packages/HH_GLOBAL_CM_FROM_AUGIDEAL.md` — current consumer
-  packet for the remaining HH-side global CM step (tracks the active sorry)
+- `guides/work_packages/FULL_PROP_1_6_PLAN.md` — overall 3-phase plan (Phase 1 done)
 - `guides/work_packages/PROP_1_6_CM_TRANSFER.md` — overall CM transfer strategy
-- `guides/work_packages/GROEBNER_CM_TRANSFER.md` — the Gröbner deformation transfer (Phase 2)
+- `guides/work_packages/GROEBNER_CM_TRANSFER.md` — the Gröbner deformation transfer (Phase 2, still open)
 
 Completed / superseded packets are now under `guides/archive/` (see
 `guides/INDEX.md`).
@@ -107,22 +110,18 @@ The CM-localization backport route is now complete in
 - localization of CM local rings at primes is proved;
 - and the wrapper `IsCohenMacaulayRing.of_isCohenMacaulayLocalRing` is proved.
 
-However, this does **not** by itself close the HH-side global CM theorem,
-because `isCohenMacaulayLocalRing_at_augIdeal` only proves CM at the
-augmentation ideal, not at every prime.
+Together with the F2 route (L1, L4, L5, L7 replacement, Session A′, Session B,
+Session C1 bundled equiv, Session C2 tensor-left-localisation bridge, and
+Session C3 assembly), this now closes the HH-side global CM theorem
+`isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal` (restricted to
+`K : Type` because of the universe-monomorphic polynomial-away tensor API).
 
-The remaining HH-side step toward a genuine `IsCohenMacaulayRing` conclusion is
-now down to one active `sorry` in `BEI/Equidim.lean`.
+Both branches of the two-case split are proved:
+1. the branch `p ≤ augIdeal`: closed via `isCohenMacaulayLocalRing_at_augIdeal` + CM localizes;
+2. the branch `p ⊄ augIdeal`: closed via pick-U + E_U + C2 bridge + L7 tensor-away CM.
 
-Its current shape is:
-1. the branch `p ≤ augIdeal`: closed;
-2. the branch `p ⊄ augIdeal`: still open.
-
-The current route for that last branch, along with the backported polynomial-CM
-infrastructure it depends on, is tracked in
-`guides/work_packages/HH_GLOBAL_CM_FROM_AUGIDEAL.md` and the umbrella plan
-`guides/work_packages/FULL_PROP_1_6_PLAN.md`. Earlier dehomogenization / graded-
-local-to-global route memos are preserved in `guides/archive/`.
+Earlier dehomogenization / graded-local-to-global route memos are preserved in
+`guides/archive/`.
 
 The Gröbner CM transfer theorem (Eisenbud 15.17) also remains unformalized, so the full
 paper Cohen–Macaulay statement is still open even after the HH-side CM theorem lands.
@@ -188,13 +187,14 @@ Some of these splits still need cleanup, but these are the current live location
 
 | File | Sorries | Notes |
 |---|---:|---|
-| `BEI/Equidim.lean` | 1 | paper-faithful CM-transfer route active again; one remaining HH global-CM sorry |
+| `BEI/Equidim.lean` | 0 | HH global CM theorem closed 2026-04-20 |
 | `BEI/PrimeDecompositionDimension.lean` | 0 | direct equidimensional Prop. 1.6 route complete |
 | `BEI/PrimeDecomposition.lean` | 0 | |
 | `toMathlib/CohenMacaulay/Localization.lean` | 0 | completed CM-localization backport |
 | `toMathlib/HeightAdditivity.lean` | 2 | dormant infrastructure |
+| `toMathlib/GradedCM.lean` | 1 | dormant, documented off-path |
 | `Supplement/RauhApproach.lean` | 2 | archived, not on main path |
-| **Active total** | **1** | excluding dormant `HeightAdditivity` and archived `RauhApproach` |
+| **Active total** | **0** | excluding dormant `HeightAdditivity` / `GradedCM` and archived `RauhApproach` |
 
 ---
 

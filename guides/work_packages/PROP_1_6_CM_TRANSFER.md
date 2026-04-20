@@ -16,9 +16,11 @@ Everything internal to the BEI reduction is now proved:
 
 The remaining paper-level gaps are:
 
-1. package the finished HH regularity infrastructure into a genuine
-   Herzog–Hibi bipartite Cohen–Macaulay theorem for the graph `Γ`;
-2. formalize a Gröbner-basis transfer theorem strong enough for Proposition 1.6.
+1. ~~package the finished HH regularity infrastructure into a genuine
+   Herzog–Hibi bipartite Cohen–Macaulay theorem for the graph `Γ`~~; **DONE 2026-04-20**:
+   `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal` in `BEI/Equidim.lean`.
+2. formalize a Gröbner-basis transfer theorem strong enough for Proposition 1.6
+   (still pending — see `GROEBNER_CM_TRANSFER.md`).
 
 
 ## Current live state

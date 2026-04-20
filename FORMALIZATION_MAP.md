@@ -61,7 +61,7 @@ faithfully the current Lean statements match the paper.
 
 | Paper endpoint | Current state |
 |---|---|
-| Proposition 1.6 | equidimensional surrogate proved; HH-side `IsCohenMacaulayLocalRing` at augmentation ideal proved; the CM-localization backport is complete; one active `sorry` remains in the HH global-CM theorem, currently isolated to the `p ⊄ augIdeal` dehomogenization / Laurent-extension branch; Gröbner CM transfer also remains |
+| Proposition 1.6 | equidimensional surrogate proved; HH-side global CM theorem `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal` now proved (both `p ≤ augIdeal` and `p ⊄ augIdeal` branches closed via F2 route + Session C3 assembly, 2026-04-20); Gröbner CM transfer to the original ideal remains |
 | Corollary 3.4 | only the equidimensional surrogate consequence is proved |
 | Corollary 3.7 | prime/unmixed branches are proved; the CM branch is only represented by the equidimensional surrogate |
 | Section 4 | complete: bridges, radicality, prime decomposition, and minimal-prime transfer all proved |
@@ -123,8 +123,11 @@ faithfully the current Lean statements match the paper.
 | NZD for `y_{n-1}` | `X_inr_last_isSMulRegular_mod_diagonalSum_sup` | `BEI/Equidim.lean` | proved | `X(inr ⟨n-1⟩)` is NZD on `S ⧸ (I ⊔ diag_{n-1} ⊔ ⟨x_{n-1}⟩)`; extended ideal handling |
 | Extended `IsWeaklyRegular` (length `n+1`) | `bipartiteEdgeMonomialIdeal_isWeaklyRegular_full` | `BEI/Equidim.lean` | proved | Diagonal sums + two free variables; length = `n + 1 = dim` |
 | Local CM at augmentation ideal | `isCohenMacaulayLocalRing_at_augIdeal` | `BEI/Equidim.lean` | proved | `IsCohenMacaulayLocalRing` at `ker(constantCoeff)` via regular-sequence localization + dimension sandwich |
-| HH-side global CM step | `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal` | `BEI/Equidim.lean` | Sorry | Two-case split implemented; the `p ≤ augIdeal` branch is proved and the `p ⊄ augIdeal` branch is the only remaining sorry |
-| Dehomogenization support packet | — | — | blocked | Remaining support theorem family: dehomogenization / Laurent-extension infrastructure for the `p ⊄ augIdeal` branch |
+| HH-side global CM step | `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal` | `BEI/Equidim.lean` | proved | F2 route: `p ≤ augIdeal` via CM localizes; `p ⊄ augIdeal` via pick-U (Step 1), hhIndep (Step 2), localize-away-s_U (Step 4), E_U bundled equiv (Session C1), contraction equality via C3a-inl/inr (Step 6), C2 tensor-left-localisation bridge, L7 tensor-away CM replacement, loc-of-loc transport. `K : Type` (universe 0). |
+| Reduced HH ring at aug is CM local | `isCohenMacaulayLocalRing_at_augIdealReduced` | `BEI/Equidim.lean` | proved | Session A′ inductive bridge from L5 output to reduced HH ring |
+| Reduced HH ring at aug is globally CM | `isCohenMacaulayRing_at_augIdealReduced` | `BEI/Equidim.lean` | proved | Session B wrapper of the local version through `IsCohenMacaulayRing.of_isCohenMacaulayLocalRing` |
+| Bundled monomial-localisation equiv | `E_U` | `BEI/Equidim.lean` | proved | Session C1: `R[s_U⁻¹] ≃ₐ[K] reducedHHRing G' ⊗[K] Localization.Away (rename Sum.inr s_U^U)` |
+| Tensor-left-localisation bridge | `Algebra.tensorLeftLocalisationEquiv` | `toMathlib/TensorLocalisation.lean` | proved | Session C2: `(A⊗B)_𝔓 ≃+* (A_m ⊗ B)_𝔓'` where `m = 𝔓 ∩ A` |
 
 ### Variable ideal dimension (`toMathlib/HeightVariableIdeal.lean`)
 

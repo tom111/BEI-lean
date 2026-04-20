@@ -12,7 +12,9 @@ import toMathlib.QuotientDimension
 import toMathlib.CohenMacaulay.Defs
 import toMathlib.CohenMacaulay.Basic
 import toMathlib.CohenMacaulay.Localization
+import toMathlib.CohenMacaulay.TensorPolynomialAway
 import toMathlib.PolynomialAwayTensor
+import toMathlib.TensorLocalisation
 import Mathlib.RingTheory.Regular.Flat
 import Mathlib.RingTheory.Ideal.Quotient.Nilpotent
 import Mathlib.RingTheory.GradedAlgebra.Radical
@@ -3761,69 +3763,6 @@ private lemma span_x_inl_last_ne_top {n : ℕ} (hn : 1 ≤ n) (G : SimpleGraph (
 
 end AugmentationCM
 
-/-! ### Cohen–Macaulay transfer through ring equivalence -/
-
-section CMTransfer
-
-universe u₀
-
-open RingTheory.Sequence IsLocalRing
-
-variable {A₀ B₀ : Type u₀} [CommRing A₀] [CommRing B₀]
-
-/-- A ring equivalence between local rings is a local ring homomorphism. -/
-private instance ringEquiv_isLocalHom [IsLocalRing A₀] [IsLocalRing B₀]
-    (e : A₀ ≃+* B₀) : IsLocalHom e.toRingHom where
-  map_nonunit a ha := by
-    rw [RingEquiv.toRingHom_eq_coe, RingHom.coe_coe] at ha
-    exact (isUnit_map_iff e a).mp ha
-
-/-- Weakly regular sequences transfer through ring equivalences.
-
-The proof chains two Mathlib results:
-1. `LinearEquiv.isWeaklyRegular_congr` transfers weak regularity between modules
-   over the same ring (using the A-linear equivalence `A ≃ₗ[A] B`).
-2. `isWeaklyRegular_map_algebraMap_iff` relates `IsWeaklyRegular B rs` (as A-module)
-   to `IsWeaklyRegular B (rs.map e)` (as B-module) via the scalar tower. -/
-private lemma isWeaklyRegular_map_ringEquiv (e : A₀ ≃+* B₀) {rs : List A₀}
-    (hreg : IsWeaklyRegular A₀ rs) : IsWeaklyRegular B₀ (rs.map e) := by
-  letI : Algebra A₀ B₀ := e.toRingHom.toAlgebra
-  let eₗ : A₀ ≃ₗ[A₀] B₀ :=
-    { e.toAddEquiv with
-      map_smul' := fun a x => by
-        change e (a * x) = e.toRingHom a * e x
-        exact e.map_mul a x }
-  exact (isWeaklyRegular_map_algebraMap_iff B₀ B₀ rs).mpr
-    ((LinearEquiv.isWeaklyRegular_congr eₗ rs).mp hreg)
-
-/-- Cohen–Macaulay local rings are invariant under ring equivalences.
-
-Transfer strategy: `dim(B) = dim(A) = depth(A)`. Then `depth(A) ≤ depth(B)`
-(by mapping weakly regular sequences via `isWeaklyRegular_map_ringEquiv`) and
-`depth(B) ≤ dim(B)` (always), giving `dim(B) = depth(B)`. -/
-private theorem isCohenMacaulayLocalRing_of_ringEquiv'
-    [IsLocalRing A₀] [IsLocalRing B₀]
-    [hCM : IsCohenMacaulayLocalRing A₀] (e : A₀ ≃+* B₀) :
-    IsCohenMacaulayLocalRing B₀ where
-  depth_eq_dim := by
-    have hdim : ringKrullDim B₀ = ringKrullDim A₀ := (ringKrullDim_eq_of_ringEquiv e).symm
-    rw [hdim, hCM.depth_eq_dim]; congr 1
-    apply le_antisymm
-    · apply sSup_le
-      rintro _ ⟨rs, rfl, hreg, hmem⟩
-      exact le_sSup ⟨rs.map e, by simp, isWeaklyRegular_map_ringEquiv e hreg,
-        fun r hr => by
-          obtain ⟨a, ha, rfl⟩ := List.mem_map.mp hr
-          exact map_nonunit e.toRingHom a (hmem a ha)⟩
-    · apply sSup_le
-      rintro _ ⟨rs, rfl, hreg, hmem⟩
-      exact le_sSup ⟨rs.map e.symm, by simp, isWeaklyRegular_map_ringEquiv e.symm hreg,
-        fun r hr => by
-          obtain ⟨a, ha, rfl⟩ := List.mem_map.mp hr
-          exact map_nonunit e.symm.toRingHom a (hmem a ha)⟩
-
-end CMTransfer
-
 /-! ### HH bipartite edge ideal: global Cohen–Macaulay theorem -/
 
 section GlobalCM
@@ -3872,8 +3811,8 @@ private theorem isCohenMacaulayLocalRing_idealQuot_lastInl {n : ℕ} (hn : 2 ≤
         (Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K') G)
           (X (Sum.inl ⟨n - 1, by omega⟩)))}))
       Ideal.Quotient.mk_surjective
-  haveI := isCohenMacaulayLocalRing_quot_lastInl (K := K') hn hHH
-  exact isCohenMacaulayLocalRing_of_ringEquiv'
+  have hCM := isCohenMacaulayLocalRing_quot_lastInl (K := K') hn hHH
+  exact isCohenMacaulayLocalRing_of_ringEquiv' hCM
     (quotSMulTopRingEquivIdealQuotient _)
 
 set_option synthInstance.maxHeartbeats 400000 in
@@ -6702,90 +6641,6 @@ private noncomputable def L1Iso {n : ℕ}
   AlgEquiv.ofAlgHom (L1Forward (K := K) G U hU) (L1Backward (K := K) G U)
     (L1Forward_Backward G U hU) (L1Backward_Forward G U hU)
 
-/-! #### Main theorem -/
-
-/-- **Graded local-to-global for the HH quotient**: Under HH conditions, the quotient
-`S ⧸ bipartiteEdgeMonomialIdeal G` is a Cohen–Macaulay ring.
-
-The proof splits into two cases by whether a prime `p` is contained in the
-augmentation ideal `m⁺`:
-
-- **Case `p ≤ m⁺`**: By localization transitivity,
-  `R_p ≅ (R_{m⁺})_{p'}` where `p' = p · R_{m⁺}`. Since `R_{m⁺}` is CM
-  (by `isCohenMacaulayLocalRing_at_augIdeal`) and CM localizes
-  (`isCohenMacaulayLocalRing_localization_atPrime`), `R_p` is CM.
-
-- **Case `p ⊄ m⁺`**: By `exists_var_not_mem_of_not_le_augIdeal`, some variable
-  image `X_v` is not in `p`, hence is a unit in `R_p`. By HH diagonal conditions,
-  the paired variable `X_w` becomes zero. This simplifies `R_p` to a localization
-  of a smaller polynomial quotient, which is CM by an inductive/structural argument.
-
-References: Bruns–Herzog, Theorem 2.1.3(b); Herzog–Hibi (2005). -/
-theorem isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal
-    {n : ℕ} (hn : 2 ≤ n) {G : SimpleGraph (Fin n)}
-    (hHH : HerzogHibiConditions n G) :
-    IsCohenMacaulayRing
-      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ bipartiteEdgeMonomialIdeal (K := K) G) := by
-  set R := MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ bipartiteEdgeMonomialIdeal (K := K) G
-  set I := bipartiteEdgeMonomialIdeal (K := K) G
-  set m := augIdeal (K := K) G
-  constructor
-  intro p _
-  by_cases hp : p ≤ m
-  · -- Case p ⊆ augIdeal: CM by localization transitivity.
-    -- R_m is CM local; (R_m)_{p'} is CM for any prime p' of R_m.
-    -- R_p ≅ (R_m)_{p'} where p' = map p, and comap p' = p.
-    -- Transfer CM through the localization-localization AlgEquiv.
-    set Rm := Localization.AtPrime m
-    have hdisj : Disjoint (↑m.primeCompl : Set R) (↑p) := by
-      rw [Set.disjoint_left]; intro x hx hxp; exact hx (hp hxp)
-    set p' := Ideal.map (algebraMap R Rm) p
-    haveI hp' : p'.IsPrime := IsLocalization.isPrime_of_isPrime_disjoint _ Rm p ‹_› hdisj
-    haveI : IsCohenMacaulayLocalRing Rm :=
-      isCohenMacaulayLocalRing_at_augIdeal (K := K) hn hHH
-    -- Factor through the localization-localization isomorphism
-    set q := Ideal.comap (algebraMap R Rm) p' with hq_def
-    have hqp : q = p := IsLocalization.comap_map_of_isPrime_disjoint _ Rm ‹_› hdisj
-    haveI : q.IsPrime := hqp ▸ ‹p.IsPrime›
-    -- (R_m)_{p'} is CM by CM localization
-    haveI : IsCohenMacaulayLocalRing (Localization.AtPrime p') :=
-      isCohenMacaulayLocalRing_localization_atPrime p'
-    -- R_q ≃ (R_m)_{p'}, and q = p
-    have hCM_q : IsCohenMacaulayLocalRing (Localization.AtPrime q) :=
-      isCohenMacaulayLocalRing_of_ringEquiv'
-        (IsLocalization.localizationLocalizationAtPrimeIsoLocalization
-          m.primeCompl p').symm.toRingEquiv
-    -- Transport from q to p: since q = p, the localization types are equal
-    have hpc : q.primeCompl = p.primeCompl := by
-      ext x; exact not_congr (by rw [hqp])
-    exact cast (show IsCohenMacaulayLocalRing (Localization.AtPrime q) =
-      IsCohenMacaulayLocalRing (Localization.AtPrime p) by
-        change IsCohenMacaulayLocalRing (Localization q.primeCompl) =
-          IsCohenMacaulayLocalRing (Localization p.primeCompl)
-        rw [hpc]) hCM_q
-  · -- Case p ⊄ augIdeal: F2 decomposition.
-    --
-    -- The earlier sketch "R_p is a localization of K[surviving variables]"
-    -- is FALSE in general (counterexample n = 4, G = K_4,
-    -- p = (x_0, x_1, y_0, y_1, y_2, x_3 − 1) where R_p is a localization of
-    -- A^red_{K_3} ⊗_K K[x_2, x_3, y_3] rather than a plain polynomial
-    -- localization).
-    --
-    -- The validated route (see guides/work_packages/HH_GLOBAL_CM_FROM_AUGIDEAL.md
-    -- and guides/answers/ANSWER_HH_QUOTIENT_CM_AT_NON_AUGIDEAL.md):
-    --   1. [L1] R[s_U⁻¹] ≅ (K[W] / I(Γ_G|_W)) ⊗_K K[U][s_U⁻¹]  with
-    --      U = unit variables in R_p, W = surviving nonunit variables.
-    --   2. [L2] localize L1 at p.
-    --   3. [L4] K[W] / I(Γ_G|_W) ≅ A^red_{G'} ⊗_K K[Λ]  where G' is the
-    --      canonical smaller HH graph on the paired-survivor indices.
-    --   4. [L5, proved] A^red_{G'} at its augmentation ideal is CM local.
-    --   5. [L7 replacement] For A CM and B = K[τ][s⁻¹], every localization
-    --      of A ⊗_K B at a prime is CM; close via
-    --      `A ⊗_K K[τ][s⁻¹] ≅ A[τ][s_A⁻¹]` +
-    --      `isCohenMacaulayRing_mvPolynomial_of_isCohenMacaulayRing` +
-    --      CM localizes.
-    sorry
-
 /-! ### Session A′: the reduced HH ring at its augmentation is CM local
 
 The goal is
@@ -7911,7 +7766,7 @@ private theorem isCohenMacaulayLocalRing_at_augIdealReduced_step
         exact (IsLocalRing.mem_maximalIdeal _).mp hmem_max)
     haveI : IsLocalRing (RpQ ⧸ Ideal.span {mkyL}) :=
       IsLocalRing.of_surjective' _ Ideal.Quotient.mk_surjective
-    exact isCohenMacaulayLocalRing_of_ringEquiv'
+    exact isCohenMacaulayLocalRing_of_ringEquiv' hCM_L5
       (quotSMulTopRingEquivIdealQuotient mkyL)
   -- Step 2: RpQ ⧸ span{mkyL} ≃+* Rp ⧸ span{xL, yL}.
   have hstep2 : IsCohenMacaulayLocalRing
@@ -7925,8 +7780,7 @@ private theorem isCohenMacaulayLocalRing_at_augIdealReduced_step
       Ideal.Quotient.nontrivial_iff.mpr hne_sup
     haveI : IsLocalRing (Rp ⧸ (Ideal.span {xL} ⊔ Ideal.span {yL})) :=
       IsLocalRing.of_surjective' _ Ideal.Quotient.mk_surjective
-    haveI := hstep1
-    exact isCohenMacaulayLocalRing_of_ringEquiv'
+    exact isCohenMacaulayLocalRing_of_ringEquiv' hstep1
       ((Ideal.quotEquivOfEq hmap.symm).trans (DoubleQuot.quotQuotEquivQuotSup _ _))
   -- Step 2.5: span{xL} ⊔ span{yL} = span{xL, yL} (set equality).
   have hsup_eq : Ideal.span {xL} ⊔ Ideal.span {yL} =
@@ -7939,8 +7793,7 @@ private theorem isCohenMacaulayLocalRing_at_augIdealReduced_step
       Ideal.Quotient.nontrivial_iff.mpr (hsup_eq ▸ hne_sup)
     haveI : IsLocalRing (Rp ⧸ Ideal.span ({xL, yL} : Set Rp)) :=
       IsLocalRing.of_surjective' _ Ideal.Quotient.mk_surjective
-    haveI := hstep2
-    exact isCohenMacaulayLocalRing_of_ringEquiv' (Ideal.quotEquivOfEq hsup_eq)
+    exact isCohenMacaulayLocalRing_of_ringEquiv' hstep2 (Ideal.quotEquivOfEq hsup_eq)
   -- Step 3: Rp ⧸ span{xL, yL} ≃+* Localization.AtPrime augIdealQuot.
   have hstep3 : IsCohenMacaulayLocalRing
       (Localization.AtPrime (augIdealQuot (K := K) G)) := by
@@ -7948,13 +7801,11 @@ private theorem isCohenMacaulayLocalRing_at_augIdealReduced_step
       IsLocalRing.of_surjective' _ Ideal.Quotient.mk_surjective
     haveI : IsLocalRing (Localization.AtPrime (augIdealQuot (K := K) G)) :=
       inferInstance
-    haveI := hstep2'
-    exact isCohenMacaulayLocalRing_of_ringEquiv' (RpModLastPairEquivLoc G)
+    exact isCohenMacaulayLocalRing_of_ringEquiv' hstep2' (RpModLastPairEquivLoc G)
   -- Step 4: Localization.AtPrime augIdealQuot ≃+* Localization.AtPrime augIdealReduced.
   haveI : IsLocalRing (Localization.AtPrime (augIdealQuot (K := K) G)) := inferInstance
   haveI : IsLocalRing (Localization.AtPrime (BEI.augIdealReduced (K := K) G)) := inferInstance
-  haveI := hstep3
-  exact isCohenMacaulayLocalRing_of_ringEquiv'
+  exact isCohenMacaulayLocalRing_of_ringEquiv' hstep3
     (locAugIdealQuotEquivLocAugIdealReduced G)
 
 /-- **Combined** inductive + base case: CM of `Localization.AtPrime (augIdealReduced G)`
@@ -8279,6 +8130,305 @@ private theorem E_U_algebraMap_mkI_X_pairedSurvivor_inr
       (1 : TensorProduct K (MvPolynomial (lambdaSet G (U : Set _)) K)
         (Localization.Away (hhUnitProductSub (K := K) U))) := rfl
   rw [h11, map_one]
+
+/-! #### Main theorem -/
+
+set_option maxHeartbeats 1600000 in
+set_option synthInstance.maxHeartbeats 400000 in
+/-- **Graded local-to-global for the HH quotient**: Under HH conditions, the quotient
+`S ⧸ bipartiteEdgeMonomialIdeal G` is a Cohen–Macaulay ring.
+
+The proof splits into two cases by whether a prime `p` is contained in the
+augmentation ideal `m⁺`:
+
+- **Case `p ≤ m⁺`**: By localization transitivity,
+  `R_p ≅ (R_{m⁺})_{p'}` where `p' = p · R_{m⁺}`. Since `R_{m⁺}` is CM and CM localizes.
+- **Case `p ⊄ m⁺`**: F2 route. Pick `U := {v | mkI(X v) ∉ p}`. The independent-set
+  hypothesis holds by primality (edge monomials are zero in `R = S/I`). Localize away
+  from `s_U := mkI(∏_{u ∈ U} X u)`; the bundled equiv `E_U` identifies this with
+  `reducedHHRing(G') ⊗[K] Localization.Away(...)`. Push `p_Lsu` through `E_U` to get
+  a prime `𝔓`; generator-level forward traces (C3a-inl/inr) plus maximality of
+  `augIdealReduced` give `𝔓.comap includeLeft = augIdealReduced G'`. Apply the
+  tensor-left-localisation bridge (C2) and the L7 replacement
+  (`isCohenMacaulayLocalRing_localization_tensor_away`), then transport back.
+
+References: Bruns–Herzog, Theorem 2.1.3(b); Herzog–Hibi (2005). -/
+theorem isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal
+    {K : Type} [Field K]
+    {n : ℕ} (hn : 2 ≤ n) {G : SimpleGraph (Fin n)}
+    (hHH : HerzogHibiConditions n G) :
+    IsCohenMacaulayRing
+      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ bipartiteEdgeMonomialIdeal (K := K) G) := by
+  set R := MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ bipartiteEdgeMonomialIdeal (K := K) G
+  set I := bipartiteEdgeMonomialIdeal (K := K) G
+  set m := augIdeal (K := K) G
+  constructor
+  intro p _
+  by_cases hp : p ≤ m
+  · -- Case p ⊆ augIdeal: CM by localization transitivity.
+    set Rm := Localization.AtPrime m
+    have hdisj : Disjoint (↑m.primeCompl : Set R) (↑p) := by
+      rw [Set.disjoint_left]; intro x hx hxp; exact hx (hp hxp)
+    set p' := Ideal.map (algebraMap R Rm) p
+    haveI hp' : p'.IsPrime := IsLocalization.isPrime_of_isPrime_disjoint _ Rm p ‹_› hdisj
+    haveI : IsCohenMacaulayLocalRing Rm :=
+      isCohenMacaulayLocalRing_at_augIdeal (K := K) hn hHH
+    set q := Ideal.comap (algebraMap R Rm) p' with hq_def
+    have hqp : q = p := IsLocalization.comap_map_of_isPrime_disjoint _ Rm ‹_› hdisj
+    haveI : q.IsPrime := hqp ▸ ‹p.IsPrime›
+    haveI : IsCohenMacaulayLocalRing (Localization.AtPrime p') :=
+      isCohenMacaulayLocalRing_localization_atPrime p'
+    have hCM_q : IsCohenMacaulayLocalRing (Localization.AtPrime q) :=
+      isCohenMacaulayLocalRing_of_ringEquiv' ‹_›
+        (IsLocalization.localizationLocalizationAtPrimeIsoLocalization
+          m.primeCompl p').symm.toRingEquiv
+    have hpc : q.primeCompl = p.primeCompl := by
+      ext x; exact not_congr (by rw [hqp])
+    exact cast (show IsCohenMacaulayLocalRing (Localization.AtPrime q) =
+      IsCohenMacaulayLocalRing (Localization.AtPrime p) by
+        change IsCohenMacaulayLocalRing (Localization q.primeCompl) =
+          IsCohenMacaulayLocalRing (Localization p.primeCompl)
+        rw [hpc]) hCM_q
+  · -- Case p ⊄ augIdeal: F2 decomposition via E_U, C2 bridge, and L7 replacement.
+    classical
+    -- Step 1: Pick U = "unit" variables (those whose mkI image is NOT in p).
+    set U : Finset (BinomialEdgeVars (Fin n)) :=
+      Finset.univ.filter (fun v => (Ideal.Quotient.mk I (X v) : R) ∉ p) with hU_def
+    -- Step 2: U is HH-independent. HH edge ⇒ X u * X v ∈ I ⇒ product = 0 ∈ p ⇒ one of
+    -- mkI(X u), mkI(X v) is in p, contradicting membership in U.
+    have hU_indep : hhIndep G (U : Set _) := by
+      intro u v hu hv hedge
+      have huf : u ∈ U := by exact_mod_cast hu
+      have hvf : v ∈ U := by exact_mod_cast hv
+      have hu_nmem : Ideal.Quotient.mk I (X u) ∉ p := (Finset.mem_filter.mp huf).2
+      have hv_nmem : Ideal.Quotient.mk I (X v) ∉ p := (Finset.mem_filter.mp hvf).2
+      obtain ⟨i, j, hj, hadj, hle, heq⟩ := hedge
+      rw [Prod.mk.injEq] at heq
+      obtain ⟨rfl, rfl⟩ := heq
+      have hmem : X (Sum.inl i) * X (Sum.inr j) ∈ I :=
+        Ideal.subset_span ⟨i, j, hj, hadj, hle, rfl⟩
+      have h_mul_zero :
+          (Ideal.Quotient.mk I (X (Sum.inl i))) * (Ideal.Quotient.mk I (X (Sum.inr j))) = 0 := by
+        rw [← map_mul]; exact Ideal.Quotient.eq_zero_iff_mem.mpr hmem
+      have h_mul_mem :
+          (Ideal.Quotient.mk I (X (Sum.inl i))) * (Ideal.Quotient.mk I (X (Sum.inr j))) ∈ p := by
+        rw [h_mul_zero]; exact p.zero_mem
+      rcases ‹p.IsPrime›.mem_or_mem h_mul_mem with hxu | hxv
+      · exact hu_nmem hxu
+      · exact hv_nmem hxv
+    -- Step 3: sU := mkI(∏_{u ∈ U} X u) ∉ p.
+    set sU : R := Ideal.Quotient.mk I (hhUnitProduct (K := K) U) with hsU_def
+    have hsU_nmem : sU ∉ p := by
+      rw [hsU_def]
+      unfold hhUnitProduct
+      rw [map_prod]
+      intro hmem
+      rcases Ideal.IsPrime.prod_mem_iff.mp hmem with ⟨u, hu, hu_in⟩
+      exact (Finset.mem_filter.mp hu).2 hu_in
+    -- Step 4: localize R away from sU.
+    set Lsu := Localization.Away sU
+    have hdisj : Disjoint (↑(Submonoid.powers sU) : Set R) (↑p : Set R) := by
+      rw [Set.disjoint_left]
+      rintro x ⟨k, rfl⟩ hx
+      exact hsU_nmem (‹p.IsPrime›.mem_of_pow_mem _ hx)
+    set p_Lsu : Ideal Lsu := Ideal.map (algebraMap R Lsu) p with p_Lsu_def
+    haveI hp_Lsu : p_Lsu.IsPrime :=
+      IsLocalization.isPrime_of_isPrime_disjoint _ Lsu p ‹_› hdisj
+    have hcomap_p : p_Lsu.comap (algebraMap R Lsu) = p :=
+      IsLocalization.comap_map_of_isPrime_disjoint _ Lsu ‹_› hdisj
+    -- Step 5: apply E_U and pull p_Lsu back to 𝔓.
+    set G' : SimpleGraph (Fin (pairedCount G (U : Set _) + 1)) :=
+      smallerHHGraph G (U : Set _) with G'_def
+    set A := BEI.reducedHHRing (K := K) G' with A_def
+    set Lnew := Localization.Away (rename (R := K)
+      (σ := ↑((U : Set (BinomialEdgeVars (Fin n)))))
+      (τ := ↑(lambdaSet G (U : Set _)) ⊕
+        ↑((U : Set (BinomialEdgeVars (Fin n)))))
+      Sum.inr (hhUnitProductSub (K := K) U)) with Lnew_def
+    let e_U := E_U (K := K) hHH U hU_indep
+    set 𝔓 : Ideal (TensorProduct K A Lnew) := p_Lsu.comap e_U.symm.toRingHom with 𝔓_def
+    haveI h𝔓 : 𝔓.IsPrime := Ideal.IsPrime.comap e_U.symm.toRingHom
+    -- Step 6: 𝔓.comap includeLeft = augIdealReduced G'.
+    have h_contract : 𝔓.comap
+        (Algebra.TensorProduct.includeLeft (R := K) (S := K)
+          (A := A) (B := Lnew)).toRingHom =
+        BEI.augIdealReduced (K := K) G' := by
+      -- Each reduced variable lies in 𝔓.comap includeLeft.
+      have h_gen : ∀ (v : BinomialEdgeVars (Fin (pairedCount G (U : Set _)))),
+          ((Ideal.Quotient.mk (BEI.reducedHHIdeal (K := K) G')) (X v) : A) ∈
+            𝔓.comap (Algebra.TensorProduct.includeLeft (R := K) (S := K)
+              (A := A) (B := Lnew)).toRingHom := by
+        intro v
+        rw [Ideal.mem_comap]
+        change ((Ideal.Quotient.mk (BEI.reducedHHIdeal (K := K) G')) (X v) ⊗ₜ[K]
+          (1 : Lnew)) ∈ 𝔓
+        rcases v with a | a
+        · set i := pairedSurvivorsVal G (U : Set _) a
+          have hi_ps : i ∈ pairedSurvivors G (U : Set _) := pairedSurvivorsVal_mem G _ a
+          have hi_surv : (Sum.inl i : BinomialEdgeVars (Fin n)) ∈
+              hhSurvivors G (U : Set _) := pairedSurvivors_inl_mem G _ hi_ps
+          have hi_not_in_U : (Sum.inl i : BinomialEdgeVars (Fin n)) ∉ U := by
+            intro h
+            exact hi_surv (Or.inl (by exact_mod_cast h))
+          have hmkI_in_p : Ideal.Quotient.mk I (X (Sum.inl i)) ∈ p := by
+            by_contra h_notin
+            exact hi_not_in_U (Finset.mem_filter.mpr ⟨Finset.mem_univ _, h_notin⟩)
+          have halg_in : algebraMap R Lsu (Ideal.Quotient.mk I (X (Sum.inl i))) ∈ p_Lsu :=
+            Ideal.mem_map_of_mem _ hmkI_in_p
+          have hC3a := E_U_algebraMap_mkI_X_pairedSurvivor_inl (K := K) hHH U hU_indep a
+          have halg_eq :
+              algebraMap R Lsu (Ideal.Quotient.mk I (X (Sum.inl i))) =
+                e_U.symm
+                  (((Ideal.Quotient.mk (BEI.reducedHHIdeal (K := K) G'))
+                    (X (Sum.inl a))) ⊗ₜ[K] (1 : Lnew)) := by
+            rw [← hC3a]; exact (AlgEquiv.symm_apply_apply e_U _).symm
+          have hsymm_in : e_U.symm
+              (((Ideal.Quotient.mk (BEI.reducedHHIdeal (K := K) G'))
+                (X (Sum.inl a))) ⊗ₜ[K] (1 : Lnew)) ∈ p_Lsu :=
+            halg_eq ▸ halg_in
+          rw [𝔓_def, Ideal.mem_comap]
+          exact hsymm_in
+        · set i := pairedSurvivorsVal G (U : Set _) a
+          have hi_ps : i ∈ pairedSurvivors G (U : Set _) := pairedSurvivorsVal_mem G _ a
+          have hi_surv : (Sum.inr i : BinomialEdgeVars (Fin n)) ∈
+              hhSurvivors G (U : Set _) := pairedSurvivors_inr_mem G _ hi_ps
+          have hi_not_in_U : (Sum.inr i : BinomialEdgeVars (Fin n)) ∉ U := by
+            intro h
+            exact hi_surv (Or.inl (by exact_mod_cast h))
+          have hmkI_in_p : Ideal.Quotient.mk I (X (Sum.inr i)) ∈ p := by
+            by_contra h_notin
+            exact hi_not_in_U (Finset.mem_filter.mpr ⟨Finset.mem_univ _, h_notin⟩)
+          have halg_in : algebraMap R Lsu (Ideal.Quotient.mk I (X (Sum.inr i))) ∈ p_Lsu :=
+            Ideal.mem_map_of_mem _ hmkI_in_p
+          have hC3a := E_U_algebraMap_mkI_X_pairedSurvivor_inr (K := K) hHH U hU_indep a
+          have halg_eq :
+              algebraMap R Lsu (Ideal.Quotient.mk I (X (Sum.inr i))) =
+                e_U.symm
+                  (((Ideal.Quotient.mk (BEI.reducedHHIdeal (K := K) G'))
+                    (X (Sum.inr a))) ⊗ₜ[K] (1 : Lnew)) := by
+            rw [← hC3a]; exact (AlgEquiv.symm_apply_apply e_U _).symm
+          have hsymm_in : e_U.symm
+              (((Ideal.Quotient.mk (BEI.reducedHHIdeal (K := K) G'))
+                (X (Sum.inr a))) ⊗ₜ[K] (1 : Lnew)) ∈ p_Lsu :=
+            halg_eq ▸ halg_in
+          rw [𝔓_def, Ideal.mem_comap]
+          exact hsymm_in
+      -- augIdealReduced ≤ comap (via span of variables + zero constant coefficient).
+      have h_le_comap : BEI.augIdealReduced (K := K) G' ≤
+          𝔓.comap (Algebra.TensorProduct.includeLeft (R := K) (S := K)
+            (A := A) (B := Lnew)).toRingHom := by
+        intro x hx
+        obtain ⟨f, rfl⟩ := Ideal.Quotient.mk_surjective x
+        rw [BEI.augIdealReduced, RingHom.mem_ker,
+          BEI.quotConstCoeffReduced, Ideal.Quotient.lift_mk] at hx
+        have hmem : f ∈ Ideal.span (Set.range
+            (X : BinomialEdgeVars (Fin (pairedCount G (U : Set _))) →
+              MvPolynomial (BinomialEdgeVars (Fin (pairedCount G (U : Set _)))) K)) := by
+          rw [show Set.range X = X '' Set.univ from Set.image_univ.symm,
+              MvPolynomial.mem_ideal_span_X_image]
+          intro mono hm
+          have hne : mono ≠ 0 := by
+            intro hzero; subst hzero
+            simp only [MvPolynomial.mem_support_iff] at hm; exact hm hx
+          obtain ⟨idx, hidx⟩ := Finsupp.ne_iff.mp hne
+          exact ⟨idx, Set.mem_univ _, hidx⟩
+        have hmap :
+            Ideal.map (Ideal.Quotient.mk (BEI.reducedHHIdeal (K := K) G'))
+              (Ideal.span (Set.range X)) ≤
+            𝔓.comap (Algebra.TensorProduct.includeLeft (R := K) (S := K)
+              (A := A) (B := Lnew)).toRingHom := by
+          rw [Ideal.map_span]
+          apply Ideal.span_le.mpr
+          rintro _ ⟨_, ⟨v, rfl⟩, rfl⟩
+          exact h_gen v
+        exact hmap (Ideal.mem_map_of_mem _ hmem)
+      -- Comap is proper (𝔓 prime, so 1 ∉ 𝔓).
+      have h_ne_top : 𝔓.comap (Algebra.TensorProduct.includeLeft (R := K) (S := K)
+          (A := A) (B := Lnew)).toRingHom ≠ ⊤ := by
+        intro htop
+        apply h𝔓.ne_top
+        rw [Ideal.eq_top_iff_one]
+        have h1 : (1 : A) ∈ 𝔓.comap (Algebra.TensorProduct.includeLeft (R := K) (S := K)
+            (A := A) (B := Lnew)).toRingHom := by rw [htop]; trivial
+        rw [Ideal.mem_comap, map_one] at h1
+        exact h1
+      exact ((BEI.augIdealReduced_isMaximal G').eq_of_le h_ne_top h_le_comap).symm
+    -- Step 7: apply C2 bridge.
+    haveI h𝔓' : (Algebra.tensorLeftLocalisedPrime K (BEI.augIdealReduced G') 𝔓).IsPrime :=
+      Algebra.tensorLeftLocalisedPrime_isPrime
+        (B := Lnew) (BEI.augIdealReduced G') 𝔓 h_contract
+    let e_C2 : Localization.AtPrime 𝔓 ≃+*
+        Localization.AtPrime
+          (Algebra.tensorLeftLocalisedPrime K (BEI.augIdealReduced (K := K) G') 𝔓) :=
+      Algebra.tensorLeftLocalisationEquiv (BEI.augIdealReduced G') 𝔓 h_contract
+    -- Step 8+9: L7 replacement gives CM-local at the tensor-pushed prime.
+    haveI hCM_A : IsCohenMacaulayRing (Localization.AtPrime (BEI.augIdealReduced (K := K) G')) :=
+      isCohenMacaulayRing_at_augIdealReduced (K := K)
+        (smallerHHGraph_herzogHibi hHH (U : Set _))
+    haveI : IsNoetherianRing (BEI.reducedHHRing (K := K) G') :=
+      Ideal.Quotient.isNoetherianRing _
+    haveI : IsNoetherianRing (Localization.AtPrime (BEI.augIdealReduced (K := K) G')) :=
+      IsLocalization.isNoetherianRing (BEI.augIdealReduced (K := K) G').primeCompl
+        (Localization.AtPrime (BEI.augIdealReduced (K := K) G')) inferInstance
+    haveI hCM_𝔓' : IsCohenMacaulayLocalRing
+        (Localization.AtPrime
+          (Algebra.tensorLeftLocalisedPrime K (BEI.augIdealReduced (K := K) G') 𝔓)) :=
+      TensorPolynomialAway.isCohenMacaulayLocalRing_localization_tensor_away
+        (A := Localization.AtPrime (BEI.augIdealReduced (K := K) G'))
+        (rename (R := K)
+          (σ := ↑((U : Set (BinomialEdgeVars (Fin n)))))
+          (τ := ↑(lambdaSet G (U : Set _)) ⊕
+            ↑((U : Set (BinomialEdgeVars (Fin n)))))
+          Sum.inr (hhUnitProductSub (K := K) U))
+        (Algebra.tensorLeftLocalisedPrime K (BEI.augIdealReduced G') 𝔓)
+    -- Step 10a: transport back through e_C2.
+    have hCM_𝔓 : IsCohenMacaulayLocalRing (Localization.AtPrime 𝔓) :=
+      isCohenMacaulayLocalRing_of_ringEquiv' hCM_𝔓' e_C2.symm
+    -- Step 10b: transport to Localization.AtPrime p_Lsu via e_U.
+    have hH : p_Lsu.primeCompl.map e_U.toRingEquiv.toMonoidHom = 𝔓.primeCompl := by
+      ext y
+      simp only [Submonoid.mem_map, Ideal.mem_primeCompl_iff]
+      constructor
+      · rintro ⟨x, hx, rfl⟩
+        intro hmem
+        apply hx
+        rw [𝔓_def, Ideal.mem_comap] at hmem
+        change e_U.symm.toRingHom (e_U.toRingEquiv x) ∈ p_Lsu at hmem
+        rw [show e_U.toRingEquiv x = e_U x from rfl] at hmem
+        change e_U.symm (e_U x) ∈ p_Lsu at hmem
+        rwa [AlgEquiv.symm_apply_apply] at hmem
+      · intro hy
+        refine ⟨e_U.symm y, ?_, ?_⟩
+        · intro hymem
+          apply hy
+          rw [𝔓_def, Ideal.mem_comap]
+          exact hymem
+        · change e_U.toRingEquiv (e_U.symm y) = y
+          exact AlgEquiv.apply_symm_apply e_U y
+    let e_locP : Localization.AtPrime p_Lsu ≃+* Localization.AtPrime 𝔓 :=
+      IsLocalization.ringEquivOfRingEquiv
+        (S := Localization.AtPrime p_Lsu)
+        (Q := Localization.AtPrime 𝔓)
+        (M := p_Lsu.primeCompl)
+        (T := 𝔓.primeCompl)
+        e_U.toRingEquiv hH
+    have hCM_pLsu : IsCohenMacaulayLocalRing (Localization.AtPrime p_Lsu) :=
+      isCohenMacaulayLocalRing_of_ringEquiv' hCM_𝔓 e_locP.symm
+    -- Step 10c: loc-of-loc to Localization.AtPrime p.
+    set q₁ := Ideal.comap (algebraMap R Lsu) p_Lsu with q₁_def
+    have hq₁p : q₁ = p := hcomap_p
+    haveI : q₁.IsPrime := hq₁p ▸ ‹p.IsPrime›
+    have hCM_q₁ : IsCohenMacaulayLocalRing (Localization.AtPrime q₁) :=
+      isCohenMacaulayLocalRing_of_ringEquiv' hCM_pLsu
+        (IsLocalization.localizationLocalizationAtPrimeIsoLocalization
+          (Submonoid.powers sU) p_Lsu).symm.toRingEquiv
+    have hpc : q₁.primeCompl = p.primeCompl := by
+      ext x; exact not_congr (by rw [hq₁p])
+    exact cast (show IsCohenMacaulayLocalRing (Localization.AtPrime q₁) =
+      IsCohenMacaulayLocalRing (Localization.AtPrime p) by
+        change IsCohenMacaulayLocalRing (Localization q₁.primeCompl) =
+          IsCohenMacaulayLocalRing (Localization p.primeCompl)
+        rw [hpc]) hCM_q₁
 
 end GlobalCM
 

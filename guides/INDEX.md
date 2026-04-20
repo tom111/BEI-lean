@@ -14,32 +14,18 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 ## Active Work Packages
 
 1. [work_packages/FULL_PROP_1_6_PLAN.md](work_packages/FULL_PROP_1_6_PLAN.md)
-   Overall 3-phase plan for paper-exact Proposition 1.6 (HH global CM → Gröbner degeneration → assembly).
+   Overall 3-phase plan for paper-exact Proposition 1.6. **Phase 1 (HH global CM) done 2026-04-20**; Phases 2 (Gröbner degeneration) and 3 (assembly) remain.
 
-2. [work_packages/FINAL_CHAIN_PLAN.md](work_packages/FINAL_CHAIN_PLAN.md)
-   **Active**: three-to-five-session plan for closing `BEI/Equidim.lean:6786`. Sessions A′.1 and A′.2 are now DONE; the remaining work is Session B (trivial promotion), C1 (bundled equivalence), C2 (tensor-left-localisation bridge), C3 (final assembly).
+2. [work_packages/PROP_1_6_CM_TRANSFER.md](work_packages/PROP_1_6_CM_TRANSFER.md)
+   Remaining paper-faithful algebra track for Prop 1.6: part (1) packaging the HH regularity infrastructure is **done** (`isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`); part (2) Gröbner transfer remains (see `GROEBNER_CM_TRANSFER.md`).
 
-3. [work_packages/HH_GLOBAL_CM_FROM_AUGIDEAL.md](work_packages/HH_GLOBAL_CM_FROM_AUGIDEAL.md)
-   Higher-level narrative of the F2 route. Superseded as a sequencing plan by `FINAL_CHAIN_PLAN.md`; retained for decomposition context and lemma references.
-
-4. [work_packages/PROP_1_6_CM_TRANSFER.md](work_packages/PROP_1_6_CM_TRANSFER.md)
-   Remaining paper-faithful algebra track for Prop 1.6: packaging the HH regularity infrastructure, invoking the Gröbner transfer, and writing the final statement.
-
-5. [work_packages/GROEBNER_CM_TRANSFER.md](work_packages/GROEBNER_CM_TRANSFER.md)
+3. [work_packages/GROEBNER_CM_TRANSFER.md](work_packages/GROEBNER_CM_TRANSFER.md)
    Phase 2 packet: transfer Cohen–Macaulayness from the initial ideal quotient back to the original quotient (upper semicontinuity of depth).
 
 ## Answers And Decision Notes
 
-- [answers/ANSWER_HH_QUOTIENT_CM_AT_NON_AUGIDEAL.md](answers/ANSWER_HH_QUOTIENT_CM_AT_NON_AUGIDEAL.md)
-  Validated F2 strategy for the `p ⊄ m⁺` branch: reject Strategy I
-  (induction on n); keep F2 decomposition but replace L7 with a small
-  tensor-polynomial-localisation CM lemma using the backported
-  polynomial-over-CM. Includes a corrected decomposition
-  `R_p ≅ (A^red_{G', m} ⊗_K K[Λ ⊔ U][s_U⁻¹])_𝔓` with explicit generator
-  formulas and a counterexample check (n=4, K_4).
-
 - [answers/ANSWER_PROP_1_6_CM_WHAT_IS_NEEDED.md](answers/ANSWER_PROP_1_6_CM_WHAT_IS_NEEDED.md)
-  Decision note: the paper-critical gaps are the HH bipartite CM theorem and the Gröbner transfer theorem.
+  Decision note: the paper-critical gaps are the HH bipartite CM theorem (now done) and the Gröbner transfer theorem.
 
 - [answers/ANSWER_04_HEIGHT_ADDITIVITY_REPAIR.md](answers/ANSWER_04_HEIGHT_ADDITIVITY_REPAIR.md)
   Dormant infrastructure repair; useful reference, not on the critical path.
@@ -81,3 +67,7 @@ Completed / superseded packets, retained for historical context only. Do not tre
 - `archive/cm_pr_26218/` — Cohen–Macaulay backport from Mathlib PR #26218, landed.
 - `archive/cm_pr_28599/` — CM-localization backport from Mathlib PR #28599, landed (companion to the polynomial PR #28599 slice now directly in `toMathlib/CohenMacaulay/Polynomial.lean`).
 - `archive/SESSION_A2_HANDOFF.md` — Session A′.2 handoff brief, consumed by commit `9067040`.
+- `archive/SESSION_C3_HANDOFF.md` — Session C3 handoff (C3a-inr + C3b assembly); consumed 2026-04-20, sorry closed in `BEI/Equidim.lean`.
+- `archive/FINAL_CHAIN_PLAN.md` — F2-chain sequencing plan; fully consumed (Sessions A′, B, C1, C2, C3 all landed 2026-04-20).
+- `archive/HH_GLOBAL_CM_FROM_AUGIDEAL.md` — F2-route narrative; consumed by `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal` (2026-04-20).
+- `archive/ANSWER_HH_QUOTIENT_CM_AT_NON_AUGIDEAL.md` — validated F2 strategy for `p ⊄ m⁺` branch; strategy fully consumed 2026-04-20.

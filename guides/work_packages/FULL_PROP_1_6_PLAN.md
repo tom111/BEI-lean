@@ -26,8 +26,12 @@ The paper proves Prop 1.6 in two steps (line 443 onward):
 
 ## Phase 1 — Global CM of the HH bipartite monomial quotient
 
-**Status**: 1 sorry in `BEI/Equidim.lean` on the `p ⊄ m⁺` branch of
-`isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`.
+**Status**: **DONE (2026-04-20)**. `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`
+is fully proved in `BEI/Equidim.lean` with axioms `{propext, Classical.choice, Quot.sound}`,
+restricted to `K : Type` (universe 0). The realized route was F2 (pick-U decomposition +
+reduced-HH CM + tensor-left-localisation bridge + L7 tensor-away replacement), NOT the
+Strategy G graded-local-to-global route originally sketched below. The Strategy G prose is
+kept only as historical context.
 
 ### Strategy G (chosen): graded local-to-global CM
 
@@ -121,4 +125,6 @@ Given Phase 1 and Phase 2:
 
 ## Status
 
-- Phase 1 item 1 (graded-quotient instance): starting.
+- Phase 1: **DONE** (2026-04-20, via F2 route, not Strategy G).
+- Phase 2: pending — see `GROEBNER_CM_TRANSFER.md`.
+- Phase 3: pending — final assembly of Prop 1.6 for closed graphs.
