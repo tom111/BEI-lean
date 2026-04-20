@@ -1,142 +1,140 @@
-# Next-Session Prompt: Prop 1.6 R1 — two remaining sub-sorries
+# Next-Session Prompt: Prop 1.6 R1 — close the colon-ideal sub-sorry
 
 ## Where we are
 
 Paper-faithful `proposition_1_6` is assembled in `BEI/Proposition1_6.lean`,
 modulo exactly **two** sub-sorries in `BEI/GroebnerDeformation.lean`:
 
-1. `tildeJ_quotient_isCohenMacaulay` — global Cohen–Macaulayness of
-   `S[t] ⧸ Ĩ` (the deformation ring quotient). Graded local-to-global CM;
-   depends on the dormant Case-C sorry in `toMathlib/GradedCM.lean`.
-2. `tildeJ_flat_over_polyT` — flatness of `S[t] ⧸ Ĩ` over `K[t] = PolyT K`.
-   The classical Eisenbud 15.17 standard-monomial argument over `K[t]`.
+1. `tildeJ_quotient_isCohenMacaulay` — global CM of `S[t] ⧸ Ĩ` (graded
+   local-to-global step; depends on dormant Case-C of `toMathlib/GradedCM.lean`).
+2. `tildeJ_polyT_colon_eq` — **the active leaf of the R1.d branch**: for
+   every nonzero `q ∈ K[t]` and `c ∈ DefRing n K`,
+   `polyTInclude q · c ∈ Ĩ ⟹ c ∈ Ĩ`.
 
-**Update (after R1.d refactor):** the `IsSMulRegular` step is **closed
-conditional on flatness**. Specifically, `tildeJ_tMinusOne_isSMulRegular`
-and its sibling `tildeJ_t_isSMulRegular` are both fully proved once
-`tildeJ_flat_over_polyT` is available, via
-`Module.Flat.isSMulRegular_of_isRegular` + `isSMulRegular_map`. The
-`K[t]`-algebra structure on `DefRing n K` is registered globally via
-`polyTInclude = rename Sum.inr`, with scalar tower
-`K → PolyT K → DefRing n K`.
+The R1.d branch is now fully reduced to the single colon-ideal statement:
 
-Build is green. `proposition_1_6` axiom check is
+- `tildeJ_flat_over_polyT` (flatness) — PROVED conditional on
+  `tildeJ_polyT_colon_eq`, via torsion-free ⇒ flat over the PID `K[t]`.
+- `tildeJ_tMinusOne_isSMulRegular` + `tildeJ_t_isSMulRegular` — PROVED
+  conditional on flatness.
+
+Monomial-order scaffolding for the Gröbner-basis proof of the colon
+sub-sorry is in place:
+
+- `defLE` — paper's `x_1 > x_2 > ... > y_1 > ... > y_n` order extended
+  with `t = Sum.inr ()` at the bottom.
+- `defVars_Finite`, `defVars_LinearOrder`, `defVars_WellFoundedGT`.
+- `deformationMonomialOrder n : MonomialOrder (BinomialEdgeVars (Fin n) ⊕ Unit)`.
+
+Build is green. `proposition_1_6` axiom check unchanged:
 `{propext, sorryAx, Classical.choice, Quot.sound}`.
 
 ## Required reading before starting
 
-1. `BEI/GroebnerDeformation.lean` — the R1 framework. Contains the
-   deformation ring, deformed generators, fiber identifications,
-   `baseQuotEquiv`, the `K[t]`-algebra registration, the
-   `tildeJ_flat_over_polyT` sub-sorry, and the now-proved
-   `tildeJ_tMinusOne_isSMulRegular` / `tildeJ_t_isSMulRegular` lemmas.
-2. `guides/work_packages/GROEBNER_CM_TRANSFER.md` — the full route plan
-   and audit.
-3. `toMathlib/GradedCM.lean:280–356` — the documented Case-C obstacle
-   (relevant for sub-sorry 1).
-4. `BEI/Equidim.lean` — bipartite HH CM theorem + Step 1
-   (`monomialInitialIdeal_isCohenMacaulay`); examples of regular-quotient
-   lift patterns.
+1. `BEI/GroebnerDeformation.lean` — R1 framework, `K[t]`-algebra,
+   monomial order, the `tildeJ_polyT_colon_eq` sub-sorry at lines ~498–528.
+2. Mathlib `Mathlib/RingTheory/MvPolynomial/Groebner.lean` — has
+   `MonomialOrder.div`, `MonomialOrder.div_set`, `MonomialOrder.div_single`:
+   the division algorithm for polynomials with unit leading coefficients.
+3. `BEI/GroebnerBasis.lean` + `BEI/GroebnerBasisSPolynomial.lean` — for
+   closed graphs, `{fij}` is a reduced Gröbner basis of `J_G`. The
+   corresponding deformed statement for `{f̃_{i,j}}` as a GB of `Ĩ` has not
+   been formalized yet, but would follow a similar Buchberger structure.
 
 ## Pick one of the two sub-sorries
 
-### Option A — `tildeJ_flat_over_polyT` (the isolated technical heart)
+### Option A (recommended) — close `tildeJ_polyT_colon_eq` for closed graphs
 
-This is the reformulated R1.d. The classical proof: the standard monomials
-of `J_G` (monomials not divisible by any leading term `x_i y_j` with
-`{i, j}` an edge, `i < j`) form a free `K[t]`-basis of `S[t] ⧸ Ĩ`. Free ⟹
-flat, done.
+Classical proof:
 
-Concrete plan:
+1. **Leading term of `f̃_{i,j}` is `x_i y_j`** (for `i < j`) under
+   `deformationMonomialOrder n`. Leading coefficient is `1` — a unit in
+   `DefRing n K` (or in `PolyT K` if we transport via `sumAlgEquiv`).
+2. **Division algorithm**: Mathlib's `MonomialOrder.div_set` gives a
+   normal form for any `c ∈ DefRing n K` modulo `{f̃_{i,j}}`, with remainder
+   `r` having no monomial divisible by any `x_i y_j` (an edge).
+3. **Multiplying by `polyTInclude q`** (a pure-`t` polynomial) preserves
+   the "no `x_i y_j` factor" property of the remainder's support.
+4. **Gröbner basis property** (the genuinely new BEI fact): for closed
+   graphs, if `p ∈ Ĩ` has support with no `x_i y_j` factor, then `p = 0`.
+   Equivalently, `{f̃_{i,j}}` is a Gröbner basis of `Ĩ` (closed graphs).
+5. From 2–4: if `polyTInclude q · c ∈ Ĩ`, then `polyTInclude q · r = 0`
+   in `DefRing n K`. Since `DefRing n K` is a domain and `polyTInclude q ≠ 0`
+   (from `q ≠ 0`), `r = 0`, so `c = Σ g_b · f̃_b ∈ Ĩ`.
 
-1. Identify the standard monomials of `J_G` in Lean. Existing infrastructure:
-   `BEI/GroebnerBasis.lean`, `BEI/GroebnerAPI.lean`,
-   `BEI/GroebnerBasisSPolynomial.lean`, `BEI/MonomialOrder.lean`.
-2. Show: every element of `DefRing n K` reduces uniquely modulo `Ĩ` to a
-   `K[t]`-linear combination of standard monomials of `J_G` (the
-   "division algorithm" over `K[t][x, y]`).
-3. Build a `LinearEquiv (PolyT K)` between `DefRing n K ⧸ tildeJ G` and
-   `(PolyT K) ⊗[K] (standard monomials as K-vector space)`, or more
-   directly construct a `Basis` via `Module.Free.of_basis`.
-4. `Module.Free (PolyT K) (DefRing n K ⧸ tildeJ G)` ⟹ `Module.Flat`.
+Concrete session plan:
 
-**Alternative (avoiding a full basis):** use
-`Module.Flat.flat_iff_torsion_eq_bot_of_isBezout` — since `PolyT K` is a
-PID (Bezout + domain), flatness is equivalent to torsion-free. Torsion-free
-means: if `q ∈ PolyT K` is nonzero and `c ∈ DefRing n K` with
-`polyTInclude n q · c ∈ tildeJ G`, then `c ∈ tildeJ G`. This still needs
-the Gröbner-basis argument but lets you focus on a single test.
+- Start with `leadingCoeff_fijTilde`: show
+  `(deformationMonomialOrder n).leadingCoeff (fijTilde i j) = 1` when
+  `i < j`. Unfolds: `fijTilde i j = x_i y_j - t^(j-i) x_j y_i`. Argue
+  the `x_i y_j` term dominates under `deformationMonomialOrder` (lex
+  with `x_i > x_j > y_i > y_j > t`). ~50–100 LOC.
+- Then `degree_fijTilde`: the leading multi-index. Needed for
+  `div_set`'s "remainder support" predicate.
+- Apply `MonomialOrder.div_set` to get the normal form.
+- The **Gröbner basis property** (step 4) is the genuinely new BEI fact.
+  Either close it as a separate lemma (heavy: Buchberger for
+  deformed generators, ~200–400 LOC), or add `IsClosedGraph G` to
+  `tildeJ_polyT_colon_eq` and reduce to the closed-graph GB of `J_G`
+  via deformation lifting. The latter likely needs `BEI/GroebnerBasis.lean`
+  machinery re-expressed in the deformation setting.
 
-Substantial effort: ~300–700 LOC of Gröbner-basis-over-`K[t]` infrastructure
-(per the guide's original estimate; possibly less if you reuse
-`BEI/GroebnerAPI.lean`'s division-algorithm scaffolding).
+If adding `IsClosedGraph G`, propagate through `tildeJ_flat_over_polyT`,
+`tildeJ_tMinusOne_isSMulRegular`, `tildeJ_t_isSMulRegular`,
+`tildeJ_quotient_isCohenMacaulay`, and `groebnerDeformation_cm_transfer`.
+`binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm` already has it.
 
-### Option B — `tildeJ_quotient_isCohenMacaulay` (graded LTG step)
+### Option B — close `tildeJ_quotient_isCohenMacaulay`
 
-This requires the graded local-to-global CM theorem from
-`toMathlib/GradedCM.lean`, which has a dormant Case-C sorry. Three
-sub-options (unchanged from the prior session):
+Still blocked by GradedCM Case C (the dormant sorry in
+`toMathlib/GradedCM.lean`). Three sub-options (unchanged from prior rounds):
+B.1 close Case C directly (~400–800 LOC); B.2 graded Noether normalization;
+B.3 no BEI-specific bypass was found in the 2026-04-20 audit.
 
-- **B.1** Close `caseC_CM_transfer` in `toMathlib/GradedCM.lean` directly.
-  ~400–800 LOC of new graded-depth / `*-CM` infrastructure.
-- **B.2** Pivot to the graded Noether-normalisation route.
-- **B.3** A BEI-specific bypass — none was found in the 2026-04-20 audit.
-
-Recommend Option A if starting fresh — the infrastructure it needs is
-adjacent to existing BEI Gröbner code, whereas Option B requires new
-graded commutative algebra machinery.
+Recommend Option A — the infrastructure is already started and the
+remaining work is BEI-specific Gröbner combinatorics rather than new
+graded commutative algebra.
 
 ## Workflow rules — IMPORTANT
 
-**Use the lean-lsp MCP tools, not `lake build`.**
+Use the lean-lsp MCP tools, not `lake build`:
 
-- `lean_diagnostic_messages BEI/GroebnerDeformation.lean` — file errors
-  after an edit. Do NOT run `lake build` until the file is diagnostic-clean.
-- `lean_goal BEI/GroebnerDeformation.lean <line> [column]` — inspect the
-  proof state before committing to a tactic.
-- `lean_multi_attempt BEI/GroebnerDeformation.lean <line> ["tac1", …]`
-  — test tactic candidates without editing.
-- `lean_local_search <name>` / `lean_hover_info <file> <line> <col>` —
-  verify a lemma's name and signature.
-- `lean_leansearch` / `lean_loogle` — find Mathlib lemmas.
-- Reserve `lake build` for the final sanity check before committing.
-
-Rationale memory: `feedback_lean_mcp_over_lake.md`.
+- `lean_diagnostic_messages BEI/GroebnerDeformation.lean` for file errors.
+- `lean_goal`, `lean_multi_attempt`, `lean_local_search`, `lean_hover_info`.
+- `lean_leansearch` / `lean_loogle` for Mathlib lemmas.
+- Reserve `lake build` for the final sanity check.
 
 ## Other workflow notes
 
-- The `PolyT K := MvPolynomial Unit K` abbreviation is set up in
-  `BEI/GroebnerDeformation.lean`, with `Algebra (PolyT K) (DefRing n K)`
-  registered globally. Helpful lemmas: `algebraMap_polyT_tMinusOne`,
-  `algebraMap_polyT_t`.
-- `BinomialEdgeVars V` is a `def` (opaque). Prefer `show`/`change` to
-  unfold it rather than hoping `simp` fires.
+- `PolyT K` is registered as `IsPrincipalIdealRing` (hence Bezout, Dedekind).
+- `Algebra (PolyT K) (DefRing n K)` instance + scalar tower already in place.
+- `BinomialEdgeVars V` is a `def`; use `show` or `change` rather than hoping
+  `simp` unfolds it.
+- `WellFoundedGT` for `BinomialEdgeVars (Fin n) ⊕ Unit` required explicit
+  diamond-avoidance with `Sum`'s default `LT` — see `defVars_WellFoundedGT`.
 - The `K : Type` (universe 0) restriction is inherited from the F2 route.
-- For a `set_option maxHeartbeats X` bump, scope it to a single
-  declaration and annotate with a short `--` comment (linter requires this).
 
 ## Commit discipline
 
-When the chosen sub-sorry is closed:
+When the sub-sorry is closed:
 
 1. Update `TODO.md` (active sorry count, status block).
 2. Update `FORMALIZATION_MAP.md` (Prop 1.6 row).
 3. Update `guides/work_packages/GROEBNER_CM_TRANSFER.md` (R1 sub-sorry status).
 4. Update `MEMORY.md` (Sorry Summary section).
 5. Run `lake build` once for final sanity.
-6. Report changes to the user. Do NOT commit or push unless explicitly
-   asked (per `feedback_no_auto_commit.md`).
+6. Commit with a focused message.
+7. Push to both `origin` and `github` (per `feedback_push_all_remotes.md`).
 
 ## Definition of done for this session
 
-Best outcome: one of the two sub-sorries closed, build green, status docs
-updated.
+Best outcome: `tildeJ_polyT_colon_eq` closed (conditional on `IsClosedGraph G`
+if needed), build green, status docs updated.
 
-Minimum acceptable outcome: substantial concrete progress on one sub-sorry,
-with the remaining gap isolated as one or more clearly-named smaller lemmas
-with documented status. Not a regression of the framework (must still build
-modulo the same sub-sorries).
+Minimum acceptable outcome: substantial concrete progress on
+`tildeJ_polyT_colon_eq` — e.g. `leadingCoeff_fijTilde` proved, `div_set`
+application set up, with remaining gap isolated in a smaller named lemma.
 
-Do not chase the universe generalization, the corollary restatements
-(`corollary_3_4` real-CM branch, `corollary_3_7` real-CM branch), or the
-`toMathlib/HeightAdditivity.lean` dormant sorries this session.
+Do not chase the universe generalization, the corollary restatements, or
+the dormant sorries in `toMathlib/HeightAdditivity.lean` or
+`toMathlib/GradedCM.lean` unless directly closing a blocker.
