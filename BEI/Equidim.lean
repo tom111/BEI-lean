@@ -8165,6 +8165,121 @@ private theorem E_U_algebraMap_mkI_X_pairedSurvivor_inl
         (Localization.Away (hhUnitProductSub (K := K) U))) := rfl
   rw [h11, map_one]
 
+-- `E_U` is a 4-step `AlgEquiv.trans`; unfolding its action on a specific element
+-- requires enough heartbeats to elaborate the nested tensor/localization types.
+set_option maxHeartbeats 800000 in
+/-- **E_U forward on a paired-right survivor variable**.
+
+Symmetric companion to `E_U_algebraMap_mkI_X_pairedSurvivor_inl`: for
+`a : Fin (pairedCount G U)`, the embedded index `c_a := pairedSurvivorsVal G U a`
+gives a paired-right survivor `v_emb = Sum.inr c_a ∈ hhSurvivors G U`. Applying `E_U`
+to the algebraMap image of `mkI (X v_emb)` yields the pure tensor
+`mkI_red (X (Sum.inr a)) ⊗ 1`. -/
+private theorem E_U_algebraMap_mkI_X_pairedSurvivor_inr
+    {K : Type} [Field K]
+    {n : ℕ} {G : SimpleGraph (Fin n)}
+    (hHH : HerzogHibiConditions n G)
+    (U : Finset (BinomialEdgeVars (Fin n)))
+    (hU : hhIndep G (U : Set _))
+    (a : Fin (pairedCount G (U : Set _))) :
+    (E_U hHH U hU) (algebraMap _ _
+      ((Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K) G))
+        (X (Sum.inr (pairedSurvivorsVal G (U : Set _) a))))) =
+      ((Ideal.Quotient.mk (BEI.reducedHHIdeal (K := K)
+        (smallerHHGraph G (U : Set _)))) (X (Sum.inr a)))
+          ⊗ₜ[K] (1 : Localization.Away
+            (rename (R := K)
+              (σ := ↑((U : Set (BinomialEdgeVars (Fin n)))))
+              (τ := ↑(lambdaSet G (U : Set _)) ⊕
+                ↑((U : Set (BinomialEdgeVars (Fin n)))))
+              Sum.inr
+              (hhUnitProductSub (K := K) U))) := by
+  classical
+  set i : Fin n := pairedSurvivorsVal G (U : Set _) a with hi_def
+  have hi_mem : i ∈ pairedSurvivors G (U : Set _) := pairedSurvivorsVal_mem G _ a
+  have hW : (Sum.inr i : BinomialEdgeVars (Fin n)) ∈
+      hhSurvivors G (U : Set _) := pairedSurvivors_inr_mem G _ hi_mem
+  -- Unfold E_U as a sequence of four AlgEquiv.trans applications.
+  unfold E_U
+  -- Step 1: L1Iso applied to algebraMap (mkI (X (Sum.inr i))) = (mk_W X ⟨_, hW⟩) ⊗ 1.
+  rw [AlgEquiv.trans_apply, AlgEquiv.trans_apply, AlgEquiv.trans_apply]
+  have hStep1 : L1Iso (K := K) G U hU (algebraMap _ _
+      ((Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K) G))
+        (X (Sum.inr i)))) =
+      ((Ideal.Quotient.mk (restrictedEdgeIdeal (K := K) G
+          (hhSurvivors G (U : Set _))) (X ⟨Sum.inr i, hW⟩) :
+          restrictedHHRing (K := K) G (hhSurvivors G (U : Set _))) ⊗ₜ[K] 1) := by
+    simp only [L1Iso, AlgEquiv.ofAlgHom_apply]
+    unfold L1Forward
+    rw [IsLocalization.liftAlgHom_apply, IsLocalization.lift_eq]
+    change L1ForwardQuot (K := K) G U hU
+      ((Ideal.Quotient.mk (bipartiteEdgeMonomialIdeal (K := K) G))
+        (X (Sum.inr i))) = _
+    rw [L1ForwardQuot_mk, L1ForwardPoly_X, L1ForwardGen_of_W hW]
+  rw [hStep1]
+  -- Step 2: Algebra.TensorProduct.congr (L4Iso …) refl on a pure tensor.
+  -- Compute L4Iso on (mk X ⟨Sum.inr i, hW⟩) first.
+  have hi_ps : i ∈ pairedSurvivors G (U : Set _) := hi_mem
+  have hidx : pairedSurvivorsIdx G (U : Set _) hi_ps = a :=
+    pairedSurvivorsIdx_val G _ a
+  have hStep2_inner :
+      (L4Iso (K := K) hHH (U : Set _) hU)
+          ((Ideal.Quotient.mk (restrictedEdgeIdeal (K := K) G
+              (hhSurvivors G (U : Set _)))) (X ⟨Sum.inr i, hW⟩)) =
+        ((Ideal.Quotient.mk (BEI.reducedHHIdeal (K := K)
+            (smallerHHGraph G (U : Set _))))
+          (X (Sum.inr a))) ⊗ₜ[K]
+          (1 : MvPolynomial (lambdaSet G (U : Set _)) K) := by
+    simp only [L4Iso, AlgEquiv.ofAlgHom_apply]
+    rw [L4Forward_mk_X]
+    rw [L4ForwardGen_inr (K := K) hHH hU ⟨Sum.inr i, hW⟩ rfl,
+      L4ForwardInr_of_paired (K := K) G (U : Set _) hW hi_ps]
+    rw [hidx]
+  -- Step 2: congr (L4Iso …) refl on the pure tensor (mk ⊗ 1).
+  rw [show (Algebra.TensorProduct.congr (L4Iso (K := K) hHH (U : Set _) hU)
+        (AlgEquiv.refl (R := K) (A₁ := Localization.Away
+          (hhUnitProductSub (K := K) U))))
+      ((Ideal.Quotient.mk (restrictedEdgeIdeal (K := K) G
+          (hhSurvivors G (U : Set _))) (X ⟨Sum.inr i, hW⟩) :
+          restrictedHHRing (K := K) G (hhSurvivors G (U : Set _))) ⊗ₜ[K]
+        (1 : Localization.Away (hhUnitProductSub (K := K) U))) =
+      ((L4Iso (K := K) hHH (U : Set _) hU)
+          ((Ideal.Quotient.mk (restrictedEdgeIdeal (K := K) G
+              (hhSurvivors G (U : Set _)))) (X ⟨Sum.inr i, hW⟩))) ⊗ₜ[K]
+        (1 : Localization.Away (hhUnitProductSub (K := K) U))
+      from by
+        simp [Algebra.TensorProduct.congr_apply, Algebra.TensorProduct.map_tmul]]
+  rw [hStep2_inner]
+  -- Step 3: the associator maps (x ⊗ y) ⊗ z ↦ x ⊗ (y ⊗ z).
+  rw [Algebra.TensorProduct.assoc_tmul]
+  -- Step 4: congr refl polynomialAwayTensorEquiv on pure tensor x ⊗ (1 ⊗ 1).
+  rw [show (Algebra.TensorProduct.congr (AlgEquiv.refl (R := K)
+        (A₁ := BEI.reducedHHRing (K := K) (smallerHHGraph G (U : Set _))))
+        (polynomialAwayTensorEquiv (K := K)
+          (α := (lambdaSet G (U : Set _) : Type _))
+          (β := ((U : Set (BinomialEdgeVars (Fin n))) : Type _))
+          (hhUnitProductSub (K := K) U)))
+      (((Ideal.Quotient.mk (BEI.reducedHHIdeal (K := K)
+          (smallerHHGraph G (U : Set _)))) (X (Sum.inr a))) ⊗ₜ[K]
+        ((1 : MvPolynomial (lambdaSet G (U : Set _)) K) ⊗ₜ[K]
+          (1 : Localization.Away (hhUnitProductSub (K := K) U)))) =
+      ((Ideal.Quotient.mk (BEI.reducedHHIdeal (K := K)
+          (smallerHHGraph G (U : Set _)))) (X (Sum.inr a))) ⊗ₜ[K]
+        ((polynomialAwayTensorEquiv (K := K)
+          (α := (lambdaSet G (U : Set _) : Type _))
+          (β := ((U : Set (BinomialEdgeVars (Fin n))) : Type _))
+          (hhUnitProductSub (K := K) U))
+          ((1 : MvPolynomial (lambdaSet G (U : Set _)) K) ⊗ₜ[K]
+            (1 : Localization.Away (hhUnitProductSub (K := K) U))))
+      from by
+        simp [Algebra.TensorProduct.congr_apply, Algebra.TensorProduct.map_tmul]]
+  -- polynomialAwayTensorEquiv (1 ⊗ 1) = polynomialAwayTensorEquiv 1 = 1.
+  have h11 : ((1 : MvPolynomial (lambdaSet G (U : Set _)) K) ⊗ₜ[K]
+      (1 : Localization.Away (hhUnitProductSub (K := K) U))) =
+      (1 : TensorProduct K (MvPolynomial (lambdaSet G (U : Set _)) K)
+        (Localization.Away (hhUnitProductSub (K := K) U))) := rfl
+  rw [h11, map_one]
+
 end GlobalCM
 
 end
