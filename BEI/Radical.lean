@@ -48,7 +48,7 @@ variable {σ : Type*} (m : MonomialOrder σ) {R : Type*} [Field R]
 
 /-- If `f ∈ I`, `f ≠ 0`, and `G` is a Gröbner basis of `I`, then some nonzero
 element of `G` has leading monomial ≤ leading monomial of `f`. -/
-private lemma exists_degree_le_of_mem
+lemma exists_degree_le_of_mem
     {G : Set (MvPolynomial σ R)} {I : Ideal (MvPolynomial σ R)}
     (hGB : m.IsGroebnerBasis G I)
     {f : MvPolynomial σ R} (hf : f ∈ I) (hf0 : f ≠ 0) :

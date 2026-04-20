@@ -64,12 +64,12 @@ theorem, which is currently universe-monomorphic because of the polynomial-away
 tensor API used in its proof. -/
 theorem binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm
     {K : Type} [Field K] {n : ℕ} {G : SimpleGraph (Fin n)}
-    (_hClosed : IsClosedGraph G)
+    (hClosed : IsClosedGraph G)
     (hCM : IsCohenMacaulayRing
       (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G)) :
     IsCohenMacaulayRing
       (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ binomialEdgeIdeal (K := K) G) :=
-  groebnerDeformation_cm_transfer hCM
+  groebnerDeformation_cm_transfer hClosed hCM
 
 /--
 **Proposition 1.6 (Herzog–Hibi–Hreinsdóttir–Kahle–Rauh, 2010).**

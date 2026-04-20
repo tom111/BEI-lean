@@ -30,34 +30,59 @@ Every major paper theorem should have:
 
 ## Highest-priority targets
 
-## 1. Theorem 2.1 packaging
+## 1. Theorem 2.1 packaging across the split files
 
-File:
+Files:
 
+- [GroebnerBasisSPolynomial.lean](/home/tom/BEI-lean/BEI/GroebnerBasisSPolynomial.lean)
 - [GroebnerBasis.lean](/home/tom/BEI-lean/BEI/GroebnerBasis.lean)
 
 Current state:
 
-- `theorem_2_1` proves Gröbner-basis-ness;
-- `theorem_2_1_reduced` proves reducedness;
+- `GroebnerBasisSPolynomial.lean` carries the long Buchberger proof;
+- `GroebnerBasis.lean` carries reducedness and the wrapper theorem;
 - `theorem_2_1_isReducedGroebnerBasis` exists as a good wrapper.
 
 Cleanup goal:
 
 - make `theorem_2_1_isReducedGroebnerBasis` the obvious public endpoint;
-- ensure the theorem immediately above it reads as:
+- make the wrapper proof read explicitly as:
   - span;
   - Buchberger;
-  - reducedness.
+  - reducedness;
+- keep the case explosion inside named support lemmas, not in the public theorem.
 
 Recommended refactor:
 
-- rename long internal sections by case type;
-- keep all endpoint/case-factorization lemmas private;
+- give `GroebnerBasisSPolynomial.lean` explicit section names by case type;
+- keep all endpoint/case-factorization lemmas private or clearly marked internal;
 - add a short module comment saying exactly which theorem is the public paper-facing one.
 
 
-## 2. Theorem 3.2 narrative
+## 2. Section 3 dimension and surrogate packaging
+
+File:
+
+- [PrimeDecompositionDimension.lean](/home/tom/BEI-lean/BEI/PrimeDecompositionDimension.lean)
+
+Current state:
+
+- one file now mixes:
+  - Corollary 3.3;
+  - the equidimensional surrogate versions of Corollaries 3.4 and 3.7;
+  - the direct equidimensional route to Proposition 1.6;
+  - support lemmas for quotient dimensions and equidimensionality.
+
+Cleanup goal:
+
+- make the public theorem layer read as:
+  - dimension formula first;
+  - then surrogate corollaries;
+  - then the direct surrogate Proposition 1.6 route;
+- keep the low-level quotient and equidimensionality support out of the public path.
+
+
+## 3. Theorem 3.2 narrative
 
 File:
 
@@ -65,8 +90,7 @@ File:
 
 Current state:
 
-- the mathematics is fairly clean;
-- but the file should read more explicitly as:
+- the mathematics is clean, but the file should read more explicitly as:
   - every `P_S` contains `J_G`;
   - every minimal prime is some `P_S`;
   - radicality identifies the intersection.
@@ -77,7 +101,7 @@ Cleanup goal:
 - keep `minimalPrime_eq_primeComponent` and the telescope lemmas as internal support.
 
 
-## 3. Proposition 3.8 / Corollary 3.9 packaging
+## 4. Proposition 3.8 / Corollary 3.9 packaging
 
 File:
 
@@ -96,7 +120,33 @@ Cleanup goal:
   - minimal-prime conclusion.
 
 
-## 4. Corollary 1.3 and other paper-statement mismatches
+## 5. Proposition 1.6 presentation
+
+Files:
+
+- [GroebnerDeformation.lean](/home/tom/BEI-lean/BEI/GroebnerDeformation.lean)
+- [Proposition1_6.lean](/home/tom/BEI-lean/BEI/Proposition1_6.lean)
+
+Current state:
+
+- `Proposition1_6.lean` is now the right small public wrapper;
+- `GroebnerDeformation.lean` carries the active paper-faithful algebra track;
+- the public status is: one remaining sorry in the graded local-to-global step.
+
+Cleanup goal:
+
+- keep `proposition_1_6` visibly paper-facing and short;
+- keep `binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm` as the honest narrow transfer
+  wrapper;
+- make `GroebnerDeformation.lean` read as:
+  - deformation setup;
+  - fiber identifications;
+  - Gröbner/flatness support;
+  - final transfer assembly;
+- keep every note exact about what is still open.
+
+
+## 6. Corollary 1.3 and other paper-statement mismatches
 
 File:
 

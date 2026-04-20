@@ -22,9 +22,11 @@ This is unavoidable at the bottom layer, but it should not remain visible everyw
 Files most affected:
 
 - [ClosedGraphs.lean](/home/tom/BEI-lean/BEI/ClosedGraphs.lean)
+- [GroebnerBasisSPolynomial.lean](/home/tom/BEI-lean/BEI/GroebnerBasisSPolynomial.lean)
 - [GroebnerBasis.lean](/home/tom/BEI-lean/BEI/GroebnerBasis.lean)
 - [PrimeIdeals.lean](/home/tom/BEI-lean/BEI/PrimeIdeals.lean)
 - [Radical.lean](/home/tom/BEI-lean/BEI/Radical.lean)
+- [GroebnerDeformation.lean](/home/tom/BEI-lean/BEI/GroebnerDeformation.lean)
 
 
 ## Main refactor idea
@@ -61,7 +63,7 @@ Try introducing a higher-level S-polynomial helper layer:
 Then the case analysis in the theorem can refer to these shapes directly.
 
 
-## 2. `GroebnerBasis.lean`
+## 2. `GroebnerBasisSPolynomial.lean`
 
 The cluster around:
 
@@ -75,7 +77,8 @@ is exactly the right direction.
 The next cleanup step is to collect them into a dedicated section with a comment saying:
 
 - this is the degree API for admissible-path binomials;
-- reducedness proofs should use only these lemmas, not unfold definitions.
+- S-polynomial reductions and reducedness proofs should use only these lemmas,
+  not unfold definitions.
 
 
 ## 3. `PrimeIdeals.lean`
@@ -90,6 +93,20 @@ Try to isolate:
 - chain-extension lemmas.
 
 The goal is to make the height proof read in phases rather than in raw exponent algebra.
+
+
+## 4. `GroebnerDeformation.lean`
+
+The new deformation file now has its own low-level monomial-order arithmetic:
+
+- `DefVars`
+- `defLE`
+- `fijTilde_lex_lt`
+- `degree_fijTilde`
+- `leadingCoeff_fijTilde`
+
+Those lemmas should become a compact deformation-order API rather than remain
+embedded in a long mixed-purpose file.
 
 
 ## Suggested local file organization

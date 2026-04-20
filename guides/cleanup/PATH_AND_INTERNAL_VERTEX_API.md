@@ -23,6 +23,7 @@ This shows up heavily in:
 
 - [CoveredWalks.lean](/home/tom/BEI-lean/BEI/CoveredWalks.lean)
 - [AdmissiblePaths.lean](/home/tom/BEI-lean/BEI/AdmissiblePaths.lean)
+- [GroebnerBasisSPolynomial.lean](/home/tom/BEI-lean/BEI/GroebnerBasisSPolynomial.lean)
 - [GroebnerBasis.lean](/home/tom/BEI-lean/BEI/GroebnerBasis.lean)
 - parts of [GraphProperties.lean](/home/tom/BEI-lean/BEI/GraphProperties.lean)
 
@@ -64,7 +65,7 @@ Do not do this unless it clearly simplifies at least two major files.
 
 ## Immediate extraction targets
 
-## 1. endpoint exclusion lemmas in `GroebnerBasis.lean`
+## 1. endpoint exclusion lemmas in `GroebnerBasisSPolynomial.lean`
 
 Current examples:
 

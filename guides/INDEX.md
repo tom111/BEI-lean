@@ -30,6 +30,11 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 - [answers/ANSWER_04_HEIGHT_ADDITIVITY_REPAIR.md](answers/ANSWER_04_HEIGHT_ADDITIVITY_REPAIR.md)
   Dormant infrastructure repair; useful reference, not on the critical path.
 
+- [answers/ANSWER_CLEANUP_WORK_PACKAGE_REFRESH.md](answers/ANSWER_CLEANUP_WORK_PACKAGE_REFRESH.md)
+  Decision note: refreshes the cleanup packet set to match the live 2026-04-20
+  repo state and adds new packets for `Equidim`, the CM support layer, and
+  status/CI hygiene.
+
 ## Cleanup And Refactor Packets
 
 Optional proof-engineering work, not on the theorem-proving critical path.
@@ -39,8 +44,11 @@ Optional proof-engineering work, not on the theorem-proving critical path.
 - [cleanup/EVALUATION_MAP_API.md](cleanup/EVALUATION_MAP_API.md)
 - [cleanup/PATH_AND_INTERNAL_VERTEX_API.md](cleanup/PATH_AND_INTERNAL_VERTEX_API.md)
 - [cleanup/MONOMIAL_AND_FINSUPP_API.md](cleanup/MONOMIAL_AND_FINSUPP_API.md)
+- [cleanup/EQUIDIM_DECOMPOSITION.md](cleanup/EQUIDIM_DECOMPOSITION.md)
+- [cleanup/CM_SUPPORT_REFACTOR.md](cleanup/CM_SUPPORT_REFACTOR.md)
 - [cleanup/FILE_SPLITTING_PLAN.md](cleanup/FILE_SPLITTING_PLAN.md)
 - [cleanup/LINTER_AND_STYLE_CLEANUP.md](cleanup/LINTER_AND_STYLE_CLEANUP.md)
+- [cleanup/STATUS_AND_CI_HYGIENE.md](cleanup/STATUS_AND_CI_HYGIENE.md)
 
 ## Website Plans
 

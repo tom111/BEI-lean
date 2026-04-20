@@ -13,36 +13,91 @@ That has two bad effects:
 1. real regressions are harder to spot;
 2. Claude gets less signal about what actually needs attention.
 
+At the 2026-04-20 repo state, the default build emits roughly:
+
+- `399` warnings total;
+- `101` "hypothesis not used in the remainder of the type" warnings;
+- `104` `show`-vs-`change` warnings;
+- `77` unused `simp` argument warnings;
+- `26` unused section-variable warnings;
+- `20` missing `maxHeartbeats` comment warnings;
+- `43` long-line warnings;
+- `14` unused local-variable warnings.
+
+The biggest warning hotspots are:
+
+- [BEI/Equidim.lean](/home/tom/BEI-lean/BEI/Equidim.lean)
+- [BEI/GroebnerBasisSPolynomial.lean](/home/tom/BEI-lean/BEI/GroebnerBasisSPolynomial.lean)
+- [BEI/MinimalPrimes.lean](/home/tom/BEI-lean/BEI/MinimalPrimes.lean)
+- [toMathlib/CohenMacaulay/Polynomial.lean](/home/tom/BEI-lean/toMathlib/CohenMacaulay/Polynomial.lean)
+- [BEI/GroebnerDeformation.lean](/home/tom/BEI-lean/BEI/GroebnerDeformation.lean)
+
 
 ## Highest-value cleanup items
 
-## 1. Remove unused section variables and typeclass assumptions
+## 1. Remove unused assumptions from theorem statements
 
-This is especially noisy in:
+This is the largest recurring warning class.
 
-- [GraphProperties.lean](/home/tom/BEI-lean/BEI/GraphProperties.lean)
-- `toMathlib/*`
+Especially noisy files:
+
+- [BEI/GroebnerBasisSPolynomial.lean](/home/tom/BEI-lean/BEI/GroebnerBasisSPolynomial.lean)
+- [BEI/MinimalPrimes.lean](/home/tom/BEI-lean/BEI/MinimalPrimes.lean)
+- [BEI/PrimeDecomposition.lean](/home/tom/BEI-lean/BEI/PrimeDecomposition.lean)
+- [toMathlib/HeightAdditivity.lean](/home/tom/BEI-lean/toMathlib/HeightAdditivity.lean)
 
 Recommended pattern:
 
 - narrow the `variable` blocks;
+- replace `[Fintype _]` with `Finite` when that is all the statement needs;
 - use `classical` locally instead of carrying `[DecidableEq _]` or `[Fintype _]`
-  throughout an entire section when only a few proofs need them.
+  through an entire theorem statement.
 
 
-## 2. Replace `show` with `change` where the linter complains
+## 2. Replace `show` with `change` in style-only conversions
 
-This is minor but easy and keeps style consistent.
+This is now concentrated in:
+
+- [BEI/Equidim.lean](/home/tom/BEI-lean/BEI/Equidim.lean)
+- [toMathlib/CohenMacaulay/Polynomial.lean](/home/tom/BEI-lean/toMathlib/CohenMacaulay/Polynomial.lean)
+- [BEI/GroebnerDeformation.lean](/home/tom/BEI-lean/BEI/GroebnerDeformation.lean)
+
+Do not do this blindly where `show` is genuinely being used for readability and
+not to change the goal. The point is to delete linter noise, not to churn proofs.
 
 
-## 3. Replace deprecated constants
+## 3. Delete unused `simp` arguments
 
-Example:
+This is the easiest high-volume cleanup after unused assumptions.
 
-- use the nondeprecated quotient nontriviality theorem in `HeightAdditivity`.
+Especially noisy files:
+
+- [BEI/Equidim.lean](/home/tom/BEI-lean/BEI/Equidim.lean)
+- [BEI/GroebnerBasisSPolynomial.lean](/home/tom/BEI-lean/BEI/GroebnerBasisSPolynomial.lean)
+- [BEI/MinimalPrimes.lean](/home/tom/BEI-lean/BEI/MinimalPrimes.lean)
+- [BEI/GroebnerDeformation.lean](/home/tom/BEI-lean/BEI/GroebnerDeformation.lean)
+
+Prefer:
+
+- `simp only` with the exact surviving lemmas;
+- or delete the redundant arguments and keep the existing `simp`.
 
 
-## 4. Tighten theorem statements
+## 4. Scope every `maxHeartbeats` and justify it
+
+Current problems:
+
+- missing inline comments explaining the need for the heartbeat increase;
+- one unscoped `set_option maxHeartbeats` warning in
+  [BEI/GroebnerDeformation.lean](/home/tom/BEI-lean/BEI/GroebnerDeformation.lean).
+
+Cleanup rule:
+
+- every heartbeat bump should be declaration-scoped;
+- every bump should carry a one-line reason tied to proof search or elaboration cost.
+
+
+## 5. Tighten theorem statements and variable blocks
 
 If a theorem only needs `Finite`, do not require `Fintype`.
 If a proof only needs decidability locally, do not put it in the theorem statement.
@@ -50,7 +105,19 @@ If a proof only needs decidability locally, do not put it in the theorem stateme
 This improves both readability and reuse.
 
 
-## 5. Keep notes precise
+## 6. Remove long lines, flexible `simp`, and dead locals
+
+This is lower mathematical value than the items above, but still worth doing in
+the high-noise files.
+
+In particular:
+
+- wrap long type signatures and `simp only` lists;
+- replace flexible `simp at h` calls when the linter gives a stable suggestion;
+- delete unused local hypotheses like `hConn`, `hn`, `ha`.
+
+
+## 7. Keep notes precise
 
 The current inline notes are often helpful. Keep them, but make sure they describe:
 
@@ -66,9 +133,18 @@ misproofs.
 
 Recommended order:
 
-1. fix unused assumptions in `GraphProperties.lean`;
-2. fix style warnings in `toMathlib/*`;
-3. then revisit other files opportunistically during real refactors.
+1. clean active theorem-path files with localized changes:
+   [BEI/GroebnerDeformation.lean](/home/tom/BEI-lean/BEI/GroebnerDeformation.lean),
+   [BEI/Proposition1_6.lean](/home/tom/BEI-lean/BEI/Proposition1_6.lean),
+   nearby status docs;
+2. remove unused assumptions and dead locals in
+   [BEI/GroebnerBasisSPolynomial.lean](/home/tom/BEI-lean/BEI/GroebnerBasisSPolynomial.lean),
+   [BEI/MinimalPrimes.lean](/home/tom/BEI-lean/BEI/MinimalPrimes.lean),
+   and [BEI/PrimeDecomposition.lean](/home/tom/BEI-lean/BEI/PrimeDecomposition.lean);
+3. clean [toMathlib/CohenMacaulay/Polynomial.lean](/home/tom/BEI-lean/toMathlib/CohenMacaulay/Polynomial.lean)
+   after its API boundary is clearer;
+4. tackle [BEI/Equidim.lean](/home/tom/BEI-lean/BEI/Equidim.lean) only in
+   section-sized batches, ideally alongside the decomposition guide.
 
 Do not spend a whole session only on linter cleanup if larger structural cleanup is
 already in progress.
@@ -78,6 +154,8 @@ already in progress.
 
 This guide is complete when:
 
-1. the warning count is substantially lower;
-2. the remaining warnings correspond to genuinely deferred issues, not routine cleanup;
-3. theorem statements carry only the assumptions they actually use.
+1. routine style noise is gone from the active theorem-path files;
+2. the warning count is substantially lower and concentrated in a small set of
+   genuinely deferred hotspots;
+3. theorem statements carry only the assumptions they actually use;
+4. no file uses unscoped `set_option maxHeartbeats`.

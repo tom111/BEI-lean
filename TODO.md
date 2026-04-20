@@ -51,29 +51,55 @@ the HH CM theorem along the y-predecessor ring isomorphism, giving that
 `S ⧸ monomialInitialIdeal G` is globally CM under HH conditions
 (restricted to `K : Type`). This closes Step 1 of the Prop 1.6 plan.
 
-**Paper-faithful `proposition_1_6` assembled modulo two sub-sorries (2026-04-20).**
+**Paper-faithful `proposition_1_6` assembled modulo two sub-sorries (2026-04-20; updated).**
 `BEI/GroebnerDeformation.lean` lays down the full R1 framework: the
 deformation ring `S[t]`, the deformation parameter, the deformed generators
 `f̃_{i,j} = x_i y_j - t^(j-i) x_j y_i`, the deformation ideal `Ĩ`, the
 specialization maps at `t = 0` and `t = 1`, the fiber identifications
 `tildeJ_specZero_eq` (gives `monomialInitialIdeal G`) and `tildeJ_specOne_eq`
 (gives `binomialEdgeIdeal G`), and the iso
-`baseQuotEquiv : S ⧸ J_G ≃+* S[t] ⧸ (Ĩ ⊔ {t-1})`. The four-arrow assembly
-`groebnerDeformation_cm_transfer` is a complete proof modulo two
-remaining sub-sorries:
+`baseQuotEquiv : S ⧸ J_G ≃+* S[t] ⧸ (Ĩ ⊔ {t-1})`.
 
-- `tildeJ_quotient_isCohenMacaulay`: global CM of `S[t] ⧸ Ĩ` (graded
-  local-to-global step, via `toMathlib/GradedCM.lean` — depends on the
-  dormant Case-C sorry there, which encapsulates substantial graded-depth
-  infrastructure not currently in Mathlib);
-- `tildeJ_polyT_colon_eq`: for every nonzero `q ∈ K[t]`, the ideal `Ĩ`
-  is saturated with respect to `polyTInclude q` — i.e.
-  `polyTInclude q · c ∈ Ĩ ⟹ c ∈ Ĩ`. This is the BEI-specific Gröbner
-  sub-sorry: flatness of `S[t] ⧸ Ĩ` over `K[t]` reduces to it via the PID
-  torsion-free-implies-flat principle (`tildeJ_flat_over_polyT` is now
-  proved conditional on `tildeJ_polyT_colon_eq`). The `IsSMulRegular`
-  lemmas `tildeJ_tMinusOne_isSMulRegular` and `tildeJ_t_isSMulRegular`
-  remain closed via flatness + `Module.Flat.isSMulRegular_of_isRegular`.
+**Monomial-order infrastructure for R1.d closed (2026-04-20).** Opaque
+type wrapper `DefVars n := BinomialEdgeVars (Fin n) ⊕ Unit` blocks the
+`Sum.instLTSum` diamond on the deformation variable type. The order
+`defLE` is arranged so `t = inr ()` is LARGEST (hence LEAST significant
+in `MonomialOrder.lex`'s smallest-most-significant convention). The two
+structural lemmas `degree_fijTilde` (leading monomial = `x_i y_j`) and
+`leadingCoeff_fijTilde = 1` are proved (axioms
+`{propext, Classical.choice, Quot.sound}`), with helper
+`fijTilde_lex_lt`.
+
+**R1.d colon chain fully closed (2026-04-20).**
+The division-algorithm wrapper `tildeJ_div`, the support-transfer
+lemma `polyTInclude_mul_support_avoids`, the colon-ideal theorem
+`tildeJ_polyT_colon_eq`, `tildeJ_gbProperty` (via existing
+`exists_degree_le_of_mem` in `BEI/Radical.lean`), and
+**`tildeJ_isGroebnerBasis`** (the Buchberger proof that `{f̃_{i,j}}`
+is a Gröbner basis of `Ĩ` under `deformationMonomialOrder`, for closed `G`)
+are all proved with clean axioms
+`{propext, Classical.choice, Quot.sound}`.
+Consequently `tildeJ_flat_over_polyT`, `tildeJ_tMinusOne_isSMulRegular`,
+and `tildeJ_t_isSMulRegular` are all sorry-free.
+
+`hClosed : IsClosedGraph G` is threaded through the R1 chain
+(`tildeJ_polyT_colon_eq`, `tildeJ_flat_over_polyT`,
+`tildeJ_tMinusOne_isSMulRegular`, `tildeJ_t_isSMulRegular`,
+`tildeJ_quotient_isCohenMacaulay`, `groebnerDeformation_cm_transfer`),
+because the Gröbner-basis property only holds for closed graphs.
+
+The four-arrow assembly `groebnerDeformation_cm_transfer` is a complete
+proof modulo a single remaining sub-sorry:
+
+- `tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant`: local CM of the
+  deformation at the irrelevant ideal (regular-quotient lift through `t`,
+  reducing to global CM of `S ⧸ monomialInitialIdeal G` from Step 1).
+  `tildeJ_quotient_isCohenMacaulay` itself is now a one-line application
+  of `GradedCM.isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant`,
+  and inherits the dormant Case-C sorry of `toMathlib/GradedCM.lean` as a
+  transitive dependency. The full BEI-side graded plumbing
+  (`defWeight`, `defGrading`, `tildeJQuotGrading`, connectedness,
+  properness, `tildeJ_isHomogeneous`) is in place with clean axioms.
 
 `BEI/Proposition1_6.lean` now reduces to one line —
 `binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm := groebnerDeformation_cm_transfer hCM`.
@@ -229,9 +255,9 @@ Some of these splits still need cleanup, but these are the current live location
 | `toMathlib/HeightAdditivity.lean` | 2 | dormant infrastructure |
 | `toMathlib/GradedCM.lean` | 1 | dormant, documented off-path |
 | `Supplement/RauhApproach.lean` | 2 | archived, not on main path |
-| `BEI/GroebnerDeformation.lean` | 2 | R1 framework: graded local-to-global (`tildeJ_quotient_isCohenMacaulay`) and the `K[t]` colon-ideal sub-sorry (`tildeJ_polyT_colon_eq` — the BEI Gröbner-basis content). `tildeJ_flat_over_polyT`, `tildeJ_tMinusOne_isSMulRegular`, and the sibling `tildeJ_t_isSMulRegular` are proved conditional on `tildeJ_polyT_colon_eq` (via torsion-free⇒flat over PID + `Module.Flat.isSMulRegular_of_isRegular`); `baseQuotEquiv` closed 2026-04-20 |
+| `BEI/GroebnerDeformation.lean` | 1 | R1 framework: only `tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant` remains (local CM at the irrelevant ideal, regular-quotient lift via `t`). `tildeJ_quotient_isCohenMacaulay` itself is now a one-line application of `GradedCM.isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant` + the new local-CM sub-sorry. Full BEI-side graded plumbing (`defWeight`, `defGrading`, `tildeJQuotGrading`, `tildeJ_isHomogeneous`, `tildeJQuotGrading_connectedGraded`, `tildeJ_ne_top`) is in place with clean axioms. `tildeJ_polyT_colon_eq` proved via Gröbner division + domain argument |
 | `BEI/Proposition1_6.lean` | 0 | reduced to a one-line application of `groebnerDeformation_cm_transfer` |
-| **Active total** | **2** | two paper-critical Gröbner CM transfer sub-sorries; excluding dormant `HeightAdditivity` / `GradedCM` and archived `RauhApproach` |
+| **Active total** | **1** | one paper-critical sub-sorry (local CM at irrelevant); transitively still depends on `toMathlib/GradedCM.lean`'s dormant Case-C sorry via the graded LTG theorem |
 
 ---
 

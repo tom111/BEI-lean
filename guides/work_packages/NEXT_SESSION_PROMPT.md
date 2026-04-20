@@ -1,238 +1,112 @@
-# Next-Session Prompt: close `tildeJ_polyT_colon_eq` for closed graphs
+# Next-Session Prompt: attack `tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant`
 
 ## One-line goal
 
-Close the R1.d leaf sorry `tildeJ_polyT_colon_eq` in `BEI/GroebnerDeformation.lean`
-for closed graphs. This is the single active step for Prop 1.6's R1 branch.
+Close the remaining R1 leaf sorry
+`tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant` in
+`BEI/GroebnerDeformation.lean` — local Cohen–Macaulayness of `S[t] ⧸ Ĩ` at
+its irrelevant ideal, via the regular-quotient lift through `t` (already
+known to be a non-zero-divisor by `tildeJ_t_isSMulRegular`). Together with
+the already-applied graded local-to-global principle from
+`toMathlib/GradedCM.lean`, this closes `tildeJ_quotient_isCohenMacaulay` and
+hence Proposition 1.6 modulo the GradedCM Case-C dormant sorry.
+
+## What landed in the previous session
+
+All BEI-side graded plumbing for R1.f.1 is now formalised with clean
+axioms `{propext, Classical.choice, Quot.sound}`:
+
+- `defWeight n : DefVars n → ℕ` — weight function with positive values.
+- `isWeightedHomogeneous_fijTilde` — each `f̃_{i,j}` (with `i < j`) is
+  weighted-homogeneous of degree `2(n+1-i) + (n+1-j)`.
+- `defGrading n` — the weight grading on `DefRing n K`, with a registered
+  `GradedAlgebra` instance.
+- `tildeJ_isHomogeneous` — `tildeJ G` is homogeneous.
+- `tildeJQuotGrading G` — induced grading on `DefRing n K ⧸ tildeJ G`,
+  with a registered `GradedRing` instance.
+- `tildeJQuotGrading_connectedGraded` — connected graded (`𝒜 0 = K`).
+- `tildeJ_ne_top` / `tildeJ_quotient_nontrivial` — properness and
+  `Nontrivial` of the quotient.
+
+`tildeJ_quotient_isCohenMacaulay` is now a one-liner application of
+`GradedCM.isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant`
+fed the connectedness proof and the new sub-sorry. The old monolithic
+`sorry` is gone from this theorem.
 
 ## State at start of session
 
-Two sub-sorries on the Prop 1.6 critical path, both in
-`BEI/GroebnerDeformation.lean`:
+**R1.d chain is fully closed.** The following are all proved with clean
+axioms `{propext, Classical.choice, Quot.sound}`:
 
-1. `tildeJ_quotient_isCohenMacaulay` (graded LTG; depends on dormant Case C
-   of `toMathlib/GradedCM.lean`). **Not this session's target.**
-2. `tildeJ_polyT_colon_eq` (BEI Gröbner colon-ideal statement).
-   **This session's target.**
+- `DefVars n := BinomialEdgeVars (Fin n) ⊕ Unit` (opaque wrapper)
+- `defLE` with `t = inr ()` as LARGEST (least significant in lex)
+- `fijTilde_lex_lt`, `degree_fijTilde`, `leadingCoeff_fijTilde`
+- `tildeJ_div`, `polyTInclude_mul_support_avoids`
+- `tildeJ_isGroebnerBasis` (Buchberger + closed graph case analysis)
+- `tildeJ_gbProperty` (via `exists_degree_le_of_mem` from `BEI/Radical.lean`)
+- `tildeJ_polyT_colon_eq`
+- `tildeJ_flat_over_polyT`, `tildeJ_tMinusOne_isSMulRegular`,
+  `tildeJ_t_isSMulRegular`
+- `groebnerDeformation_cm_transfer` (four-arrow assembly; depends on
+  `tildeJ_quotient_isCohenMacaulay` + regular-quotient descent)
 
-```lean
--- at BEI/GroebnerDeformation.lean:498
-theorem tildeJ_polyT_colon_eq
-    {n : ℕ} (G : SimpleGraph (Fin n))
-    (q : PolyT K) (_hq : q ≠ 0)
-    (c : DefRing n K) (_hmul : polyTInclude (K := K) n q * c ∈ tildeJ (K := K) G) :
-    c ∈ tildeJ (K := K) G := by
-  sorry
-```
-
-Once this sorry is closed, `tildeJ_flat_over_polyT`,
-`tildeJ_tMinusOne_isSMulRegular`, `tildeJ_t_isSMulRegular` all unlock
-(they are already proved conditional on this).
-
-## Scaffolding already in place (do not rebuild)
-
-Registered in `BEI/GroebnerDeformation.lean`:
-
-- `PolyT K := MvPolynomial Unit K`, with `IsPrincipalIdealRing` via
-  `pUnitAlgEquiv` transport.
-- `polyTInclude n : PolyT K →ₐ[K] DefRing n K = rename Sum.inr`.
-- `Algebra (PolyT K) (DefRing n K)` + scalar tower `K → PolyT K → DefRing n K`.
-- `defLE` — paper's `x_1 > x_2 > … > y_1 > … > y_n` order, extended with
-  `t = Sum.inr ()` strictly at the bottom.
-- `defVars_Finite`, `defVars_LinearOrder`, `defVars_WellFoundedGT`.
-- `deformationMonomialOrder n : MonomialOrder (BinomialEdgeVars (Fin n) ⊕ Unit)`.
-
-## Plan: four concrete lemmas + final assembly
-
-Work through these in order. Each is self-contained.
-
-### Step 1: `leadingCoeff_fijTilde = 1`
+The remaining open sorry in R1:
 
 ```lean
-theorem leadingCoeff_fijTilde {n : ℕ} {i j : Fin n} (hij : i < j) :
-    (deformationMonomialOrder n).leadingCoeff (fijTilde (K := K) i j) = 1 := by
-  sorry
+theorem tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant
+    {n : ℕ} {G : SimpleGraph (Fin n)} (_hClosed : IsClosedGraph G)
+    (_hCM : IsCohenMacaulayRing
+      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G)) :
+    haveI := (GradedIrrelevant.irrelevant_isMaximal (tildeJQuotGrading G)
+      (tildeJQuotGrading_connectedGraded G)).isPrime
+    IsCohenMacaulayLocalRing (Localization.AtPrime
+      (HomogeneousIdeal.irrelevant (tildeJQuotGrading G)).toIdeal)
 ```
 
-`fijTilde i j = X (inl (inl i)) * X (inl (inr j)) - X (inr ())^(j-i) * X (inl (inl j)) * X (inl (inr i))`.
-Under `deformationMonomialOrder`:
-- Term 1 support: `inl (inl i) ↦ 1, inl (inr j) ↦ 1`.
-- Term 2 support: `inl (inl j) ↦ 1, inl (inr i) ↦ 1, inr () ↦ j - i`.
+`proposition_1_6` axiom check is `{propext, sorryAx, Classical.choice, Quot.sound}`,
+with `sorryAx` coming only from this one remaining sub-sorry (and from the
+dormant GradedCM Case-C sorry, transitively via the graded LTG theorem).
 
-Lex comparison starts at the largest variable. Under `defLE`, `inl (inl i)` is
-largest (smallest `i`). Term 1 has exponent 1 there; Term 2 has 0. So Term 1
-dominates, and `leadingCoeff = 1` (the coefficient of Term 1).
+## Strategy (documented in existing guides)
 
-Approach: reduce to `MonomialOrder.leadingCoeff_sub_of_lt`, or compute
-directly via `MonomialOrder.leadingCoeff` + `MvPolynomial.coeff_sub`.
-Scout via `lean_leansearch "MonomialOrder leadingCoeff sub"`.
+See:
 
-### Step 2: `degree_fijTilde`
+- `guides/work_packages/FULL_PROP_1_6_PLAN.md` — overall 3-phase plan
+- `guides/work_packages/PROP_1_6_CM_TRANSFER.md` — overall CM transfer strategy
+- `guides/work_packages/GROEBNER_CM_TRANSFER.md` — the Gröbner deformation transfer
 
-```lean
-theorem degree_fijTilde {n : ℕ} {i j : Fin n} (hij : i < j) :
-    (deformationMonomialOrder n).degree (fijTilde (K := K) i j) =
-      Finsupp.single (Sum.inl (Sum.inl i)) 1 + Finsupp.single (Sum.inl (Sum.inr j)) 1 := by
-  sorry
-```
+### Narrow strategy for the remaining sub-sorry
 
-This is the multi-index of `x_i y_j`. Proof parallels Step 1.
+`L := Localization.AtPrime (irrelevant of DefRing ⧸ tildeJ G)` is the local
+ring we need to prove CM. Strategy (= the local branch of the classical
+Eisenbud 15.17 argument):
 
-### Step 3: apply `MonomialOrder.div_set`
+1. Produce `t̂ : L`, the image of `tDef n` through `DefRing ⧸ tildeJ G → L`.
+2. Show `t̂ ∈ maximalIdeal L` (since `tDef` has positive weight, hence in
+   the irrelevant ideal of the quotient).
+3. Show `t̂` is regular on `L` — follows from `tildeJ_t_isSMulRegular`
+   (already proved) plus flatness of localisation
+   (`IsSMulRegular.of_flat`).
+4. Show `L ⧸ (t̂)` is CM local. This reduces via a localisation-quotient
+   commutation step (see `quotSMulTopLocalizationEquiv_of_mem` pattern in
+   `toMathlib/CohenMacaulay/Polynomial.lean`) to the localisation of
+   `(DefRing ⧸ tildeJ G) ⧸ (tDef-class)` at the image of the irrelevant
+   ideal. That double quotient is isomorphic (via `specZero` + the first
+   isomorphism theorem, using `tildeJ_specZero_eq`) to
+   `S ⧸ monomialInitialIdeal G`, which is globally CM by hypothesis, so
+   any localisation is CM.
+5. Apply `isCohenMacaulayLocalRing_of_regular_quotient` to conclude
+   `L` is CM local.
 
-Use Mathlib's division algorithm. Signature:
+The new BEI-side hypothesis and helpers to reach for:
 
-```lean
--- Mathlib/RingTheory/MvPolynomial/Groebner.lean
-theorem MonomialOrder.div_set
-    {σ R} [CommRing R] {B : Set (MvPolynomial σ R)}
-    (hU : ∀ b ∈ B, IsUnit (m.leadingCoeff b))
-    (f : MvPolynomial σ R) :
-    ∃ g r,
-      f = (Finsupp.linearCombination _ (↑·)) g + r ∧
-      (∀ b : ↑B, m.toSyn (m.degree (↑b * g b)) ≤ m.toSyn (m.degree f)) ∧
-      ∀ c ∈ r.support, ∀ b ∈ B, ¬m.degree b ≤ c
-```
+- `tildeJ_t_isSMulRegular` — already in the file.
+- `algebraMap_polyT_t` — the map of `tDef n` into the quotient.
+- `tildeJ_specZero_eq` — `specZero(tildeJ) = monomialInitialIdeal G`.
+- The `quotSMulTopLocalizationEquiv_of_mem` construction pattern from
+  `toMathlib/CohenMacaulay/Polynomial.lean:470`.
 
-Apply with `B = { fijTilde i j | G.Adj i j, i < j }` and unit leading coeffs
-from Step 1. Get:
+## Do not
 
-```lean
-lemma tildeJ_div {n : ℕ} (G : SimpleGraph (Fin n)) (c : DefRing n K) :
-    ∃ (g : ↑(_ : Set (DefRing n K)) →₀ DefRing n K) (r : DefRing n K),
-      c = (Finsupp.linearCombination _ (↑·)) g + r ∧
-      (∀ α ∈ r.support,
-        ∀ (i j : Fin n), G.Adj i j → i < j →
-          ¬ ((deformationMonomialOrder n).degree (fijTilde (K := K) i j) ≤ α)) ∧
-      (Finsupp.linearCombination _ (↑·)) g ∈ tildeJ (K := K) G
-```
-
-Note: `B`'s set structure can be messy. A cleaner alternative: apply
-`MonomialOrder.div_set` with `B = tildeJ_generators G` (a concrete
-`Set (DefRing n K)`).
-
-### Step 4: the **Gröbner basis property** (new BEI lemma)
-
-This is the only genuinely new BEI mathematical content. Add
-`IsClosedGraph G` as a hypothesis — see the "Decision" section below.
-
-```lean
-theorem tildeJ_gbProperty {n : ℕ} {G : SimpleGraph (Fin n)}
-    (hClosed : IsClosedGraph G) (p : DefRing n K)
-    (hp : p ∈ tildeJ (K := K) G)
-    (hsupp : ∀ α ∈ p.support,
-      ∀ (i j : Fin n), G.Adj i j → i < j →
-        ¬ ((deformationMonomialOrder n).degree (fijTilde (K := K) i j) ≤ α)) :
-    p = 0 := by
-  sorry
-```
-
-Proof outline (classical):
-- `{fij}` is a reduced Gröbner basis of `J_G` for closed graphs
-  (`BEI/GroebnerBasis.lean`: `theorem_2_1_isReducedGroebnerBasis`).
-- Specialize at `t = 1` (via `specOne`). `specOne(p)` then has support
-  avoiding `x_i y_j`-divisibility, and `specOne(p) ∈ J_G`. By the
-  closed-graph GB, `specOne(p) = 0`. [But the `t`-info is lost — needs care.]
-- Alternative: direct Buchberger argument on `{f̃_{i,j}}` for closed graphs,
-  showing all S-polynomials reduce to 0 in the deformation.
-
-Either route is ~100–300 LOC. The simplest might be: show
-`{f̃_{i,j}}` inherits reducedness from `{fij}` via the `t`-grading, and
-that the S-polynomial reduction carries over uniformly.
-
-### Step 5: assemble `tildeJ_polyT_colon_eq`
-
-```lean
-theorem tildeJ_polyT_colon_eq
-    {n : ℕ} {G : SimpleGraph (Fin n)} (hClosed : IsClosedGraph G)
-    (q : PolyT K) (hq : q ≠ 0)
-    (c : DefRing n K) (hmul : polyTInclude (K := K) n q * c ∈ tildeJ (K := K) G) :
-    c ∈ tildeJ (K := K) G := by
-  obtain ⟨g, r, hdecomp, hrSupp, hgbPart⟩ := tildeJ_div G c
-  -- c = (Σ g_b · f̃_b) + r  with r's support all "standard"
-  -- polyTInclude q · c = (Σ polyTInclude q · g_b · f̃_b) + polyTInclude q · r
-  -- polyTInclude q · r has support also "standard" (multiplying by K[t] doesn't
-  -- introduce x_i y_j divisibility)
-  have hprod_mem : polyTInclude (K := K) n q * r ∈ tildeJ G := by
-    -- from hmul and hgbPart
-    sorry
-  have hprod_supp : ∀ α ∈ (polyTInclude n q * r).support, … := sorry
-  have hprod_zero : polyTInclude n q * r = 0 :=
-    tildeJ_gbProperty hClosed _ hprod_mem hprod_supp
-  -- DefRing n K is a domain, polyTInclude q ≠ 0, so r = 0
-  have hrzero : r = 0 := by
-    have : polyTInclude n q ≠ 0 := by
-      rw [polyTInclude]; exact (rename_injective _ Sum.inr_injective).ne hq
-    exact (mul_eq_zero.mp hprod_zero).resolve_left this
-  -- Hence c = Σ g_b · f̃_b ∈ tildeJ
-  rw [hrzero, add_zero] at hdecomp
-  rw [hdecomp]
-  exact hgbPart
-```
-
-## Decision: add `IsClosedGraph G` hypothesis?
-
-The Gröbner-basis property only holds for closed graphs. For non-closed
-graphs, `{f̃_{i,j}}` is not a GB of `Ĩ`, and the colon statement needs a
-different proof (or may fail for our specific `Ĩ`). Recommendation:
-
-**Add `IsClosedGraph G` to `tildeJ_polyT_colon_eq`**. Propagate upward:
-
-- `tildeJ_flat_over_polyT` (add hypothesis, use it in the call).
-- `tildeJ_tMinusOne_isSMulRegular`, `tildeJ_t_isSMulRegular` (add hypothesis).
-- `tildeJ_quotient_isCohenMacaulay` (add hypothesis; currently sorry).
-- `groebnerDeformation_cm_transfer` (add hypothesis).
-- `binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm` — **already has it**.
-
-No change needed at `proposition_1_6` (it already passes `hClosed`).
-
-## Workflow rules
-
-Use lean-lsp MCP tools, **not** `lake build` for iteration:
-
-- `lean_diagnostic_messages BEI/GroebnerDeformation.lean` — file errors.
-- `lean_goal <file> <line>` — proof state before a tactic.
-- `lean_multi_attempt <file> <line> ["tac1", "tac2", …]` — cheap tactic trials.
-- `lean_leansearch` / `lean_loogle` / `lean_local_search` — Mathlib/project
-  name lookup. Scout before writing.
-- Reserve `lake build` for the final sanity check.
-
-## Potential Mathlib lookup targets
-
-Use these queries when you get stuck:
-
-- `MonomialOrder.leadingCoeff_sub` / `leadingCoeff_sub_of_degree_lt`
-- `MonomialOrder.degree_sub_of_lt`
-- `MvPolynomial.coeff_sub`, `MvPolynomial.support_sub`
-- `MvPolynomial.X_pow`, `MvPolynomial.support_X`
-- `MonomialOrder.div_set`, `MonomialOrder.div_single`
-- `MonomialOrder.not_mem_support_of_lt` / similar support lemmas.
-
-## Commit discipline
-
-After `tildeJ_polyT_colon_eq` closes:
-
-1. Update `TODO.md` — sorry count drops to 1 in `BEI/GroebnerDeformation.lean`.
-2. Update `FORMALIZATION_MAP.md` — Prop 1.6 row.
-3. Update `guides/work_packages/GROEBNER_CM_TRANSFER.md` — mark R1.d ~~struck~~.
-4. Update `MEMORY.md` — Sorry Summary and key-files line.
-5. `lake build` — final sanity.
-6. Commit with focused message (e.g. "Close R1.d via Gröbner colon argument").
-7. Push to both `origin` and `github`.
-
-Do **not** auto-commit intermediate progress unless explicitly asked.
-
-## Definition of done
-
-**Best**: `tildeJ_polyT_colon_eq` closed for closed graphs, build green,
-Prop 1.6 sorry count in `BEI/GroebnerDeformation.lean` drops to 1.
-
-**Acceptable**: Steps 1–3 closed, Step 4 isolated as a clean named lemma
-with Buchberger-style scope, everything below still reduces to that lemma.
-
-**Do not**:
-- chase the universe generalization (`K : Type → Type u`);
-- restate Cor 3.4 / Cor 3.7 CM branches;
-- touch `toMathlib/HeightAdditivity.lean` or
-  `toMathlib/GradedCM.lean` (dormant sorries);
-- refactor unrelated BEI files.
+- Touch `toMathlib/HeightAdditivity.lean`.
+- Refactor unrelated BEI files.
