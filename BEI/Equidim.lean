@@ -8432,4 +8432,41 @@ theorem isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal
 
 end GlobalCM
 
+/-- Under HH conditions, `S ⧸ monomialInitialIdeal G` is globally Cohen–Macaulay.
+
+This is the `J_G`-side monomial CM statement: for a graph `G` satisfying the
+Herzog–Hibi conditions (in particular, any closed graph satisfying the
+Proposition 1.6 condition — see `prop_1_6_herzogHibi`), the quotient of the
+polynomial ring by the monomial initial ideal of `J_G` is Cohen–Macaulay.
+
+Proof: transport the HH bipartite CM theorem
+`isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal` along the
+`y`-predecessor ring isomorphism built from `rename_yPredVar_monomialInitialIdeal`.
+
+Restricted to `K : Type` because the underlying HH theorem is universe-monomorphic. -/
+theorem monomialInitialIdeal_isCohenMacaulay
+    {K : Type} [Field K]
+    {n : ℕ} (hn : 2 ≤ n) {G : SimpleGraph (Fin n)}
+    (hHH : HerzogHibiConditions n G) :
+    IsCohenMacaulayRing
+      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G) := by
+  have hn0 : 0 < n := by omega
+  set φ := (MvPolynomial.renameEquiv K (yPredEquiv n hn0)).toRingEquiv
+  have hmap : bipartiteEdgeMonomialIdeal (K := K) G =
+      Ideal.map φ (monomialInitialIdeal (K := K) G) := by
+    have hfun : ⇑φ = ⇑(rename (yPredVar n hn0) : MvPolynomial _ K →ₐ[K] MvPolynomial _ K) := by
+      funext p; exact (MvPolynomial.renameEquiv_apply K (yPredEquiv n hn0) p).symm
+    change _ = Ideal.map φ.toRingHom _
+    conv_rhs => rw [show φ.toRingHom = (rename (yPredVar n hn0) :
+        MvPolynomial _ K →ₐ[K] MvPolynomial _ K).toRingHom from RingHom.ext (fun x => by
+      change φ x = rename (yPredVar n hn0) x; exact congr_fun hfun x)]
+    exact (rename_yPredVar_monomialInitialIdeal (K := K) hn0 G).symm
+  have e : MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G ≃+*
+      MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ bipartiteEdgeMonomialIdeal (K := K) G :=
+    Ideal.quotientEquiv _ _ φ hmap
+  haveI : IsCohenMacaulayRing
+      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ bipartiteEdgeMonomialIdeal (K := K) G) :=
+    isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal hn hHH
+  exact isCohenMacaulayRing_of_ringEquiv e.symm
+
 end

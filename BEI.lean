@@ -14,6 +14,8 @@ import BEI.PrimeIdeals
 import BEI.PrimeDecomposition
 import BEI.MinimalPrimes
 import BEI.CIIdeals
+import BEI.GroebnerDeformation
+import BEI.Proposition1_6
 -- toMathlib: general-purpose lemmas for potential Mathlib upstreaming
 import toMathlib.HeightVariableIdeal
 import toMathlib.HeightDeterminantal

@@ -17,7 +17,7 @@
 | **§1 Cor 1.3** (bipartite closed graphs / line graphs) | `BEI/GraphProperties.lean` | `[x]` paper-faithful version proved |
 | **§1 Prop 1.4** (shortest paths directed) | `BEI/GraphProperties.lean` | `[x]` proved |
 | **§1 Prop 1.5** (closure exists) | `BEI/GraphProperties.lean` | `[x]` proved |
-| **§1 Prop 1.6** (CM sufficient condition) | `BEI/PrimeDecompositionDimension.lean` | `[~]` equidimensional surrogate proved directly; full paper CM statement still open |
+| **§1 Prop 1.6** (CM sufficient condition) | `BEI/Proposition1_6.lean`, `BEI/PrimeDecompositionDimension.lean` | `[~]` paper-faithful `proposition_1_6` stated and assembled modulo one named `sorry` (`binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm`, the Gröbner deformation CM transfer of Eisenbud 15.17). Equidimensional surrogate proved directly |
 | **§2 Thm 2.1** (reduced Gröbner basis) | `BEI/GroebnerBasisSPolynomial.lean`, `BEI/GroebnerBasis.lean` | `[x]` proved |
 | **§2 Cor 2.2** (`J_G` radical) | `BEI/Radical.lean` | `[x]` proved |
 | **§3 Lem 3.1** (height formula for `P_S`) | `BEI/PrimeIdeals.lean` | `[x]` proved |
@@ -44,6 +44,35 @@
 `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal` closes with
 axioms `{propext, Classical.choice, Quot.sound}`. No `sorry` remains on
 the critical path inside `BEI/`.
+
+**Monomial-side CM for `J_G` packaged (2026-04-20).**
+`monomialInitialIdeal_isCohenMacaulay` in `BEI/Equidim.lean` transports
+the HH CM theorem along the y-predecessor ring isomorphism, giving that
+`S ⧸ monomialInitialIdeal G` is globally CM under HH conditions
+(restricted to `K : Type`). This closes Step 1 of the Prop 1.6 plan.
+
+**Paper-faithful `proposition_1_6` assembled modulo two sub-sorries (2026-04-20).**
+`BEI/GroebnerDeformation.lean` lays down the full R1 framework: the
+deformation ring `S[t]`, the deformation parameter, the deformed generators
+`f̃_{i,j} = x_i y_j - t^(j-i) x_j y_i`, the deformation ideal `Ĩ`, the
+specialization maps at `t = 0` and `t = 1`, the fiber identifications
+`tildeJ_specZero_eq` (gives `monomialInitialIdeal G`) and `tildeJ_specOne_eq`
+(gives `binomialEdgeIdeal G`), and the iso
+`baseQuotEquiv : S ⧸ J_G ≃+* S[t] ⧸ (Ĩ ⊔ {t-1})`. The four-arrow assembly
+`groebnerDeformation_cm_transfer` is a complete proof modulo two
+remaining sub-sorries:
+
+- `tildeJ_quotient_isCohenMacaulay`: global CM of `S[t] ⧸ Ĩ` (graded
+  local-to-global step, via `toMathlib/GradedCM.lean` — depends on the
+  dormant Case-C sorry there, which encapsulates substantial graded-depth
+  infrastructure not currently in Mathlib);
+- `tildeJ_tMinusOne_isSMulRegular`: `(t-1)` regular on `S[t] ⧸ Ĩ` (the
+  technical heart, R1.d — flatness over `K[t]`).
+
+`BEI/Proposition1_6.lean` now reduces to one line —
+`binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm := groebnerDeformation_cm_transfer hCM`.
+The high-level `proposition_1_6` axiom check is
+`{propext, sorryAx, Classical.choice, Quot.sound}`.
 
 Active follow-up work now lives in:
 - `guides/work_packages/FULL_PROP_1_6_PLAN.md` — overall 3-phase plan (Phase 1 done)
@@ -194,7 +223,9 @@ Some of these splits still need cleanup, but these are the current live location
 | `toMathlib/HeightAdditivity.lean` | 2 | dormant infrastructure |
 | `toMathlib/GradedCM.lean` | 1 | dormant, documented off-path |
 | `Supplement/RauhApproach.lean` | 2 | archived, not on main path |
-| **Active total** | **0** | excluding dormant `HeightAdditivity` / `GradedCM` and archived `RauhApproach` |
+| `BEI/GroebnerDeformation.lean` | 2 | R1 framework: graded local-to-global (`tildeJ_quotient_isCohenMacaulay`) and flatness (`tildeJ_tMinusOne_isSMulRegular`); `baseQuotEquiv` closed 2026-04-20 |
+| `BEI/Proposition1_6.lean` | 0 | reduced to a one-line application of `groebnerDeformation_cm_transfer` |
+| **Active total** | **2** | two paper-critical Gröbner CM transfer sub-sorries; excluding dormant `HeightAdditivity` / `GradedCM` and archived `RauhApproach` |
 
 ---
 

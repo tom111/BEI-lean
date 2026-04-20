@@ -14,13 +14,13 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 ## Active Work Packages
 
 1. [work_packages/FULL_PROP_1_6_PLAN.md](work_packages/FULL_PROP_1_6_PLAN.md)
-   Overall 3-phase plan for paper-exact Proposition 1.6. **Phase 1 (HH global CM) done 2026-04-20**; Phases 2 (Gröbner degeneration) and 3 (assembly) remain.
+   Overall 3-step plan for paper-exact Proposition 1.6. **Step 1 (monomial-side CM) done 2026-04-20**: `monomialInitialIdeal_isCohenMacaulay` in `BEI/Equidim.lean`. Steps 2 (Gröbner degeneration) and 3 (final assembly) remain.
 
 2. [work_packages/PROP_1_6_CM_TRANSFER.md](work_packages/PROP_1_6_CM_TRANSFER.md)
-   Remaining paper-faithful algebra track for Prop 1.6: part (1) packaging the HH regularity infrastructure is **done** (`isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`); part (2) Gröbner transfer remains (see `GROEBNER_CM_TRANSFER.md`).
+   Higher-level strategic context for the remaining paper-faithful algebra track. Most internal HH blockers are resolved; remaining paper-critical gap is the Gröbner transfer (see `GROEBNER_CM_TRANSFER.md`).
 
 3. [work_packages/GROEBNER_CM_TRANSFER.md](work_packages/GROEBNER_CM_TRANSFER.md)
-   Phase 2 packet: transfer Cohen–Macaulayness from the initial ideal quotient back to the original quotient (upper semicontinuity of depth).
+   Step 2 packet: transfer CM from `S ⧸ in_<(J_G)` to `S ⧸ J_G`. Contains detailed plans for R1 (Eisenbud 15.17 / depth semicontinuity), R2 (Conca–Varbaro), R3 (direct regular sequence), and R4 (immediate axiomatized transfer to unblock the Step 3 assembly). Recommended sequencing: R4 first, then R1 as the long-term target.
 
 ## Answers And Decision Notes
 

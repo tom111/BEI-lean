@@ -22,109 +22,91 @@ The paper proves Prop 1.6 in two steps (line 443 onward):
 2. **Gröbner degeneration**: CM of the initial ideal implies CM of `J_G`.
 
    Classical: the flat family over `𝔸¹` degenerates `J_G` to `ini_<(J_G)`,
-   and upper semicontinuity of depth preserves CM.
+   and lower semicontinuity of depth on flat families preserves CM.
 
-## Phase 1 — Global CM of the HH bipartite monomial quotient
+## Current status (2026-04-20)
 
-**Status**: **DONE (2026-04-20)**. `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`
-is fully proved in `BEI/Equidim.lean` with axioms `{propext, Classical.choice, Quot.sound}`,
-restricted to `K : Type` (universe 0). The realized route was F2 (pick-U decomposition +
-reduced-HH CM + tensor-left-localisation bridge + L7 tensor-away replacement), NOT the
-Strategy G graded-local-to-global route originally sketched below. The Strategy G prose is
-kept only as historical context.
+### Step 1 — monomial-side CM. **DONE.**
 
-### Strategy G (chosen): graded local-to-global CM
+- `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`
+  (`BEI/Equidim.lean:8156`): `S ⧸ bipartiteEdgeMonomialIdeal G` is globally
+  CM under HH conditions. Axioms `{propext, Classical.choice, Quot.sound}`.
+  Restricted to `K : Type`.
+- `monomialInitialIdeal_isCohenMacaulay` (`BEI/Equidim.lean:8447`):
+  transports the above along `rename_yPredVar_monomialInitialIdeal` to give
+  that `S ⧸ monomialInitialIdeal G` is globally CM under HH conditions.
+- `initialIdeal_closed_eq` (`BEI/Equidim.lean:159`) identifies
+  `span(lt(J_G)) = monomialInitialIdeal G` for closed `G`, completing the
+  paper-side monomial bridge.
 
-**Theorem to prove**: if `R` is a standard-graded Noetherian `K`-algebra
-with `R_0 = K` a field and `R_m` is CM local (where `m = R_+` is the
-irrelevant maximal ideal), then `R` is CM globally.
+### Step 2 — Gröbner degeneration transfer. **Route R4 DONE 2026-04-20.**
 
-**Classical proof**: for any prime `p ⊂ R`, let `p*` be the largest
-homogeneous ideal contained in `p` (the "p-star"). Then `p*` is a
-homogeneous prime, `p* ⊆ m`, and
-`R_p ≅ (R_{(p*)})_q` where `(R_{(p*)}` = homogeneous localization at
-`p*` and `q` is an induced prime. CM localizes, so `R_p` is CM as soon
-as `R_{(p*)}` is CM. The latter follows from `R_m` CM + homogeneous
-localization tower.
+- `binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm` in
+  `BEI/Proposition1_6.lean` states the narrow BEI-shaped transfer theorem
+  with one named `sorry`. This is the one remaining paper-critical gap.
+- Route R1 (the genuine proof) is the long-term target. A 2026-04-20 audit
+  of existing `toMathlib/` and Mathlib infrastructure showed that R1 is
+  substantially smaller than originally estimated: **depth semicontinuity is
+  not required**. The graded local-to-global + regular-quotient chain
+  suffices, reusing `isCohenMacaulayLocalRing_of_regular_quotient`,
+  `isCohenMacaulayRing_quotient_of_smulRegular`, the dormant graded CM
+  theorem in `toMathlib/GradedCM.lean`, and Mathlib's `WeightedHomogeneous`
+  and `IsWeaklyRegular.of_flat`. The new technical heart is flatness of the
+  BEI Gröbner deformation `S[t] ⧸ Ĩ` over `K[t]`.
+- Detailed plan (R4 status, R1 sub-steps, dependency on `GradedCM.lean`
+  Case C sorry) lives in `guides/work_packages/GROEBNER_CM_TRANSFER.md`.
 
-### Phase 1 sub-tasks
+### Step 3 — paper-faithful `proposition_1_6`. **DONE (2026-04-20).**
 
-Items 1–3 are preliminary and uncontroversial (~100–200 lines total);
-item 4 is the technical core (~300–500 lines); items 5–6 wrap up.
+- `proposition_1_6` in `BEI/Proposition1_6.lean` is assembled from Step 1
+  (`monomialInitialIdeal_isCohenMacaulay`), `prop_1_6_herzogHibi`, and the
+  one named `sorry` from Step 2
+  (`binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm`). Builds green.
+- Still pending and orthogonal: restating `corollary_3_4` and the CM branch
+  of `corollary_3_7` in real CM terms using `proposition_1_6`, replacing
+  their equidimensional surrogate versions. ~50 lines, can be done alongside
+  or after R1.
 
-1. **`GradedRing` on `S ⧸ I` for homogeneous `I`** (~50 lines).
-   Build `DirectSum.Decomposition` on the quotient via the inherited
-   filtration.
-2. **`𝒜₊.toIdeal.IsMaximal` when `𝒜 0` is a field** (~30–80 lines).
-   Use `S ⧸ 𝒜₊ ≅ 𝒜 0`.
-3. **Every prime of a connected graded `K`-algebra is ⊆ `𝒜₊`** ...
-   actually this is false in general (non-graded primes exist). The
-   correct formulation uses `p*`: for any prime `p`, `p* ⊆ 𝒜₊`, and
-   `R_p ≅ (R_{(p*)})_q`. (~20 lines for the `p* ⊆ 𝒜₊` piece.)
-4. **`R_p ≅ (HomogeneousLocalization 𝒜 p*)_q`** (~300–500 lines).
-   The heart of Strategy G. Build the two-step localization
-   identification.
-5. **Dimension and depth transfer through the bridge** (~100–200 lines).
-6. **Apply to `S ⧸ bipartiteEdgeMonomialIdeal G`** (~50 lines).
-   Close the sorry.
+### Universe restriction
 
-### Alternative: Strategy F (flat-local CM)
+The HH theorem is stated at `K : Type` because
+`toMathlib/PolynomialAwayTensor.lean` is universe-monomorphic. Consequently
+Step 1's `monomialInitialIdeal_isCohenMacaulay` and any downstream Step 3
+assembly inherit this restriction. Options:
 
-Build from scratch the theorem "flat local map `A → R` with `A` CM
-local, `R` Noetherian, fibers CM ⟹ `R_P` CM for `P` over `m_A`."
-~500–900 lines. Does not donate a `HomogeneousLocalization` bridge to
-Mathlib but does unlock general CM-via-base-change results.
+- **Accept** the `K : Type` restriction and state `proposition_1_6` at
+  universe 0 — honest given the current HH proof.
+- **Generalize** the polynomial-away tensor API to `Type*` — medium effort,
+  disjoint from Step 2.
 
-**Chosen**: Strategy G. Rationale:
-- The augmentation ideal in our ring is *exactly* `𝒜₊` by construction.
-- `HomogeneousLocalization` already exists in Mathlib.
-- The result is a reusable Mathlib contribution.
+This can wait until Step 2 is resolved; neither decision affects the Step 2
+plan.
 
-## Phase 2 — Gröbner degeneration CM transfer
+## Total effort estimate (remaining)
 
-Prove: if `S/in_<(I)` is CM, then `S/I` is CM.
-
-Classical proof uses the flat family over `𝔸¹` (the Rees-like algebra
-`R[It]`) and upper semicontinuity of depth. Major new infrastructure:
-~500–1500 lines.
-
-### Phase 2 sub-tasks (preliminary outline)
-
-1. Rees-like flat family for a term order (~200–400 lines).
-2. Flatness over `K[t]` (~100–200 lines).
-3. Special/generic fiber identification (~100–200 lines).
-4. Upper semicontinuity of depth for flat families (~100–500 lines).
-5. Apply to `J_G` vs `ini_<(J_G)` (~50 lines).
-
-## Phase 3 — Assemble Prop 1.6 for closed graphs
-
-Given Phase 1 and Phase 2:
-
-1. **`ini_<(J_G) = bipartiteEdgeMonomialIdeal G'` for suitable `G'`**.
-   The paper's `y_j ↦ y_{j-1}` automorphism. Likely already in the
-   Gröbner-basis branch (`BEI/GroebnerBasis.lean`); check.
-2. **Verify HH conditions from Prop 1.6 conditions** (~50 lines).
-   (ii) and (iii) trivial; (i) follows from
-   `characterization` (Proposition 1.2 of the paper).
-3. **Invoke Phase 1 for global CM of monomial side**.
-4. **Invoke Phase 2 for Gröbner transfer**.
-5. **State and prove `proposition_1_6`**.
-
-## Total effort estimate
-
-- Phase 1: 600–950 lines.
-- Phase 2: 500–1500 lines.
-- Phase 3: 100–200 lines.
-- **Total: 1200–2650 lines** spread across multiple sessions.
+- Step 2, route R4 (axiomatized transfer): **DONE**.
+- Step 2, route R1 (genuine transfer): ~600–1400 lines via the revised
+  graded local-to-global + regular-quotient chain. See
+  `GROEBNER_CM_TRANSFER.md` for the R1.a–R1.g breakdown. The technical heart
+  is R1.d (flatness of `S[t] ⧸ Ĩ` over `K[t]`).
+- Step 3 (paper-faithful assembly): **DONE**, modulo the Step 2 R4 sorry.
+- Corollary restatements (§3.4 CM branch, §3.7 CM branch in terms of real CM):
+  ~50 lines, optional.
+- Universe generalization: ~150–400 lines, optional and orthogonal.
 
 ## Out of scope
 
 - Further generality beyond the Prop 1.6 hypotheses.
-- Alternative proofs (Reisner's criterion, Alexander duality,
-  shellability, etc.) unless they turn out to be strictly easier.
+- Alternative proofs via Reisner / shellability / Alexander duality unless
+  they turn out to be strictly easier than the Gröbner transfer.
 
-## Status
+## Status summary
 
-- Phase 1: **DONE** (2026-04-20, via F2 route, not Strategy G).
-- Phase 2: pending — see `GROEBNER_CM_TRANSFER.md`.
-- Phase 3: pending — final assembly of Prop 1.6 for closed graphs.
+- Step 1 (monomial-side CM): **DONE** (2026-04-20).
+- Step 2, route R4 (axiomatized transfer): **DONE** (2026-04-20).
+- Step 2, route R1 framework (deformation ring, fiber identifications,
+  four-arrow assembly): **DONE** (2026-04-20). See `BEI/GroebnerDeformation.lean`.
+  Three concrete sub-sorries remain — see `GROEBNER_CM_TRANSFER.md`.
+- Step 3 (paper-faithful `proposition_1_6` assembly): **DONE** (2026-04-20),
+  reduced to a one-line application of `groebnerDeformation_cm_transfer`.
+- Corollary restatements and universe generalization: optional follow-up.

@@ -575,7 +575,7 @@ private noncomputable def quotSMulTopLocalizationEquiv_of_mem
 
 /-- In a CM Noetherian ring, the quotient by a regular element is CM.
 This follows from forward CM transfer at each localization. -/
-private lemma isCohenMacaulayRing_quotient_of_smulRegular
+lemma isCohenMacaulayRing_quotient_of_smulRegular
     {B : Type u} [CommRing B] [IsNoetherianRing B] [IsCohenMacaulayRing B]
     {a : B} (hreg : IsSMulRegular B a) :
     IsCohenMacaulayRing (B ⧸ Ideal.span {a}) where

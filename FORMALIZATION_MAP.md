@@ -21,7 +21,7 @@ faithfully the current Lean statements match the paper.
 | Corollary 1.3 | `cor_1_3`, `cor_1_3_connected_forward`, `pathGraph_isClosedGraph` | `BEI/GraphProperties.lean` | Exact | Formalized in the connected-graph form implicit in the paper |
 | Proposition 1.4 | `prop_1_4` | `BEI/GraphProperties.lean` | Equivalent | Directed shortest-path formulation |
 | Proposition 1.5 | `prop_1_5` | `BEI/GraphProperties.lean` | Exact | Unique minimal closed supergraph |
-| Proposition 1.6 | `prop_1_6_equidim`, `closedGraph_minimalPrime_componentCount_eq`, `closedGraph_componentCount_le_card_add_one` | `BEI/PrimeDecompositionDimension.lean`, `BEI/Equidim.lean` | Partial | Direct equidimensional surrogate proved; full depth-based CM statement from the paper still open |
+| Proposition 1.6 | `proposition_1_6`, `groebnerDeformation_cm_transfer`, `monomialInitialIdeal_isCohenMacaulay`, `prop_1_6_equidim` | `BEI/Proposition1_6.lean`, `BEI/GroebnerDeformation.lean`, `BEI/Equidim.lean`, `BEI/PrimeDecompositionDimension.lean` | Sorry | Paper-faithful `proposition_1_6` proved modulo three concrete sub-sorries in `BEI/GroebnerDeformation.lean`: the iso plumbing (`baseQuotEquiv`), graded local-to-global (`tildeJ_quotient_isCohenMacaulay`), and flatness (`tildeJ_tMinusOne_isSMulRegular`). The deformation framework — deformation ring, deformed generators, fiber identifications — is fully built |
 
 ## Section 2: Reduced Gröbner Basis and Radicality
 
