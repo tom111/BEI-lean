@@ -433,6 +433,64 @@ noncomputable instance : IsPrincipalIdealRing (PolyT K) :=
   let e : PolyT K ≃+* Polynomial K := (MvPolynomial.pUnitAlgEquiv K).toRingEquiv
   IsPrincipalIdealRing.of_surjective e.symm.toRingHom e.symm.surjective
 
+/-! ## Monomial order on the deformation variable type
+
+Infrastructure for the eventual Gröbner-basis proof of the colon-ideal
+sub-sorry. We extend the paper's variable order `x_1 > x_2 > ... > y_1 > ...`
+by placing the deformation parameter `t` at the bottom, then take the lex
+monomial order. Under this order, every deformed generator `f̃_{i,j}` has
+leading monomial `x_i y_j` (with no `t` factor), which is the structural
+property needed for the Gröbner division algorithm over `K[t]`. -/
+
+/-- The `BinomialEdgeVars (Fin n) ⊕ Unit` type is finite. -/
+instance defVars_Finite (n : ℕ) :
+    Finite (BinomialEdgeVars (Fin n) ⊕ Unit) := by
+  unfold BinomialEdgeVars; infer_instance
+
+/-- Linear order on the deformation variable type `BinomialEdgeVars (Fin n) ⊕ Unit`:
+    the paper's `x > y` order on `BinomialEdgeVars (Fin n)` with `t = inr ()`
+    strictly below every `x` and `y`. -/
+@[reducible] def defLE {n : ℕ} (a b : BinomialEdgeVars (Fin n) ⊕ Unit) : Prop :=
+  match a, b with
+  | Sum.inl u, Sum.inl v => (u : BinomialEdgeVars (Fin n)) ≤ v
+  | Sum.inr _, Sum.inr _ => True
+  | Sum.inl _, Sum.inr _ => False
+  | Sum.inr _, Sum.inl _ => True
+
+instance defVars_LinearOrder (n : ℕ) :
+    LinearOrder (BinomialEdgeVars (Fin n) ⊕ Unit) where
+  le := defLE
+  lt := fun a b => defLE a b ∧ ¬defLE b a
+  toDecidableLE := Classical.decRel defLE
+  le_refl a := by
+    cases a
+    · exact le_refl _
+    · exact trivial
+  le_trans a b c h1 h2 := by
+    cases a <;> cases b <;> cases c <;> simp_all only [defLE]
+    exact le_trans h1 h2
+  le_antisymm a b h1 h2 := by
+    cases a <;> cases b <;> simp_all only [defLE, Sum.inl.injEq]
+    exact le_antisymm h1 h2
+  le_total a b := by
+    cases a <;> cases b <;> simp only [defLE]
+    · exact le_total _ _
+    · exact Or.inr trivial
+    · exact Or.inl trivial
+    · exact Or.inl trivial
+
+instance defVars_WellFoundedGT (n : ℕ) :
+    @WellFoundedGT (BinomialEdgeVars (Fin n) ⊕ Unit) (defVars_LinearOrder n).toLT :=
+  @Finite.to_wellFoundedGT _ (defVars_Finite n) (defVars_LinearOrder n).toPreorder
+
+/-- The lex monomial order on the deformation variable type. Under this order,
+    the leading monomial of `f̃_{i,j} = x_i y_j - t^(j-i) x_j y_i` is
+    `x_i y_j` (for `i < j`), with leading coefficient `1`. -/
+noncomputable def deformationMonomialOrder (n : ℕ) :
+    MonomialOrder (BinomialEdgeVars (Fin n) ⊕ Unit) :=
+  @MonomialOrder.lex (BinomialEdgeVars (Fin n) ⊕ Unit)
+    (defVars_LinearOrder n) (defVars_WellFoundedGT n)
+
 /-- The image of `t - 1 ∈ K[t]` under the `K[t]`-algebra map into `S[t] ⧸ Ĩ`
     is the class of `tDef n - 1`. -/
 lemma algebraMap_polyT_tMinusOne {n : ℕ} (G : SimpleGraph (Fin n)) :
