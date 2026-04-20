@@ -66,8 +66,11 @@ remaining sub-sorries:
   local-to-global step, via `toMathlib/GradedCM.lean` — depends on the
   dormant Case-C sorry there, which encapsulates substantial graded-depth
   infrastructure not currently in Mathlib);
-- `tildeJ_tMinusOne_isSMulRegular`: `(t-1)` regular on `S[t] ⧸ Ĩ` (the
-  technical heart, R1.d — flatness over `K[t]`).
+- `tildeJ_flat_over_polyT`: flatness of `S[t] ⧸ Ĩ` over `K[t]` (the
+  technical heart, R1.d — the Gröbner-basis standard-monomial argument).
+  The `IsSMulRegular` lemmas `tildeJ_tMinusOne_isSMulRegular` and
+  `tildeJ_t_isSMulRegular` are proved conditional on this flatness
+  statement, via `Module.Flat.isSMulRegular_of_isRegular`.
 
 `BEI/Proposition1_6.lean` now reduces to one line —
 `binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm := groebnerDeformation_cm_transfer hCM`.
@@ -223,7 +226,7 @@ Some of these splits still need cleanup, but these are the current live location
 | `toMathlib/HeightAdditivity.lean` | 2 | dormant infrastructure |
 | `toMathlib/GradedCM.lean` | 1 | dormant, documented off-path |
 | `Supplement/RauhApproach.lean` | 2 | archived, not on main path |
-| `BEI/GroebnerDeformation.lean` | 2 | R1 framework: graded local-to-global (`tildeJ_quotient_isCohenMacaulay`) and flatness (`tildeJ_tMinusOne_isSMulRegular`); `baseQuotEquiv` closed 2026-04-20 |
+| `BEI/GroebnerDeformation.lean` | 2 | R1 framework: graded local-to-global (`tildeJ_quotient_isCohenMacaulay`) and `K[t]`-flatness (`tildeJ_flat_over_polyT`). `tildeJ_tMinusOne_isSMulRegular` and the sibling `tildeJ_t_isSMulRegular` are now fully proved conditional on the flatness sub-sorry (via `Module.Flat.isSMulRegular_of_isRegular`); `baseQuotEquiv` closed 2026-04-20 |
 | `BEI/Proposition1_6.lean` | 0 | reduced to a one-line application of `groebnerDeformation_cm_transfer` |
 | **Active total** | **2** | two paper-critical Gröbner CM transfer sub-sorries; excluding dormant `HeightAdditivity` / `GradedCM` and archived `RauhApproach` |
 

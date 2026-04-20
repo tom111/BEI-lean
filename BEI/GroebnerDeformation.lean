@@ -391,6 +391,60 @@ def baseQuotEquiv :
 
 end BaseQuotEquiv
 
+/-! ## `K[t]`-algebra structure on the deformation ring
+
+The deformation parameter ring is `K[t] ≃ MvPolynomial Unit K`, and the
+inclusion `K[t] → S[t]` is `rename Sum.inr`. We register the corresponding
+`Algebra` and `IsScalarTower` instances so that the deformation ring and its
+quotient by `Ĩ` become `K[t]`-modules, which is the setting in which flatness
+and the induced `IsSMulRegular` of `t - 1` are most cleanly stated. -/
+
+/-- The deformation parameter ring `K[t]` realized as `MvPolynomial Unit K`. -/
+abbrev PolyT (K : Type) [Field K] : Type := MvPolynomial Unit K
+
+/-- The inclusion `K[t] ↪ S[t]` as a `K`-algebra homomorphism, sending the
+    unique variable of `K[t]` to `tDef n = X (Sum.inr ())`. -/
+def polyTInclude (n : ℕ) : PolyT K →ₐ[K] DefRing n K :=
+  rename (Sum.inr : Unit → BinomialEdgeVars (Fin n) ⊕ Unit)
+
+@[simp] lemma polyTInclude_X (n : ℕ) (u : Unit) :
+    polyTInclude (K := K) n (X u) = X (Sum.inr u) := by
+  show rename _ _ = _
+  rw [rename_X]
+
+/-- `S[t] = DefRing n K` as a `K[t]`-algebra via `polyTInclude`. -/
+noncomputable instance polyTAlgebra (n : ℕ) : Algebra (PolyT K) (DefRing n K) :=
+  (polyTInclude (K := K) n).toAlgebra
+
+/-- Scalar-tower compatibility `K → K[t] → S[t]`. -/
+instance polyT_isScalarTower (n : ℕ) :
+    IsScalarTower K (PolyT K) (DefRing n K) := by
+  apply IsScalarTower.of_algebraMap_eq
+  intro r
+  change algebraMap K (DefRing n K) r =
+    polyTInclude (K := K) n (algebraMap K (PolyT K) r)
+  simp [polyTInclude]
+
+/-- The image of `t - 1 ∈ K[t]` under the `K[t]`-algebra map into `S[t] ⧸ Ĩ`
+    is the class of `tDef n - 1`. -/
+lemma algebraMap_polyT_tMinusOne {n : ℕ} (G : SimpleGraph (Fin n)) :
+    algebraMap (PolyT K) (DefRing n K ⧸ tildeJ (K := K) G) (X () - 1) =
+      Ideal.Quotient.mk (tildeJ (K := K) G) (tDef (K := K) n - 1) := by
+  rw [← Ideal.Quotient.mk_comp_algebraMap]
+  change (Ideal.Quotient.mk (tildeJ G))
+      (polyTInclude (K := K) n (X () - 1)) = _
+  simp [polyTInclude, tDef]
+
+/-- The image of `t ∈ K[t]` under the `K[t]`-algebra map into `S[t] ⧸ Ĩ`
+    is the class of `tDef n`. -/
+lemma algebraMap_polyT_t {n : ℕ} (G : SimpleGraph (Fin n)) :
+    algebraMap (PolyT K) (DefRing n K ⧸ tildeJ (K := K) G) (X ()) =
+      Ideal.Quotient.mk (tildeJ (K := K) G) (tDef (K := K) n) := by
+  rw [← Ideal.Quotient.mk_comp_algebraMap]
+  change (Ideal.Quotient.mk (tildeJ G))
+      (polyTInclude (K := K) n (X ())) = _
+  simp [polyTInclude, tDef]
+
 /-! ## Sub-sorries of R1 -/
 
 /-- **R1.f.1**: the global Cohen–Macaulayness of the deformation `S[t] ⧸ Ĩ`.
@@ -412,6 +466,46 @@ theorem tildeJ_quotient_isCohenMacaulay
     IsCohenMacaulayRing (DefRing n K ⧸ tildeJ (K := K) G) := by
   sorry
 
+/-- **R1.d (refined: the isolated technical heart)**: the deformation
+    `S[t] ⧸ Ĩ` is flat as a `K[t]`-module.
+
+    Classical proof (Eisenbud 15.17): `{f̃_{i,j}}` is a Gröbner basis of `Ĩ`
+    whose leading terms `x_i y_j` contain no `t`, so the standard monomials of
+    `J_G` form a free `K[t]`-basis of `S[t] ⧸ Ĩ`. Free ⟹ flat.
+
+    An equivalent formulation: since `K[t]` is a PID, flatness is
+    `Submodule.torsion (PolyT K) (DefRing n K ⧸ tildeJ G) = ⊥`
+    (via `Module.Flat.flat_iff_torsion_eq_bot_of_isBezout`). In this shape, the
+    Gröbner-basis argument only has to produce, for each
+    `c ∈ DefRing n K ∖ tildeJ G`, a witness that `q · c ∉ tildeJ G` for all
+    nonzero `q ∈ PolyT K`.
+
+    **Status**: not yet formalized. This is the single remaining paper-critical
+    sorry on the R1.d branch; the `IsSMulRegular` lemmas `tildeJ_t_isSMulRegular`
+    and `tildeJ_tMinusOne_isSMulRegular` below are closed conditional on this
+    flatness lemma, and `groebnerDeformation_cm_transfer` then closes R1 fully
+    modulo only this flatness statement and `tildeJ_quotient_isCohenMacaulay`. -/
+theorem tildeJ_flat_over_polyT
+    {n : ℕ} (G : SimpleGraph (Fin n)) :
+    Module.Flat (PolyT K) (DefRing n K ⧸ tildeJ (K := K) G) := by
+  sorry
+
+/-- Scalar multiplication by `X () - 1 ∈ K[t]` on `S[t] ⧸ Ĩ` agrees with
+    ring multiplication by the class of `tDef n - 1`. -/
+private lemma polyT_tMinusOne_smul_eq {n : ℕ} (G : SimpleGraph (Fin n))
+    (m : DefRing n K ⧸ tildeJ (K := K) G) :
+    algebraMap (PolyT K) (DefRing n K ⧸ tildeJ (K := K) G) (X () - 1) • m =
+      ((X () - 1 : PolyT K)) • m :=
+  algebraMap_smul _ _ m
+
+/-- Scalar multiplication by `X () ∈ K[t]` on `S[t] ⧸ Ĩ` agrees with
+    ring multiplication by the class of `tDef n`. -/
+private lemma polyT_t_smul_eq {n : ℕ} (G : SimpleGraph (Fin n))
+    (m : DefRing n K ⧸ tildeJ (K := K) G) :
+    algebraMap (PolyT K) (DefRing n K ⧸ tildeJ (K := K) G) (X ()) • m =
+      ((X () : PolyT K)) • m :=
+  algebraMap_smul _ _ m
+
 /-- **R1.d (the technical heart of R1)**: `(t - 1)` is a non-zero-divisor on
     the deformation `S[t] ⧸ Ĩ`.
 
@@ -422,11 +516,49 @@ theorem tildeJ_quotient_isCohenMacaulay
     contain no `t`, the standard normal form in `S[t] ⧸ Ĩ` is `K[t]`-free on
     the standard monomials of `J_G`.
 
-    **Status**: not yet formalized. -/
+    The proof transfers the regularity of `t - 1 ∈ K[t]` to the quotient via
+    the flatness lemma `tildeJ_flat_over_polyT`. -/
 theorem tildeJ_tMinusOne_isSMulRegular {n : ℕ} (G : SimpleGraph (Fin n)) :
     IsSMulRegular (DefRing n K ⧸ tildeJ (K := K) G)
       (Ideal.Quotient.mk (tildeJ (K := K) G) (tDef (K := K) n - 1)) := by
-  sorry
+  -- `t - 1 ∈ K[t]` is nonzero (evaluating at `0` gives `-1 ≠ 0`), hence regular.
+  have hReg : IsRegular ((X () - 1 : PolyT K)) := by
+    refine IsRegular.of_ne_zero' ?_
+    intro h
+    have := congrArg (eval (fun _ : Unit => (0 : K))) h
+    simp at this
+  haveI : Module.Flat (PolyT K) (DefRing n K ⧸ tildeJ (K := K) G) :=
+    tildeJ_flat_over_polyT G
+  have h1 : IsSMulRegular (DefRing n K ⧸ tildeJ (K := K) G) ((X () - 1 : PolyT K)) :=
+    Module.Flat.isSMulRegular_of_isRegular hReg
+  -- Translate `PolyT K`-scalar multiplication by `X () - 1` into ring multiplication
+  -- by the class of `tDef n - 1`.
+  rw [← algebraMap_polyT_tMinusOne G]
+  rw [isSMulRegular_map
+    (algebraMap (PolyT K) (DefRing n K ⧸ tildeJ (K := K) G))]
+  · exact h1
+  · intro m; exact polyT_tMinusOne_smul_eq G m
+
+/-- **R1.d companion**: `t` is a non-zero-divisor on the deformation
+    `S[t] ⧸ Ĩ`. This is the `t = 0` fiber analogue of
+    `tildeJ_tMinusOne_isSMulRegular` and is proved uniformly from flatness
+    of `S[t] ⧸ Ĩ` over `K[t]`: `t ∈ K[t]` is nonzero (hence regular), and
+    flat modules are torsion-free. -/
+theorem tildeJ_t_isSMulRegular {n : ℕ} (G : SimpleGraph (Fin n)) :
+    IsSMulRegular (DefRing n K ⧸ tildeJ (K := K) G)
+      (Ideal.Quotient.mk (tildeJ (K := K) G) (tDef (K := K) n)) := by
+  have hReg : IsRegular ((X () : PolyT K)) := by
+    refine IsRegular.of_ne_zero' ?_
+    exact MvPolynomial.X_ne_zero _
+  haveI : Module.Flat (PolyT K) (DefRing n K ⧸ tildeJ (K := K) G) :=
+    tildeJ_flat_over_polyT G
+  have h1 : IsSMulRegular (DefRing n K ⧸ tildeJ (K := K) G) ((X () : PolyT K)) :=
+    Module.Flat.isSMulRegular_of_isRegular hReg
+  rw [← algebraMap_polyT_t G]
+  rw [isSMulRegular_map
+    (algebraMap (PolyT K) (DefRing n K ⧸ tildeJ (K := K) G))]
+  · exact h1
+  · intro m; exact polyT_t_smul_eq G m
 
 /-! ## R1.f assembly: composing the four-arrow chain
 

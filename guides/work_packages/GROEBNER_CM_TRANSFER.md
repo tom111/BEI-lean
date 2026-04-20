@@ -589,10 +589,20 @@ landed in `toMathlib/` and/or `BEI/`. Depth semicontinuity is not required.
     requires graded local-to-global CM via `toMathlib/GradedCM.lean` plus a
     regular-quotient lift via `t`. Depends on the dormant Case-C sorry of
     `GradedCM.lean`.
-  - `tildeJ_tMinusOne_isSMulRegular` (R1.d, the technical heart):
-    flatness of `S[t] ⧸ Ĩ` over `K[t]` via the reduced Gröbner basis of `J_G`.
-- Total active sorries after this round: **2** in `BEI/GroebnerDeformation.lean`,
-  **0** elsewhere on the critical path.
+  - ~~`tildeJ_tMinusOne_isSMulRegular` (R1.d, the technical heart)~~: the
+    `IsSMulRegular` step is **CLOSED conditional on flatness**: proved from
+    `tildeJ_flat_over_polyT` via `Module.Flat.isSMulRegular_of_isRegular`
+    (regular element `X () - 1 ∈ K[t]`, then translated via
+    `isSMulRegular_map`). The sibling `tildeJ_t_isSMulRegular` (for the
+    `t = 0` fiber) is also proved. The `K[t]`-algebra structure on
+    `DefRing n K` is now registered globally via `polyTInclude = rename Sum.inr`,
+    with scalar tower `K → PolyT K → DefRing n K`.
+  - `tildeJ_flat_over_polyT` (R1.d, the isolated technical heart):
+    flatness of `S[t] ⧸ Ĩ` over `K[t] = MvPolynomial Unit K`.
+    Classical proof: standard monomials of `J_G` form a `K[t]`-basis of
+    `S[t] ⧸ Ĩ` (free ⇒ flat), via the reduced Gröbner basis of `J_G`.
+- Total active sorries after this round: **2** in `BEI/GroebnerDeformation.lean`
+  (graded LTG + `K[t]`-flatness), **0** elsewhere on the critical path.
 
 ### Note on route 2b (routing around `GradedCM.lean` Case C)
 
