@@ -644,7 +644,7 @@ variable {R : Type u} [CommRing R] [IsLocalRing R] [IsNoetherianRing R] [Small.{
 
 /-- Build a weakly regular sequence on `S` of length `d` with all elements in
 `p ∩ m`, given a CM local ring `S` and a prime `p` with `primeHeight p ≥ d`. -/
-private lemma exists_weaklyRegular_in_prime (d : ℕ) :
+lemma exists_weaklyRegular_in_prime (d : ℕ) :
     ∀ (S : Type u) [_inst1 : CommRing S] [_inst2 : IsLocalRing S] [_inst3 : IsNoetherianRing S]
       [_inst4 : Small.{u} S] [_inst5 : IsCohenMacaulayLocalRing S]
       (p : Ideal S) [p.IsPrime],
