@@ -47,6 +47,13 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
   repo state and adds new packets for `Equidim`, the CM support layer, and
   status/CI hygiene.
 
+- [answers/ANSWER_CASE_C_FINITE_FREE_ROUTE.md](answers/ANSWER_CASE_C_FINITE_FREE_ROUTE.md)
+  **Strategic answer (2026-04-21):** closes `caseC_CM_transfer` via the
+  finite-free parameter subring route instead of prime-by-prime induction.
+  Four steps: homogeneous regular sop → finite-dimensional final quotient →
+  finite free over `K[T_1,…,T_d]` → globally CM. Avoids *-depth, BH 1.5.8,
+  non-homogeneous-NZD induction, and graded Noether normalization.
+
 ## Cleanup And Refactor Packets
 
 Optional proof-engineering work, not on the theorem-proving critical path.
