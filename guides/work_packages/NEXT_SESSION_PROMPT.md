@@ -28,7 +28,7 @@ A/(θ) finite-dim over K and A finite free over K[T_1, …, T_d]`.
 | B2b | `finite_over_K_of_isArtinianRing_atIrrelevant` | **DONE** (axiom-clean); requires `[Algebra.FiniteType K A]` |
 | D | `isCohenMacaulayRing_of_module_free_of_mvPolynomial` | **DONE** (axiom-clean) |
 | C | `finiteFree_of_homogeneous_regular_sop` | Dispatched to subagent on `toMathlib/GradedFiniteFree.lean` |
-| A | `exists_homogeneous_regular_sop_of_isCohenMacaulayLocalRing_at_irrelevant` | Dispatched to subagent on new file `toMathlib/GradedRegularSop.lean` |
+| A (partial) | `exists_homogeneous_nonZeroDivisor_quotient_cm_of_dim_pos` (single-step descent) | **DONE** (axiom-clean) — `toMathlib/GradedRegularSop.lean`. Full iterated version (via varying-ring induction) still pending. |
 | Assembly | Replace `caseC_CM_transfer` sorry at `toMathlib/GradedCM.lean:349` | Pending — direct proof of `IsCohenMacaulayRing A` via A→B2b→C→D chain |
 
 ## Existing infrastructure to reuse
