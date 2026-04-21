@@ -400,19 +400,20 @@ private lemma mvPolynomial_finite_free_quotient_prime_height_zero
   rw [hQ_comap_gPB, hP'_comap_gPB] at hincomp
   exact lt_irrefl _ hincomp
 
-/-- **Step D** of the finite-free Case C route.
+/-- **Step D (general flat version)** of the finite-free Case C route.
 
 Given a field `K`, a natural number `d`, and a nontrivial commutative `K`-algebra
-`A` which is a finite free module over `P := MvPolynomial (Fin d) K`, then `A`
-is globally Cohen–Macaulay.
+`A` which is a finite FLAT module over `P := MvPolynomial (Fin d) K`, then `A`
+is globally Cohen–Macaulay. The Free variant is a direct consequence since
+`Module.Free ⟹ Module.Flat`.
 
 The proof localizes at each prime `𝔭 ⊂ A`, transfers a weakly regular sequence
 from the CM local ring `P_𝔮` (where `𝔮 = 𝔭 ∩ P`) via flat base change, and
 uses Krull's height theorem to bound the dimension from above. -/
-theorem isCohenMacaulayRing_of_module_free_of_mvPolynomial
+theorem isCohenMacaulayRing_of_module_flat_of_mvPolynomial
     {d : ℕ} {K : Type u} [Field K] {A : Type u} [CommRing A] [Nontrivial A]
     [Algebra (MvPolynomial (Fin d) K) A]
-    [Module.Free (MvPolynomial (Fin d) K) A]
+    [Module.Flat (MvPolynomial (Fin d) K) A]
     [Module.Finite (MvPolynomial (Fin d) K) A] :
     IsCohenMacaulayRing A := by
   classical
@@ -424,8 +425,6 @@ theorem isCohenMacaulayRing_of_module_free_of_mvPolynomial
   haveI : IsNoetherianRing P := MvPolynomial.isNoetherianRing
   -- `A` is Noetherian (finite module over Noetherian ring).
   haveI : IsNoetherianRing A := IsNoetherianRing.of_finite P A
-  -- `A` is flat over `P` (free ⟹ flat).
-  haveI : Module.Flat P A := Module.Flat.of_free
   refine ⟨fun 𝔭 h𝔭 => ?_⟩
   set 𝔮 : Ideal P := 𝔭.comap (algebraMap P A) with h𝔮_def
   haveI h𝔮_prime : 𝔮.IsPrime := Ideal.comap_isPrime _ _
@@ -558,6 +557,18 @@ theorem isCohenMacaulayRing_of_module_free_of_mvPolynomial
   have hdim_eq' : ringKrullDim Ap = (rsA.length : ℕ∞) := by
     rw [hdim_eq, hrsA_len]
   exact isCohenMacaulayLocalRing_of_weaklyRegular_length_eq_dim hrsA_reg hrsA_mem hdim_eq'
+
+/-- **Step D (free variant).** Free hypothesis specialization of
+`isCohenMacaulayRing_of_module_flat_of_mvPolynomial`; the primary Step D version
+supplied as a convenience wrapper. -/
+theorem isCohenMacaulayRing_of_module_free_of_mvPolynomial
+    {d : ℕ} {K : Type u} [Field K] {A : Type u} [CommRing A] [Nontrivial A]
+    [Algebra (MvPolynomial (Fin d) K) A]
+    [Module.Free (MvPolynomial (Fin d) K) A]
+    [Module.Finite (MvPolynomial (Fin d) K) A] :
+    IsCohenMacaulayRing A := by
+  haveI : Module.Flat (MvPolynomial (Fin d) K) A := Module.Flat.of_free
+  exact isCohenMacaulayRing_of_module_flat_of_mvPolynomial (d := d) (K := K) (A := A)
 
 end GradedFiniteFree
 
