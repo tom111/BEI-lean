@@ -251,8 +251,9 @@ Some of these splits still need cleanup, but these are the current live location
 | `BEI/PrimeDecomposition.lean` | 0 | |
 | `toMathlib/CohenMacaulay/Localization.lean` | 0 | completed CM-localization backport |
 | `toMathlib/HeightAdditivity.lean` | 2 | dormant infrastructure |
-| `toMathlib/GradedCM.lean` | 1 | dormant, documented off-path; `caseC_CM_transfer` remains. Phase 1 of closure (BH 1.5.6, `GradedAssociatedPrime.isAssociatedPrime_isHomogeneous`) is now proved axiom-clean in `toMathlib/GradedAssociatedPrime.lean` |
+| `toMathlib/GradedCM.lean` | 1 | `caseC_CM_transfer` remains. Strategy (2026-04-21): finite-free parameter subring route, see `guides/answers/ANSWER_CASE_C_FINITE_FREE_ROUTE.md`. Phase 1 + Steps B1, B2a, B2b done |
 | `toMathlib/GradedAssociatedPrime.lean` | 0 | BH 1.5.6 complete (associated primes homogeneous), axioms `{propext, Classical.choice, Quot.sound}` (2026-04-21) |
+| `toMathlib/GradedFiniteFree.lean` | 0 | Steps B1/B2a/B2b of finite-free Case C route: mul-injective for s ∉ 𝒜₊, irrelevant-ideal nilpotence from Artinian localization, and finite-dim over K under Algebra.FiniteType. All axiom-clean (2026-04-21). Steps C, D, A and assembly remain |
 | `Supplement/RauhApproach.lean` | 2 | archived, not on main path |
 | `BEI/GroebnerDeformation.lean` | 0 | R1 framework **fully closed BEI-side**. `tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant` has clean axioms; proved via regular-quotient lift through `t` + `DoubleQuot.quotQuotEquivQuotSup` + `specZeroQuotEquiv` + `quotSMulTopLocalizationEquiv_of_mem` + `isCohenMacaulayLocalRing_of_regular_quotient`. `tildeJ_quotient_isCohenMacaulay` is a one-line application of `GradedCM.isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant`. Transitive `sorryAx` only from `toMathlib/GradedCM.lean` Case C |
 | `BEI/Proposition1_6.lean` | 0 | reduced to a one-line application of `groebnerDeformation_cm_transfer` |

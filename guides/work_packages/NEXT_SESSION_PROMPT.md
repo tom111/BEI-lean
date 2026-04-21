@@ -21,13 +21,15 @@ A_𝔪 CM   ⟹   P(A)   ⟹   A globally CM
 where `P(A) := ∃ θ_1, …, θ_d ∈ 𝒜₊ homogeneous regular sop with
 A/(θ) finite-dim over K and A finite free over K[T_1, …, T_d]`.
 
-| Step | Lemma | Priority |
-|------|-------|----------|
-| A | `exists_homogeneous_regular_sop_of_cm_at_irrelevant` | Medium — iterate existing tools |
-| B1 | `injective_smul_of_unit_degree_zero_part` (sub-lemma) | **Smallest — start here** |
-| B2 | `finiteDimensional_of_connectedGraded_irrelevant_nilpotent` | Small |
-| C | `finiteFree_over_mvPolynomial_of_homogeneous_regular_sop` | Main new algebra lemma |
-| D | `isCohenMacaulayRing_of_finiteFree_over_mvPolynomial` | Flat base change + Artinian ingestion |
+| Step | Lemma | Status |
+|------|-------|--------|
+| B1 | `mul_left_injective_of_notMem_irrelevant` | **DONE** (axiom-clean) — `toMathlib/GradedFiniteFree.lean:47` |
+| B2a | `irrelevant_isNilpotent_of_isArtinianRing_atIrrelevant` | **DONE** (axiom-clean) — same file, line 154 |
+| B2b | `finite_over_K_of_isArtinianRing_atIrrelevant` | **DONE** (axiom-clean) — same file, line 245 |
+| C | `finiteFree_over_mvPolynomial_of_homogeneous_regular_sop` | Pending — main new algebra lemma |
+| D | `isCohenMacaulayRing_of_finiteFree_over_mvPolynomial` | Pending — flat base change + Artinian ingestion |
+| A | `exists_homogeneous_regular_sop_of_cm_at_irrelevant` | Pending — iterate existing tools |
+| Assembly | Replace `caseC_CM_transfer` sorry | Pending — final step |
 
 ## Existing infrastructure to reuse
 
