@@ -23,7 +23,9 @@ import toMathlib.GradedIrrelevant
 import Mathlib.RingTheory.GradedAlgebra.Basic
 import Mathlib.RingTheory.GradedAlgebra.Homogeneous.Ideal
 import Mathlib.RingTheory.HopkinsLevitzki
+import Mathlib.RingTheory.Jacobson.Artinian
 import Mathlib.RingTheory.Localization.AtPrime.Basic
+import Mathlib.RingTheory.Localization.Submodule
 
 noncomputable section
 
@@ -193,6 +195,62 @@ theorem irrelevant_isNilpotent_of_isArtinianRing_atIrrelevant
   have hinj := mul_left_injective_of_notMem_irrelevant 𝒜 h𝒜₀ hs_notMem
   have hsx0 : s.1 * x = s.1 * 0 := by rw [hsx, mul_zero]
   exact hinj hsx0
+
+/-! ### Step B2b: finite dimension over K
+
+From nilpotent maximal `𝒜₊` in a Noetherian finitely generated `K`-algebra,
+derive that `A` is Artinian, hence finite-dimensional over `K`. -/
+
+private lemma isMaximal_of_isPrime_of_irrelevant_nilpotent
+    (h𝒜₀ : ConnectedGraded 𝒜)
+    (hnilp : IsNilpotent (HomogeneousIdeal.irrelevant 𝒜).toIdeal)
+    (p : Ideal A) (hp : p.IsPrime) :
+    p = (HomogeneousIdeal.irrelevant 𝒜).toIdeal := by
+  haveI hm_max : (HomogeneousIdeal.irrelevant 𝒜).toIdeal.IsMaximal :=
+    irrelevant_isMaximal 𝒜 h𝒜₀
+  obtain ⟨N, hN⟩ := hnilp
+  -- `𝒜₊^N = 0 ⊆ p`, so `𝒜₊ ⊆ p`.
+  have hm_sub : (HomogeneousIdeal.irrelevant 𝒜).toIdeal ≤ p := by
+    intro x hx
+    have hxN : x ^ N ∈ p := by
+      have hmem : x ^ N ∈ (HomogeneousIdeal.irrelevant 𝒜).toIdeal ^ N :=
+        Ideal.pow_mem_pow hx N
+      rw [hN] at hmem
+      have : x ^ N = 0 := by
+        rw [show (0 : Ideal A) = (⊥ : Ideal A) from rfl, Ideal.mem_bot] at hmem
+        exact hmem
+      rw [this]; exact Submodule.zero_mem _
+    exact hp.mem_of_pow_mem _ hxN
+  exact (hm_max.eq_of_le hp.ne_top hm_sub).symm
+
+theorem krullDimLE_zero_of_isArtinianRing_atIrrelevant
+    (h𝒜₀ : ConnectedGraded 𝒜)
+    [IsNoetherianRing A]
+    (hArtinian : haveI := (irrelevant_isMaximal 𝒜 h𝒜₀).isPrime
+      IsArtinianRing
+        (Localization.AtPrime (HomogeneousIdeal.irrelevant 𝒜).toIdeal)) :
+    Ring.KrullDimLE 0 A := by
+  have hnilp := irrelevant_isNilpotent_of_isArtinianRing_atIrrelevant
+    𝒜 h𝒜₀ hArtinian
+  refine Ring.KrullDimLE.mk₀ (fun p hp => ?_)
+  have hp_eq : p = (HomogeneousIdeal.irrelevant 𝒜).toIdeal :=
+    isMaximal_of_isPrime_of_irrelevant_nilpotent 𝒜 h𝒜₀ hnilp p hp
+  rw [hp_eq]; exact irrelevant_isMaximal 𝒜 h𝒜₀
+
+/-- **Step B2b.** If `A` is a connected ℕ-graded finitely-generated Noetherian
+`K`-algebra and `A_{𝒜₊}` is Artinian, then `A` is finite-dimensional as a
+`K`-module. -/
+theorem finite_over_K_of_isArtinianRing_atIrrelevant
+    (h𝒜₀ : ConnectedGraded 𝒜)
+    [IsNoetherianRing A] [Algebra.FiniteType K A]
+    (hArtinian : haveI := (irrelevant_isMaximal 𝒜 h𝒜₀).isPrime
+      IsArtinianRing
+        (Localization.AtPrime (HomogeneousIdeal.irrelevant 𝒜).toIdeal)) :
+    Module.Finite K A := by
+  haveI : Ring.KrullDimLE 0 A :=
+    krullDimLE_zero_of_isArtinianRing_atIrrelevant 𝒜 h𝒜₀ hArtinian
+  haveI : IsArtinianRing A := IsNoetherianRing.isArtinianRing_of_krullDimLE_zero
+  exact Module.finite_of_isArtinianRing K A
 
 end GradedFiniteFree
 
