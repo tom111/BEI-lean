@@ -88,18 +88,16 @@ and `tildeJ_t_isSMulRegular` are all sorry-free.
 `tildeJ_quotient_isCohenMacaulay`, `groebnerDeformation_cm_transfer`),
 because the Gröbner-basis property only holds for closed graphs.
 
-The four-arrow assembly `groebnerDeformation_cm_transfer` is a complete
-proof modulo a single remaining sub-sorry:
-
-- `tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant`: local CM of the
-  deformation at the irrelevant ideal (regular-quotient lift through `t`,
-  reducing to global CM of `S ⧸ monomialInitialIdeal G` from Step 1).
-  `tildeJ_quotient_isCohenMacaulay` itself is now a one-line application
-  of `GradedCM.isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant`,
-  and inherits the dormant Case-C sorry of `toMathlib/GradedCM.lean` as a
-  transitive dependency. The full BEI-side graded plumbing
-  (`defWeight`, `defGrading`, `tildeJQuotGrading`, connectedness,
-  properness, `tildeJ_isHomogeneous`) is in place with clean axioms.
+The four-arrow assembly `groebnerDeformation_cm_transfer` now has **zero
+local sorries**: the BEI-side graded plumbing is complete, including the
+local CM at the irrelevant ideal. Axiom check:
+- `tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant`:
+  `{propext, Classical.choice, Quot.sound}` — **clean**.
+- `tildeJ_quotient_isCohenMacaulay`, `groebnerDeformation_cm_transfer`,
+  `proposition_1_6`: `sorryAx` present transitively via the dormant
+  Case-C sorry of `toMathlib/GradedCM.lean` (graded local-to-global
+  theorem for non-homogeneous primes). Closing that single upstream
+  gap would make Proposition 1.6 fully axiom-clean.
 
 `BEI/Proposition1_6.lean` now reduces to one line —
 `binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm := groebnerDeformation_cm_transfer hCM`.
@@ -253,11 +251,12 @@ Some of these splits still need cleanup, but these are the current live location
 | `BEI/PrimeDecomposition.lean` | 0 | |
 | `toMathlib/CohenMacaulay/Localization.lean` | 0 | completed CM-localization backport |
 | `toMathlib/HeightAdditivity.lean` | 2 | dormant infrastructure |
-| `toMathlib/GradedCM.lean` | 1 | dormant, documented off-path |
+| `toMathlib/GradedCM.lean` | 1 | dormant, documented off-path; `caseC_CM_transfer` remains. Phase 1 of closure (BH 1.5.6, `GradedAssociatedPrime.isAssociatedPrime_isHomogeneous`) is now proved axiom-clean in `toMathlib/GradedAssociatedPrime.lean` |
+| `toMathlib/GradedAssociatedPrime.lean` | 0 | BH 1.5.6 complete (associated primes homogeneous), axioms `{propext, Classical.choice, Quot.sound}` (2026-04-21) |
 | `Supplement/RauhApproach.lean` | 2 | archived, not on main path |
-| `BEI/GroebnerDeformation.lean` | 1 | R1 framework: only `tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant` remains (local CM at the irrelevant ideal, regular-quotient lift via `t`). `tildeJ_quotient_isCohenMacaulay` itself is now a one-line application of `GradedCM.isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant` + the new local-CM sub-sorry. Full BEI-side graded plumbing (`defWeight`, `defGrading`, `tildeJQuotGrading`, `tildeJ_isHomogeneous`, `tildeJQuotGrading_connectedGraded`, `tildeJ_ne_top`) is in place with clean axioms. `tildeJ_polyT_colon_eq` proved via Gröbner division + domain argument |
+| `BEI/GroebnerDeformation.lean` | 0 | R1 framework **fully closed BEI-side**. `tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant` has clean axioms; proved via regular-quotient lift through `t` + `DoubleQuot.quotQuotEquivQuotSup` + `specZeroQuotEquiv` + `quotSMulTopLocalizationEquiv_of_mem` + `isCohenMacaulayLocalRing_of_regular_quotient`. `tildeJ_quotient_isCohenMacaulay` is a one-line application of `GradedCM.isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant`. Transitive `sorryAx` only from `toMathlib/GradedCM.lean` Case C |
 | `BEI/Proposition1_6.lean` | 0 | reduced to a one-line application of `groebnerDeformation_cm_transfer` |
-| **Active total** | **1** | one paper-critical sub-sorry (local CM at irrelevant); transitively still depends on `toMathlib/GradedCM.lean`'s dormant Case-C sorry via the graded LTG theorem |
+| **Active total** | **0** | **Zero BEI-side sorries on the paper-critical path.** The last remaining blocker is the dormant Case-C sorry of `toMathlib/GradedCM.lean` (graded local-to-global CM for non-homogeneous primes) — an upstream commutative algebra gap, independent of BEI |
 
 ---
 

@@ -20,7 +20,19 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
    Higher-level strategic context for the remaining paper-faithful algebra track. Most internal HH blockers are resolved; remaining paper-critical gap is the Gröbner transfer (see `GROEBNER_CM_TRANSFER.md`).
 
 3. [work_packages/GROEBNER_CM_TRANSFER.md](work_packages/GROEBNER_CM_TRANSFER.md)
-   Step 2 packet: transfer CM from `S ⧸ in_<(J_G)` to `S ⧸ J_G`. Contains detailed plans for R1 (Eisenbud 15.17 / depth semicontinuity), R2 (Conca–Varbaro), R3 (direct regular sequence), and R4 (immediate axiomatized transfer to unblock the Step 3 assembly). Recommended sequencing: R4 first, then R1 as the long-term target.
+   Step 2 packet: transfer CM from `S ⧸ in_<(J_G)` to `S ⧸ J_G`. R1 (Eisenbud 15.17 graded route) is now fully closed on the BEI side; only the transitive GradedCM Case-C blocker remains.
+
+4. [work_packages/GRADED_CM_CASE_C_PLAN.md](work_packages/GRADED_CM_CASE_C_PLAN.md)
+   Plan for closing the sole remaining sorry (`caseC_CM_transfer` in `toMathlib/GradedCM.lean`), which transitively blocks `proposition_1_6` from being fully axiom-clean. Includes a Mathlib survey and picks **Route B (Eisenbud 18.3 generic-linear-form induction)** as the recommended direction.
+
+5. [work_packages/ROUTE_B_OBSTACLE_PLAN.md](work_packages/ROUTE_B_OBSTACLE_PLAN.md)
+   Detailed obstacle analysis for Route B: documents the `ℓ ∉ p` / non-homogeneous-NZD issue and the three recovery options (ungraded height induction, `*-depth` full treatment, or BEI-specific bypass). Phase 1 (BH 1.5.6) now **done** (2026-04-21) in `toMathlib/GradedAssociatedPrime.lean`; Phase 2 is the open problem.
+
+6. [work_packages/CASE_C_MATH_QUESTION.md](work_packages/CASE_C_MATH_QUESTION.md)
+   Mathematical question drafted for a deep-thinking model: what is the right induction invariant / algebraic identity / BEI-specific escape hatch for closing the non-homogeneous-prime branch of graded LTG CM? Answers will feed directly into Phase 2.
+
+7. [work_packages/NEXT_SESSION_PROMPT.md](work_packages/NEXT_SESSION_PROMPT.md)
+   Boot-strapping prompt for the next Claude session. Currently points to `CASE_C_MATH_QUESTION.md` as the next input to wait on, with a short status summary of Phase-1-done / Phase-2-blocked-on-strategy.
 
 ## Answers And Decision Notes
 

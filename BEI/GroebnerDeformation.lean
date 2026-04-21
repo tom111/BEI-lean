@@ -97,19 +97,19 @@ def specOne (n : ℕ) : DefRing n K →ₐ[K] MvPolynomial (BinomialEdgeVars (Fi
 
 @[simp] lemma specZero_X_inl (n : ℕ) (v : BinomialEdgeVars (Fin n)) :
     specZero (K := K) n (X (Sum.inl v)) = X v := by
-  show aeval _ _ = _; rw [aeval_X]; rfl
+  change aeval _ _ = _; rw [aeval_X]; rfl
 
 @[simp] lemma specZero_X_inr (n : ℕ) (u : Unit) :
     specZero (K := K) n (X (Sum.inr u)) = 0 := by
-  show aeval _ _ = _; rw [aeval_X]; rfl
+  change aeval _ _ = _; rw [aeval_X]; rfl
 
 @[simp] lemma specOne_X_inl (n : ℕ) (v : BinomialEdgeVars (Fin n)) :
     specOne (K := K) n (X (Sum.inl v)) = X v := by
-  show aeval _ _ = _; rw [aeval_X]; rfl
+  change aeval _ _ = _; rw [aeval_X]; rfl
 
 @[simp] lemma specOne_X_inr (n : ℕ) (u : Unit) :
     specOne (K := K) n (X (Sum.inr u)) = 1 := by
-  show aeval _ _ = _; rw [aeval_X]; rfl
+  change aeval _ _ = _; rw [aeval_X]; rfl
 
 /-! ## Deformed generators and the deformation ideal -/
 
@@ -136,7 +136,7 @@ def tildeJ {n : ℕ} (G : SimpleGraph (Fin n)) : Ideal (DefRing n K) :=
 
 lemma specOne_fijTilde {n : ℕ} (i j : Fin n) :
     specOne (K := K) n (fijTilde i j) = x (K := K) i * y j - x j * y i := by
-  show specOne (K := K) n (X (Sum.inl (Sum.inl i)) * X (Sum.inl (Sum.inr j)) -
+  change specOne (K := K) n (X (Sum.inl (Sum.inl i)) * X (Sum.inl (Sum.inr j)) -
     X (Sum.inr ()) ^ (j.val - i.val) *
       X (Sum.inl (Sum.inl j)) * X (Sum.inl (Sum.inr i))) = _
   rw [map_sub, map_mul, map_mul, map_mul, map_pow,
@@ -151,7 +151,7 @@ lemma specZero_fijTilde {n : ℕ} (i j : Fin n) (hij : i < j) :
     omega
   have hzero : (0 : MvPolynomial (BinomialEdgeVars (Fin n)) K) ^ (j.val - i.val) = 0 :=
     zero_pow (Nat.pos_iff_ne_zero.mp hpos)
-  show specZero (K := K) n (X (Sum.inl (Sum.inl i)) * X (Sum.inl (Sum.inr j)) -
+  change specZero (K := K) n (X (Sum.inl (Sum.inl i)) * X (Sum.inl (Sum.inr j)) -
     X (Sum.inr ()) ^ (j.val - i.val) *
       X (Sum.inl (Sum.inl j)) * X (Sum.inl (Sum.inr i))) = _
   rw [map_sub, map_mul, map_mul, map_mul, map_pow,
@@ -171,11 +171,11 @@ theorem tildeJ_specOne_eq {n : ℕ} (G : SimpleGraph (Fin n)) :
   constructor
   · rintro ⟨q, ⟨i, j, hadj, hij, rfl⟩, rfl⟩
     refine ⟨i, j, hadj, hij, ?_⟩
-    show specOne n (fijTilde i j) = _
+    change specOne n (fijTilde i j) = _
     exact specOne_fijTilde i j
   · rintro ⟨i, j, hadj, hij, rfl⟩
     refine ⟨fijTilde i j, ⟨i, j, hadj, hij, rfl⟩, ?_⟩
-    show specOne n (fijTilde i j) = _
+    change specOne n (fijTilde i j) = _
     exact specOne_fijTilde i j
 
 /-- The `t = 0` fiber: pushing `Ĩ` forward along `specZero` gives the
@@ -189,12 +189,12 @@ theorem tildeJ_specZero_eq {n : ℕ} (G : SimpleGraph (Fin n)) :
   constructor
   · rintro ⟨q, ⟨i, j, hadj, hij, rfl⟩, rfl⟩
     refine ⟨i, j, hadj, hij, ?_⟩
-    show specZero n (fijTilde i j) = _
+    change specZero n (fijTilde i j) = _
     rw [specZero_fijTilde i j hij]
     rfl
   · rintro ⟨i, j, hadj, hij, rfl⟩
     refine ⟨fijTilde i j, ⟨i, j, hadj, hij, rfl⟩, ?_⟩
-    show specZero n (fijTilde i j) = _
+    change specZero n (fijTilde i j) = _
     rw [specZero_fijTilde i j hij]
     rfl
 
@@ -226,8 +226,8 @@ lemma binomialEdgeIdeal_le_baseInclude_comap_sup
   -- baseInclude (x_i y_j - x_j y_i) = Xij - Xji
   have hbase : (baseInclude (K := K) n).toRingHom (x (K := K) i * y j - x j * y i) =
       Xij - Xji := by
-    show baseInclude (K := K) n (x i * y j - x j * y i) = _
-    simp only [baseInclude, x, y, map_sub, map_mul, AlgHom.coe_toRingHom, rename_X]
+    change baseInclude (K := K) n (x i * y j - x j * y i) = _
+    simp only [baseInclude, x, y, map_sub, map_mul, rename_X]
     rfl
   rw [hbase]
   -- Decompose: Xij - Xji = (Xij - t^d * Xji) + (t^d * Xji - Xji)
@@ -265,6 +265,7 @@ section BaseQuotEquiv
 
 -- The iso construction below needs more elaboration budget than the default
 -- because of the deeply-nested types `MvPolynomial (DefVars n) K`.
+set_option linter.style.setOption false in
 set_option maxHeartbeats 1200000
 
 variable {n : ℕ} (G : SimpleGraph (Fin n))
@@ -329,14 +330,14 @@ private lemma specOne_baseInclude (p : MvPolynomial (BinomialEdgeVars (Fin n)) K
     (specOne (K := K) n) ((baseInclude (K := K) n) p) = p := by
   induction p using MvPolynomial.induction_on with
   | C r =>
-    show (specOne n) ((baseInclude n) (C r)) = C r
+    change (specOne n) ((baseInclude n) (C r)) = C r
     rw [show (baseInclude (K := K) n) (C r) = C r from by simp [baseInclude],
         show (specOne (K := K) n) (C r) = C r from by simp [specOne]]
   | add p q hp hq =>
-    show (specOne n) ((baseInclude n) (p + q)) = p + q
+    change (specOne n) ((baseInclude n) (p + q)) = p + q
     rw [map_add, map_add, hp, hq]
   | mul_X p v ih =>
-    show (specOne n) ((baseInclude n) (p * X v)) = p * X v
+    change (specOne n) ((baseInclude n) (p * X v)) = p * X v
     rw [map_mul, map_mul, ih]
     have h1 : (baseInclude (K := K) n) (X v) = X (Sum.inl v) := by
       simp [baseInclude]
@@ -369,7 +370,7 @@ private lemma quot_baseInclude_specOne_X (v : DefVars n) :
     have hu : u = () := by cases u; rfl
     subst hu
     rw [specOne_X_inr, map_one, Ideal.Quotient.eq]
-    show (1 : DefRing n K) - tDef n ∈ sumIdeal G
+    change (1 : DefRing n K) - tDef n ∈ sumIdeal G
     have hmem : (1 : DefRing n K) - tDef n = -(tDef n - 1) := by ring
     rw [hmem]
     apply (Ideal.neg_mem_iff _).mpr
@@ -408,6 +409,208 @@ def baseQuotEquiv :
 
 end BaseQuotEquiv
 
+/-! ## The `t = 0` quotient is `S ⧸ monomialInitialIdeal G`
+
+Parallel to `BaseQuotEquiv`, but for the `t = 0` specialization. The sum
+ideal here is `tildeJ G ⊔ span{tDef n}`; modulo this, the class of `tDef n`
+is zero, so `specZero` serves as the backward map and its composition with
+`baseInclude` equals the identity. -/
+
+section SpecZeroQuotEquiv
+
+-- The iso construction below needs more elaboration budget than the default
+-- because of the deeply-nested types `MvPolynomial (DefVars n) K`.
+set_option linter.style.setOption false in
+set_option maxHeartbeats 1200000
+
+variable {n : ℕ} (G : SimpleGraph (Fin n))
+
+/-- Abbreviation for the `t = 0` sum ideal. -/
+private abbrev zeroSumIdeal : Ideal (DefRing n K) :=
+  tildeJ (K := K) G ⊔ Ideal.span {tDef (K := K) n}
+
+/-- The generator `x_i · y_j` of `monomialInitialIdeal G` lifts into
+`tildeJ G ⊔ span{tDef n}` under `baseInclude`, because
+
+  `baseInclude (x_i y_j) = X_{inl(inl i)} · X_{inl(inr j)}`
+  `                     = f̃_{i,j} + t^(j-i) · X_{inl(inl j)} · X_{inl(inr i)}`.
+
+The first summand lies in `tildeJ G`; the second (with `j - i ≥ 1`) lies in
+`span{tDef n}`. -/
+lemma monomialInitialIdeal_le_baseInclude_comap_zeroSum :
+    monomialInitialIdeal (K := K) G ≤
+      Ideal.comap (baseInclude (K := K) n).toRingHom (zeroSumIdeal (K := K) G) := by
+  rw [monomialInitialIdeal, Ideal.span_le]
+  rintro p ⟨i, j, hadj, hij, rfl⟩
+  rw [SetLike.mem_coe, Ideal.mem_comap]
+  set d := j.val - i.val
+  have hd_pos : 0 < d := by
+    simp only [d]; have := Fin.lt_def.mp hij; omega
+  set Xji : DefRing n K := X (Sum.inl (Sum.inl j)) * X (Sum.inl (Sum.inr i))
+  set Xij : DefRing n K := X (Sum.inl (Sum.inl i)) * X (Sum.inl (Sum.inr j))
+  -- baseInclude (X(inl i) * X(inr j)) = Xij.
+  have hbase : (baseInclude (K := K) n).toRingHom
+      (X (Sum.inl i) * X (Sum.inr j) : MvPolynomial (BinomialEdgeVars (Fin n)) K) = Xij := by
+    change baseInclude (K := K) n _ = _
+    simp only [baseInclude, map_mul, rename_X]
+    rfl
+  rw [hbase]
+  -- Xij = f̃_{i,j} + tDef^d * Xji.
+  have hfij_def : fijTilde (K := K) i j = Xij - tDef n ^ d * Xji := by
+    change _ = _
+    simp [fijTilde, tDef, Xij, Xji, d, mul_assoc]
+  have hsplit : Xij = fijTilde (K := K) i j + tDef n ^ d * Xji := by
+    rw [hfij_def]; ring
+  rw [hsplit]
+  apply Ideal.add_mem
+  · apply Ideal.mem_sup_left
+    exact Ideal.subset_span ⟨i, j, hadj, hij, rfl⟩
+  · apply Ideal.mem_sup_right
+    -- `tDef n ^ d` is divisible by `tDef n` since `d ≥ 1`.
+    have hpow : tDef (K := K) n ^ d = tDef n * tDef n ^ (d - 1) := by
+      rw [← pow_succ']; congr 1; omega
+    rw [hpow, mul_assoc]
+    refine Ideal.mul_mem_right _ _ ?_
+    exact Ideal.subset_span (Set.mem_singleton _)
+
+/-- The composition `(mk (zeroSumIdeal)) ∘ baseInclude` vanishes on
+`monomialInitialIdeal G`. -/
+private lemma baseInclude_quot_vanishes_zero (a : MvPolynomial (BinomialEdgeVars (Fin n)) K)
+    (ha : a ∈ monomialInitialIdeal (K := K) G) :
+    (Ideal.Quotient.mk (zeroSumIdeal (K := K) G)).comp
+      (baseInclude (K := K) n).toRingHom a = 0 := by
+  have h := monomialInitialIdeal_le_baseInclude_comap_zeroSum (K := K) G ha
+  rw [Ideal.mem_comap] at h
+  rw [RingHom.comp_apply, Ideal.Quotient.eq_zero_iff_mem]
+  exact h
+
+/-- Forward map: induced by `baseInclude` through the `S / monomialInitialIdeal`
+quotient. -/
+def specZeroQuotForward :
+    MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G →+*
+    DefRing n K ⧸ zeroSumIdeal (K := K) G :=
+  Ideal.Quotient.lift (monomialInitialIdeal (K := K) G)
+    ((Ideal.Quotient.mk (zeroSumIdeal (K := K) G)).comp (baseInclude (K := K) n).toRingHom)
+    (baseInclude_quot_vanishes_zero G)
+
+/-- The composition `(mk monomialInitialIdeal) ∘ specZero` vanishes on
+`tildeJ G ⊔ span{tDef n}`. -/
+private lemma specZero_quot_vanishes_zero (a : DefRing n K)
+    (ha : a ∈ zeroSumIdeal (K := K) G) :
+    (Ideal.Quotient.mk (monomialInitialIdeal (K := K) G)).comp
+      (specZero (K := K) n).toRingHom a = 0 := by
+  rw [RingHom.comp_apply, Ideal.Quotient.eq_zero_iff_mem]
+  rw [Submodule.mem_sup] at ha
+  obtain ⟨i, hi, j, hj, rfl⟩ := ha
+  rw [map_add]
+  refine Ideal.add_mem _ ?_ ?_
+  · have hmap : (specZero (K := K) n).toRingHom i ∈
+        Ideal.map (specZero (K := K) n).toRingHom (tildeJ G) :=
+      Ideal.mem_map_of_mem _ hi
+    rw [tildeJ_specZero_eq] at hmap
+    exact hmap
+  · -- specZero(q * tDef) = specZero(q) * 0 = 0
+    rw [Ideal.mem_span_singleton] at hj
+    obtain ⟨q, rfl⟩ := hj
+    have heq : (specZero (K := K) n).toRingHom (tDef n * q) = 0 := by
+      rw [map_mul]
+      change (specZero n) (X (Sum.inr ())) * (specZero n) q = 0
+      rw [specZero_X_inr, zero_mul]
+    rw [heq]
+    exact Ideal.zero_mem _
+
+/-- Backward map: induced by `specZero` through the
+`DefRing / zeroSumIdeal` quotient. -/
+def specZeroQuotBackward :
+    DefRing n K ⧸ zeroSumIdeal (K := K) G →+*
+    MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G :=
+  Ideal.Quotient.lift (zeroSumIdeal (K := K) G)
+    ((Ideal.Quotient.mk (monomialInitialIdeal (K := K) G)).comp
+      (specZero (K := K) n).toRingHom)
+    (specZero_quot_vanishes_zero G)
+
+/-- `specZero ∘ baseInclude = identity` on `S`. -/
+private lemma specZero_baseInclude (p : MvPolynomial (BinomialEdgeVars (Fin n)) K) :
+    (specZero (K := K) n) ((baseInclude (K := K) n) p) = p := by
+  induction p using MvPolynomial.induction_on with
+  | C r =>
+    change (specZero n) ((baseInclude n) (C r)) = C r
+    rw [show (baseInclude (K := K) n) (C r) = C r from by simp [baseInclude],
+        show (specZero (K := K) n) (C r) = C r from by simp [specZero]]
+  | add p q hp hq =>
+    change (specZero n) ((baseInclude n) (p + q)) = p + q
+    rw [map_add, map_add, hp, hq]
+  | mul_X p v ih =>
+    change (specZero n) ((baseInclude n) (p * X v)) = p * X v
+    rw [map_mul, map_mul, ih]
+    have h1 : (baseInclude (K := K) n) (X v) = X (Sum.inl v) := by
+      simp [baseInclude]
+    rw [h1, specZero_X_inl]
+
+/-- Modulo `zeroSumIdeal`, every variable equals its image under
+`baseInclude ∘ specZero`. The only nontrivial case is `X (Sum.inr ()) = tDef n`,
+which is directly in `span{tDef n}`. -/
+private lemma quot_baseInclude_specZero_X (v : DefVars n) :
+    (Ideal.Quotient.mk (zeroSumIdeal (K := K) G))
+      ((baseInclude (K := K) n) ((specZero (K := K) n) (X v))) =
+    (Ideal.Quotient.mk (zeroSumIdeal (K := K) G)) (X v) := by
+  rcases v with v | u
+  · rw [specZero_X_inl]
+    have h1 : (baseInclude (K := K) n) (X v) = X (Sum.inl v) := by simp [baseInclude]
+    rw [h1]
+  · have hu : u = () := by cases u; rfl
+    subst hu
+    rw [specZero_X_inr, map_zero, Ideal.Quotient.eq]
+    change (0 : DefRing n K) - tDef n ∈ zeroSumIdeal G
+    rw [zero_sub]
+    apply (Ideal.neg_mem_iff _).mpr
+    apply Ideal.mem_sup_right
+    exact Ideal.subset_span (Set.mem_singleton _)
+
+/-- Backward composed with forward equals identity. -/
+private lemma specZeroQuotBackward_specZeroQuotForward :
+    (specZeroQuotBackward (K := K) G).comp (specZeroQuotForward (K := K) G) =
+      RingHom.id _ := by
+  apply Ideal.Quotient.ringHom_ext
+  apply RingHom.ext
+  intro p
+  change (Ideal.Quotient.mk (monomialInitialIdeal G))
+      ((specZero n) ((baseInclude n) p)) =
+      (Ideal.Quotient.mk (monomialInitialIdeal G)) p
+  rw [specZero_baseInclude]
+
+/-- Forward composed with backward equals identity. -/
+private lemma specZeroQuotForward_specZeroQuotBackward :
+    (specZeroQuotForward (K := K) G).comp (specZeroQuotBackward (K := K) G) =
+      RingHom.id _ := by
+  apply Ideal.Quotient.ringHom_ext
+  apply RingHom.ext
+  intro p
+  change (Ideal.Quotient.mk (zeroSumIdeal G))
+      ((baseInclude n) ((specZero n) p)) =
+      (Ideal.Quotient.mk (zeroSumIdeal G)) p
+  induction p using MvPolynomial.induction_on with
+  | C r =>
+    have h1 : (specZero (K := K) n) (C r) = C r := by simp [specZero]
+    have h2 : (baseInclude (K := K) n) (C r) = C r := by simp [baseInclude]
+    rw [h1, h2]
+  | add p q hp hq =>
+    rw [map_add, map_add, map_add, hp, hq, map_add]
+  | mul_X p v ih =>
+    rw [map_mul, map_mul, map_mul, ih, quot_baseInclude_specZero_X, ← map_mul]
+
+/-- The ring iso `S ⧸ monomialInitialIdeal G ≃+* DefRing ⧸ (Ĩ ⊔ span{t})`
+induced by the splitting `specZero ∘ baseInclude = id`. -/
+def specZeroQuotEquiv :
+    MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G ≃+*
+    DefRing n K ⧸ zeroSumIdeal (K := K) G :=
+  RingEquiv.ofRingHom
+    (specZeroQuotForward (K := K) G) (specZeroQuotBackward (K := K) G)
+    (specZeroQuotForward_specZeroQuotBackward (K := K) G)
+    (specZeroQuotBackward_specZeroQuotForward (K := K) G)
+
+end SpecZeroQuotEquiv
+
 /-! ## `K[t]`-algebra structure on the deformation ring
 
 The deformation parameter ring is `K[t] ≃ MvPolynomial Unit K`, and the
@@ -426,7 +629,7 @@ def polyTInclude (n : ℕ) : PolyT K →ₐ[K] DefRing n K :=
 
 @[simp] lemma polyTInclude_X (n : ℕ) (u : Unit) :
     polyTInclude (K := K) n (X u) = X (Sum.inr u) := by
-  show rename _ _ = _
+  change rename _ _ = _
   rw [rename_X]
 
 /-- `S[t] = DefRing n K` as a `K[t]`-algebra via `polyTInclude`. -/
@@ -489,7 +692,7 @@ instance defVars_LinearOrder (n : ℕ) :
     cases a <;> cases b <;> cases c <;> simp_all only [defLE]
     exact le_trans h1 h2
   le_antisymm a b h1 h2 := by
-    show (show DefVars n from a) = b
+    change (show DefVars n from a) = b
     cases a with
     | inl u =>
       cases b with
@@ -750,10 +953,10 @@ def defWeight (n : ℕ) : DefVars n → ℕ
 lemma defWeight_pos {n : ℕ} (v : DefVars n) : 0 < defWeight n v := by
   rcases v with (a | b)
   · rcases a with (i | j)
-    · show 0 < 2 * (n + 1 - i.val)
+    · change 0 < 2 * (n + 1 - i.val)
       have := i.isLt
       omega
-    · show 0 < n + 1 - j.val
+    · change 0 < n + 1 - j.val
       have := j.isLt
       omega
   · exact Nat.zero_lt_one
@@ -904,7 +1107,7 @@ theorem tildeJQuotGrading_connectedGraded
   -- Goal: `algebraMap K (DefRing/tildeJ) k = x`.
   rw [← hx_eq]
   -- RHS unfolds to `Ideal.Quotient.mk (tildeJ G) p`.
-  show algebraMap K (DefRing n K ⧸ tildeJ (K := K) G) k =
+  change algebraMap K (DefRing n K ⧸ tildeJ (K := K) G) k =
     Ideal.Quotient.mk (tildeJ (K := K) G) p
   rw [hp_eq, ← Ideal.Quotient.mk_comp_algebraMap]
   rfl
@@ -916,7 +1119,7 @@ positive degree, so `tildeJ G` is contained in the irrelevant ideal of
 `DefRing n K` under the weight grading. In particular `1 ∉ tildeJ G`, so the
 quotient ring is nontrivial. -/
 
-lemma fijTildeDeg_pos {n : ℕ} {i j : Fin n} (hij : i < j) : 0 < fijTildeDeg n i j := by
+lemma fijTildeDeg_pos {n : ℕ} {i j : Fin n} (_hij : i < j) : 0 < fijTildeDeg n i j := by
   have := i.isLt
   simp only [fijTildeDeg]
   omega
@@ -954,58 +1157,24 @@ theorem tildeJ_ne_top {n : ℕ} (G : SimpleGraph (Fin n)) :
 /-- `DefRing n K ⧸ tildeJ G` is nontrivial. -/
 instance tildeJ_quotient_nontrivial {n : ℕ} (G : SimpleGraph (Fin n)) :
     Nontrivial (DefRing n K ⧸ tildeJ (K := K) G) :=
-  Ideal.Quotient.nontrivial (tildeJ_ne_top G)
+  Ideal.Quotient.nontrivial_iff.mpr (tildeJ_ne_top G)
 
-/-! ## Sub-sorries of R1 -/
+/-- `tDef n = X (Sum.inr ())` is weighted-homogeneous of degree `1` under
+`defWeight n`. -/
+lemma isWeightedHomogeneous_tDef (n : ℕ) :
+    IsWeightedHomogeneous (defWeight n) (tDef (K := K) n) 1 := by
+  change IsWeightedHomogeneous (defWeight n) (X (Sum.inr () : DefVars n) : DefRing n K) 1
+  exact isWeightedHomogeneous_X (R := K) (defWeight n) (Sum.inr () : DefVars n)
 
-/-- **R1.f.1 sub-statement**: local Cohen–Macaulayness of the deformation at
-the irrelevant ideal. This is the first half of the R1.f.1 chain; the rest
-— the graded local-to-global theorem — is pre-formalized in
-`toMathlib/GradedCM.lean` (modulo its dormant Case-C sorry).
-
-The classical proof: the deformation parameter `t` is a regular element on
-`S[t] ⧸ Ĩ` (proved in R1.d as `tildeJ_t_isSMulRegular`); the quotient by the
-class of `t` is `S ⧸ monomialInitialIdeal G`, which is CM globally by Step 1
-(the HH-side bipartite result). Localising at the irrelevant ideal and
-applying `isCohenMacaulayLocalRing_of_regular_quotient` closes this step.
-
-**Status**: not yet formalised. -/
-theorem tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant
-    {n : ℕ} {G : SimpleGraph (Fin n)} (_hClosed : IsClosedGraph G)
-    (_hCM : IsCohenMacaulayRing
-      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G)) :
-    haveI :=
-      (GradedIrrelevant.irrelevant_isMaximal (tildeJQuotGrading (K := K) G)
-        (tildeJQuotGrading_connectedGraded G)).isPrime
-    IsCohenMacaulayLocalRing (Localization.AtPrime
-      (HomogeneousIdeal.irrelevant (tildeJQuotGrading (K := K) G)).toIdeal) := by
-  sorry
-
-/-- **R1.f.1**: the global Cohen–Macaulayness of the deformation `S[t] ⧸ Ĩ`.
-
-Classical chain (graded local-to-global): the weight grading
-`w(x_i) = 2(n+1-i)`, `w(y_j) = (n+1-j)`, `w(t) = 1` makes `Ĩ` weighted-
-homogeneous, so `S[t] ⧸ Ĩ` is a connected ℕ-graded `K`-algebra. Local CM
-at the irrelevant ideal follows from Step 1 + the regular-quotient lift
-through `t`. Global CM then follows from
-`toMathlib/GradedCM.lean`'s `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant`
-(which has one dormant Case-C sorry in its non-homogeneous-prime branch).
-
-The BEI-side plumbing (weight vector, graded quotient, connectedness,
-proper-ness, and the reduction to local CM at the irrelevant ideal) is now
-all in place. The single remaining gap on this critical path is
-`tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant`. -/
-theorem tildeJ_quotient_isCohenMacaulay
-    {n : ℕ} {G : SimpleGraph (Fin n)} (hClosed : IsClosedGraph G)
-    (hCM : IsCohenMacaulayRing
-      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G)) :
-    IsCohenMacaulayRing (DefRing n K ⧸ tildeJ (K := K) G) := by
-  haveI : IsNoetherianRing (DefRing n K ⧸ tildeJ (K := K) G) :=
-    Ideal.Quotient.isNoetherianRing _
-  exact GradedCM.isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant
-    (tildeJQuotGrading (K := K) G)
-    (tildeJQuotGrading_connectedGraded G)
-    (tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant hClosed hCM)
+/-- The class of `tDef n` in `DefRing n K ⧸ tildeJ G` lies in the irrelevant
+ideal under the quotient-grading. -/
+lemma tDefClass_mem_irrelevant {n : ℕ} (G : SimpleGraph (Fin n)) :
+    Ideal.Quotient.mk (tildeJ (K := K) G) (tDef n) ∈
+    (HomogeneousIdeal.irrelevant (tildeJQuotGrading (K := K) G)).toIdeal := by
+  refine HomogeneousIdeal.mem_irrelevant_of_mem _ Nat.zero_lt_one ?_
+  change (Ideal.Quotient.mk (tildeJ (K := K) G) (tDef n) : DefRing n K ⧸ tildeJ G) ∈
+    (defGrading (K := K) n 1).map (Ideal.Quotient.mkₐ K (tildeJ G)).toLinearMap
+  exact ⟨tDef n, isWeightedHomogeneous_tDef n, rfl⟩
 
 /-! ### R1.d scaffolding: Gröbner division and the standard-form property -/
 
@@ -1031,7 +1200,8 @@ lemma tildeJGenerators_leadingCoeff_isUnit {n : ℕ} (G : SimpleGraph (Fin n))
     lies in `tildeJ G`. -/
 theorem tildeJ_div {n : ℕ} (G : SimpleGraph (Fin n)) (c : DefRing n K) :
     ∃ (g : ↑(tildeJGenerators (K := K) G) →₀ DefRing n K) (r : DefRing n K),
-      c = (Finsupp.linearCombination (DefRing n K) (Subtype.val : ↑(tildeJGenerators G) → DefRing n K)) g + r ∧
+      c = (Finsupp.linearCombination (DefRing n K)
+          (Subtype.val : ↑(tildeJGenerators G) → DefRing n K)) g + r ∧
       (Finsupp.linearCombination (DefRing n K)
           (Subtype.val : ↑(tildeJGenerators G) → DefRing n K)) g ∈ tildeJ (K := K) G ∧
       ∀ α ∈ r.support, ∀ (i j : Fin n), G.Adj i j → i < j →
@@ -1046,7 +1216,7 @@ theorem tildeJ_div {n : ℕ} (G : SimpleGraph (Fin n)) (c : DefRing n K) :
         (v := (Subtype.val : ↑(tildeJGenerators G) → DefRing n K))]
     -- Goal: g.sum (fun b a => a • b) ∈ Ideal.span (tildeJGenerators G)
     refine Ideal.sum_mem _ fun b _ => ?_
-    show g b * (b : DefRing n K) ∈ Ideal.span (tildeJGenerators G)
+    change g b * (b : DefRing n K) ∈ Ideal.span (tildeJGenerators G)
     exact Ideal.mul_mem_left _ _ (Ideal.subset_span b.2)
   · -- Support of `r` avoids leading-term divisibility.
     intro α hα i j hadj hij
@@ -1197,8 +1367,8 @@ private lemma fijTilde_ne_zero {n : ℕ} (i j : Fin n) (hij : i < j) :
   rw [h, MonomialOrder.leadingCoeff_zero] at this
   exact one_ne_zero this.symm
 
-/-- Tsub identities for shared-first degrees: `d(f̃_{i,j₂}) - d(f̃_{i,j₁}) = single (inl (inr j₂)) 1`
-    and symmetric. -/
+/-- Tsub identities for shared-first degrees:
+    `d(f̃_{i,j₂}) - d(f̃_{i,j₁}) = single (inl (inr j₂)) 1` and symmetric. -/
 private lemma degree_tsub_shared_first {n : ℕ} {i j₁ j₂ : Fin n}
     (hij₁ : i < j₁) (hij₂ : i < j₂) (hj : j₁ ≠ j₂) :
     ((deformationMonomialOrder n).degree (fijTilde (K := K) i j₂) -
@@ -1407,7 +1577,7 @@ private lemma sPolynomial_fijTilde_shared_first_lt {n : ℕ}
     have := Fin.lt_def.mp hij₁
     have := Fin.lt_def.mp hj₁j₂
     omega
-  simp only [fijTilde, xD, yD, tD]
+  simp only [fijTilde, yD, tD]
   rw [hsum, pow_add]
   ring
 
@@ -1423,7 +1593,7 @@ private lemma sPolynomial_fijTilde_shared_first_gt {n : ℕ}
     have := Fin.lt_def.mp hij₂
     have := Fin.lt_def.mp hj₂j₁
     omega
-  simp only [fijTilde, xD, yD, tD]
+  simp only [fijTilde, yD, tD]
   rw [hsum, pow_add]
   ring
 
@@ -1439,7 +1609,7 @@ private lemma sPolynomial_fijTilde_shared_last_lt {n : ℕ}
     have := Fin.lt_def.mp hi₁i₂
     have := Fin.lt_def.mp hi₂j
     omega
-  simp only [fijTilde, xD, yD, tD]
+  simp only [fijTilde, xD, tD]
   rw [hsum, pow_add]
   ring
 
@@ -1455,7 +1625,7 @@ private lemma sPolynomial_fijTilde_shared_last_gt {n : ℕ}
     have := Fin.lt_def.mp hi₂i₁
     have := Fin.lt_def.mp hi₁j
     omega
-  simp only [fijTilde, xD, yD, tD]
+  simp only [fijTilde, xD, tD]
   rw [hsum, pow_add]
   ring
 
@@ -1553,10 +1723,13 @@ private lemma coprime_twisted_degrees_ne {n : ℕ}
   have hself_i₁ : ((Sum.inl (Sum.inl i₁) : DefVars n) = Sum.inl (Sum.inl i₁)) ↔ True :=
     ⟨fun _ => trivial, fun _ => rfl⟩
   simp only [hnei_j₁, hnei_i₂, hnei_i₁_inr1, hnei_i₂_inr, hnei_j₁_inr, hnei_j₂_inr,
-    hnei_tX, hself_i₁, if_false, if_true, zero_add, add_zero] at h1
+    hnei_tX, if_false, if_true, zero_add, add_zero] at h1
   omega
 
 set_option maxHeartbeats 800000 in
+-- The Buchberger S-polynomial case analysis (shared-first / shared-last /
+-- coprime) unfolds to large polynomial identities; the default heartbeat
+-- budget is insufficient for the elaborator to process all three cases.
 /-- **R1.d Gröbner basis structure** (for closed graphs): `{f̃_{i,j}}` is
     a Gröbner basis of `Ĩ` for closed graphs — the deformed analogue of
     `closed_implies_groebner` in `BEI/ClosedGraphs.lean`. -/
@@ -1731,7 +1904,7 @@ lemma polyTInclude_mul_support_avoids {n : ℕ} {G : SimpleGraph (Fin n)}
   · -- v = Sum.inl _: α and β agree there.
     rw [← hα_inl v]; exact hαv
   · -- v = Sum.inr u: deg is 0 at Sum.inr _, so trivially 0 ≤ β(v).
-    simp [Finsupp.single_apply]
+    simp
 
 /-- **R1.d colon-ideal** (for closed graphs): for every nonzero polynomial
     `q ∈ K[t]`, the ideal `Ĩ` is saturated with respect to `polyTInclude q`.
@@ -1909,13 +2082,120 @@ theorem tildeJ_t_isSMulRegular {n : ℕ} {G : SimpleGraph (Fin n)}
   · exact h1
   · intro m; exact polyT_t_smul_eq G m
 
-/-! ## R1.f assembly: composing the four-arrow chain
+/-! ## R1.f.1: local and global CM of the deformation -/
 
-This is a closed proof modulo three sub-sorries:
-- `tildeJ_quotient_isCohenMacaulay` (graded local-to-global step);
-- `tildeJ_tMinusOne_isSMulRegular` (flatness step);
-- `baseQuotEquiv` (routine iso plumbing).
--/
+/-- **R1.f.1 sub-statement**: local Cohen–Macaulayness of the deformation at
+the irrelevant ideal. This is the first half of the R1.f.1 chain; the rest
+— the graded local-to-global theorem — is pre-formalized in
+`toMathlib/GradedCM.lean` (modulo its dormant Case-C sorry).
+
+Proof: the deformation parameter `t` is a regular element on `S[t] ⧸ Ĩ`
+(`tildeJ_t_isSMulRegular`); the quotient by the class of `t` is `S ⧸
+monomialInitialIdeal G` (via `DoubleQuot.quotQuotEquivQuotSup` +
+`specZeroQuotEquiv`), which is CM globally by Step 1. Localising at the
+irrelevant ideal and applying `isCohenMacaulayLocalRing_of_regular_quotient`
+closes this step. -/
+theorem tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant
+    {n : ℕ} {G : SimpleGraph (Fin n)} (hClosed : IsClosedGraph G)
+    (hCM : IsCohenMacaulayRing
+      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G)) :
+    haveI :=
+      (GradedIrrelevant.irrelevant_isMaximal (tildeJQuotGrading (K := K) G)
+        (tildeJQuotGrading_connectedGraded G)).isPrime
+    IsCohenMacaulayLocalRing (Localization.AtPrime
+      (HomogeneousIdeal.irrelevant (tildeJQuotGrading (K := K) G)).toIdeal) := by
+  haveI : IsNoetherianRing (DefRing n K ⧸ tildeJ (K := K) G) :=
+    Ideal.Quotient.isNoetherianRing _
+  haveI hmMax :
+      (HomogeneousIdeal.irrelevant (tildeJQuotGrading (K := K) G)).toIdeal.IsMaximal :=
+    GradedIrrelevant.irrelevant_isMaximal _ (tildeJQuotGrading_connectedGraded G)
+  haveI hmPrime := hmMax.isPrime
+  -- Name the players.
+  set A := DefRing n K ⧸ tildeJ (K := K) G
+  set m : Ideal A :=
+    (HomogeneousIdeal.irrelevant (tildeJQuotGrading (K := K) G)).toIdeal
+  set L := Localization.AtPrime m
+  set t_A : A := Ideal.Quotient.mk (tildeJ (K := K) G) (tDef n) with ht_A_def
+  set t_L : L := algebraMap A L t_A with ht_L_def
+  haveI : IsNoetherianRing L :=
+    IsLocalization.isNoetherianRing m.primeCompl _ inferInstance
+  -- (1) t_A ∈ m.
+  have ht_A_mem_m : t_A ∈ m := tDefClass_mem_irrelevant G
+  -- (2) t_L ∈ maximalIdeal L.
+  have ht_L_mem_max : t_L ∈ IsLocalRing.maximalIdeal L := by
+    rw [← Localization.AtPrime.map_eq_maximalIdeal]
+    exact Ideal.mem_map_of_mem _ ht_A_mem_m
+  -- (3) t_A is regular on A.
+  have ht_A_reg : IsSMulRegular A t_A := tildeJ_t_isSMulRegular hClosed
+  -- (4) t_L is regular on L (localization is flat).
+  have ht_L_reg : IsSMulRegular L t_L := ht_A_reg.of_flat
+  -- (5) A ⧸ span{t_A} is globally CM via the iso to S ⧸ monomialInitialIdeal G.
+  have hspan_map_eq :
+      Ideal.map (Ideal.Quotient.mk (tildeJ (K := K) G)) (Ideal.span {tDef n}) =
+      Ideal.span ({t_A} : Set A) := by
+    rw [Ideal.map_span, Set.image_singleton]
+  have hEq1 :
+      A ⧸ Ideal.map (Ideal.Quotient.mk (tildeJ (K := K) G)) (Ideal.span {tDef n}) ≃+*
+        DefRing n K ⧸ zeroSumIdeal (K := K) G :=
+    DoubleQuot.quotQuotEquivQuotSup _ _
+  have hEq2 :
+      DefRing n K ⧸ zeroSumIdeal (K := K) G ≃+*
+        MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G :=
+    (specZeroQuotEquiv (K := K) G).symm
+  haveI hCM_Aquot : IsCohenMacaulayRing (A ⧸ Ideal.span ({t_A} : Set A)) := by
+    rw [← hspan_map_eq]
+    exact isCohenMacaulayRing_of_ringEquiv (hEq1.trans hEq2).symm
+  -- (6) p' := image of m in A/(t_A) is prime; localize at it gives CM.
+  set p' : Ideal (A ⧸ Ideal.span ({t_A} : Set A)) :=
+    Ideal.map (Ideal.Quotient.mk (Ideal.span ({t_A} : Set A))) m with hp'_def
+  haveI hp'_prime : p'.IsPrime := by
+    apply Ideal.map_isPrime_of_surjective Ideal.Quotient.mk_surjective
+    rw [Ideal.mk_ker]
+    rw [Ideal.span_le, Set.singleton_subset_iff]
+    exact ht_A_mem_m
+  haveI : IsCohenMacaulayLocalRing (Localization.AtPrime p') :=
+    IsCohenMacaulayRing.CM_localize p'
+  -- (7) QuotSMulTop t_L L ≃+* Localization.AtPrime p' via
+  -- `quotSMulTopLocalizationEquiv_of_mem`.
+  have hp'_comap :
+      p'.comap (Ideal.Quotient.mk (Ideal.span ({t_A} : Set A))) = m := by
+    rw [hp'_def, Ideal.comap_map_quotientMk]
+    refine sup_eq_right.mpr ?_
+    rw [Ideal.span_le, Set.singleton_subset_iff]
+    exact ht_A_mem_m
+  have h_qsm_equiv : QuotSMulTop t_L L ≃+* Localization.AtPrime p' :=
+    quotSMulTopLocalizationEquiv_of_mem ht_A_mem_m hp'_comap
+  haveI : IsLocalRing (QuotSMulTop t_L L) := quotSMulTopLocalRing ht_L_mem_max
+  haveI : IsCohenMacaulayLocalRing (QuotSMulTop t_L L) :=
+    isCohenMacaulayLocalRing_of_ringEquiv' inferInstance h_qsm_equiv.symm
+  -- (8) Conclude via `isCohenMacaulayLocalRing_of_regular_quotient`.
+  exact isCohenMacaulayLocalRing_of_regular_quotient ht_L_reg ht_L_mem_max
+    IsCohenMacaulayLocalRing.depth_eq_dim
+
+/-- **R1.f.1**: the global Cohen–Macaulayness of the deformation `S[t] ⧸ Ĩ`.
+
+Classical chain (graded local-to-global): the weight grading
+`w(x_i) = 2(n+1-i)`, `w(y_j) = (n+1-j)`, `w(t) = 1` makes `Ĩ` weighted-
+homogeneous, so `S[t] ⧸ Ĩ` is a connected ℕ-graded `K`-algebra. Local CM
+at the irrelevant ideal (via `tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant`)
+combined with the graded local-to-global theorem
+`isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant` from
+`toMathlib/GradedCM.lean` (which transitively carries its dormant Case-C sorry)
+yields global CM. -/
+theorem tildeJ_quotient_isCohenMacaulay
+    {n : ℕ} {G : SimpleGraph (Fin n)} (hClosed : IsClosedGraph G)
+    (hCM : IsCohenMacaulayRing
+      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G)) :
+    IsCohenMacaulayRing (DefRing n K ⧸ tildeJ (K := K) G) := by
+  haveI : IsNoetherianRing (DefRing n K ⧸ tildeJ (K := K) G) :=
+    Ideal.Quotient.isNoetherianRing _
+  exact GradedCM.isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant
+    (tildeJQuotGrading (K := K) G)
+    (tildeJQuotGrading_connectedGraded G)
+    (tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant hClosed hCM)
+
+/-! ## R1.f assembly: composing the four-arrow chain -/
+
 theorem groebnerDeformation_cm_transfer
     {n : ℕ} {G : SimpleGraph (Fin n)} (hClosed : IsClosedGraph G)
     (hCM : IsCohenMacaulayRing

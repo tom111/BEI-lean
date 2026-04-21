@@ -1796,9 +1796,9 @@ private theorem generator_exponent_bound {n : ℕ} {G : SimpleGraph (Fin n)}
         fun h => by have := Sum.inl_injective h; omega
       have hb_ne : (Sum.inl b : BinomialEdgeVars (Fin n)) ≠ Sum.inl i :=
         fun h => by have := Sum.inl_injective h; omega
-      simp [Finsupp.single_apply, ha_ne, hb_ne]
+      simp [ha_ne, hb_ne]
     · -- v = inr i: both single(inl a) and single(inl b) have 0 at inr i
-      simp [Finsupp.single_apply]
+      simp []
   · -- Type B: e(inl i) ≤ 1, e(inr i) ≤ 1
     -- Type B: X_a * Y_b with b ≥ k.
     set e' : BinomialEdgeVars (Fin n) →₀ ℕ :=
@@ -1818,14 +1818,14 @@ private theorem generator_exponent_bound {n : ℕ} {G : SimpleGraph (Fin n)}
     rw [he_eq]; simp only [e', Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply]
     rcases hv with rfl | rfl
     · -- v = inl i: single(inl a)(inl i) ≤ 1 and single(inr b)(inl i) = 0
-      simp only [Finsupp.single_apply, Sum.inl.injEq,
+      simp only [
         show (Sum.inr b : BinomialEdgeVars (Fin n)) ≠ Sum.inl i from Sum.inr_ne_inl,
         if_false, add_zero]
       split <;> omega
     · -- v = inr i: single(inl a)(inr i) = 0 and single(inr b)(inr i) ≤ 1
-      simp only [Finsupp.single_apply,
+      simp only [
         show (Sum.inl a : BinomialEdgeVars (Fin n)) ≠ Sum.inr i from Sum.inl_ne_inr,
-        if_false, Sum.inr.injEq, zero_add]
+        if_false, zero_add]
       split <;> omega
 
 /-- NZD on the nilradical module of the monomial image ideal:
@@ -1923,7 +1923,7 @@ private theorem nilradical_nzd_map_diagSubstHom {n : ℕ} {G : SimpleGraph (Fin 
         rw [hyi_def, MvPolynomial.coeff_X_mul']
         have : Sum.inr i ∉ d'.support := by
           rw [Finsupp.mem_support_iff, not_not]
-          show d' (Sum.inr i) = 0
+          change d' (Sum.inr i) = 0
           simp only [d', Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
             show (Sum.inl i : BinomialEdgeVars (Fin n)) ≠ Sum.inr i from Sum.inl_ne_inr,
             if_false, add_zero, hyi0]
@@ -2011,7 +2011,7 @@ private theorem nilradical_nzd_map_diagSubstHom {n : ℕ} {G : SimpleGraph (Fin 
       have h1 : MvPolynomial.coeff d' (xi * c) = 0 := by
         rw [hxi_def, MvPolynomial.coeff_X_mul']
         have : Sum.inl i ∉ d'.support := by
-          rw [Finsupp.mem_support_iff, not_not]; show d' (Sum.inl i) = 0
+          rw [Finsupp.mem_support_iff, not_not]; change d' (Sum.inl i) = 0
           simp only [d', Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
             show (Sum.inr i : BinomialEdgeVars (Fin n)) ≠ Sum.inl i from Sum.inr_ne_inl,
             if_false, add_zero, hxi0]
@@ -2104,7 +2104,7 @@ private theorem nilradical_nzd_map_diagSubstHom {n : ℕ} {G : SimpleGraph (Fin 
       have h2 : MvPolynomial.coeff dx (yi * c) = 0 := by
         rw [hyi_def, MvPolynomial.coeff_X_mul']
         have : Sum.inr i ∉ dx.support := by
-          rw [Finsupp.mem_support_iff, not_not]; show dx (Sum.inr i) = 0
+          rw [Finsupp.mem_support_iff, not_not]; change dx (Sum.inr i) = 0
           simp only [dx, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
             show (Sum.inl i : BinomialEdgeVars (Fin n)) ≠ Sum.inr i from Sum.inl_ne_inr,
             if_false, add_zero, hyi0]
@@ -2117,7 +2117,7 @@ private theorem nilradical_nzd_map_diagSubstHom {n : ℕ} {G : SimpleGraph (Fin 
       have h1 : MvPolynomial.coeff dy (xi * c) = 0 := by
         rw [hxi_def, MvPolynomial.coeff_X_mul']
         have : Sum.inl i ∉ dy.support := by
-          rw [Finsupp.mem_support_iff, not_not]; show dy (Sum.inl i) = 0
+          rw [Finsupp.mem_support_iff, not_not]; change dy (Sum.inl i) = 0
           simp only [dy, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
             show (Sum.inr i : BinomialEdgeVars (Fin n)) ≠ Sum.inl i from Sum.inr_ne_inl,
             if_false, add_zero, hxi0]
@@ -2262,12 +2262,17 @@ private theorem nilradical_nzd_map_diagSubstHom {n : ℕ} {G : SimpleGraph (Fin 
       exfalso; apply hex_case
       have : ex = Finsupp.single (Sum.inl a₁) 1 + Finsupp.single (Sum.inl b₁) 1 := by
         have hmem : Finsupp.single (Sum.inl a₁) 1 + Finsupp.single (Sum.inl b₁) 1 ∈
-            (X (Sum.inl a₁) * -X (Sum.inl b₁) : MvPolynomial (BinomialEdgeVars (Fin n)) K).support := by
-          have hprod : (X (Sum.inl a₁) * X (Sum.inl b₁) : MvPolynomial (BinomialEdgeVars (Fin n)) K) =
-            MvPolynomial.monomial (Finsupp.single (Sum.inl a₁) 1 + Finsupp.single (Sum.inl b₁) 1) 1 := by
+            (X (Sum.inl a₁) * -X (Sum.inl b₁) :
+              MvPolynomial (BinomialEdgeVars (Fin n)) K).support := by
+          have hprod : (X (Sum.inl a₁) * X (Sum.inl b₁) :
+              MvPolynomial (BinomialEdgeVars (Fin n)) K) =
+              MvPolynomial.monomial
+                (Finsupp.single (Sum.inl a₁) 1 + Finsupp.single (Sum.inl b₁) 1) 1 := by
             simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul]; rfl
-          have heq : (X (Sum.inl a₁) * -X (Sum.inl b₁) : MvPolynomial (BinomialEdgeVars (Fin n)) K) =
-            -(MvPolynomial.monomial (Finsupp.single (Sum.inl a₁) 1 + Finsupp.single (Sum.inl b₁) 1) 1) := by
+          have heq : (X (Sum.inl a₁) * -X (Sum.inl b₁) :
+              MvPolynomial (BinomialEdgeVars (Fin n)) K) =
+              -(MvPolynomial.monomial
+                (Finsupp.single (Sum.inl a₁) 1 + Finsupp.single (Sum.inl b₁) 1) 1) := by
             rw [mul_neg, hprod]
           rw [heq, MvPolynomial.support_neg]
           exact hsupp_mono _
@@ -2284,7 +2289,7 @@ private theorem nilradical_nzd_map_diagSubstHom {n : ℕ} {G : SimpleGraph (Fin 
         have hmem : Finsupp.single (Sum.inl a₁) 1 + Finsupp.single (Sum.inr b₁) 1 ∈
             (X (Sum.inl a₁) * X (Sum.inr b₁) : MvPolynomial _ K).support := by
           simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul,
-            MvPolynomial.mem_support_iff, MvPolynomial.coeff_monomial, if_pos rfl]
+            MvPolynomial.mem_support_iff, MvPolynomial.coeff_monomial]
           exact one_ne_zero
         exact (Finset.mem_singleton.mp (hexs hmem)).symm
       -- ex(inl i) = 1 → a₁ = i (use contrapositive: if a₁ ≠ i then ex(inl i) = 0)
@@ -2301,11 +2306,11 @@ private theorem nilradical_nzd_map_diagSubstHom {n : ℕ} {G : SimpleGraph (Fin 
         intro hb; apply hex_case
         -- If b₁ = i, then ex(inr i) = 1, but dx(inr i) = d₀(inr i) = 0
         have h1 : ex (Sum.inr i) = 1 := by
-          rw [hex_eq, hb]; simp [Finsupp.single_apply, Sum.inl_ne_inr]
+          rw [hex_eq, hb]; simp []
         have h2 : ex (Sum.inr i) ≤ 0 := by
           have := hlex_dx (Sum.inr i)
           simp only [dx, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
-            Sum.inl_ne_inr, if_false, add_zero, hyi0] at this
+            hyi0] at this
           exact this
         omega
       have hb₁_gt_i : i < b₁ := lt_of_le_of_ne (ha₁_eq ▸ hab₁) (Ne.symm hb₁_ne_i)
@@ -2313,9 +2318,8 @@ private theorem nilradical_nzd_map_diagSubstHom {n : ℕ} {G : SimpleGraph (Fin 
       have hyb₁ : 1 ≤ d₀ (Sum.inr b₁) := by
         have := hlex_dx (Sum.inr b₁)
         rw [hex_eq] at this
-        simp only [dx, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
-          Sum.inl_ne_inr, if_false, add_zero] at this
-        simp only [show (Sum.inr b₁ : BinomialEdgeVars (Fin n)) = Sum.inr b₁ from rfl,
+        simp only [dx, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply] at this
+        simp only [
           if_true] at this
         exact this
       -- Split on whether b₂ < k for sy
@@ -2324,23 +2328,28 @@ private theorem nilradical_nzd_map_diagSubstHom {n : ℕ} {G : SimpleGraph (Fin 
         exfalso; apply hey_case
         have : ey = Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inl b₂) 1 := by
           have hmem : Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inl b₂) 1 ∈
-              (X (Sum.inl a₂) * -X (Sum.inl b₂) : MvPolynomial (BinomialEdgeVars (Fin n)) K).support := by
-            have hprod : (X (Sum.inl a₂) * X (Sum.inl b₂) : MvPolynomial (BinomialEdgeVars (Fin n)) K) =
-              MvPolynomial.monomial (Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inl b₂) 1) 1 := by
+              (X (Sum.inl a₂) * -X (Sum.inl b₂) :
+                MvPolynomial (BinomialEdgeVars (Fin n)) K).support := by
+            have hprod : (X (Sum.inl a₂) * X (Sum.inl b₂) :
+                MvPolynomial (BinomialEdgeVars (Fin n)) K) =
+                MvPolynomial.monomial
+                  (Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inl b₂) 1) 1 := by
               simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul]; rfl
-            have heq : (X (Sum.inl a₂) * -X (Sum.inl b₂) : MvPolynomial (BinomialEdgeVars (Fin n)) K) =
-              -(MvPolynomial.monomial (Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inl b₂) 1) 1) := by
+            have heq : (X (Sum.inl a₂) * -X (Sum.inl b₂) :
+                MvPolynomial (BinomialEdgeVars (Fin n)) K) =
+                -(MvPolynomial.monomial
+                  (Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inl b₂) 1) 1) := by
               rw [mul_neg, hprod]
             rw [heq, MvPolynomial.support_neg]
             exact hsupp_mono _
           exact (Finset.mem_singleton.mp (heys hmem)).symm
-        rw [this]; simp [Finsupp.single_apply, Sum.inl_ne_inr]
+        rw [this]; simp []
       · -- b₂ ≥ k: generator is x_{a₂} * y_{b₂}
         have hey_eq : ey = Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inr b₂) 1 := by
           have hmem : Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inr b₂) 1 ∈
               (X (Sum.inl a₂) * X (Sum.inr b₂) : MvPolynomial _ K).support := by
             simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul,
-              MvPolynomial.mem_support_iff, MvPolynomial.coeff_monomial, if_pos rfl]
+              MvPolynomial.mem_support_iff, MvPolynomial.coeff_monomial]
             exact one_ne_zero
           exact (Finset.mem_singleton.mp (heys hmem)).symm
         -- ey(inr i) = 1 → b₂ = i
@@ -2357,12 +2366,12 @@ private theorem nilradical_nzd_map_diagSubstHom {n : ℕ} {G : SimpleGraph (Fin 
           intro ha
           have h1 : ey (Sum.inl i) = 1 := by
             rw [hey_eq, hb₂_eq, ha]
-            simp [Finsupp.single_apply, Sum.inl_ne_inr]
+            simp []
           have h2 : ey (Sum.inl i) ≤ 0 := by
             have := hley_dy (Sum.inl i)
             simp only [dy, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
-              show (Sum.inl i : BinomialEdgeVars (Fin n)) ≠ Sum.inr i from Sum.inl_ne_inr,
-              if_false, add_zero, hxi0] at this
+              
+              hxi0] at this
             exact this
           omega
         have ha₂_lt_i : a₂ < i := lt_of_le_of_ne (hb₂_eq ▸ hab₂) ha₂_ne_i
@@ -2371,8 +2380,8 @@ private theorem nilradical_nzd_map_diagSubstHom {n : ℕ} {G : SimpleGraph (Fin 
           have := hley_dy (Sum.inl a₂)
           rw [hey_eq] at this
           simp only [dy, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
-            Sum.inr_ne_inl, if_false, add_zero,
-            show (Sum.inl a₂ : BinomialEdgeVars (Fin n)) = Sum.inl a₂ from rfl,
+            
+            
             if_true] at this
           exact this
         -- HH transitivity: edges (a₂, i+1) and (i, b₁+1) with a₂ < i < b₁ → edge (a₂, b₁+1)
@@ -2389,7 +2398,7 @@ private theorem nilradical_nzd_map_diagSubstHom {n : ℕ} {G : SimpleGraph (Fin 
           have heq : (X (Sum.inl a₂) * X (Sum.inr b₁) : MvPolynomial _ K) =
               MvPolynomial.monomial
                 (Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inr b₁) 1) 1 := by
-            simp [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul]
+            simp [MvPolynomial.X, MvPolynomial.monomial_mul]
           have himg := Ideal.mem_map_of_mem (diagSubstHom (K := K) k).toRingHom hgen_mem
           simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
             MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr] at himg
@@ -2679,7 +2688,7 @@ private lemma card_active_indices (n : ℕ) :
   apply Fintype.card_congr
   exact {
     toFun := fun ⟨i, hi⟩ => ⟨i.val, by omega⟩
-    invFun := fun ⟨j, hj⟩ => ⟨⟨j, by omega⟩, by show j + 1 < n; omega⟩
+    invFun := fun ⟨j, hj⟩ => ⟨⟨j, by omega⟩, by change j + 1 < n; omega⟩
     left_inv := fun ⟨i, hi⟩ => by simp
     right_inv := fun ⟨j, hj⟩ => by simp
   }
@@ -3701,6 +3710,7 @@ private lemma X_inr_last_mem_maximalIdeal {n : ℕ} (hn : 1 ≤ n)
   exact Ideal.mem_map_of_mem _ (mkI_X_mem_augIdeal G _)
 
 set_option synthInstance.maxHeartbeats 400000 in
+-- synth budget needed: nested quotient + localization instance search is heavy.
 /-- `mk y_last` (image of `X(inr last)` in the first quotient) is `IsSMulRegular`
 on `QuotSMulTop x_last Rp`, extracted via the *primed* cons_iff lemma which
 produces the correct scalar type. -/
@@ -3731,12 +3741,12 @@ private lemma smul_top_eq_span_singleton {R : Type*} [CommRing R] (x : R) :
     ((x • (⊤ : Submodule R R)) : Ideal R) = Ideal.span {x} := by
   apply le_antisymm
   · rintro y ⟨z, _, rfl⟩
-    show (DistribSMul.toLinearMap R R x) z ∈ Ideal.span {x}
+    change (DistribSMul.toLinearMap R R x) z ∈ Ideal.span {x}
     exact Ideal.mem_span_singleton'.mpr ⟨z, by simp [mul_comm]⟩
   · intro y hy
     rcases Ideal.mem_span_singleton'.mp hy with ⟨z, rfl⟩
     refine ⟨z, Submodule.mem_top, ?_⟩
-    show (DistribSMul.toLinearMap R R x) z = z * x
+    change (DistribSMul.toLinearMap R R x) z = z * x
     simp [mul_comm]
 
 open scoped Pointwise in
@@ -3816,6 +3826,7 @@ private theorem isCohenMacaulayLocalRing_idealQuot_lastInl {n : ℕ} (hn : 2 ≤
     (quotSMulTopRingEquivIdealQuotient _)
 
 set_option synthInstance.maxHeartbeats 400000 in
+-- synth budget needed: iterated quotient-by-regular-element + CM instance search.
 /-- **L5 CM corollary**: the reduced HH ring at its augmentation is Cohen–Macaulay.
 Specifically, `(Rp ⧸ x_last) ⧸ (mk y_last)` is CM local. This is the reduced HH ring
 (HH ring with the trailing isolated pair dropped) localized at its own augmentation. -/
@@ -5398,7 +5409,7 @@ private theorem L4Backward_Forward_mk_X {n : ℕ}
       rw [Algebra.TensorProduct.lift_tmul, map_one, mul_one]
       unfold L4BackwardRed
       rw [Ideal.Quotient.liftₐ_apply, Ideal.Quotient.lift_mk]
-      show (L4BackwardRedPoly (K := K) G U) (X _) = _
+      change (L4BackwardRedPoly (K := K) G U) (X _) = _
       rw [L4BackwardRedPoly_X]
       simp only [L4BackwardRedGen]
       have h := pairedSurvivorsVal_idx G U hi
@@ -5418,7 +5429,7 @@ private theorem L4Backward_Forward_mk_X {n : ℕ}
       rw [Algebra.TensorProduct.lift_tmul, map_one, mul_one]
       unfold L4BackwardRed
       rw [Ideal.Quotient.liftₐ_apply, Ideal.Quotient.lift_mk]
-      show (L4BackwardRedPoly (K := K) G U) (X _) = _
+      change (L4BackwardRedPoly (K := K) G U) (X _) = _
       rw [L4BackwardRedPoly_X]
       simp only [L4BackwardRedGen]
       have h := pairedSurvivorsVal_idx G U hi
@@ -5469,7 +5480,7 @@ private theorem L4Forward_Backward_inl_tmul {n : ℕ}
   rw [h_inc]
   unfold L4BackwardRed
   rw [Ideal.Quotient.liftₐ_apply, Ideal.Quotient.lift_mk]
-  show (L4Forward (K := K) hHH U hU)
+  change (L4Forward (K := K) hHH U hU)
     ((L4BackwardRedPoly (K := K) G U) (X v)) = _
   rw [L4BackwardRedPoly_X]
   -- L4BackwardRedGen v: case on v.
@@ -5568,7 +5579,7 @@ private theorem L4Forward_Backward_left {n : ℕ}
     apply MvPolynomial.algHom_ext
     intro v
     -- Unfold both sides.
-    show (L4Forward (K := K) hHH U hU) ((L4Backward (K := K) G U)
+    change (L4Forward (K := K) hHH U hU) ((L4Backward (K := K) G U)
       ((Ideal.Quotient.mk (BEI.reducedHHIdeal (K := K) (smallerHHGraph G U))
         (X v) : BEI.reducedHHRing (K := K) (smallerHHGraph G U)) ⊗ₜ[K] 1)) =
         (Ideal.Quotient.mk (BEI.reducedHHIdeal (K := K) (smallerHHGraph G U))
@@ -5603,7 +5614,7 @@ private theorem L4Forward_Backward_right {n : ℕ}
   have hφeq : φL = φR := by
     apply MvPolynomial.algHom_ext
     intro v
-    show (L4Forward (K := K) hHH U hU) ((L4Backward (K := K) G U)
+    change (L4Forward (K := K) hHH U hU) ((L4Backward (K := K) G U)
       ((1 : BEI.reducedHHRing (K := K) (smallerHHGraph G U)) ⊗ₜ[K] X v)) =
         (1 : BEI.reducedHHRing (K := K) (smallerHHGraph G U)) ⊗ₜ[K] X v
     exact L4Forward_Backward_inr_tmul hHH hU v
@@ -5929,6 +5940,7 @@ private theorem L1ForwardPoly_hhUnitProduct_eq {n : ℕ}
   rw [L1UnitRightHom_X]
 
 set_option maxHeartbeats 400000 in
+-- heartbeats needed to elaborate the composed AlgHom over a tensor target.
 /-- `L1UnitRightHom` factors as `includeRight ∘ algebraMap`. -/
 private theorem L1UnitRightHom_eq_includeRight_algebraMap {n : ℕ}
     (G : SimpleGraph (Fin n)) (U : Finset (BinomialEdgeVars (Fin n)))
@@ -6524,9 +6536,9 @@ private theorem L1Forward_Backward_tmul_right_X {n : ℕ}
   rw [L1ForwardGen_of_U hvnW hvU]
 
 -- The `set φL, set φR` pattern plus MvPolynomial/Ideal.Quotient extensionality
--- requires more heartbeats because the target type `L1Target` is a heavy tensor
--- product of a quotient and a localization.
 set_option maxHeartbeats 1600000 in
+-- heartbeats needed: target type `L1Target` is a heavy tensor product of a quotient
+-- and a localization; algHom extensionality on pure tensors is expensive.
 /-- Forward ∘ Backward on left pure tensors (algHom equality): reduce to generators
 via quotient + polynomial extensionality. -/
 private theorem L1Forward_Backward_left {n : ℕ}
@@ -6565,8 +6577,8 @@ private theorem L1Forward_Backward_left {n : ℕ}
   have := congrArg (fun φ => φ a) hφ
   exact this
 
--- Heavy tensor-product extensionality; see comment on L1Forward_Backward_left.
 set_option maxHeartbeats 1600000 in
+-- heartbeats needed: heavy tensor-product extensionality; see L1Forward_Backward_left.
 /-- Forward ∘ Backward on right pure tensors (algHom equality). -/
 private theorem L1Forward_Backward_right {n : ℕ}
     (G : SimpleGraph (Fin n)) (U : Finset (BinomialEdgeVars (Fin n)))
@@ -6778,9 +6790,9 @@ private lemma killLastPairForwardPoly_kills_bipartite
   have hir : i.val < r := lt_of_le_of_lt (by exact_mod_cast hle) hjr
   -- The map sends `X(inl i) * X(inr j)` to the corresponding reducedHH generator.
   simp only [SetLike.mem_coe, RingHom.mem_ker]
-  show (killLastPairForwardPoly (K := K) G) (X (Sum.inl i) * X (Sum.inr j)) = 0
+  change (killLastPairForwardPoly (K := K) G) (X (Sum.inl i) * X (Sum.inr j)) = 0
   rw [map_mul]
-  show (killLastPairForwardPoly (K := K) G) (X (Sum.inl i)) *
+  change (killLastPairForwardPoly (K := K) G) (X (Sum.inl i)) *
       (killLastPairForwardPoly (K := K) G) (X (Sum.inr j)) = 0
   unfold killLastPairForwardPoly
   rw [aeval_X, aeval_X]
@@ -6798,7 +6810,7 @@ private lemma killLastPairForwardPoly_kills_bipartite
   rw [hvar_inl, hvar_inr, ← map_mul, Ideal.Quotient.eq_zero_iff_mem]
   -- Show the product is in reducedHHIdeal.
   have hle' : (⟨i.val, hir⟩ : Fin r) ≤ ⟨j.val, hjr⟩ := by
-    show i.val ≤ j.val; exact_mod_cast hle
+    change i.val ≤ j.val; exact_mod_cast hle
   have hjsucc : (⟨j.val, hjr⟩ : Fin r).val + 1 < r + 1 := by simp; omega
   -- The adjacency condition.
   have hadj' : G.Adj (⟨i.val, hir⟩ : Fin r).castSucc
@@ -6841,19 +6853,19 @@ private lemma killLastPairForwardRG_kills_lastPair
   simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hx
   simp only [SetLike.mem_coe, RingHom.mem_ker]
   rcases hx with rfl | rfl
-  · show killLastPairForwardRG (K := K) G
+  · change killLastPairForwardRG (K := K) G
       (Ideal.Quotient.mk _ (X (Sum.inl ⟨r, lt_add_one r⟩))) = 0
     unfold killLastPairForwardRG
     rw [Ideal.Quotient.liftₐ_apply, Ideal.Quotient.lift_mk]
-    show killLastPairForwardPoly (K := K) G (X (Sum.inl ⟨r, lt_add_one r⟩)) = 0
+    change killLastPairForwardPoly (K := K) G (X (Sum.inl ⟨r, lt_add_one r⟩)) = 0
     unfold killLastPairForwardPoly
     rw [aeval_X]
     simp [killLastPairForwardVar]
-  · show killLastPairForwardRG (K := K) G
+  · change killLastPairForwardRG (K := K) G
       (Ideal.Quotient.mk _ (X (Sum.inr ⟨r, lt_add_one r⟩))) = 0
     unfold killLastPairForwardRG
     rw [Ideal.Quotient.liftₐ_apply, Ideal.Quotient.lift_mk]
-    show killLastPairForwardPoly (K := K) G (X (Sum.inr ⟨r, lt_add_one r⟩)) = 0
+    change killLastPairForwardPoly (K := K) G (X (Sum.inr ⟨r, lt_add_one r⟩)) = 0
     unfold killLastPairForwardPoly
     rw [aeval_X]
     simp [killLastPairForwardVar]
@@ -6910,9 +6922,9 @@ private lemma killLastPairBackwardPoly_kills_reducedHHIdeal
   rintro f ⟨a, b, ⟨a', b', hb', hadj, hle, heq⟩, rfl⟩
   obtain ⟨rfl, rfl⟩ := Prod.eq_iff_fst_eq_snd_eq.mp heq
   simp only [SetLike.mem_coe, RingHom.mem_ker]
-  show (killLastPairBackwardPoly (K := K) G) (X (Sum.inl a') * X (Sum.inr b')) = 0
+  change (killLastPairBackwardPoly (K := K) G) (X (Sum.inl a') * X (Sum.inr b')) = 0
   rw [map_mul]
-  show (killLastPairBackwardPoly (K := K) G) (X (Sum.inl a')) *
+  change (killLastPairBackwardPoly (K := K) G) (X (Sum.inl a')) *
       (killLastPairBackwardPoly (K := K) G) (X (Sum.inr b')) = 0
   unfold killLastPairBackwardPoly
   rw [aeval_X, aeval_X]
@@ -6931,7 +6943,7 @@ private lemma killLastPairBackwardPoly_kills_reducedHHIdeal
         ⟨b'.val + 1, hb'⟩ := rfl
     rw [heq]; exact hadj
   have hle' : (a'.castSucc : Fin (r + 1)) ≤ b'.castSucc := by
-    show a'.val ≤ b'.val; exact_mod_cast hle
+    change a'.val ≤ b'.val; exact_mod_cast hle
   have hmem_R : (X (Sum.inl a'.castSucc) * X (Sum.inr b'.castSucc) :
       MvPolynomial (BinomialEdgeVars (Fin (r + 1))) K) ∈
       bipartiteEdgeMonomialIdeal (K := K) G := by
@@ -7020,32 +7032,32 @@ private noncomputable def killLastPairEquiv
       refine Ideal.Quotient.algHom_ext _ ?_
       refine MvPolynomial.algHom_ext (fun v => ?_)
       -- Goal: ((F ∘ B) ∘ mk) (X v) = (id ∘ mk) (X v).
-      show killLastPairForward (K := K) G
+      change killLastPairForward (K := K) G
           (killLastPairBackward (K := K) G
             (Ideal.Quotient.mk (BEI.reducedHHIdeal (K := K) G) (X v))) =
         Ideal.Quotient.mk (BEI.reducedHHIdeal (K := K) G) (X v)
       rw [killLastPairBackward_apply_mk]
       show killLastPairForward (K := K) G
           (killLastPairBackwardPoly (K := K) G (X v)) = _
-      show killLastPairForward (K := K) G
+      change killLastPairForward (K := K) G
           (aeval (killLastPairBackwardVar (K := K) G) (X v)) = _
       rw [aeval_X]
       cases v with
       | inl i =>
-        show killLastPairForward (K := K) G
+        change killLastPairForward (K := K) G
             (Ideal.Quotient.mk _
               (Ideal.Quotient.mk _ (X (Sum.inl i.castSucc)))) = _
         rw [killLastPairForward_apply_mk_mk]
         show killLastPairForwardPoly (K := K) G (X (Sum.inl i.castSucc)) = _
-        show aeval (killLastPairForwardVar (K := K) (G := G)) (X (Sum.inl i.castSucc)) = _
+        change aeval (killLastPairForwardVar (K := K) (G := G)) (X (Sum.inl i.castSucc)) = _
         rw [aeval_X, killLastPairForwardVar_inl_castSucc]
       | inr i =>
-        show killLastPairForward (K := K) G
+        change killLastPairForward (K := K) G
             (Ideal.Quotient.mk _
               (Ideal.Quotient.mk _ (X (Sum.inr i.castSucc)))) = _
         rw [killLastPairForward_apply_mk_mk]
         show killLastPairForwardPoly (K := K) G (X (Sum.inr i.castSucc)) = _
-        show aeval (killLastPairForwardVar (K := K) (G := G)) (X (Sum.inr i.castSucc)) = _
+        change aeval (killLastPairForwardVar (K := K) (G := G)) (X (Sum.inr i.castSucc)) = _
         rw [aeval_X, killLastPairForwardVar_inr_castSucc])
     (by
       -- backward ∘ forward = id on `(R_G ⧸ killLastPairIdeal)`.
@@ -7053,7 +7065,7 @@ private noncomputable def killLastPairEquiv
       refine Ideal.Quotient.algHom_ext _ ?_
       refine MvPolynomial.algHom_ext (fun v => ?_)
       -- Goal: ((B ∘ F) ∘ mk ∘ mk) (X v) = (id ∘ mk ∘ mk) (X v).
-      show killLastPairBackward (K := K) G
+      change killLastPairBackward (K := K) G
           (killLastPairForward (K := K) G
             (Ideal.Quotient.mk _
               (Ideal.Quotient.mk _ (X v)))) =
@@ -7061,7 +7073,7 @@ private noncomputable def killLastPairEquiv
       rw [killLastPairForward_apply_mk_mk]
       show killLastPairBackward (K := K) G
           (killLastPairForwardPoly (K := K) G (X v)) = _
-      show killLastPairBackward (K := K) G
+      change killLastPairBackward (K := K) G
           (aeval (killLastPairForwardVar (K := K) (G := G)) (X v)) = _
       rw [aeval_X]
       cases v with
@@ -7072,8 +7084,8 @@ private noncomputable def killLastPairEquiv
           have heq : (⟨iv, hiv⟩ : Fin (r + 1)) = (⟨iv, h⟩ : Fin r).castSucc := rfl
           rw [heq, killLastPairForwardVar_inl_castSucc]
           rw [killLastPairBackward_apply_mk]
-          show killLastPairBackwardPoly (K := K) G (X (Sum.inl ⟨iv, h⟩)) = _
-          show aeval (killLastPairBackwardVar (K := K) G) (X (Sum.inl ⟨iv, h⟩)) = _
+          change killLastPairBackwardPoly (K := K) G (X (Sum.inl ⟨iv, h⟩)) = _
+          change aeval (killLastPairBackwardVar (K := K) G) (X (Sum.inl ⟨iv, h⟩)) = _
           rw [aeval_X]
           show killLastPairBackwardVar (K := K) G (Sum.inl ⟨iv, h⟩) = _
           rfl
@@ -7092,8 +7104,8 @@ private noncomputable def killLastPairEquiv
         · have heq : (⟨iv, hiv⟩ : Fin (r + 1)) = (⟨iv, h⟩ : Fin r).castSucc := rfl
           rw [heq, killLastPairForwardVar_inr_castSucc]
           rw [killLastPairBackward_apply_mk]
-          show killLastPairBackwardPoly (K := K) G (X (Sum.inr ⟨iv, h⟩)) = _
-          show aeval (killLastPairBackwardVar (K := K) G) (X (Sum.inr ⟨iv, h⟩)) = _
+          change killLastPairBackwardPoly (K := K) G (X (Sum.inr ⟨iv, h⟩)) = _
+          change aeval (killLastPairBackwardVar (K := K) G) (X (Sum.inr ⟨iv, h⟩)) = _
           rw [aeval_X]
           rfl
         · have hiv_eq : iv = r := by omega
@@ -7189,12 +7201,12 @@ private lemma killLastPairEquiv_map_augIdealQuot
       -- z = mk_J y with y ∈ augIdeal G.
       obtain ⟨y, hy, rfl⟩ := hz
       -- killLastPairEquiv (mk_J y) = killLastPairForward (mk_J y) = killLastPairForwardRG y.
-      show (killLastPairEquiv (K := K) G) (Ideal.Quotient.mk _ y) ∈
+      change (killLastPairEquiv (K := K) G) (Ideal.Quotient.mk _ y) ∈
         BEI.augIdealReduced (K := K) G
       -- y ∈ augIdeal G = ker quotConstCoeff, in R_G.
       obtain ⟨p, rfl⟩ := Ideal.Quotient.mk_surjective y
       -- Now use: killLastPairEquiv (mk_J (mk_I p)) = killLastPairForwardPoly p.
-      show killLastPairForwardPoly (K := K) G p ∈ BEI.augIdealReduced (K := K) G
+      change killLastPairForwardPoly (K := K) G p ∈ BEI.augIdealReduced (K := K) G
       -- The polynomial forward map applied to p: write p via induction.
       -- augIdealReduced = ker quotConstCoeffReduced, so it suffices to show
       -- quotConstCoeffReduced (killLastPairForwardPoly p) = constantCoeff p
@@ -7229,16 +7241,16 @@ private lemma killLastPairEquiv_map_augIdealQuot
           simp only [RingHom.comp_apply, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]
           rw [show killLastPairForwardPoly (K := K) G (C c) =
               algebraMap K _ c from (killLastPairForwardPoly (K := K) G).commutes c]
-          show BEI.quotConstCoeffReduced G
+          change BEI.quotConstCoeffReduced G
               (Ideal.Quotient.mk (BEI.reducedHHIdeal (K := K) G) (C c)) = _
           unfold BEI.quotConstCoeffReduced
           rw [Ideal.Quotient.lift_mk]
           simp
         · intro v
           simp only [RingHom.comp_apply, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]
-          show BEI.quotConstCoeffReduced G
+          change BEI.quotConstCoeffReduced G
               (killLastPairForwardPoly (K := K) G (X v)) = constantCoeff (X v)
-          show BEI.quotConstCoeffReduced G
+          change BEI.quotConstCoeffReduced G
               (aeval (killLastPairForwardVar (K := K) (G := G)) (X v)) = _
           rw [aeval_X, constantCoeff_X]
           -- Now compute: quotConstCoeffReduced (killLastPairForwardVar v) = 0.
@@ -7247,7 +7259,7 @@ private lemma killLastPairEquiv_map_augIdealQuot
             rcases i with ⟨iv, hiv⟩
             by_cases h : iv < r
             · simp only [killLastPairForwardVar, h, dif_pos]
-              show BEI.quotConstCoeffReduced G
+              change BEI.quotConstCoeffReduced G
                 (Ideal.Quotient.mk (BEI.reducedHHIdeal (K := K) G) (X _)) = 0
               unfold BEI.quotConstCoeffReduced
               rw [Ideal.Quotient.lift_mk]
@@ -7258,7 +7270,7 @@ private lemma killLastPairEquiv_map_augIdealQuot
             rcases i with ⟨iv, hiv⟩
             by_cases h : iv < r
             · simp only [killLastPairForwardVar, h, dif_pos]
-              show BEI.quotConstCoeffReduced G
+              change BEI.quotConstCoeffReduced G
                 (Ideal.Quotient.mk (BEI.reducedHHIdeal (K := K) G) (X _)) = 0
               unfold BEI.quotConstCoeffReduced
               rw [Ideal.Quotient.lift_mk]
@@ -7266,19 +7278,19 @@ private lemma killLastPairEquiv_map_augIdealQuot
             · simp only [killLastPairForwardVar, h, dif_neg, not_false_eq_true]
               rfl
       -- Conclude.
-      show killLastPairForwardPoly (K := K) G p ∈
+      change killLastPairForwardPoly (K := K) G p ∈
         RingHom.ker (BEI.quotConstCoeffReduced G)
       exact key
     | zero =>
-      show (killLastPairEquiv (K := K) G).toRingEquiv.toRingHom 0 ∈
+      change (killLastPairEquiv (K := K) G).toRingEquiv.toRingHom 0 ∈
         BEI.augIdealReduced (K := K) G
       rw [map_zero]; exact (BEI.augIdealReduced (K := K) G).zero_mem
     | add x y _ _ hxi hyi =>
-      show (killLastPairEquiv (K := K) G).toRingEquiv.toRingHom (x + y) ∈
+      change (killLastPairEquiv (K := K) G).toRingEquiv.toRingHom (x + y) ∈
         BEI.augIdealReduced (K := K) G
       rw [map_add]; exact (BEI.augIdealReduced (K := K) G).add_mem hxi hyi
     | smul a x _ hxi =>
-      show (killLastPairEquiv (K := K) G).toRingEquiv.toRingHom (a • x) ∈
+      change (killLastPairEquiv (K := K) G).toRingEquiv.toRingHom (a • x) ∈
         BEI.augIdealReduced (K := K) G
       rw [smul_eq_mul, map_mul]
       exact (BEI.augIdealReduced (K := K) G).mul_mem_left _ hxi
@@ -7305,7 +7317,7 @@ private lemma killLastPairEquiv_map_augIdealQuot
       exact hx
     -- (killLastPairEquiv G).symm (mk_I q) = killLastPairBackward G (mk_I q) =
     -- killLastPairBackwardPoly q = mk_J (mk_I (aeval castSucc-eval q)).
-    show (killLastPairEquiv (K := K) G).symm
+    change (killLastPairEquiv (K := K) G).symm
       (Ideal.Quotient.mk (BEI.reducedHHIdeal (K := K) G) q) ∈ augIdealQuot (K := K) G
     -- killLastPairEquiv.symm = killLastPairBackward (by AlgEquiv.ofAlgHom.symm).
     have hsymm : (killLastPairEquiv (K := K) G).symm
@@ -7313,7 +7325,7 @@ private lemma killLastPairEquiv_map_augIdealQuot
       killLastPairBackward (K := K) G
         (Ideal.Quotient.mk (BEI.reducedHHIdeal (K := K) G) q) := rfl
     rw [hsymm, killLastPairBackward_apply_mk]
-    show killLastPairBackwardPoly (K := K) G q ∈ augIdealQuot (K := K) G
+    change killLastPairBackwardPoly (K := K) G q ∈ augIdealQuot (K := K) G
     -- Now show this.
     -- augIdealQuot = map mk_J of augIdeal = map mk_J of (map mk_I of (ker constantCoeff)).
     -- So it suffices to show: there is some p : MvPol (Fin (r+1)) with constantCoeff p = 0
@@ -7339,17 +7351,17 @@ private lemma killLastPairEquiv_map_augIdealQuot
             ((Ideal.Quotient.mk _).comp (rename inj).toRingHom)))
           ?_ ?_)) q
       · intro c
-        show killLastPairBackwardPoly (K := K) G (C c) =
+        change killLastPairBackwardPoly (K := K) G (C c) =
           Ideal.Quotient.mk _ (Ideal.Quotient.mk _ (rename inj (C c)))
         rw [rename_C]
         rw [show killLastPairBackwardPoly (K := K) G (C c) = algebraMap K _ c from
           (killLastPairBackwardPoly (K := K) G).commutes c]
         rfl
       · intro v
-        show killLastPairBackwardPoly (K := K) G (X v) =
+        change killLastPairBackwardPoly (K := K) G (X v) =
           Ideal.Quotient.mk _ (Ideal.Quotient.mk _ (rename inj (X v)))
         rw [rename_X]
-        show aeval (killLastPairBackwardVar (K := K) G) (X v) = _
+        change aeval (killLastPairBackwardVar (K := K) G) (X v) = _
         rw [aeval_X]
         cases v with
         | inl i => rfl
@@ -7417,6 +7429,7 @@ private lemma quotLocalRingHom_algebraMap
   simp [quotLocalRingHom, Localization.localRingHom_to_map]
 
 set_option maxHeartbeats 400000 in
+-- heartbeats needed to elaborate the composed quotient/localization ring hom.
 /-- The `localRingHom` kills `span{xL, yL}`: both last-pair images map to 0
 under `R_G → R_G ⧸ killLastPairIdeal → Localization.AtPrime augIdealQuot`. -/
 private lemma quotLocalRingHom_kills_lastPair
@@ -7491,12 +7504,12 @@ private lemma RpModLastPairToLoc_surjective
   let s' : (augIdeal (K := K) G).primeCompl := ⟨s, hs_ne⟩
   refine ⟨Ideal.Quotient.mk _ (IsLocalization.mk' _ r s'), ?_⟩
   -- Show this maps to the right element.
-  show RpModLastPairToLoc (G := G)
+  change RpModLastPairToLoc (G := G)
     (Ideal.Quotient.mk _ (IsLocalization.mk' _ r s')) =
     IsLocalization.mk' _ _ s_bar
   unfold RpModLastPairToLoc
   rw [Ideal.Quotient.lift_mk]
-  show quotLocalRingHom (G := G) (IsLocalization.mk' _ r s') = _
+  change quotLocalRingHom (G := G) (IsLocalization.mk' _ r s') = _
   rw [quotLocalRingHom, Localization.localRingHom_mk']
   -- Now the two sides should match up.
   congr 1
@@ -7600,7 +7613,7 @@ private lemma RpModLastPairToLoc_injective
     exact Ideal.mul_mem_right _ _ halg
   -- Since alg(t) is a unit, mk'(p,s) ∈ span{xL,yL}.
   obtain ⟨u, hu⟩ := ht_unit
-  show IsLocalization.mk' (Localization.AtPrime (augIdeal (K := K) G)) p s ∈ _
+  change IsLocalization.mk' (Localization.AtPrime (augIdeal (K := K) G)) p s ∈ _
   have hmk'_eq : IsLocalization.mk' (Localization.AtPrime (augIdeal (K := K) G)) p s =
       (IsLocalization.mk' _ p s * algebraMap _ _ t) * ↑u⁻¹ := by
     rw [← hu, mul_assoc, Units.mul_inv, mul_one]
@@ -7623,7 +7636,8 @@ private noncomputable def RpModLastPairEquivLoc
 
 /-! ##### Step 4: `Localization.AtPrime augIdealQuot ≃+* Localization.AtPrime augIdealReduced` -/
 
-/-- The image of `augIdealQuot.primeCompl` under `killLastPairEquiv` is `augIdealReduced.primeCompl`. -/
+/-- The image of `augIdealQuot.primeCompl` under `killLastPairEquiv` is
+`augIdealReduced.primeCompl`. -/
 private lemma killLastPairEquiv_map_primeCompl
     (G : SimpleGraph (Fin (r + 1))) :
     (augIdealQuot (K := K) G).primeCompl.map
@@ -7663,7 +7677,7 @@ private lemma killLastPairEquiv_map_primeCompl
       -- (equiv).toRingEquiv.toRingHom v = (equiv) v by defn; then apply_symm_apply.
       have hcoe : (killLastPairEquiv (K := K) G).toRingEquiv.toRingHom
           ((killLastPairEquiv (K := K) G).symm x) = x := by
-        show (killLastPairEquiv (K := K) G) ((killLastPairEquiv (K := K) G).symm x) = x
+        change (killLastPairEquiv (K := K) G) ((killLastPairEquiv (K := K) G).symm x) = x
         exact (killLastPairEquiv (K := K) G).apply_symm_apply x
       rwa [hcoe] at hstep
     · exact (killLastPairEquiv (K := K) G).apply_symm_apply x
@@ -7685,6 +7699,7 @@ private noncomputable def locAugIdealQuotEquivLocAugIdealReduced
 /-! ##### Assembly: `isCohenMacaulayLocalRing_at_augIdealReduced_step` -/
 
 set_option maxHeartbeats 800000 in
+-- heartbeats needed: assembly over iterated quotients + localizations.
 /-- **Inductive case** (`r ≥ 1`): Bridge from L5's CM conclusion
 `IsCohenMacaulayLocalRing (QuotSMulTop mkyL RpQ)` to CM of
 `Localization.AtPrime (augIdealReduced G)`. Uses the 4-step ring-iso chain:
@@ -7733,7 +7748,7 @@ private theorem isCohenMacaulayLocalRing_at_augIdealReduced_step
   set mkyL : RpQ := Ideal.Quotient.mk (Ideal.span {xL}) yL with mkyL_def
   have hCM_L5 : IsCohenMacaulayLocalRing (QuotSMulTop mkyL RpQ) := by
     -- L5 gives CM of QuotSMulTop (at (r+1)-1 form). Convert.
-    convert hL5 using 3 <;> (try exact h_xL_eq) <;> (try exact h_yL_eq)
+    convert hL5 using 3
   -- Hoisted membership / non-top facts used across Steps 1, 2, 2'.
   have hxLmem : xL ∈ IsLocalRing.maximalIdeal Rp :=
     X_inl_last_mem_maximalIdeal (K := K) (by omega) G
@@ -7843,6 +7858,7 @@ HH quotient at `s_U` to
 where `G' = smallerHHGraph G (↑U)` and the `Sum.inr` embeds the `U`-index into
 `↑(lambdaSet G (↑U)) ⊕ ↑(U : Set _)`. -/
 set_option maxHeartbeats 400000 in
+-- heartbeats needed: E_U is a 4-step AlgEquiv composition over heavy types.
 /-- **Session C1: the bundled monomial-localisation equiv `E_U`** for an
 independent finset `U`. Specialised to `K : Type` (universe 0) so that it can
 be composed with `polynomialAwayTensorEquiv`, which requires all type arguments
@@ -7889,9 +7905,9 @@ private noncomputable def E_U {K : Type} [Field K]
       (β := ((U : Set (BinomialEdgeVars (Fin n))) : Type _))
       (hhUnitProductSub (K := K) U))
 
--- `E_U` is a 4-step `AlgEquiv.trans`; unfolding its action on a specific element
--- requires enough heartbeats to elaborate the nested tensor/localization types.
 set_option maxHeartbeats 800000 in
+-- heartbeats needed: E_U is a 4-step AlgEquiv.trans; unfolding its action on a
+-- specific element requires elaborating nested tensor/localization types.
 /-- **E_U forward on a paired-left survivor variable**.
 
 For `a : Fin (pairedCount G U)`, the embedded index `c_a := pairedSurvivorsVal G U a`
@@ -8016,9 +8032,9 @@ private theorem E_U_algebraMap_mkI_X_pairedSurvivor_inl
         (Localization.Away (hhUnitProductSub (K := K) U))) := rfl
   rw [h11, map_one]
 
--- `E_U` is a 4-step `AlgEquiv.trans`; unfolding its action on a specific element
--- requires enough heartbeats to elaborate the nested tensor/localization types.
 set_option maxHeartbeats 800000 in
+-- heartbeats needed: E_U is a 4-step AlgEquiv.trans; unfolding its action on a
+-- specific element requires elaborating nested tensor/localization types.
 /-- **E_U forward on a paired-right survivor variable**.
 
 Symmetric companion to `E_U_algebraMap_mkI_X_pairedSurvivor_inl`: for
@@ -8134,6 +8150,7 @@ private theorem E_U_algebraMap_mkI_X_pairedSurvivor_inr
 /-! #### Main theorem -/
 
 set_option maxHeartbeats 1600000 in
+-- heartbeats + synth budget needed: main graded local-to-global assembly is heavy.
 set_option synthInstance.maxHeartbeats 400000 in
 /-- **Graded local-to-global for the HH quotient**: Under HH conditions, the quotient
 `S ⧸ bipartiteEdgeMonomialIdeal G` is a Cohen–Macaulay ring.

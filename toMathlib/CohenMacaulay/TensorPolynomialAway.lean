@@ -133,8 +133,7 @@ def tensorAwayEquiv (s : MvPolynomial τ K) :
     · apply AlgHom.ext
       intro a
       change bwd (fwd (a ⊗ₜ[K] 1)) = a ⊗ₜ[K] 1
-      simp [fwd, mapA, Algebra.TensorProduct.lift_tmul, bwd,
-        IsLocalization.liftAlgHom_apply, IsLocalization.lift_eq, bwdBase]
+      simp [fwd, mapA, Algebra.TensorProduct.lift_tmul, bwd, bwdBase]
     · refine Localization.algHom_ext (Submonoid.powers s) ?_
       apply MvPolynomial.algHom_ext
       intro t
@@ -167,6 +166,7 @@ theorem isCohenMacaulayRing_localization
 
 /-! ### Step 3 — the L7 replacement -/
 
+omit [DecidableEq τ] in
 /-- **L7 replacement (global form)**: `A ⊗_K K[τ][s⁻¹]` is Cohen–Macaulay as
 a ring, for any Noetherian CM K-algebra `A`, any finite index type `τ`, and
 any `s ∈ K[τ]`. -/
@@ -183,6 +183,7 @@ theorem isCohenMacaulayRing_tensor_away
     isCohenMacaulayRing_localization (MvPolynomial τ A) (Submonoid.powers sA)
   exact isCohenMacaulayRing_of_ringEquiv (tensorAwayEquiv s).symm.toRingEquiv
 
+omit [DecidableEq τ] in
 /-- **L7 replacement (local form)**: for any prime `𝔓` of `A ⊗_K K[τ][s⁻¹]`,
 its localisation is Cohen–Macaulay. -/
 theorem isCohenMacaulayLocalRing_localization_tensor_away

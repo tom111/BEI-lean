@@ -1,5 +1,6 @@
 import BEI.Equidim
 import BEI.GroebnerDeformation
+import BEI.PrimeDecompositionDimension
 
 /-!
 # Proposition 1.6 (Herzog et al. 2010) — paper-faithful Cohen–Macaulay statement
@@ -102,3 +103,76 @@ theorem proposition_1_6
       (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G) :=
     monomialInitialIdeal_isCohenMacaulay hn hHH
   exact binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm hClosed hInCM
+
+/-- **Paper-faithful dimension formula, Corollary 3.4 specialised to Prop 1.6
+graphs**: for a connected closed graph `G` on `[n]` satisfying the Prop 1.6
+transitivity condition, `dim K[x, y] ⧸ J_G = n + 1`.
+
+Proof: `prop_1_6_equidim` gives the local equidimensional surrogate;
+`corollary_3_4_equidim` then yields the dimension formula
+`dim = Fintype.card V + componentCount G ∅`; and for a connected graph the
+component count is `1`. -/
+theorem proposition_1_6_dim_formula
+    {K : Type} [Field K] {n : ℕ} (hn : 0 < n) {G : SimpleGraph (Fin n)}
+    (hConn : G.Connected) (hClosed : IsClosedGraph G)
+    (hCond : SatisfiesProp1_6Condition n G) :
+    ringKrullDim
+      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ binomialEdgeIdeal (K := K) G) =
+    ↑(n + 1) := by
+  have hEq : IsEquidim
+      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ binomialEdgeIdeal (K := K) G) :=
+    prop_1_6_equidim (K := K) n hn G hConn hClosed hCond
+  have hDim := corollary_3_4_equidim (K := K) G hEq
+  have hc : componentCount G ∅ = 1 := by
+    rw [componentCount_empty]
+    haveI := hConn.preconnected.subsingleton_connectedComponent
+    exact Nat.card_of_subsingleton (G.connectedComponentMk hConn.nonempty.some)
+  rw [hDim, hc]
+  simp [Fintype.card_fin]
+
+/-! ## Concrete examples -/
+
+/-- The standard path graph on `Fin n` satisfies the Proposition 1.6 transitivity
+condition vacuously: for `i < j`, the hypothesis `Adj i (j+1)` already forces
+`i = j` or `i = j + 2`, both impossible. -/
+theorem pathGraph_satisfiesProp1_6Condition (n : ℕ) :
+    SatisfiesProp1_6Condition n (pathGraph n) := by
+  intro i j k _ _ hij _ hadj _
+  rw [SimpleGraph.pathGraph_adj] at hadj
+  have hij_val : i.val < j.val := hij
+  exfalso
+  rcases hadj with h | h <;> (simp at h; omega)
+
+/-- **Corollary**: for the path graph on `Fin n` with `n ≥ 2`, the binomial edge
+ideal quotient `K[x, y] ⧸ J_{P_n}` is Cohen–Macaulay. (Example 1.7(b) in the
+paper, via Proposition 1.6.)
+
+Modulo the transitive `toMathlib/GradedCM.lean` Case-C sorry; this example
+inherits the same upstream gap as `proposition_1_6`. -/
+theorem pathGraph_binomialEdgeIdeal_isCohenMacaulay
+    {K : Type} [Field K] {n : ℕ} (hn : 2 ≤ n) :
+    IsCohenMacaulayRing
+      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸
+        binomialEdgeIdeal (K := K) (pathGraph n)) := by
+  -- Rewrite `n = (n - 1) + 1` to invoke `pathGraph_connected`.
+  have hn' : n = (n - 1) + 1 := by omega
+  have hConn : (pathGraph n).Connected := by
+    rw [hn']; exact SimpleGraph.pathGraph_connected _
+  exact proposition_1_6 hn hConn
+    (pathGraph_isClosedGraph n)
+    (pathGraph_satisfiesProp1_6Condition n)
+
+/-- **Dimension formula for the path graph**: `dim K[x, y] ⧸ J_{P_n} = n + 1`.
+Axiom-clean — does not depend on the GradedCM Case C sorry. -/
+theorem pathGraph_binomialEdgeIdeal_ringKrullDim
+    {K : Type} [Field K] {n : ℕ} (hn : 0 < n) :
+    ringKrullDim
+      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸
+        binomialEdgeIdeal (K := K) (pathGraph n)) =
+    ↑(n + 1) := by
+  have hn' : n = (n - 1) + 1 := by omega
+  have hConn : (pathGraph n).Connected := by
+    rw [hn']; exact SimpleGraph.pathGraph_connected _
+  exact proposition_1_6_dim_formula hn hConn
+    (pathGraph_isClosedGraph n)
+    (pathGraph_satisfiesProp1_6Condition n)

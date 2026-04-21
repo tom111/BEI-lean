@@ -581,49 +581,31 @@ landed in `toMathlib/` and/or `BEI/`. Depth semicontinuity is not required.
     modulo three sub-sorries.
   - `BEI/Proposition1_6.lean`'s sorry is now reduced to
     `:= groebnerDeformation_cm_transfer hCM`.
-- R1 sub-sorries remaining (the actual paper-critical work):
-  - ~~`baseQuotEquiv` (R1.e iso plumbing)~~: **CLOSED 2026-04-20** via
-    helper lemmas `specOne_baseInclude` and `quot_baseInclude_specOne_X`,
-    `RingEquiv.ofRingHom` + `MvPolynomial.induction_on`.
-  - ~~`tildeJ_quotient_isCohenMacaulay` (R1.f.1, F1+F2 step)~~: **CLOSED
-    2026-04-20** as a one-line application of
-    `GradedCM.isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant`.
-    BEI-side graded plumbing landed the same day: `defWeight`,
-    `isWeightedHomogeneous_fijTilde`, `defGrading` +
-    `GradedAlgebra` instance, `tildeJ_isHomogeneous`, `tildeJQuotGrading` +
-    `GradedRing` instance, `tildeJQuotGrading_connectedGraded`,
-    `tildeJ_ne_top`, `tildeJ_quotient_nontrivial`. The theorem now reduces
-    to the narrower sub-lemma `tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant`
-    (local CM at the irrelevant ideal, via regular-quotient lift by `t`).
-    Transitively, still inherits the dormant Case-C sorry of `GradedCM.lean`.
-  - `tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant` (R1.f.1 narrowed
-    leaf sorry): the local Cohen–Macaulayness of `S[t] ⧸ Ĩ` at its
-    irrelevant ideal. Classical proof: `t` is regular on `S[t] ⧸ Ĩ`
-    (`tildeJ_t_isSMulRegular`, already proved); the quotient by the class
-    of `t` is isomorphic to `S ⧸ monomialInitialIdeal G` (via
-    `tildeJ_specZero_eq` + the first isomorphism theorem); the latter is
-    globally CM (Step 1), so any localisation is CM; combining with
-    `isCohenMacaulayLocalRing_of_regular_quotient` and a localisation-
-    quotient commutation step (`quotSMulTopLocalizationEquiv_of_mem`
-    pattern) closes the gap.
-  - ~~`tildeJ_tMinusOne_isSMulRegular` (R1.d, the technical heart)~~: the
-    `IsSMulRegular` step is **CLOSED conditional on colon-ideal sub-sorry**.
-    The `K[t]`-algebra structure on `DefRing n K` is registered globally via
-    `polyTInclude = rename Sum.inr`, with scalar tower
-    `K → PolyT K → DefRing n K`.
-  - ~~`tildeJ_flat_over_polyT` (R1.d)~~: flatness **CLOSED conditional on
-    `tildeJ_polyT_colon_eq`**. Derivation: `PolyT K = MvPolynomial Unit K` is
-    a PID (via `pUnitAlgEquiv` transport), hence a Dedekind domain;
-    `Module.IsTorsionFree.mk` constructs torsion-freeness from the
-    colon-ideal saturation condition; `Module.Flat.instOfIsDedekindDomainOfIsTorsionFree`
-    closes the gap.
-  - ~~`tildeJ_polyT_colon_eq` (R1.d leaf sorry)~~: **CLOSED** — the
-    BEI-specific statement that `polyTInclude q · c ∈ Ĩ ⟹ c ∈ Ĩ` for
-    nonzero `q ∈ K[t]`. Proved via `tildeJ_div` + `tildeJ_gbProperty` +
-    `DefRing` being a domain.
-- Total active sorries after this round: **1** in `BEI/GroebnerDeformation.lean`
-  (`tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant`), **0** elsewhere
-  on the critical path.
+- **R1 sub-sorries: all BEI-side sub-sorries are CLOSED (2026-04-20)**.
+  - ~~`baseQuotEquiv`~~: CLOSED — via `specOne_baseInclude` +
+    `quot_baseInclude_specOne_X`.
+  - ~~`specZeroQuotEquiv`~~ (new 2026-04-20): CLOSED — the t=0 analogue
+    of `baseQuotEquiv`, giving
+    `DefRing / (tildeJ ⊔ span{tDef}) ≃+* S / monomialInitialIdeal G`.
+  - ~~`tildeJ_polyT_colon_eq`~~: CLOSED — via `tildeJ_div` +
+    `tildeJ_gbProperty` + `DefRing` being a domain.
+  - ~~`tildeJ_flat_over_polyT`~~: CLOSED — torsion-free over PID via
+    `Module.Flat.instOfIsDedekindDomainOfIsTorsionFree`.
+  - ~~`tildeJ_tMinusOne_isSMulRegular`, `tildeJ_t_isSMulRegular`~~:
+    CLOSED — via flatness + `Module.Flat.isSMulRegular_of_isRegular`.
+  - ~~`tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant`~~ (new 2026-04-20):
+    CLOSED with clean axioms — proved via `specZeroQuotEquiv` +
+    `DoubleQuot.quotQuotEquivQuotSup` +
+    `quotSMulTopLocalizationEquiv_of_mem` (un-privated from
+    `toMathlib/CohenMacaulay/Polynomial.lean`) +
+    `isCohenMacaulayLocalRing_of_regular_quotient`.
+  - ~~`tildeJ_quotient_isCohenMacaulay`~~: CLOSED as a one-line application
+    of `GradedCM.isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant`.
+    Inherits `sorryAx` transitively only from GradedCM Case C.
+- Total active sorries after this round: **0** in `BEI/GroebnerDeformation.lean`.
+  The ONLY remaining transitive gap on the Proposition 1.6 critical path
+  is the dormant `caseC_CM_transfer` sorry in `toMathlib/GradedCM.lean`
+  (non-BEI-specific, graded-depth commutative algebra infrastructure).
 
 ### Note on route 2b (routing around `GradedCM.lean` Case C)
 

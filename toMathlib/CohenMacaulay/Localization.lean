@@ -76,7 +76,7 @@ lemma ext_smul_eq_zero_of_mem_maximalIdeal (M : ModuleCat.{u} R)
   have h2 : x • (𝟙 (k_ R)) = 0 := by
     ext
     simp
-    show (Ideal.Quotient.mk (maximalIdeal R) x) * 1 = 0
+    change (Ideal.Quotient.mk (maximalIdeal R) x) * 1 = 0
     simp [Ideal.Quotient.eq_zero_iff_mem.mpr hx]
   rw [h1, h2, Ext.mk₀_zero, Ext.zero_comp]
 
@@ -123,7 +123,7 @@ lemma ext_subsingleton_succ_of_quotient_subsingleton (M : ModuleCat.{u} R)
 /-- **Vanishing transfer via g***: if `Ext^n(k, M)` and `Ext^{n+1}(k, M)` are
 both subsingleton, then `Ext^n(k, M/xM)` is subsingleton. -/
 lemma ext_quotient_subsingleton_of_subsingleton (M : ModuleCat.{u} R)
-    {x : R} (hx : x ∈ maximalIdeal R) (hreg : IsSMulRegular M x) {n : ℕ}
+    {x : R} (_hx : x ∈ maximalIdeal R) (hreg : IsSMulRegular M x) {n : ℕ}
     (hM : Subsingleton (Ext (k_ R) M n))
     (hM' : Subsingleton (Ext (k_ R) M (n + 1))) :
     Subsingleton (Ext (k_ R) (ModuleCat.smulShortComplex M x).X₃ n) := by
@@ -159,7 +159,7 @@ lemma ext_zero_subsingleton_of_smulRegular (M : ModuleCat.{u} R)
         rw [Module.mem_annihilator]; intro q
         induction q using Quotient.inductionOn' with
         | h r =>
-          show (Ideal.Quotient.mk (maximalIdeal R) x) * (Ideal.Quotient.mk _ r) = 0
+          change (Ideal.Quotient.mk (maximalIdeal R) x) * (Ideal.Quotient.mk _ r) = 0
           simp [Ideal.Quotient.eq_zero_iff_mem.mpr hx]
       , hreg⟩
     exact hss.elim f.hom g.hom
@@ -391,6 +391,7 @@ section Unmixedness
 
 variable {R : Type u} [CommRing R] [IsLocalRing R] [IsNoetherianRing R] [Small.{u} R]
 
+omit [IsLocalRing R] [IsNoetherianRing R] [Small.{u} R] in
 /-- Auxiliary: `x` regular implies `ann(x·s) ⊇ I → ann(s) ⊇ I`. -/
 private lemma colon_singleton_dvd_of_isSMulRegular {x s : R} (hreg : IsSMulRegular R x)
     {I : Ideal R} (h : I ≤ (⊥ : Submodule R R).colon ({x * s} : Set R)) :
@@ -404,8 +405,8 @@ private lemma colon_singleton_dvd_of_isSMulRegular {x s : R} (hreg : IsSMulRegul
 
 /-- Helper for unmixedness: the statement parameterized by a dimension bound. -/
 private lemma unmixedness_of_dim_le (d : ℕ) :
-    ∀ (S : Type u) [inst1 : CommRing S] [inst2 : IsLocalRing S] [inst3 : IsNoetherianRing S]
-      [inst4 : Small.{u} S] [inst5 : IsCohenMacaulayLocalRing S],
+    ∀ (S : Type u) [_inst1 : CommRing S] [_inst2 : IsLocalRing S] [_inst3 : IsNoetherianRing S]
+      [_inst4 : Small.{u} S] [_inst5 : IsCohenMacaulayLocalRing S],
       (IsLocalRing.maximalIdeal S).primeHeight ≤ d →
       associatedPrimes S S ⊆ minimalPrimes S := by
   induction d with
@@ -562,7 +563,7 @@ private lemma unmixedness_of_dim_le (d : ℕ) :
       rw [Ideal.mem_comap]
       apply hP_le
       rw [Submodule.mem_colon_singleton]
-      show Ideal.Quotient.mk _ a * Ideal.Quotient.mk _ s = 0
+      change Ideal.Quotient.mk _ a * Ideal.Quotient.mk _ s = 0
       rw [← map_mul, Ideal.Quotient.eq_zero_iff_mem]
       have : a ∈ q := ha
       have : a * s = 0 := by
@@ -644,8 +645,8 @@ variable {R : Type u} [CommRing R] [IsLocalRing R] [IsNoetherianRing R] [Small.{
 /-- Build a weakly regular sequence on `S` of length `d` with all elements in
 `p ∩ m`, given a CM local ring `S` and a prime `p` with `primeHeight p ≥ d`. -/
 private lemma exists_weaklyRegular_in_prime (d : ℕ) :
-    ∀ (S : Type u) [inst1 : CommRing S] [inst2 : IsLocalRing S] [inst3 : IsNoetherianRing S]
-      [inst4 : Small.{u} S] [inst5 : IsCohenMacaulayLocalRing S]
+    ∀ (S : Type u) [_inst1 : CommRing S] [_inst2 : IsLocalRing S] [_inst3 : IsNoetherianRing S]
+      [_inst4 : Small.{u} S] [_inst5 : IsCohenMacaulayLocalRing S]
       (p : Ideal S) [p.IsPrime],
       (d : ℕ∞) ≤ p.primeHeight →
       ∃ rs : List S, rs.length = d ∧ IsWeaklyRegular S rs ∧
@@ -659,7 +660,8 @@ private lemma exists_weaklyRegular_in_prime (d : ℕ) :
     -- height(p) ≥ d+1 > 0
     have hp_pos : (0 : WithBot ℕ∞) < Ideal.height p := by
       rw [Ideal.height_eq_primeHeight]
-      exact_mod_cast lt_of_lt_of_le (show (0 : ℕ∞) < ↑(d + 1) by exact_mod_cast Nat.zero_lt_succ d) hd
+      exact_mod_cast lt_of_lt_of_le
+        (show (0 : ℕ∞) < ↑(d + 1) by exact_mod_cast Nat.zero_lt_succ d) hd
     -- Regular x ∈ p ∩ m
     obtain ⟨x, hxp, hxm, hxreg⟩ := exists_smulRegular_mem_of_isCohenMacaulayLocalRing p hp_pos
     -- R/(x) is CM
@@ -721,7 +723,8 @@ private lemma exists_weaklyRegular_in_prime (d : ℕ) :
       (isWeaklyRegular_map_algebraMap_iff (QuotSMulTop x S) (QuotSMulTop x S) rs).mp
         (hrs_map ▸ hrs'_reg)
     -- x :: rs is weakly regular on S
-    have hrs_len : rs.length = d := by show (rs'.map σ).length = d; simp [hrs'_len]
+    have hrs_len : rs.length = d := by
+      change (rs'.map σ).length = d; simp [hrs'_len]
     exact ⟨x :: rs, by simp [hrs_len],
       (isWeaklyRegular_cons_iff S x rs).mpr ⟨hxreg, hrs_wreg_quot⟩,
       fun r hr => (List.mem_cons.mp hr).elim (· ▸ hxp) (hrs_p r),

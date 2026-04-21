@@ -106,14 +106,17 @@ plan.
 - Step 2, route R4 (axiomatized transfer): **DONE** (2026-04-20).
 - Step 2, route R1 framework (deformation ring, fiber identifications,
   four-arrow assembly): **DONE** (2026-04-20). See `BEI/GroebnerDeformation.lean`.
-- Step 2, route R1 graded plumbing (weight, graded quotient, connectedness,
-  properness): **DONE** (2026-04-20). `tildeJ_quotient_isCohenMacaulay` is
-  now a one-line application of the graded local-to-global theorem. One
-  narrowed sub-sorry remains on the BEI side
-  (`tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant`, local CM via the
-  regular-quotient lift through `t`). Transitively, also inherits the
-  dormant Case-C sorry of `toMathlib/GradedCM.lean`. See
-  `GROEBNER_CM_TRANSFER.md`.
+- Step 2, route R1 graded plumbing **and local CM sub-sorry**: **DONE**
+  (2026-04-20). `tildeJ_quotient_isCohenMacaulay` is now a one-line
+  application of the graded local-to-global theorem, and
+  `tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant` is **fully proved**
+  with clean axioms — via `specZeroQuotEquiv` +
+  `DoubleQuot.quotQuotEquivQuotSup` +
+  `quotSMulTopLocalizationEquiv_of_mem` +
+  `isCohenMacaulayLocalRing_of_regular_quotient`. **The entire BEI side of
+  Proposition 1.6 is now formalised**; the only remaining `sorryAx` comes
+  transitively from the dormant Case-C sorry of `toMathlib/GradedCM.lean`
+  (upstream commutative algebra gap, independent of BEI).
 - Step 3 (paper-faithful `proposition_1_6` assembly): **DONE** (2026-04-20),
   reduced to a one-line application of `groebnerDeformation_cm_transfer`.
 - Corollary restatements and universe generalization: optional follow-up.

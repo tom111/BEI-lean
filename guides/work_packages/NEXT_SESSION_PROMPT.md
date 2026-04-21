@@ -1,112 +1,74 @@
-# Next-Session Prompt: attack `tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant`
+# Next-Session Prompt: Close Case C of graded local-to-global CM
 
-## One-line goal
+## Status (2026-04-21)
 
-Close the remaining R1 leaf sorry
-`tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant` in
-`BEI/GroebnerDeformation.lean` — local Cohen–Macaulayness of `S[t] ⧸ Ĩ` at
-its irrelevant ideal, via the regular-quotient lift through `t` (already
-known to be a non-zero-divisor by `tildeJ_t_isSMulRegular`). Together with
-the already-applied graded local-to-global principle from
-`toMathlib/GradedCM.lean`, this closes `tildeJ_quotient_isCohenMacaulay` and
-hence Proposition 1.6 modulo the GradedCM Case-C dormant sorry.
+**Phase 1 is done.** BH 1.5.6 / Eisenbud 3.5 —
+`GradedAssociatedPrime.isAssociatedPrime_isHomogeneous` in
+`toMathlib/GradedAssociatedPrime.lean:418` — is proved axiom-clean
+(`{propext, Classical.choice, Quot.sound}`). This gives us
+`Ass(A) ⊆ 𝒜₊` for connected ℕ-graded Noetherian `A`.
 
-## What landed in the previous session
+**Phase 2 is blocked on strategy**, not on formalization tactics. The
+naive induction (Option 1a in `ROUTE_B_OBSTACLE_PLAN.md`) has a real
+obstacle: quotienting by a non-homogeneous NZD `ℓ' ∈ p ⊄ 𝒜₊` breaks
+the invariant "`Ass(B) ⊆ 𝔪`" for `B := A/⟨ℓ'⟩`.
 
-All BEI-side graded plumbing for R1.f.1 is now formalised with clean
-axioms `{propext, Classical.choice, Quot.sound}`:
+## What to do first
 
-- `defWeight n : DefVars n → ℕ` — weight function with positive values.
-- `isWeightedHomogeneous_fijTilde` — each `f̃_{i,j}` (with `i < j`) is
-  weighted-homogeneous of degree `2(n+1-i) + (n+1-j)`.
-- `defGrading n` — the weight grading on `DefRing n K`, with a registered
-  `GradedAlgebra` instance.
-- `tildeJ_isHomogeneous` — `tildeJ G` is homogeneous.
-- `tildeJQuotGrading G` — induced grading on `DefRing n K ⧸ tildeJ G`,
-  with a registered `GradedRing` instance.
-- `tildeJQuotGrading_connectedGraded` — connected graded (`𝒜 0 = K`).
-- `tildeJ_ne_top` / `tildeJ_quotient_nontrivial` — properness and
-  `Nontrivial` of the quotient.
+**Read `guides/work_packages/CASE_C_MATH_QUESTION.md`.** This is the
+mathematical question sent to a deep-thinking model. Its answer — once
+returned — should name a concrete strategy (induction invariant, algebraic
+identity, or BEI-specific bypass) that unblocks Phase 2.
 
-`tildeJ_quotient_isCohenMacaulay` is now a one-liner application of
-`GradedCM.isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant`
-fed the connectedness proof and the new sub-sorry. The old monolithic
-`sorry` is gone from this theorem.
+If the math model's answer is available in the conversation / a file, work
+from that. Otherwise, re-read `ROUTE_B_OBSTACLE_PLAN.md` and
+`GRADED_CM_CASE_C_PLAN.md` for the existing sketch.
 
-## State at start of session
+## Building blocks already proved (as of 2026-04-21)
 
-**R1.d chain is fully closed.** The following are all proved with clean
-axioms `{propext, Classical.choice, Quot.sound}`:
+In `toMathlib/GradedPrimeAvoidance.lean`:
+- `exists_homogeneous_notMem_of_forall_not_le` (BH 1.5.10, graded prime
+  avoidance).
+- `exists_homogeneous_nonZeroDivisor` + `…_isCohenMacaulay_dim_pos`
+  combinator.
+- `isCohenMacaulayLocalRing_of_quotient_cm_of_mem` (the `ℓ ∈ p`
+  descent case).
+- `isCohenMacaulayLocalRing_atPrime_of_le_irrelevant` (strengthened
+  Case B — covers **all** primes `p ⊆ 𝒜₊`, homogeneous or not).
 
-- `DefVars n := BinomialEdgeVars (Fin n) ⊕ Unit` (opaque wrapper)
-- `defLE` with `t = inr ()` as LARGEST (least significant in lex)
-- `fijTilde_lex_lt`, `degree_fijTilde`, `leadingCoeff_fijTilde`
-- `tildeJ_div`, `polyTInclude_mul_support_avoids`
-- `tildeJ_isGroebnerBasis` (Buchberger + closed graph case analysis)
-- `tildeJ_gbProperty` (via `exists_degree_le_of_mem` from `BEI/Radical.lean`)
-- `tildeJ_polyT_colon_eq`
-- `tildeJ_flat_over_polyT`, `tildeJ_tMinusOne_isSMulRegular`,
-  `tildeJ_t_isSMulRegular`
-- `groebnerDeformation_cm_transfer` (four-arrow assembly; depends on
-  `tildeJ_quotient_isCohenMacaulay` + regular-quotient descent)
+In `toMathlib/GradedAssociatedPrime.lean`:
+- `annihilator_singleton_isHomogeneous_of_homogeneousElem`.
+- `annihilator_mul_eq_of_prime_notMem`.
+- `isAssociatedPrime_isHomogeneous` (BH 1.5.6, **Phase 1 goal**).
 
-The remaining open sorry in R1:
+## What's left for Phase 2 (sketch, awaiting math model)
 
-```lean
-theorem tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant
-    {n : ℕ} {G : SimpleGraph (Fin n)} (_hClosed : IsClosedGraph G)
-    (_hCM : IsCohenMacaulayRing
-      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G)) :
-    haveI := (GradedIrrelevant.irrelevant_isMaximal (tildeJQuotGrading G)
-      (tildeJQuotGrading_connectedGraded G)).isPrime
-    IsCohenMacaulayLocalRing (Localization.AtPrime
-      (HomogeneousIdeal.irrelevant (tildeJQuotGrading G)).toIdeal)
-```
+Likely one of:
+- **Route A refined (via `*-depth`)**: ~600–800 LOC, classical Bruns–Herzog
+  2.1.27 proof using graded-depth/dim identity (BH 1.5.8).
+- **Route B refined (better invariant)**: smaller, if such an invariant
+  exists.
+- **BEI-specific bypass (Route D)**: if there's structural feature of
+  `S[t]/Ĩ` that lets us conclude CM globally without the general LTG
+  theorem, this is cheapest.
 
-`proposition_1_6` axiom check is `{propext, sorryAx, Classical.choice, Quot.sound}`,
-with `sorryAx` coming only from this one remaining sub-sorry (and from the
-dormant GradedCM Case-C sorry, transitively via the graded LTG theorem).
+## Files
 
-## Strategy (documented in existing guides)
+- **Primary target**: `toMathlib/GradedCM.lean:349` —
+  `caseC_CM_transfer` (single remaining sorry on the Prop 1.6 path).
+- **Consumer**: `BEI/GroebnerDeformation.lean` —
+  `tildeJ_quotient_isCohenMacaulay` currently depends transitively on
+  this sorry.
+- **Downstream**: `BEI/Proposition1_6.lean` — becomes fully axiom-clean
+  once `caseC_CM_transfer` is closed.
 
-See:
+## Discipline reminders
 
-- `guides/work_packages/FULL_PROP_1_6_PLAN.md` — overall 3-phase plan
-- `guides/work_packages/PROP_1_6_CM_TRANSFER.md` — overall CM transfer strategy
-- `guides/work_packages/GROEBNER_CM_TRANSFER.md` — the Gröbner deformation transfer
-
-### Narrow strategy for the remaining sub-sorry
-
-`L := Localization.AtPrime (irrelevant of DefRing ⧸ tildeJ G)` is the local
-ring we need to prove CM. Strategy (= the local branch of the classical
-Eisenbud 15.17 argument):
-
-1. Produce `t̂ : L`, the image of `tDef n` through `DefRing ⧸ tildeJ G → L`.
-2. Show `t̂ ∈ maximalIdeal L` (since `tDef` has positive weight, hence in
-   the irrelevant ideal of the quotient).
-3. Show `t̂` is regular on `L` — follows from `tildeJ_t_isSMulRegular`
-   (already proved) plus flatness of localisation
-   (`IsSMulRegular.of_flat`).
-4. Show `L ⧸ (t̂)` is CM local. This reduces via a localisation-quotient
-   commutation step (see `quotSMulTopLocalizationEquiv_of_mem` pattern in
-   `toMathlib/CohenMacaulay/Polynomial.lean`) to the localisation of
-   `(DefRing ⧸ tildeJ G) ⧸ (tDef-class)` at the image of the irrelevant
-   ideal. That double quotient is isomorphic (via `specZero` + the first
-   isomorphism theorem, using `tildeJ_specZero_eq`) to
-   `S ⧸ monomialInitialIdeal G`, which is globally CM by hypothesis, so
-   any localisation is CM.
-5. Apply `isCohenMacaulayLocalRing_of_regular_quotient` to conclude
-   `L` is CM local.
-
-The new BEI-side hypothesis and helpers to reach for:
-
-- `tildeJ_t_isSMulRegular` — already in the file.
-- `algebraMap_polyT_t` — the map of `tDef n` into the quotient.
-- `tildeJ_specZero_eq` — `specZero(tildeJ) = monomialInitialIdeal G`.
-- The `quotSMulTopLocalizationEquiv_of_mem` construction pattern from
-  `toMathlib/CohenMacaulay/Polynomial.lean:470`.
-
-## Do not
-
-- Touch `toMathlib/HeightAdditivity.lean`.
-- Refactor unrelated BEI files.
+- Do **not** expand scope beyond `caseC_CM_transfer` and its direct
+  dependencies.
+- Once strategy is clear, write a focused work packet (not a running
+  commentary) and dispatch sub-agents for individual lemmas ≤ 250 LOC.
+- `classical` + `attribute [local instance] Classical.propDecidable` is
+  the established pattern for DFinsupp bookkeeping in graded modules.
+- Axiom-check every new theorem with `#print axioms` before declaring
+  done.

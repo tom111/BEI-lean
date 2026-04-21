@@ -149,6 +149,7 @@ section PolynomialExtension
 
 variable {A : Type u} [CommRing A] [IsDomain A] [IsNoetherianRing A]
 
+omit [IsNoetherianRing A] in
 /-- In a domain, any nonzero element is SMulRegular on any localization. -/
 private lemma isSMulRegular_algebraMap_of_ne_zero
     (p : Ideal A) [p.IsPrime] {f : A} (hf : f ≠ 0) :
@@ -160,6 +161,7 @@ private lemma isSMulRegular_algebraMap_of_ne_zero
       (by rw [h, map_zero]))
   intro a b hab; exact mul_left_cancel₀ hf' hab
 
+omit [IsNoetherianRing A] in
 /-- In a domain `A`, a nonzero prime `P` of `A[X]` with `P.comap C = ⊥` has
 height 1. The proof localizes `A[X]` at `(nonZeroDivisors A).map C` to get
 `(FractionRing A)[X]`, a PID. The image of `P` is a nonzero prime of the PID,
@@ -208,6 +210,7 @@ For a CM domain `A`, a prime `P` of `A[X]` containing `X`, the quotient
 `A[X]_P / (X)` is isomorphic as a ring to `A_{P ∩ A}`. This section
 builds the ring equivalence and transfers the CM property. -/
 
+omit [IsDomain A] [IsNoetherianRing A] in
 /-- For a polynomial `f`, the difference `f - C(f.eval 0)` lies
 in `Ideal.span {X}`. -/
 private lemma polynomial_sub_C_eval_mem_span_X (f : Polynomial A) :
@@ -215,6 +218,7 @@ private lemma polynomial_sub_C_eval_mem_span_X (f : Polynomial A) :
   rw [Ideal.mem_span_singleton, ← f.coeff_zero_eq_eval_zero]
   exact Polynomial.X_dvd_sub_C
 
+omit [IsDomain A] [IsNoetherianRing A] in
 /-- If `X ∈ P` and `s ∉ P`, then `s.eval 0 ∉ P.comap C`. -/
 private lemma eval_zero_not_mem_comap_of_not_mem
     {P : Ideal (Polynomial A)} [P.IsPrime] (hX : Polynomial.X ∈ P)
@@ -229,12 +233,14 @@ private lemma eval_zero_not_mem_comap_of_not_mem
   have : s = (s - Polynomial.C (s.eval 0)) + Polynomial.C (s.eval 0) := by ring
   rw [this]; exact P.add_mem hsub hC_mem
 
+omit [IsDomain A] [IsNoetherianRing A] in
 /-- The evaluation-at-zero ring hom from `A[X]` to `Localization.AtPrime (P.comap C)`
 maps `P.primeCompl` to units. -/
 private lemma evalMap_map_units
     {P : Ideal (Polynomial A)} [P.IsPrime] (hX : Polynomial.X ∈ P) :
     ∀ s : P.primeCompl,
-      IsUnit (((algebraMap A (Localization.AtPrime (P.comap (Polynomial.C : A →+* Polynomial A)))).comp
+      IsUnit (((algebraMap A
+            (Localization.AtPrime (P.comap (Polynomial.C : A →+* Polynomial A)))).comp
         (Polynomial.evalRingHom 0)) (s : Polynomial A)) := by
   rintro ⟨s, hs⟩
   simp only [RingHom.comp_apply, Polynomial.coe_evalRingHom]
@@ -243,6 +249,8 @@ private lemma evalMap_map_units
       (Ideal.mem_primeCompl_iff.mp hs)))⟩
 
 set_option maxHeartbeats 800000 in
+-- Higher heartbeats needed: universe polymorphism + localization + quotient algebra
+-- inference for the explicit RingEquiv construction below.
 /-- Ring equiv between `QuotSMulTop aX Rp` and `Localization.AtPrime (P.comap C)`,
 where `Rp = A[X]_P` and `aX` is the image of `X` in `Rp`. -/
 private noncomputable def quotSMulTopPolynomialLocalizationEquiv
@@ -268,7 +276,7 @@ private noncomputable def quotSMulTopPolynomialLocalizationEquiv
     intro z hz
     rw [Submodule.mem_smul_pointwise_iff_exists] at hz
     obtain ⟨w, _, rfl⟩ := hz
-    show ψ₀ (aX * w) = 0; rw [map_mul, hψ₀_aX, zero_mul]
+    change ψ₀ (aX * w) = 0; rw [map_mul, hψ₀_aX, zero_mul]
   -- Factor ψ₀ through the quotient
   set ψ : QuotSMulTop aX Rp →+* Ap :=
     Ideal.Quotient.lift (aX • ⊤ : Ideal Rp) ψ₀ hψ₀_ker with ψ_def
@@ -286,9 +294,9 @@ private noncomputable def quotSMulTopPolynomialLocalizationEquiv
   set φ : Ap →+* QuotSMulTop aX Rp := IsLocalization.lift hembed_units with φ_def
   -- Helper: aX maps to 0 in the quotient
   have haX_zero : (algebraMap Rp (QuotSMulTop aX Rp)) aX = 0 := by
-    show Submodule.Quotient.mk aX = 0
+    change Submodule.Quotient.mk aX = 0
     rw [Submodule.Quotient.mk_eq_zero]
-    exact ⟨1, Submodule.mem_top, by simp [Algebra.smul_def]⟩
+    exact ⟨1, Submodule.mem_top, by simp⟩
   -- Helper: in the quotient, f and C(f.eval 0) are identified
   have hmkQ_eq : ∀ f : Polynomial A,
       (algebraMap Rp (QuotSMulTop aX Rp)) (algebraMap (Polynomial A) Rp f) =
@@ -467,9 +475,9 @@ is isomorphic to the localization of the quotient ring.
 For `a ∈ p` where `p` is prime and `p' = p.map (Quotient.mk (span {a}))`,
 `B_p / (a) ≃+* (B/(a))_{p'}`. -/
 -- Localization-quotient commutation for a regular element.
-private noncomputable def quotSMulTopLocalizationEquiv_of_mem
+noncomputable def quotSMulTopLocalizationEquiv_of_mem
     {B : Type u} [CommRing B]
-    {p : Ideal B} [p.IsPrime] {a : B} (ha : a ∈ p)
+    {p : Ideal B} [p.IsPrime] {a : B} (_ha : a ∈ p)
     {p' : Ideal (B ⧸ Ideal.span ({a} : Set B))} [p'.IsPrime]
     (hp' : p'.comap (Ideal.Quotient.mk (Ideal.span ({a} : Set B))) = p) :
     QuotSMulTop (algebraMap B (Localization.AtPrime p) a) (Localization.AtPrime p) ≃+*
@@ -486,32 +494,32 @@ private noncomputable def quotSMulTopLocalizationEquiv_of_mem
   -- Forward map: Bp → Bp' via B →mkQ B/(a) →alg Bp'
   let φ : B →+* Bp' := (algebraMap _ Bp').comp mkQ
   have hφ_units : ∀ s : p.primeCompl, IsUnit (φ s) := by
-    rintro ⟨s, hs⟩; show IsUnit ((algebraMap _ Bp') (mkQ s))
+    rintro ⟨s, hs⟩; change IsUnit ((algebraMap _ Bp') (mkQ s))
     exact IsLocalization.map_units Bp' ⟨mkQ s, Ideal.mem_primeCompl_iff.mpr (hmkQ_nmem s hs)⟩
   let ψ₀ : Bp →+* Bp' := IsLocalization.lift hφ_units
   have hψ₀_a : ψ₀ aB = 0 := by
-    show IsLocalization.lift hφ_units (algebraMap B Bp a) = 0
-    rw [IsLocalization.lift_eq]; show (algebraMap _ Bp') (mkQ a) = 0
+    change IsLocalization.lift hφ_units (algebraMap B Bp a) = 0
+    rw [IsLocalization.lift_eq]; change (algebraMap _ Bp') (mkQ a) = 0
     rw [show mkQ a = 0 from Ideal.Quotient.eq_zero_iff_mem.mpr
       (Ideal.subset_span (Set.mem_singleton a)), map_zero]
   have hψ₀_ker : ∀ z ∈ (aB • ⊤ : Ideal Bp), ψ₀ z = 0 := by
     intro z hz; obtain ⟨w, _, rfl⟩ := hz
-    show ψ₀ (aB * w) = 0; rw [map_mul, hψ₀_a, zero_mul]
+    change ψ₀ (aB * w) = 0; rw [map_mul, hψ₀_a, zero_mul]
   let ψ : QuotSMulTop aB Bp →+* Bp' := Ideal.Quotient.lift _ ψ₀ hψ₀_ker
   -- Backward map
   have haB_zero : (algebraMap Bp (QuotSMulTop aB Bp)) aB = 0 := by
-    show Submodule.Quotient.mk aB = 0
+    change Submodule.Quotient.mk aB = 0
     rw [Submodule.Quotient.mk_eq_zero]; exact ⟨1, Submodule.mem_top, by simp⟩
   let embed : B →+* QuotSMulTop aB Bp := (algebraMap Bp _).comp (algebraMap B Bp)
   have hembed_ker : ∀ x ∈ Ideal.span ({a} : Set B), embed x = 0 := by
     intro x hx; rw [Ideal.mem_span_singleton] at hx; obtain ⟨c, rfl⟩ := hx
-    show (algebraMap Bp _) ((algebraMap B Bp) (a * c)) = 0
+    change (algebraMap Bp _) ((algebraMap B Bp) (a * c)) = 0
     rw [map_mul, map_mul, haB_zero, zero_mul]
   let embed' : (B ⧸ Ideal.span ({a} : Set B)) →+* QuotSMulTop aB Bp :=
     Ideal.Quotient.lift _ embed hembed_ker
   have hembed'_units : ∀ s : p'.primeCompl, IsUnit (embed' s) := by
     rintro ⟨s, hs⟩; obtain ⟨b, rfl⟩ := Ideal.Quotient.mk_surjective s
-    show IsUnit ((algebraMap Bp _) ((algebraMap B Bp) b))
+    change IsUnit ((algebraMap Bp _) ((algebraMap B Bp) b))
     exact (IsLocalization.map_units Bp ⟨b, Ideal.mem_primeCompl_iff.mpr
       (hmkQ_nmem' b (Ideal.mem_primeCompl_iff.mp hs))⟩).map _
   let χ : Bp' →+* QuotSMulTop aB Bp := IsLocalization.lift hembed'_units
@@ -519,7 +527,7 @@ private noncomputable def quotSMulTopLocalizationEquiv_of_mem
   have hψχ : ψ.comp χ = RingHom.id Bp' := by
     apply IsLocalization.ringHom_ext p'.primeCompl; ext b
     simp only [RingHom.comp_apply, RingHom.id_apply]
-    show ψ (χ ((algebraMap _ Bp') (mkQ b))) = (algebraMap _ Bp') (mkQ b)
+    change ψ (χ ((algebraMap _ Bp') (mkQ b))) = (algebraMap _ Bp') (mkQ b)
     rw [show χ ((algebraMap _ Bp') (mkQ b)) = embed' (mkQ b) from
       IsLocalization.lift_eq hembed'_units b]
     change Ideal.Quotient.lift _ ψ₀ hψ₀_ker (Ideal.Quotient.lift _ embed hembed_ker (mkQ b)) = _
@@ -527,7 +535,7 @@ private noncomputable def quotSMulTopLocalizationEquiv_of_mem
     change Ideal.Quotient.lift _ ψ₀ hψ₀_ker ((algebraMap Bp _) ((algebraMap B Bp) b)) = _
     rw [show (algebraMap Bp (QuotSMulTop aB Bp)) ((algebraMap B Bp) b) =
       Ideal.Quotient.mk _ ((algebraMap B Bp) b) from rfl, Ideal.Quotient.lift_mk]
-    show IsLocalization.lift hφ_units ((algebraMap B Bp) b) = _
+    change IsLocalization.lift hφ_units ((algebraMap B Bp) b) = _
     rw [IsLocalization.lift_eq]; rfl
   -- Surjectivity from section
   have hψ_surj : Function.Surjective ψ :=
@@ -548,7 +556,7 @@ private noncomputable def quotSMulTopLocalizationEquiv_of_mem
     have hs'_nmem : mkQ (s : B) ∉ p' := hmkQ_nmem s s.prop
     have hψ₀_val : ψ₀ (IsLocalization.mk' Bp f s) =
         IsLocalization.mk' Bp' (mkQ f) ⟨mkQ s, Ideal.mem_primeCompl_iff.mpr hs'_nmem⟩ := by
-      show IsLocalization.lift hφ_units (IsLocalization.mk' Bp f s) = _
+      change IsLocalization.lift hφ_units (IsLocalization.mk' Bp f s) = _
       rw [IsLocalization.lift_mk'_spec]; simp only [φ, RingHom.comp_apply]
       exact (IsLocalization.mk'_spec' Bp' (mkQ f) ⟨mkQ s, _⟩).symm
     rw [hψ₀_val, IsLocalization.mk'_eq_zero_iff] at hψ₀_diff
@@ -567,7 +575,7 @@ private noncomputable def quotSMulTopLocalizationEquiv_of_mem
       rw [show aB = algebraMap B Bp a from rfl, IsLocalization.mul_mk'_eq_mk'_of_mul]
       -- Goal: mk'(f, s) = mk'(a*c, t*s)... but with ⟨t,..⟩*s
       apply IsLocalization.mk'_eq_of_eq
-      show ↑s * (a * c) = ↑(⟨t, _⟩ * s : p.primeCompl) * f
+      change ↑s * (a * c) = ↑(⟨t, _⟩ * s : p.primeCompl) * f
       simp only [Submonoid.coe_mul]; rw [← hc]; ring
     rw [key]
     exact Submodule.smul_mem_pointwise_smul _ _ _ Submodule.mem_top
@@ -625,6 +633,8 @@ For a Noetherian CM ring `B`, every localization `B[X]_Q` at a prime `Q` of
 -/
 
 set_option maxHeartbeats 800000 in
+-- Higher heartbeats needed: induction over dimension with case-by-case
+-- construction of regular sequences and CM transfer lemmas makes unification slow.
 /-- For a CM Noetherian ring `B` and prime `Q` of `B[X]` with
 `Q.primeHeight ≤ d`, the localization `B[X]_Q` is CM local. -/
 private lemma cm_localize_polynomial_of_cm_aux (d : ℕ) :
@@ -709,7 +719,7 @@ private lemma cm_localize_polynomial_of_cm_aux (d : ℕ) :
         let φ : Polynomial B →+* Localization.AtPrime Q' :=
           (algebraMap (Polynomial Ba) (Localization.AtPrime Q')).comp π
         have hφ_units : ∀ s : Q.primeCompl, IsUnit (φ s) := by
-          rintro ⟨s, hs⟩; show IsUnit ((algebraMap _ (Localization.AtPrime Q')) (π s))
+          rintro ⟨s, hs⟩; change IsUnit ((algebraMap _ (Localization.AtPrime Q')) (π s))
           have : π s ∉ Q' := by
             intro hmem; apply hs
             have hcomap : (Q.map π).comap π = Q := by
@@ -724,21 +734,22 @@ private lemma cm_localize_polynomial_of_cm_aux (d : ℕ) :
           exact IsLocalization.map_units _ ⟨π s, Ideal.mem_primeCompl_iff.mpr this⟩
         let ψ₀ : BXQ →+* Localization.AtPrime Q' := IsLocalization.lift hφ_units
         have hψ₀_ca : ψ₀ ca = 0 := by
-          show IsLocalization.lift hφ_units (algebraMap _ BXQ (Polynomial.C a)) = 0
-          rw [IsLocalization.lift_eq]; show (algebraMap _ _) (π (Polynomial.C a)) = 0
+          change IsLocalization.lift hφ_units (algebraMap _ BXQ (Polynomial.C a)) = 0
+          rw [IsLocalization.lift_eq]; change (algebraMap _ _) (π (Polynomial.C a)) = 0
           have : π (Polynomial.C a) = 0 := by
-            show Polynomial.map (Ideal.Quotient.mk (Ideal.span ({a} : Set B))) (Polynomial.C a) = 0
+            change Polynomial.map (Ideal.Quotient.mk (Ideal.span ({a} : Set B)))
+              (Polynomial.C a) = 0
             rw [Polynomial.map_C, Ideal.Quotient.eq_zero_iff_mem.mpr
               (Ideal.subset_span (Set.mem_singleton a)), map_zero]
           rw [this, map_zero]
         have hψ₀_ker : ∀ z ∈ (ca • ⊤ : Ideal BXQ), ψ₀ z = 0 := by
           intro z hz; obtain ⟨w, _, rfl⟩ := hz
-          show ψ₀ (ca * w) = 0; rw [map_mul, hψ₀_ca, zero_mul]
+          change ψ₀ (ca * w) = 0; rw [map_mul, hψ₀_ca, zero_mul]
         let ψ : QuotSMulTop ca BXQ →+* Localization.AtPrime Q' :=
           Ideal.Quotient.lift _ ψ₀ hψ₀_ker
         -- Backward: Ba[X]_{Q'} → QuotSMulTop via Ba[X] → QuotSMulTop
         have hca_zero : (algebraMap BXQ (QuotSMulTop ca BXQ)) ca = 0 := by
-          show Submodule.Quotient.mk ca = 0; rw [Submodule.Quotient.mk_eq_zero]
+          change Submodule.Quotient.mk ca = 0; rw [Submodule.Quotient.mk_eq_zero]
           exact ⟨1, Submodule.mem_top, by simp⟩
         -- Ring hom Ba[X] → QuotSMulTop: use eval₂ with
         -- f : Ba → QuotSMulTop (coefficient map) and X ↦ image of X
@@ -748,7 +759,7 @@ private lemma cm_localize_polynomial_of_cm_aux (d : ℕ) :
             ((algebraMap (Polynomial B) BXQ).comp Polynomial.C)
         have hf_base_ker : ∀ b ∈ Ideal.span ({a} : Set B), f_base b = 0 := by
           intro b hb; rw [Ideal.mem_span_singleton] at hb; obtain ⟨c, rfl⟩ := hb
-          show (algebraMap BXQ _) ((algebraMap _ BXQ) (Polynomial.C (a * c))) = 0
+          change (algebraMap BXQ _) ((algebraMap _ BXQ) (Polynomial.C (a * c))) = 0
           rw [Polynomial.C_mul, map_mul, map_mul, hca_zero, zero_mul]
         let f_coeff : Ba →+* QuotSMulTop ca BXQ :=
           Ideal.Quotient.lift _ f_base hf_base_ker
@@ -760,9 +771,9 @@ private lemma cm_localize_polynomial_of_cm_aux (d : ℕ) :
         -- embed_Ba ∘ π = quotient ∘ algebraMap (check on generators)
         have hembed_comp : ∀ g : Polynomial B,
             embed_Ba (π g) = (algebraMap BXQ (QuotSMulTop ca BXQ)) (algebraMap _ BXQ g) := by
-          intro g; show Polynomial.eval₂ f_coeff x_img (Polynomial.map _ g) = _
+          intro g; change Polynomial.eval₂ f_coeff x_img (Polynomial.map _ g) = _
           rw [Polynomial.eval₂_map]
-          show Polynomial.eval₂ (f_coeff.comp (Ideal.Quotient.mk _)) x_img g = _
+          change Polynomial.eval₂ (f_coeff.comp (Ideal.Quotient.mk _)) x_img g = _
           -- f_coeff ∘ mk = f_base = quotient ∘ algebraMap ∘ C
           -- So eval₂ (quotient ∘ algebraMap ∘ C) (quotient(algebraMap X)) g
           -- = quotient(algebraMap(eval₂ C X g)) = quotient(algebraMap(g))
@@ -782,7 +793,7 @@ private lemma cm_localize_polynomial_of_cm_aux (d : ℕ) :
           have hg_nmem : g ∉ Q := by
             intro hgQ; exact (Ideal.mem_primeCompl_iff.mp hs)
               (Ideal.mem_map_of_mem π hgQ)
-          show IsUnit (embed_Ba (π g))
+          change IsUnit (embed_Ba (π g))
           rw [hembed_comp]
           exact (IsLocalization.map_units BXQ
             ⟨g, Ideal.mem_primeCompl_iff.mpr hg_nmem⟩).map _
@@ -813,12 +824,12 @@ private lemma cm_localize_polynomial_of_cm_aux (d : ℕ) :
             intro b; obtain ⟨b₀, rfl⟩ := Ideal.Quotient.mk_surjective b
             simp only [RingHom.comp_apply, RingHom.id_apply]
             rw [hχ_alg, show Polynomial.C (Ideal.Quotient.mk _ b₀) = π (Polynomial.C b₀) from by
-              show Polynomial.C _ = Polynomial.map _ (Polynomial.C b₀)
+              change Polynomial.C _ = Polynomial.map _ (Polynomial.C b₀)
               rw [Polynomial.map_C], hψ_embed_π]
           · -- Check on X
             simp only [RingHom.comp_apply, RingHom.id_apply]
             rw [hχ_alg, show (Polynomial.X : Polynomial Ba) = π Polynomial.X from by
-              show Polynomial.X = Polynomial.map _ Polynomial.X
+              change Polynomial.X = Polynomial.map _ Polynomial.X
               rw [Polynomial.map_X], hψ_embed_π]
         have hψ_surj : Function.Surjective ψ :=
           fun y => ⟨χ y, by simpa using RingHom.congr_fun hψχ y⟩
@@ -853,7 +864,7 @@ private lemma cm_localize_polynomial_of_cm_aux (d : ℕ) :
           have hψ₀_val : ψ₀ (IsLocalization.mk' BXQ f s) =
               IsLocalization.mk' (Localization.AtPrime Q') (π f)
                 ⟨π s, Ideal.mem_primeCompl_iff.mpr hπs_nmem⟩ := by
-            show IsLocalization.lift hφ_units (IsLocalization.mk' BXQ f s) = _
+            change IsLocalization.lift hφ_units (IsLocalization.mk' BXQ f s) = _
             rw [IsLocalization.lift_mk'_spec]; simp only [φ, RingHom.comp_apply]
             exact (IsLocalization.mk'_spec' (Localization.AtPrime Q') (π f)
               ⟨π s, _⟩).symm
@@ -881,7 +892,7 @@ private lemma cm_localize_polynomial_of_cm_aux (d : ℕ) :
             rw [show ca = algebraMap (Polynomial B) BXQ (Polynomial.C a) from rfl,
                 IsLocalization.mul_mk'_eq_mk'_of_mul]
             apply IsLocalization.mk'_eq_of_eq
-            show ↑s * (Polynomial.C a * c) = ↑(⟨t, _⟩ * s : Q.primeCompl) * f
+            change ↑s * (Polynomial.C a * c) = ↑(⟨t, _⟩ * s : Q.primeCompl) * f
             simp only [Submonoid.coe_mul]; rw [← hc]; ring
           rw [key]
           exact Submodule.smul_mem_pointwise_smul _ _ _ Submodule.mem_top
@@ -956,7 +967,7 @@ private lemma cm_localize_polynomial_of_cm_aux (d : ℕ) :
           obtain ⟨w, hw, heq⟩ := hx'; rwa [← heq, e.symm_apply_apply]
         have he_symm : e.symm (Polynomial.C (Ideal.Quotient.mk q b)) =
             Ideal.Quotient.mk _ (Polynomial.C b) := by
-          show (Ideal.polynomialQuotientEquivQuotientPolynomial q)
+          change (Ideal.polynomialQuotientEquivQuotientPolynomial q)
             (Polynomial.C (Ideal.Quotient.mk q b)) = _
           rw [← Polynomial.map_C, Ideal.polynomialQuotientEquivQuotientPolynomial_map_mk]
         rw [he_symm] at hmem
@@ -1129,12 +1140,12 @@ private lemma cm_localize_polynomial_of_cm_aux (d : ℕ) :
               have hp_mem : p ∈ associatedPrimes B B := hp_assoc
               apply hg_not_mem
               refine Set.mem_iUnion₂.mpr ⟨p, hp_mem, ?_⟩
-              show g ∈ Ideal.map Polynomial.C p
+              change g ∈ Ideal.map Polynomial.C p
               rw [Ideal.mem_map_C_iff]
               intro n
               apply hAnn_le
               rw [Submodule.mem_colon_singleton]
-              show Polynomial.coeff g n * b = 0
+              change Polynomial.coeff g n * b = 0
               have hcoeff : (b • g).coeff n = b * Polynomial.coeff g n := by
                 rw [Polynomial.coeff_smul, smul_eq_mul]
               rw [mul_comm, ← hcoeff, hb, Polynomial.coeff_zero]
@@ -1269,6 +1280,8 @@ section MvPolynomial
 variable (K : Type u) [Field K]
 
 set_option maxHeartbeats 400000 in
+-- Higher heartbeats needed: induction + MvPolynomial.finSuccEquiv transfer
+-- triggers nontrivial algebra/ring equivalence inference.
 /-- **Multivariate polynomial rings over fields are Cohen-Macaulay.**
 
 Proof by induction on the number of variables using `MvPolynomial.finSuccEquiv`. -/
@@ -1376,10 +1389,10 @@ private lemma exists_weaklyRegular_length_eq_ringKrullDim_of_isCohenMacaulayLoca
   have hCMeq : ringKrullDim R = ringDepth R := IsCohenMacaulayLocalRing.depth_eq_dim
   rw [hCMeq, ← hlen]
 
+set_option maxHeartbeats 800000 in
 -- Increased heartbeat limit: this proof case-splits on X ∈ p vs X ∉ p and
 -- builds explicit regular sequences in each branch; each branch does substantial
 -- simp/rewrite work on quotient-localization identifications.
-set_option maxHeartbeats 800000 in
 /-- **Core lemma**: if `R` is a CM Noetherian local ring and `p` is a prime of `R[X]`
 whose contraction to `R` is the maximal ideal, then the localization `R[X]_p` is
 Cohen-Macaulay local.
@@ -1547,9 +1560,9 @@ private lemma localization_at_comap_maximal_isCM_isCM_local [IsNoetherianRing R]
       rw [hdimeq, hpheight, hextlen]
     exact isCohenMacaulayLocalRing_of_weaklyRegular_length_eq_dim reg_loc mem'' hdim
 
+set_option maxHeartbeats 800000 in
 -- Increased heartbeat limit: constructs the pS prime and the pS.comap C = maxIdeal
 -- equation through several IsLocalization comap/map identifications.
-set_option maxHeartbeats 800000 in
 /-- **Polynomial ring over a CM Noetherian ring is CM** (no IsDomain assumption).
 
 This is the translation of upstream `Polynomial.isCM_of_isCM` (mathlib PR #28599)
