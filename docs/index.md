@@ -9,9 +9,10 @@ title: Binomial Edge Ideals
       This project formalizes the main algebraic results of
       <em>Binomial edge ideals and conditional independence statements</em> in Lean.
       The Gröbner basis, radicality, prime decomposition, dimension, and
-      conditional-independence bridge are formalized. The remaining paper-level
-      gap is the Cohen–Macaulay step around Proposition 1.6 and the corollaries
-      that depend on it.
+      conditional-independence bridge are formalized. The paper-faithful
+      Cohen–Macaulay theorem of Proposition 1.6 is now formalized as well.
+      The remaining paper-level gaps are the downstream Cohen–Macaulay branches
+      of Corollaries 3.4 and 3.7.
     </p>
     <div class="quick-links quick-links--hero">
       <a href="{{ '/overview.html' | relative_url }}">Overview</a>
@@ -29,18 +30,19 @@ title: Binomial Edge Ideals
   </div>
   <div class="landing-summary">
     <div class="landing-summary__metric">
-      <span class="landing-summary__value">18 / 21</span>
+      <span class="landing-summary__value">19 / 21</span>
       <span class="landing-summary__label">main results completed</span>
     </div>
     <div class="landing-summary__metric">
-      <span class="landing-summary__value">3</span>
+      <span class="landing-summary__value">2</span>
       <span class="landing-summary__label">paper-level gaps remain</span>
     </div>
     <div class="landing-summary__note">
       <strong>Current status:</strong> the project already covers the main
       Gröbner, radicality, prime-decomposition, and conditional-independence
-      results from the paper. What remains is the depth-based
-      Cohen–Macaulay route behind Proposition 1.6 and its consequences.
+      results from the paper, including the paper-faithful Proposition 1.6
+      Cohen–Macaulay theorem. What remains are the full Cohen–Macaulay
+      statements of Corollaries 3.4 and 3.7.
     </div>
   </div>
 </div>
@@ -87,11 +89,18 @@ formal statement matches the published one.
       <span>Conditional independence ideals are linked to binomial edge ideals, with bridge theorems, radicality, prime decomposition, and minimal-prime results.</span>
     </div>
   </div>
+  <div class="result-item result-item--done">
+    <span class="result-item__icon" data-icon="&#10003;"></span>
+    <div>
+      <strong>Paper-faithful Proposition 1.6 complete</strong>
+      <span>The full Cohen–Macaulay theorem, its Gröbner deformation transfer, and the path-graph example are formalized.</span>
+    </div>
+  </div>
   <div class="result-item result-item--open">
     <span class="result-item__icon" data-icon="&#9675;"></span>
     <div>
-      <strong>Remaining Cohen–Macaulay step</strong>
-      <span>The paper-faithful Cohen–Macaulay proof of Proposition 1.6, and the downstream CM branches of Corollaries 3.4 and 3.7, are still open.</span>
+      <strong>Two Section 3 CM corollaries remain partial</strong>
+      <span>Corollaries 3.4 and 3.7 still use equidimensional surrogates for their Cohen–Macaulay branches.</span>
     </div>
   </div>
 </div>
@@ -107,7 +116,7 @@ formal statement matches the published one.
   <a class="section-card" href="{{ '/section-1.html' | relative_url }}">
     <span class="section-card__kicker">Section 1</span>
     <strong>Closed graphs and quadratic Gröbner bases</strong>
-    <span class="section-card__meta">5 done, 1 open</span>
+    <span class="section-card__meta">complete</span>
   </a>
   <a class="section-card" href="{{ '/section-2.html' | relative_url }}">
     <span class="section-card__kicker">Section 2</span>
@@ -117,7 +126,7 @@ formal statement matches the published one.
   <a class="section-card" href="{{ '/section-3.html' | relative_url }}">
     <span class="section-card__kicker">Section 3</span>
     <strong>Prime decomposition, dimension, minimal primes</strong>
-    <span class="section-card__meta">prime and dimension results complete; CM branch partial</span>
+    <span class="section-card__meta">prime theory complete; two CM corollaries still partial</span>
   </a>
   <a class="section-card" href="{{ '/section-4.html' | relative_url }}">
     <span class="section-card__kicker">Section 4</span>
@@ -140,25 +149,19 @@ pages give the fuller context.
   {% endfor %}
 </div>
 
-## Current Paper-Level Gaps
+## Remaining Paper-Level Gaps
 
 <div class="blocker-grid">
   <article class="blocker-card blocker-card--open">
-    <span class="blocker-card__kicker">Proposition 1.6</span>
-    <strong>Final Cohen–Macaulay step</strong>
-    <p>The graph reduction and most of the Herzog–Hibi side are formalized. The remaining step is the final Cohen–Macaulay base case on the HH side, followed by the transfer back to the original ideal.</p>
-    <a href="{{ '/section-1.html' | relative_url }}">See Section 1</a>
-  </article>
-  <article class="blocker-card blocker-card--open">
     <span class="blocker-card__kicker">Corollary 3.4</span>
     <strong>Dimension from Cohen–Macaulayness</strong>
-    <p>The project proves the equidimensional consequence. The paper's Cohen–Macaulay implication is still waiting on Proposition 1.6.</p>
+    <p>The equidimensional consequence is formalized, and `proposition_1_6_dim_formula` handles the Prop 1.6 specialization. The full paper statement remains open.</p>
     <a href="{{ '/section-3.html' | relative_url }}">See Section 3</a>
   </article>
   <article class="blocker-card blocker-card--open">
     <span class="blocker-card__kicker">Corollary 3.7</span>
     <strong>Cycle-graph CM branch</strong>
-    <p>The prime and unmixed branches are formalized. The Cohen–Macaulay branch remains open for the same reason as Proposition 1.6.</p>
+    <p>The prime and unmixed branches are formalized exactly. The Cohen–Macaulay branch is still represented only by the equidimensional surrogate.</p>
     <a href="{{ '/section-3.html' | relative_url }}">See Section 3</a>
   </article>
 </div>

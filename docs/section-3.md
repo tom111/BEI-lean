@@ -10,8 +10,9 @@ minimal primes.
 
 For mathematicians, this is the page that explains how the graph controls the
 prime ideals of the binomial edge ideal. The complete prime decomposition and
-dimension formula are formalized. What remains open is not the prime theory
-itself, but the later Cohen–Macaulay consequences derived from it.
+dimension formula are formalized. Proposition 1.6 is now formalized as well.
+What remains open is not the prime theory itself, but the later
+Cohen–Macaulay consequences in Corollaries 3.4 and 3.7.
 
 ## Theorem map
 
@@ -38,11 +39,12 @@ itself, but the later Cohen–Macaulay consequences derived from it.
 ## Notes
 
 Prime decomposition, minimal primes, and the dimension formula are formalized.
-The Cohen–Macaulay consequences are still partial:
+The remaining partial Cohen–Macaulay consequences are:
 
 - the prime decomposition is formalized;
 - the dimension consequences are formalized;
 - the minimal-prime characterization is formalized;
+- Proposition 1.6 is formalized in its paper-faithful CM form;
 - the prime and unmixed cycle-graph equivalences are formalized exactly;
 - and the remaining Cohen–Macaulay statements are currently represented by
   `corollary_3_4_equidim` and `corollary_3_7_equidim`.

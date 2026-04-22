@@ -15,10 +15,10 @@ have already been formalized and which ones are still open.
 The formalization stays close to the statements in
 [BEI.tex](https://github.com/tom111/BEI-lean/blob/master/BEI.tex).
 
-The main remaining gap is the Cohen–Macaulay route behind Proposition 1.6 and
-the corollaries that depend on it. The project already contains a substantial
-local Cohen–Macaulay development, but the paper-faithful global argument is not
-yet fully closed.
+The paper-faithful Cohen–Macaulay theorem of Proposition 1.6 is now fully
+formalized. The remaining gaps are the full Cohen–Macaulay branches of
+Corollaries 3.4 and 3.7, which are still represented in Lean by
+equidimensional surrogates.
 
 ## Mathematical roadmap
 
@@ -58,10 +58,11 @@ Supporting generic lemmas intended for possible upstreaming live in:
 
 ## By paper section
 
-- Section 1: closed graphs, path-like consequences, and the closure operation.
+- Section 1: closed graphs, path-like consequences, the closure operation, and the paper-faithful Proposition 1.6 theorem.
 - Section 2: reduced Gröbner bases and radicality.
 - Section 3: prime ideals `P_S`, prime decomposition, dimension, and minimal
-  primes. The Cohen–Macaulay branch is the only substantial part still open.
+  primes. The remaining partial pieces are the full Cohen–Macaulay statements of
+  Corollaries 3.4 and 3.7.
 - Section 4: the translation to conditional independence ideals and the transfer
   of the results from Sections 2 and 3.
 

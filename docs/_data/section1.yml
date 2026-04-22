@@ -113,36 +113,30 @@ prop_1_5:
 prop_1_6:
   paper_label: "Proposition 1.6"
   paper_title: "A Sufficient Cohen–Macaulay Criterion"
-  status: "partial"
-  fidelity: "Partial"
+  status: "proved"
+  fidelity: "Exact"
   paper_statement_tex: >
     Let $G$ be a connected graph on $[n]$ that is closed with respect to the given
     labeling. Suppose further that whenever $\{i,j+1\}$ with $i < j$ and
     $\{j,k+1\}$ with $j < k$ are edges of $G$, then $\{i,k+1\}$ is an edge of $G$.
     Then $S/J_G$ is Cohen--Macaulay.
-  lean_name: "`prop_1_6_herzogHibi`, `sum_XY_isSMulRegular_mod_diagonalSum`, `prop_1_6_equidim`"
+  lean_name: "`proposition_1_6`, `binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm`"
   lean_snippet: |
-    theorem prop_1_6_herzogHibi (n : ℕ) (G : SimpleGraph (Fin n))
+    theorem proposition_1_6
+        {K : Type} [Field K] {n : ℕ} (hn : 2 ≤ n) {G : SimpleGraph (Fin n)}
         (hConn : G.Connected) (hClosed : IsClosedGraph G)
         (hCond : SatisfiesProp1_6Condition n G) :
-        HerzogHibiConditions n G := by
-
-    theorem sum_XY_isSMulRegular_mod_diagonalSum {n : ℕ} {G : SimpleGraph (Fin n)}
-        (hHH : HerzogHibiConditions n G) (i : Fin n) (hi : i.val + 1 < n)
-        (hik : k ≤ i.val) :
-        IsSMulRegular ... := by
-
-    theorem prop_1_6_equidim (n : ℕ) (_hn : 0 < n) (G : SimpleGraph (Fin n))
-        (hConn : G.Connected) (hClosed : IsClosedGraph G)
-        (hCond : SatisfiesProp1_6Condition n G) :
-        IsEquidim
+        IsCohenMacaulayRing
           (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ binomialEdgeIdeal G) := by
   lean_links:
+    - label: "Proposition1_6.lean"
+      url: "https://github.com/tom111/BEI-lean/blob/master/BEI/Proposition1_6.lean"
+    - label: "GroebnerDeformation.lean"
+      url: "https://github.com/tom111/BEI-lean/blob/master/BEI/GroebnerDeformation.lean"
     - label: "Equidim.lean"
       url: "https://github.com/tom111/BEI-lean/blob/master/BEI/Equidim.lean"
-    - label: "PrimeDecompositionDimension.lean"
-      url: "https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecompositionDimension.lean"
   notes: >
-    The full paper statement is still open. The current Lean development has the
-    Herzog--Hibi reduction, the diagonal regularity theorem, and an equidimensional
-    surrogate, but not yet the final Cohen--Macaulay theorem.
+    The paper statement is formalized as `proposition_1_6`. The proof combines the
+    Herzog--Hibi reduction, the monomial-side CM theorem, and a separate
+    paper-faithful Gröbner deformation transfer back to `J_G`. The direct
+    equidimensional route remains in the repo as a separate surrogate argument.

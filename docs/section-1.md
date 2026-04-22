@@ -17,7 +17,7 @@ consequences and the closure construction.
 | Corollary 1.3 | `cor_1_3` and related wrappers | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Exact |
 | Proposition 1.4 | `prop_1_4` | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Equivalent |
 | Proposition 1.5 | `prop_1_5` | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Exact |
-| Proposition 1.6 | `prop_1_6_equidim`, `prop_1_6_herzogHibi`, `sum_XY_isSMulRegular_mod_diagonalSum` | [PrimeDecompositionDimension.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecompositionDimension.lean), [Equidim.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Equidim.lean) | Partial |
+| Proposition 1.6 | `proposition_1_6`, `binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm`, `prop_1_6_herzogHibi`, `monomialInitialIdeal_isCohenMacaulay` | [Proposition1_6.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Proposition1_6.lean), [GroebnerDeformation.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GroebnerDeformation.lean), [Equidim.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Equidim.lean) | Exact |
 
 ## Paper vs Lean
 
@@ -45,27 +45,20 @@ the path-graph conclusion directly.
 
 ### Examples 1.7
 
-The supporting examples are formalized at the equidimensional level:
+The supporting examples now split by strength:
 
 - Example 1.7(a): `complete_isEquidim` in `BEI/Equidim.lean`
-- Example 1.7(b): `path_isEquidim` in `BEI/PrimeDecompositionDimension.lean`
+- Example 1.7(b): `pathGraph_binomialEdgeIdeal_isCohenMacaulay` and `pathGraph_binomialEdgeIdeal_ringKrullDim` in `BEI/Proposition1_6.lean`
+- The direct surrogate route is also still available as `path_isEquidim` in `BEI/PrimeDecompositionDimension.lean`
 
 ### Proposition 1.6
 
-This branch is still partial.
+This branch is now complete.
 
-Already proved:
+The paper-faithful theorem is `proposition_1_6` in `BEI/Proposition1_6.lean`.
+Its proof is assembled in the same order as the paper-facing strategy:
 
-- the graph-combinatorial reduction from the paper;
-- the monomial initial ideal and variable-shift reduction;
-- the Herzog-Hibi bipartite-graph side;
-- the iterated HH regularity theorem `sum_XY_isSMulRegular_mod_diagonalSum`;
-- a direct equidimensional substitute in `PrimeDecompositionDimension.lean`;
-- and most of the real Cohen–Macaulay infrastructure behind the HH side.
-
-Still open:
-
-- the actual depth-based Cohen-Macaulay statement from the paper;
-- the last HH-side global Cohen–Macaulay step in `Equidim.lean`;
-- the separate paper-faithful Gröbner CM transfer theorem;
-- and therefore the full paper statement of Proposition 1.6.
+- `prop_1_6_herzogHibi` packages the graph hypotheses into the HH bipartite conditions;
+- `monomialInitialIdeal_isCohenMacaulay` proves the monomial-side CM theorem;
+- `binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm` and `groebnerDeformation_cm_transfer` carry CM back from the initial ideal to `J_G`;
+- and the direct equidimensional route in `PrimeDecompositionDimension.lean` remains available as a separate surrogate argument, not a replacement for the paper statement.
