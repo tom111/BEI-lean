@@ -9,11 +9,12 @@ The current development covers the main Gröbner-basis and prime-decomposition b
 of the paper, including Theorems 1.1, 2.1, 3.2, the Section 3 dimension formula, and
 the minimal-prime description. It also includes the binary-output Section 4
 single-statement bridge, specification bridge, and transferred radicality / prime
-decomposition / minimal-prime results for CI ideals. The main remaining paper gap is
-the depth-based Cohen–Macaulay branch around Proposition 1.6. The Section 3
-equidimensional surrogate corollaries and the Section 4 CI-ideal transfers are now
-formalized. A direct equidimensional surrogate variant of Proposition 1.6 is also
-proved, but the full Cohen–Macaulay statement from the paper is still open.
+decomposition / minimal-prime results for CI ideals. The paper-faithful
+Cohen–Macaulay statement of Proposition 1.6 is now fully formalized and axiom-clean,
+along with the direct equidimensional surrogate route and the path-graph example. The
+remaining paper-level gaps are the full Cohen–Macaulay branches of Corollaries 3.4
+and 3.7; the current Lean development still represents those by equidimensional
+surrogates.
 
 A full `lake build` currently succeeds. The only remaining `sorry`s live in the
 dormant infrastructure file `toMathlib/HeightAdditivity.lean` and the archived

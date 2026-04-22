@@ -17,7 +17,7 @@ is Cohen–Macaulay under the Herzog–Hibi conditions. For closed graphs,
 `initialIdeal_closed_eq` identifies that monomial ideal with the actual initial
 ideal `span(lt(J_G))`.
 
-The remaining paper-critical step is the Gröbner deformation transfer:
+The final paper-critical step is the Gröbner deformation transfer:
 
   `S ⧸ in_<(J_G)` Cohen–Macaulay  ⟹  `S ⧸ J_G` Cohen–Macaulay.
 
@@ -26,15 +26,15 @@ Algebraic Geometry*, Theorem 15.17, and is proved classically via a flat
 one-parameter family over `𝔸¹_K` degenerating `J_G` to `in_<(J_G)` combined with
 lower semicontinuity of depth on flat families.
 
-That infrastructure is currently absent from both Mathlib and this repository.
-We therefore state the narrow BEI-shaped transfer theorem as
-`binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm` with a single explicit `sorry`.
-This is the **one** remaining paper-critical sorry in the Proposition 1.6 chain;
-every other step is proved. A detailed route to closing it is tracked in
-`guides/work_packages/GROEBNER_CM_TRANSFER.md` (route R1).
+That step is now formalized in `BEI/GroebnerDeformation.lean` as
+`groebnerDeformation_cm_transfer`, using the weighted deformation over `K[t]`
+and the graded local-to-global CM theorem whose Case C is closed via the
+finite-free parameter-subring route in `toMathlib/GradedFiniteFree.lean` and
+`toMathlib/GradedRegularSop.lean`.
 
-Once `binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm` is proved, Proposition 1.6
-follows immediately from Step 1 via `proposition_1_6`.
+The narrow BEI-shaped transfer theorem
+`binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm` is therefore fully proved, and
+Proposition 1.6 follows immediately from the monomial-side theorem.
 
 ## Reference: Herzog et al. (2010), Proposition 1.6 (`cmbinomial`)
 -/
@@ -54,11 +54,10 @@ over `K[t]`, so CM of the special fiber (`t = 0`) implies CM of the generic fibe
 (`t = 1`). See Eisenbud, *Commutative Algebra with a View Toward Algebraic
 Geometry*, Theorem 15.17.
 
-**Status**: factored through `BEI/GroebnerDeformation.lean`. The proof reduces
-to `groebnerDeformation_cm_transfer`, whose two remaining sub-sorries are
-flatness of `S[t] ⧸ Ĩ` over `K[t]` and graded local-to-global CM at the
-deformation's irrelevant ideal. See
-`guides/work_packages/GROEBNER_CM_TRANSFER.md` (route R1) for the chain.
+**Status**: proved in `BEI/GroebnerDeformation.lean` as
+`groebnerDeformation_cm_transfer`. The transfer uses flatness of `S[t] ⧸ Ĩ`
+over `K[t]`, specialization at `t = 0` and `t = 1`, and the now-closed graded
+local-to-global CM theorem from `toMathlib/GradedCM.lean`.
 
 The narrow `K : Type` universe restriction is inherited from the HH-side CM
 theorem, which is currently universe-monomorphic because of the polynomial-away
@@ -88,7 +87,7 @@ Proof:
    `K[x, y] ⧸ monomialInitialIdeal G` is Cohen–Macaulay under those conditions,
    via the y-shift to `Γ` and the HH bipartite CM theorem.
 3. `binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm` (Step 2, the Gröbner
-   deformation step — currently a `sorry`) transfers CM back from the initial
+   deformation step) transfers CM back from the initial
    ideal to `J_G`.
 
 The `K : Type` restriction is inherited from the HH-side CM theorem. -/
@@ -145,10 +144,7 @@ theorem pathGraph_satisfiesProp1_6Condition (n : ℕ) :
 
 /-- **Corollary**: for the path graph on `Fin n` with `n ≥ 2`, the binomial edge
 ideal quotient `K[x, y] ⧸ J_{P_n}` is Cohen–Macaulay. (Example 1.7(b) in the
-paper, via Proposition 1.6.)
-
-Modulo the transitive `toMathlib/GradedCM.lean` Case-C sorry; this example
-inherits the same upstream gap as `proposition_1_6`. -/
+paper, via Proposition 1.6.) -/
 theorem pathGraph_binomialEdgeIdeal_isCohenMacaulay
     {K : Type} [Field K] {n : ℕ} (hn : 2 ≤ n) :
     IsCohenMacaulayRing
@@ -163,7 +159,7 @@ theorem pathGraph_binomialEdgeIdeal_isCohenMacaulay
     (pathGraph_satisfiesProp1_6Condition n)
 
 /-- **Dimension formula for the path graph**: `dim K[x, y] ⧸ J_{P_n} = n + 1`.
-Axiom-clean — does not depend on the GradedCM Case C sorry. -/
+Axiom-clean. -/
 theorem pathGraph_binomialEdgeIdeal_ringKrullDim
     {K : Type} [Field K] {n : ℕ} (hn : 0 < n) :
     ringKrullDim

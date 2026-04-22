@@ -7,16 +7,22 @@ Infrastructure for closing the non-homogeneous-prime case of the graded
 local-to-global Cohen–Macaulay theorem (Bruns–Herzog 2.1.27) via a
 finite-free parameter subring, rather than prime-by-prime induction.
 
-## Main results (currently in progress)
+## Main results
 
 * `mul_left_injective_of_notMem_irrelevant` — **Step B1**: for a connected
   ℕ-graded `K`-algebra `A`, multiplication by any `s ∈ A` whose degree-0
   component is nonzero (equivalently, `s ∉ 𝒜₊`) is injective on `A`.
   The key fact underlying the nilpotence argument in Step B2.
+* `finiteFree_over_mvPolynomial_of_homogeneous_regular_sop` — **Step C**:
+  a homogeneous regular system of parameters upgrades `A` to a finite free
+  module over a polynomial parameter subring.
+* `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant_finiteFree`:
+  the finite-free route closes Case C of graded local-to-global
+  Cohen–Macaulayness.
 
-## Proof strategy for the main theorem (not yet formalized)
-
-See `guides/answers/ANSWER_CASE_C_FINITE_FREE_ROUTE.md`.
+This file is the main algebraic engine behind the Proposition 1.6 closure on
+2026-04-22. Historical planning notes are preserved in
+`guides/archive/ANSWER_CASE_C_FINITE_FREE_ROUTE.md`.
 -/
 
 import toMathlib.GradedIrrelevant

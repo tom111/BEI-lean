@@ -303,42 +303,28 @@ infrastructure (graded depth, `*-Cohen–Macaulayness`, transcendence-degree
 estimates over residue fields, fibre dimension formulas) that is currently
 not present in `toMathlib/` or upstream Mathlib.
 
-##### Status of the sorry below
+##### Resolution of Case C
 
-The sorry stated as `caseC_CM_transfer` is therefore *not* a thin
-ring-theoretic gap that one could close with a small follow-up lemma; it
-encapsulates the entire Bruns–Herzog 2.1.27 case-C content. We retain it
-here as a single, clearly-named placeholder so that:
+Earlier versions left this step open because the naive localization map
+`A_{p*} → A_p` does not exist in the required generality, while the classical
+`*-local` Bruns–Herzog route would have required a large graded-depth and
+fibre-dimension development absent from Mathlib.
 
-* the homogeneous (Case B) branch and the rest of the file remain valid;
-* downstream consumers can still mention the global theorem, with the
-  understanding that the non-homogeneous prime case is the open mathematical
-  obligation;
-* future work can attack the gap directly (or pivot to a different strategy
-  for the BEI application — e.g. proving the specific HH bipartite quotient
-  is globally CM by Stanley–Reisner / Reisner-criterion methods, rather
-  than going through the general graded LTG theorem).
+The current proof bypasses that route. Instead it invokes the finite-free
+parameter-subring theorem
+`GradedFiniteFree.isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant_finiteFree`:
+Step A constructs a homogeneous regular system of parameters at the irrelevant
+ideal, Steps B and C promote `A` to a finite free module over a polynomial
+subring, and Step D deduces global Cohen–Macaulayness. Localizing that global
+result then gives the non-homogeneous-prime case.
 
-##### Strategies considered for closing the sorry
-
-1. **Homogeneous-element unit trick (`A[1/f_n]`)** — direction problem, see
-   above. Not viable as stated.
-2. **`*-local` depth–dimension identity** — needs ~400–800 LOC of new
-   infrastructure (graded depth, fibre dimension), not in Mathlib v4.28.
-3. **Graded Noether normalisation + finite-extension CM transfer** — the
-   ungraded version `Mathlib.RingTheory.NoetherNormalization.exists_finite_inj_algHom_of_fg`
-   is available, but the graded refinement (parameters `θ_i` homogeneous)
-   and CM-transfer along finite extensions are not in Mathlib; the latter
-   alone is also several hundred LOC.
-4. **Application-specific Stanley–Reisner argument** — bypasses the LTG
-   theorem entirely and proves global CM directly for the HH bipartite
-   quotient using monomial-ideal / shellability methods. This is the
-   recommended pivot for the BEI project; it does not close the sorry
-   here but makes the sorry irrelevant for the downstream consumer.
+Historical strategy notes are preserved in
+`guides/archive/GRADED_CM_CASE_C_PLAN.md` and
+`guides/archive/ANSWER_CASE_C_FINITE_FREE_ROUTE.md`.
 -/
 
 /-- **Case C key lemma (non-homogeneous primes)** — now fully proved via the
-finite-free Case C route (Steps A + C + D). If `A` is a connected ℕ-graded
+finite-free Case C route (Steps A + B + C + D). If `A` is a connected ℕ-graded
 Noetherian `K`-algebra of finite type whose localization at the irrelevant
 ideal is Cohen–Macaulay local, then for every *non-homogeneous* prime `p` of
 `A`, the localization `A_p` is also Cohen–Macaulay local.

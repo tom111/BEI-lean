@@ -2086,8 +2086,8 @@ theorem tildeJ_t_isSMulRegular {n : ℕ} {G : SimpleGraph (Fin n)}
 
 /-- **R1.f.1 sub-statement**: local Cohen–Macaulayness of the deformation at
 the irrelevant ideal. This is the first half of the R1.f.1 chain; the rest
-— the graded local-to-global theorem — is pre-formalized in
-`toMathlib/GradedCM.lean` (modulo its dormant Case-C sorry).
+— the graded local-to-global theorem — is provided by
+`toMathlib/GradedCM.lean`.
 
 Proof: the deformation parameter `t` is a regular element on `S[t] ⧸ Ĩ`
 (`tildeJ_t_isSMulRegular`); the quotient by the class of `t` is `S ⧸
@@ -2180,7 +2180,7 @@ homogeneous, so `S[t] ⧸ Ĩ` is a connected ℕ-graded `K`-algebra. Local CM
 at the irrelevant ideal (via `tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant`)
 combined with the graded local-to-global theorem
 `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant` from
-`toMathlib/GradedCM.lean` (which transitively carries its dormant Case-C sorry)
+`toMathlib/GradedCM.lean`
 yields global CM. -/
 theorem tildeJ_quotient_isCohenMacaulay
     {n : ℕ} {G : SimpleGraph (Fin n)} (hClosed : IsClosedGraph G)
