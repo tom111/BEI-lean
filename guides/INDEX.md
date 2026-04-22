@@ -13,46 +13,13 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 
 ## Active Work Packages
 
-1. [work_packages/FULL_PROP_1_6_PLAN.md](work_packages/FULL_PROP_1_6_PLAN.md)
-   Overall 3-step plan for paper-exact Proposition 1.6. **Step 1 (monomial-side CM) done 2026-04-20**: `monomialInitialIdeal_isCohenMacaulay` in `BEI/Equidim.lean`. Steps 2 (Gröbner degeneration) and 3 (final assembly) remain.
-
-2. [work_packages/PROP_1_6_CM_TRANSFER.md](work_packages/PROP_1_6_CM_TRANSFER.md)
-   Higher-level strategic context for the remaining paper-faithful algebra track. Most internal HH blockers are resolved; remaining paper-critical gap is the Gröbner transfer (see `GROEBNER_CM_TRANSFER.md`).
-
-3. [work_packages/GROEBNER_CM_TRANSFER.md](work_packages/GROEBNER_CM_TRANSFER.md)
-   Step 2 packet: transfer CM from `S ⧸ in_<(J_G)` to `S ⧸ J_G`. R1 (Eisenbud 15.17 graded route) is now fully closed on the BEI side; only the transitive GradedCM Case-C blocker remains.
-
-4. [work_packages/GRADED_CM_CASE_C_PLAN.md](work_packages/GRADED_CM_CASE_C_PLAN.md)
-   Plan for closing the sole remaining sorry (`caseC_CM_transfer` in `toMathlib/GradedCM.lean`), which transitively blocks `proposition_1_6` from being fully axiom-clean. Includes a Mathlib survey and picks **Route B (Eisenbud 18.3 generic-linear-form induction)** as the recommended direction.
-
-5. [work_packages/ROUTE_B_OBSTACLE_PLAN.md](work_packages/ROUTE_B_OBSTACLE_PLAN.md)
-   Detailed obstacle analysis for Route B: documents the `ℓ ∉ p` / non-homogeneous-NZD issue and the three recovery options (ungraded height induction, `*-depth` full treatment, or BEI-specific bypass). Phase 1 (BH 1.5.6) now **done** (2026-04-21) in `toMathlib/GradedAssociatedPrime.lean`; Phase 2 is the open problem.
-
-6. [work_packages/CASE_C_MATH_QUESTION.md](work_packages/CASE_C_MATH_QUESTION.md)
-   Mathematical question drafted for a deep-thinking model: what is the right induction invariant / algebraic identity / BEI-specific escape hatch for closing the non-homogeneous-prime branch of graded LTG CM? Answers will feed directly into Phase 2.
-
-7. [work_packages/NEXT_SESSION_PROMPT.md](work_packages/NEXT_SESSION_PROMPT.md)
-   Boot-strapping prompt for the next Claude session. Currently points to `CASE_C_MATH_QUESTION.md` as the next input to wait on, with a short status summary of Phase-1-done / Phase-2-blocked-on-strategy.
+1. [work_packages/NEXT_SESSION_PROMPT.md](work_packages/NEXT_SESSION_PROMPT.md)
+   **Proposition 1.6 is now AXIOM-CLEAN (2026-04-22).** This file records the full proof chain and lists possible follow-up targets: Corollary 3.4 full paper statement, proof cleanup, dormant-sorry retirement, and Mathlib upstreaming candidates.
 
 ## Answers And Decision Notes
 
-- [answers/ANSWER_PROP_1_6_CM_WHAT_IS_NEEDED.md](answers/ANSWER_PROP_1_6_CM_WHAT_IS_NEEDED.md)
-  Decision note: the paper-critical gaps are the HH bipartite CM theorem (now done) and the Gröbner transfer theorem.
-
 - [answers/ANSWER_04_HEIGHT_ADDITIVITY_REPAIR.md](answers/ANSWER_04_HEIGHT_ADDITIVITY_REPAIR.md)
   Dormant infrastructure repair; useful reference, not on the critical path.
-
-- [answers/ANSWER_CLEANUP_WORK_PACKAGE_REFRESH.md](answers/ANSWER_CLEANUP_WORK_PACKAGE_REFRESH.md)
-  Decision note: refreshes the cleanup packet set to match the live 2026-04-20
-  repo state and adds new packets for `Equidim`, the CM support layer, and
-  status/CI hygiene.
-
-- [answers/ANSWER_CASE_C_FINITE_FREE_ROUTE.md](answers/ANSWER_CASE_C_FINITE_FREE_ROUTE.md)
-  **Strategic answer (2026-04-21):** closes `caseC_CM_transfer` via the
-  finite-free parameter subring route instead of prime-by-prime induction.
-  Four steps: homogeneous regular sop → finite-dimensional final quotient →
-  finite free over `K[T_1,…,T_d]` → globally CM. Avoids *-depth, BH 1.5.8,
-  non-homogeneous-NZD induction, and graded Noether normalization.
 
 ## Cleanup And Refactor Packets
 
@@ -81,6 +48,20 @@ Optional proof-engineering work, not on the theorem-proving critical path.
 
 Completed / superseded packets, retained for historical context only. Do not treat as current policy.
 
+### Prop 1.6 work packages (all fully consumed, 2026-04-22)
+
+- `archive/FULL_PROP_1_6_PLAN.md` — 3-step plan for paper-exact Proposition 1.6; all steps landed.
+- `archive/PROP_1_6_CM_TRANSFER.md` — higher-level strategic context; consumed.
+- `archive/GROEBNER_CM_TRANSFER.md` — Gröbner deformation CM transfer (Eisenbud 15.17); R1 closed.
+- `archive/GRADED_CM_CASE_C_PLAN.md` — plan for closing `caseC_CM_transfer`; closed via finite-free route.
+- `archive/ROUTE_B_OBSTACLE_PLAN.md` — abandoned Route B (generic-linear-form induction); Case C closed via finite-free route instead.
+- `archive/CASE_C_MATH_QUESTION.md` — math question for deep-thinking model; answered in `ANSWER_CASE_C_FINITE_FREE_ROUTE.md`.
+- `archive/ANSWER_CASE_C_FINITE_FREE_ROUTE.md` — strategic answer adopting the finite-free parameter-subring route; strategy fully realized.
+- `archive/ANSWER_PROP_1_6_CM_WHAT_IS_NEEDED.md` — decision note identifying the HH and Gröbner gaps; both gaps now closed.
+- `archive/ANSWER_CLEANUP_WORK_PACKAGE_REFRESH.md` — cleanup packet refresh; consumed.
+
+### Earlier completed packets
+
 - `archive/CM_LOCALIZES.md` — CM-localizes theorem packet (landed).
 - `archive/CM_PARAMETER_PREFIX_UNMIXED.md` — superseded route.
 - `archive/DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md` — superseded route.
@@ -90,11 +71,11 @@ Completed / superseded packets, retained for historical context only. Do not tre
 - `archive/HH_BIPARTITE_CM_PACKAGING.md` — superseded by `HH_GLOBAL_CM_FROM_AUGIDEAL.md`.
 - `archive/HH_CM_BRIDGE_LEMMAS.md` — bridge lemmas landed; step C tracked in `HH_GLOBAL_CM_FROM_AUGIDEAL.md`.
 - `archive/HH_CM_TO_GLOBAL.md` — consumed; remaining work moved to `HH_GLOBAL_CM_FROM_AUGIDEAL.md`.
-- `archive/POLYNOMIAL_RING_CM_BASE_CASE.md` — polynomial CM extension landed (domain + non-domain versions both in `toMathlib/CohenMacaulay/Polynomial.lean`).
+- `archive/POLYNOMIAL_RING_CM_BASE_CASE.md` — polynomial CM extension landed.
 - `archive/cm_pr_26218/` — Cohen–Macaulay backport from Mathlib PR #26218, landed.
-- `archive/cm_pr_28599/` — CM-localization backport from Mathlib PR #28599, landed (companion to the polynomial PR #28599 slice now directly in `toMathlib/CohenMacaulay/Polynomial.lean`).
-- `archive/SESSION_A2_HANDOFF.md` — Session A′.2 handoff brief, consumed by commit `9067040`.
-- `archive/SESSION_C3_HANDOFF.md` — Session C3 handoff (C3a-inr + C3b assembly); consumed 2026-04-20, sorry closed in `BEI/Equidim.lean`.
-- `archive/FINAL_CHAIN_PLAN.md` — F2-chain sequencing plan; fully consumed (Sessions A′, B, C1, C2, C3 all landed 2026-04-20).
-- `archive/HH_GLOBAL_CM_FROM_AUGIDEAL.md` — F2-route narrative; consumed by `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal` (2026-04-20).
-- `archive/ANSWER_HH_QUOTIENT_CM_AT_NON_AUGIDEAL.md` — validated F2 strategy for `p ⊄ m⁺` branch; strategy fully consumed 2026-04-20.
+- `archive/cm_pr_28599/` — CM-localization backport from Mathlib PR #28599, landed.
+- `archive/SESSION_A2_HANDOFF.md` — Session A′.2 handoff brief, consumed.
+- `archive/SESSION_C3_HANDOFF.md` — Session C3 handoff; consumed 2026-04-20.
+- `archive/FINAL_CHAIN_PLAN.md` — F2-chain sequencing plan; fully consumed.
+- `archive/HH_GLOBAL_CM_FROM_AUGIDEAL.md` — F2-route narrative; consumed 2026-04-20.
+- `archive/ANSWER_HH_QUOTIENT_CM_AT_NON_AUGIDEAL.md` — validated F2 strategy; consumed.

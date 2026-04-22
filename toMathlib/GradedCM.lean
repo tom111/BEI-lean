@@ -32,7 +32,9 @@ For an arbitrary prime `p` of `A` we need to show `A_p` is CM.
 -/
 
 import toMathlib.GradedIrrelevant
+import toMathlib.GradedRegularSop
 import toMathlib.CohenMacaulay.Polynomial
+import toMathlib.CohenMacaulay.Localization
 import Mathlib.RingTheory.GradedAlgebra.Radical
 import Mathlib.RingTheory.Localization.LocalizationLocalization
 
@@ -54,7 +56,7 @@ universe u
 namespace GradedCM
 
 variable {K A : Type u} [Field K] [CommRing A] [Algebra K A] [Nontrivial A]
-variable [IsNoetherianRing A]
+variable [IsNoetherianRing A] [Algebra.FiniteType K A]
 variable (𝒜 : ℕ → Submodule K A) [GradedRing 𝒜]
 
 /-! ### Small instance helper -/
@@ -70,7 +72,7 @@ end SmallInstance
 
 section IrrelevantPrime
 
-omit [IsNoetherianRing A] in
+omit [IsNoetherianRing A] [Algebra.FiniteType K A] in
 /-- Under the connected-graded hypothesis, the irrelevant ideal is maximal,
 hence prime. -/
 private lemma irrelevant_isPrime (h𝒜₀ : ConnectedGraded 𝒜) :
@@ -90,7 +92,7 @@ end IrrelevantPrime
 
 section CaseB
 
-omit [Nontrivial A] [IsNoetherianRing A] in
+omit [Nontrivial A] [IsNoetherianRing A] [Algebra.FiniteType K A] in
 /-- A homogeneous proper ideal is contained in the irrelevant ideal. This is
 the version stated for an ideal `p` equal to its homogeneous core. -/
 private lemma le_irrelevant_of_isHomogeneous
@@ -104,6 +106,7 @@ private lemma le_irrelevant_of_isHomogeneous
   rw [hcore] at h
   exact h
 
+omit [Algebra.FiniteType K A] in
 /-- Case B — homogeneous primes: CM at `m := 𝒜₊` transfers to any homogeneous
 prime `p`, by the tower `A → A_m → A_p`. -/
 private theorem isCohenMacaulayLocalRing_atPrime_of_isHomogeneous
@@ -179,19 +182,19 @@ section CaseC
 
 /-! #### Supporting graded-theoretic lemmas -/
 
-omit [Nontrivial A] [IsNoetherianRing A] in
+omit [Nontrivial A] [IsNoetherianRing A] [Algebra.FiniteType K A] in
 /-- The homogeneous core of a prime ideal is prime. A thin wrapper around
 `Ideal.IsPrime.homogeneousCore`. -/
 private lemma isPrime_homogeneousCore (p : Ideal A) [hp : p.IsPrime] :
     (p.homogeneousCore 𝒜).toIdeal.IsPrime :=
   hp.homogeneousCore (𝒜 := 𝒜)
 
-omit [Nontrivial A] [IsNoetherianRing A] in
+omit [Nontrivial A] [IsNoetherianRing A] [Algebra.FiniteType K A] in
 /-- The homogeneous core of a prime ideal is a subset of the original prime. -/
 private lemma homogeneousCore_le (p : Ideal A) :
     (p.homogeneousCore 𝒜).toIdeal ≤ p := p.toIdeal_homogeneousCore_le 𝒜
 
-omit [Nontrivial A] [IsNoetherianRing A] in
+omit [Nontrivial A] [IsNoetherianRing A] [Algebra.FiniteType K A] in
 /-- The homogeneous core is strictly smaller than a non-homogeneous ideal. -/
 private lemma homogeneousCore_lt_of_not_isHomogeneous (p : Ideal A)
     (hp_not_hom : ¬ p.IsHomogeneous 𝒜) :
@@ -202,7 +205,7 @@ private lemma homogeneousCore_lt_of_not_isHomogeneous (p : Ideal A)
   rw [Ideal.IsHomogeneous.iff_eq]
   exact h
 
-omit [Nontrivial A] [IsNoetherianRing A] in
+omit [Nontrivial A] [IsNoetherianRing A] [Algebra.FiniteType K A] in
 /-- For a non-homogeneous prime `p`, there exists an element of `p` not in its
 homogeneous core `p*`. This is the starting point of the Case C argument:
 decompose this element into homogeneous components and locate a
@@ -213,7 +216,7 @@ private lemma exists_notMem_homogeneousCore (p : Ideal A)
   have hlt := homogeneousCore_lt_of_not_isHomogeneous 𝒜 p hp_not_hom
   exact SetLike.exists_of_lt hlt
 
-omit [Nontrivial A] [IsNoetherianRing A] in
+omit [Nontrivial A] [IsNoetherianRing A] [Algebra.FiniteType K A] in
 /-- If all homogeneous components of an element `f` lie in a prime ideal `p`,
 then `f` itself lies in `p`. (This follows because `p` is closed under finite
 sums.) -/
@@ -224,7 +227,7 @@ private lemma mem_of_decomposition_mem (p : Ideal A) (f : A)
   rw [← DirectSum.sum_support_decompose 𝒜 f]
   exact Ideal.sum_mem _ fun i _ => hall i
 
-omit [Nontrivial A] [IsNoetherianRing A] in
+omit [Nontrivial A] [IsNoetherianRing A] [Algebra.FiniteType K A] in
 /-- If every homogeneous component of `f` lies in `p`, then each component in
 fact lies in `p.homogeneousCore 𝒜` (because the components are homogeneous
 and in `p`). Together with the decomposition into components, this gives
@@ -235,7 +238,7 @@ private lemma homogeneousCore_component_of_mem (p : Ideal A) (f : A)
   refine Ideal.mem_homogeneousCore_of_homogeneous_of_mem ?_ hfi_p
   exact ⟨i, SetLike.coe_mem _⟩
 
-omit [Nontrivial A] [IsNoetherianRing A] in
+omit [Nontrivial A] [IsNoetherianRing A] [Algebra.FiniteType K A] in
 /-- **Key homogeneous selection**: given a non-homogeneous prime `p` of `A`,
 there exists a homogeneous element `x` which is *not* in `p*` — witnessed by
 one of the homogeneous components of some `f ∈ p ∖ p*`. Moreover `x ∉ p`
@@ -334,75 +337,31 @@ here as a single, clearly-named placeholder so that:
    here but makes the sorry irrelevant for the downstream consumer.
 -/
 
-/-- **Bruns–Herzog 2.1.27, non-homogeneous prime case** (currently axiomatised
-as a single isolated `sorry`).
+/-- **Case C key lemma (non-homogeneous primes)** — now fully proved via the
+finite-free Case C route (Steps A + C + D). If `A` is a connected ℕ-graded
+Noetherian `K`-algebra of finite type whose localization at the irrelevant
+ideal is Cohen–Macaulay local, then for every *non-homogeneous* prime `p` of
+`A`, the localization `A_p` is also Cohen–Macaulay local.
 
-Given a connected ℕ-graded Noetherian `K`-algebra `A`, a prime ideal `p`
-that is *not* homogeneous, and the assumption that the localisation
-`A_{p*}` at the homogeneous core `p* := p.homogeneousCore 𝒜` is already
-Cohen–Macaulay local, conclude that `A_p` is Cohen–Macaulay local.
-
-This statement is *the* hard content of graded local-to-global CM for
-non-homogeneous primes. See the long comment block above for why the
-naive "further localisation" reduction does **not** work and why no
-smaller ring-theoretic sub-lemma is the missing piece. -/
-private theorem caseC_CM_transfer
-    (p p_star : Ideal A) (_hp_prime : p.IsPrime)
-    [_hpstar_prime : p_star.IsPrime]
-    (_hpstar_sub_irr : p_star ≤ (HomogeneousIdeal.irrelevant 𝒜).toIdeal)
-    (_hCM_pstar : IsCohenMacaulayLocalRing (Localization.AtPrime p_star))
-    (_hp_not_hom : ¬ p.IsHomogeneous 𝒜) :
-    IsCohenMacaulayLocalRing (Localization.AtPrime p) := by
-  sorry
-
-/-- **Case C key lemma (non-homogeneous primes)**: if `A` is a connected
-ℕ-graded Noetherian `K`-algebra whose localization at the irrelevant ideal
-is Cohen–Macaulay local, then for every *non-homogeneous* prime `p` of `A`,
-the localization `A_p` is also Cohen–Macaulay local.
-
-The proof strategy is to transit through the homogeneous core
-`p* := p.homogeneousCore 𝒜`, which is prime and sits inside `𝒜₊`:
-
-1. By Case B / the homogeneous branch, `A_{p*}` is already Cohen–Macaulay
-   local (we have `hCM` for `𝒜₊`, and "CM localizes" gives the same for
-   the smaller prime `p*`).
-
-2. Then `A_p` is a further localization of `A_{p*}` — namely, at the image
-   of `p.primeCompl` under `algebraMap A A_{p*}` — and this image, being
-   disjoint from `p* · A_{p*}` (one has `p* ≤ p` strictly since `p` is
-   non-homogeneous), is the complement of a prime ideal `q` in `A_{p*}`.
-   Applying "CM localizes" again yields `A_q` CM local, and the canonical
-   isomorphism `A_q ≃ A_p` transports CM to `A_p`.
-
-The graded-theoretic scaffolding (that `p*` is prime, that `p*` sits inside
-`𝒜₊`, and that Case B gives CM at `p*`) is fully proved; the remaining
-ring-theoretic transfer is isolated in `caseC_CM_transfer`. -/
+**Proof strategy.** Bypass the classical *-local argument by invoking
+`GradedFiniteFree.isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant_finiteFree`
+— Step A produces a homogeneous regular sop of length `d = dim A_{𝒜₊}`, Step C
+promotes it to a finite-free structure over `MvPolynomial (Fin d) K`, and Step D
+concludes global Cohen–Macaulayness. We then localize at `p`. The homogeneity
+hypothesis on `p` is not actually required, but we keep the parameter for
+interface symmetry with the Case A/B branch. -/
 private theorem isCohenMacaulayLocalRing_atPrime_of_not_isHomogeneous
     (h𝒜₀ : ConnectedGraded 𝒜)
     (hCM : haveI := irrelevant_isPrime 𝒜 h𝒜₀
       IsCohenMacaulayLocalRing
       (Localization.AtPrime (HomogeneousIdeal.irrelevant 𝒜).toIdeal))
     (p : Ideal A) [hp_prime : p.IsPrime]
-    (hp_not_hom : ¬ p.IsHomogeneous 𝒜) :
+    (_hp_not_hom : ¬ p.IsHomogeneous 𝒜) :
     IsCohenMacaulayLocalRing (Localization.AtPrime p) := by
-  haveI hm_prime : (HomogeneousIdeal.irrelevant 𝒜).toIdeal.IsPrime :=
-    irrelevant_isPrime 𝒜 h𝒜₀
-  -- `p* := p.homogeneousCore 𝒜` is prime and contained in `𝒜₊`.
-  haveI hpstar : (p.homogeneousCore 𝒜).toIdeal.IsPrime :=
-    isPrime_homogeneousCore 𝒜 p
-  have hpstar_sub : (p.homogeneousCore 𝒜).toIdeal ≤
-      (HomogeneousIdeal.irrelevant 𝒜).toIdeal :=
-    homogeneousCore_le_irrelevant 𝒜 h𝒜₀ p hp_prime.ne_top
-  -- By Case B, `A_{p*}` is already Cohen–Macaulay local.
-  have hCM_pstar : IsCohenMacaulayLocalRing
-      (Localization.AtPrime (p.homogeneousCore 𝒜).toIdeal) :=
-    isCohenMacaulayLocalRing_atPrime_of_isHomogeneous 𝒜 h𝒜₀ hCM
-      (p.homogeneousCore 𝒜).toIdeal (p.homogeneousCore 𝒜).isHomogeneous
-  -- The remaining step is the ring-theoretic transitivity of localisation
-  -- to identify `A_p` with `(A_{p*})_{p'}` for some prime `p'` of `A_{p*}`,
-  -- then apply "CM localizes" once more.
-  exact caseC_CM_transfer 𝒜 p (p.homogeneousCore 𝒜).toIdeal hp_prime
-    hpstar_sub hCM_pstar hp_not_hom
+  haveI hGlobal : IsCohenMacaulayRing A :=
+    GradedFiniteFree.isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant_finiteFree
+      𝒜 h𝒜₀ hCM
+  exact hGlobal.CM_localize p
 
 end CaseC
 

@@ -17,13 +17,13 @@
 | **§1 Cor 1.3** (bipartite closed graphs / line graphs) | `BEI/GraphProperties.lean` | `[x]` paper-faithful version proved |
 | **§1 Prop 1.4** (shortest paths directed) | `BEI/GraphProperties.lean` | `[x]` proved |
 | **§1 Prop 1.5** (closure exists) | `BEI/GraphProperties.lean` | `[x]` proved |
-| **§1 Prop 1.6** (CM sufficient condition) | `BEI/Proposition1_6.lean`, `BEI/PrimeDecompositionDimension.lean` | `[~]` paper-faithful `proposition_1_6` stated and assembled modulo one named `sorry` (`binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm`, the Gröbner deformation CM transfer of Eisenbud 15.17). Equidimensional surrogate proved directly |
+| **§1 Prop 1.6** (CM sufficient condition) | `BEI/Proposition1_6.lean`, `BEI/PrimeDecompositionDimension.lean` | `[x]` **AXIOM-CLEAN 2026-04-22**: paper-faithful `proposition_1_6` fully proved via finite-free Case C route (Steps A+B+C+D). `binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm` closed via `groebnerDeformation_cm_transfer` + graded local-to-global CM. Equidimensional surrogate also proved. |
 | **§2 Thm 2.1** (reduced Gröbner basis) | `BEI/GroebnerBasisSPolynomial.lean`, `BEI/GroebnerBasis.lean` | `[x]` proved |
 | **§2 Cor 2.2** (`J_G` radical) | `BEI/Radical.lean` | `[x]` proved |
 | **§3 Lem 3.1** (height formula for `P_S`) | `BEI/PrimeIdeals.lean` | `[x]` proved |
 | **§3 Thm 3.2** (`J_G = ⋂ P_S`) | `BEI/PrimeDecomposition.lean` | `[x]` proved |
 | **§3 Cor 3.3** (dimension formula) | `BEI/PrimeDecompositionDimension.lean` | `[x]` proved |
-| **§3 Cor 3.4** (CM implies `dim = n + c`) | `BEI/PrimeDecompositionDimension.lean` | `[~]` equidimensional surrogate proved; full paper CM statement still open |
+| **§3 Cor 3.4** (CM implies `dim = n + c`) | `BEI/PrimeDecompositionDimension.lean` | `[~]` equidimensional surrogate proved; full paper CM statement now achievable via `proposition_1_6_dim_formula` (2026-04-22, axiom-clean) |
 | **§3 Prop 3.6** (prime iff components complete) | `BEI/PrimeDecomposition.lean` | `[x]` proved |
 | **§3 Cor 3.7** (cycle equivalences) | `BEI/PrimeDecomposition.lean`, `BEI/MinimalPrimes.lean`, `BEI/PrimeDecompositionDimension.lean` | `[~]` prime/unmixed/equidimensional branches proved; paper CM branch still surrogate-only |
 | **§3 Prop 3.8** (`P_T ⊆ P_S` characterization) | `BEI/MinimalPrimes.lean` | `[x]` proved |
@@ -251,14 +251,14 @@ Some of these splits still need cleanup, but these are the current live location
 | `BEI/PrimeDecomposition.lean` | 0 | |
 | `toMathlib/CohenMacaulay/Localization.lean` | 0 | completed CM-localization backport |
 | `toMathlib/HeightAdditivity.lean` | 2 | dormant infrastructure |
-| `toMathlib/GradedCM.lean` | 1 | `caseC_CM_transfer` remains. Strategy (2026-04-21): finite-free parameter subring route, see `guides/answers/ANSWER_CASE_C_FINITE_FREE_ROUTE.md`. Phase 1 + Steps B1, B2a, B2b done |
+| `toMathlib/GradedCM.lean` | 0 | **Case C CLOSED 2026-04-22**: `caseC_CM_transfer` deleted; `isCohenMacaulayLocalRing_atPrime_of_not_isHomogeneous` now routes through the new finite-free Case C assembly + `CM_localize`. `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant` now requires `[Algebra.FiniteType K A]`, auto-inferred downstream. Axiom-clean. |
 | `toMathlib/GradedAssociatedPrime.lean` | 0 | BH 1.5.6 complete (associated primes homogeneous), axioms `{propext, Classical.choice, Quot.sound}` (2026-04-21) |
-| `toMathlib/GradedFiniteFree.lean` | 0 | Steps B1/B2a/B2b/D of finite-free Case C route. B1: `mul_left_injective_of_notMem_irrelevant`. B2a: `irrelevant_isNilpotent_of_isArtinianRing_atIrrelevant`. B2b: `finite_over_K_of_isArtinianRing_atIrrelevant` (needs `[Algebra.FiniteType K A]`). D: `isCohenMacaulayRing_of_module_free_of_mvPolynomial` (finite free over mvPolynomial ⟹ globally CM). All axiom-clean (2026-04-21). |
-| `toMathlib/GradedRegularSop.lean` | 0 | Phase 2 Step A partial: `exists_homogeneous_nonZeroDivisor_quotient_cm_of_dim_pos` — single-step descent, axiom-clean (2026-04-21). Full iteration into length-d regular sop via varying-ring induction deferred. |
+| `toMathlib/GradedFiniteFree.lean` | 0 | **Step C fully PROVED 2026-04-22.** All pieces axiom-clean: B1/B2a/B2b/D, `exists_homogeneous_basis_of_finite_graded`, `exists_homogeneous_decomposition_mem_span_range`, `span_aeval_eq_top_of_homogeneous_basis_lift` (surjectivity), `linearIndependent_aeval_fin_zero` + `linearIndependent_aeval_cons_step` + `linearIndependent_aeval_of_basis_lift` (injectivity via d-induction + finSuccEquiv + regularity), main `finiteFree_over_mvPolynomial_of_homogeneous_regular_sop`. |
+| `toMathlib/GradedRegularSop.lean` | 0 | Full Step A iteration 2026-04-21 + Case C combined assembly `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant_finiteFree` added 2026-04-22. Both axiom-clean. |
 | `Supplement/RauhApproach.lean` | 2 | archived, not on main path |
-| `BEI/GroebnerDeformation.lean` | 0 | R1 framework **fully closed BEI-side**. `tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant` has clean axioms; proved via regular-quotient lift through `t` + `DoubleQuot.quotQuotEquivQuotSup` + `specZeroQuotEquiv` + `quotSMulTopLocalizationEquiv_of_mem` + `isCohenMacaulayLocalRing_of_regular_quotient`. `tildeJ_quotient_isCohenMacaulay` is a one-line application of `GradedCM.isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant`. Transitive `sorryAx` only from `toMathlib/GradedCM.lean` Case C |
-| `BEI/Proposition1_6.lean` | 0 | reduced to a one-line application of `groebnerDeformation_cm_transfer` |
-| **Active total** | **0** | **Zero BEI-side sorries on the paper-critical path.** The last remaining blocker is the dormant Case-C sorry of `toMathlib/GradedCM.lean` (graded local-to-global CM for non-homogeneous primes) — an upstream commutative algebra gap, independent of BEI |
+| `BEI/GroebnerDeformation.lean` | 0 | R1 framework **fully closed BEI-side**. `groebnerDeformation_cm_transfer`, `tildeJ_quotient_isCohenMacaulay`: axiom-clean `{propext, Classical.choice, Quot.sound}` as of 2026-04-22 (GradedCM Case C closure removed the last transitive sorryAx). |
+| `BEI/Proposition1_6.lean` | 0 | **AXIOM-CLEAN 2026-04-22.** `proposition_1_6`, `binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm`, `pathGraph_binomialEdgeIdeal_isCohenMacaulay` all depend only on `{propext, Classical.choice, Quot.sound}`. |
+| **Active total** | **0** | **Zero active sorries on the paper-critical path. Proposition 1.6 is fully formalized axiom-clean.** Only dormant sorries remain: `toMathlib/HeightAdditivity.lean` (2, dormant infrastructure) and `Supplement/RauhApproach.lean` (2, archived). |
 
 ---
 
