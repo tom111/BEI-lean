@@ -15,6 +15,8 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 
 1. [work_packages/NEXT_SESSION_PROMPT.md](work_packages/NEXT_SESSION_PROMPT.md)
    **Proposition 1.6 is now AXIOM-CLEAN (2026-04-22).** This file records the full proof chain and lists possible follow-up targets: Corollary 3.4 full paper statement, proof cleanup, dormant-sorry retirement, and Mathlib upstreaming candidates.
+2. [work_packages/COROLLARY_3_4_IMPLEMENTATION.md](work_packages/COROLLARY_3_4_IMPLEMENTATION.md)
+   Lean implementation packet for the full paper-faithful Corollary 3.4, using the local-CM theorem plus a BEI-specific global bridge.
 
 ## Answers And Decision Notes
 
