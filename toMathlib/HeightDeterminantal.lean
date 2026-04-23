@@ -104,11 +104,8 @@ private lemma col0Minor_mem_bei (m : ℕ) (_ : 2 ≤ m) (j : Fin (m - 1)) :
 /-- `span(column-0 minors) ≤ J_{K_m}`. -/
 private lemma span_col0_le_bei (m : ℕ) (hm : 2 ≤ m) :
     Ideal.span (col0Set (K := K) m) ≤
-      binomialEdgeIdeal (⊤ : SimpleGraph (Fin m)) := by
-  apply Ideal.span_le.mpr
-  intro f hf
-  obtain ⟨j, rfl⟩ := hf
-  exact col0Minor_mem_bei m hm j
+      binomialEdgeIdeal (⊤ : SimpleGraph (Fin m)) :=
+  Ideal.span_le.mpr <| by rintro f ⟨j, rfl⟩; exact col0Minor_mem_bei m hm j
 
 /-- `J_{K_m}` is a minimal prime of `span(column-0 minors)`.
 
