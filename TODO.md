@@ -25,7 +25,7 @@
 | **§3 Cor 3.3** (dimension formula) | `BEI/PrimeDecompositionDimension.lean` | `[x]` proved |
 | **§3 Cor 3.4** (CM implies `dim = n + c`) | `BEI/Corollary3_4.lean`, `BEI/PrimeDecompositionDimension.lean` | `[x]` **PAPER-FAITHFUL 2026-04-22** (`corollary_3_4`, axiom-clean): `IsCohenMacaulayRing (R/J_G) → dim(R/J_G) = Fintype.card V + componentCount G ∅`, via standard ℕ-grading + graded-CM-to-finite-free bridge (`toMathlib/GradedEquidim.lean`) + `IsEquidimRing.of_flat_finite` (`toMathlib/FiniteFreeEquidim.lean`) + `corollary_3_4_equidim`. Equidim surrogate still available. |
 | **§3 Prop 3.6** (prime iff components complete) | `BEI/PrimeDecomposition.lean` | `[x]` proved |
-| **§3 Cor 3.7** (cycle equivalences) | `BEI/PrimeDecomposition.lean`, `BEI/MinimalPrimes.lean`, `BEI/PrimeDecompositionDimension.lean` | `[~]` prime/unmixed/equidimensional branches proved; paper CM branch still surrogate-only |
+| **§3 Cor 3.7** (cycle equivalences) | `BEI/PrimeDecomposition.lean`, `BEI/MinimalPrimes.lean`, `BEI/PrimeDecompositionDimension.lean`, `BEI/Corollary3_4.lean` | `[x]` **PAPER-FAITHFUL 2026-04-23**: prime/unmixed/equidimensional branches + paper CM branch `corollary_3_7_cm_fin` (on `SimpleGraph (Fin n)`). Forward (CM → n=3) works for general V via `corollary_3_7_cm_forward`. Backward (n=3 → CM) via `proposition_1_6` applied to K_3 (closed, Prop 1.6 condition vacuous). Axiom-clean. |
 | **§3 Prop 3.8** (`P_T ⊆ P_S` characterization) | `BEI/MinimalPrimes.lean` | `[x]` proved |
 | **§3 Cor 3.9** (minimal primes via cut-point sets) | `BEI/MinimalPrimes.lean` | `[x]` proved |
 | **§4 Bridge** (CI ideal = BEI, single statement) | `BEI/CIIdeals.lean` | `[x]` proved |

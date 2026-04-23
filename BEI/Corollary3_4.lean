@@ -19,6 +19,7 @@ descent to the quotient by the homogeneous ideal `J_G`.
 -/
 
 import BEI.PrimeDecompositionDimension
+import BEI.Proposition1_6
 import toMathlib.GradedEquidim
 import toMathlib.GradedQuotient
 import toMathlib.GradedIrrelevant
@@ -270,3 +271,112 @@ theorem corollary_3_4_connected (G : SimpleGraph V) (hConn : G.Connected)
   rw [h, hc]
 
 end
+
+/-! ## Corollary 3.7, Cohen–Macaulay branch
+
+The paper's Corollary 3.7 asserts the equivalence of
+
+  (a) `n = 3`
+  (b) `J_G` is prime
+  (c) `J_G` is unmixed
+  (d) `S ⧸ J_G` is Cohen–Macaulay
+
+for a cycle `G` of length `n`. Existing files already handle the (a ↔ b) and
+(a ↔ c) equivalences (`corollary_3_7` in `BEI/PrimeDecomposition.lean`,
+`corollary_3_7_unmixed` in `BEI/MinimalPrimes.lean`) and the equidimensional
+surrogate of the CM branch (`corollary_3_7_equidim` in
+`BEI/PrimeDecompositionDimension.lean`).
+
+Below we close (a ↔ d). The forward direction (CM → `n = 3`) chains
+
+  CM  ⟹  IsEquidim  ⟹  IsPrime  ⟹  `n = 3`
+
+using `isEquidim_of_isCohenMacaulayRing_binomialEdge` (above),
+`corollary_3_7_equidim`, and `corollary_3_7`. The backward direction is
+proved for `G : SimpleGraph (Fin n)` by invoking `proposition_1_6` on the
+3-cycle (which coincides with `K_3` and is closed, satisfying the Prop 1.6
+transitivity condition vacuously).
+-/
+
+section Corollary3_7_CM
+
+variable {K : Type} [Field K]
+variable {V : Type} [LinearOrder V] [DecidableEq V] [Fintype V]
+
+/-- **Cor 3.7 forward (CM → cycle length = 3).** For a cycle `G` on `V` with
+`|V| ≥ 3`, Cohen–Macaulayness of `S ⧸ J_G` forces `|V| = 3`.
+
+Chain: `CM ⟹ IsEquidim` (`isEquidim_of_isCohenMacaulayRing_binomialEdge`)
+`⟹ IsPrime` (`corollary_3_7_equidim`) `⟹ |V| = 3` (`corollary_3_7`). -/
+theorem corollary_3_7_cm_forward (G : SimpleGraph V) (hCyc : IsCycleGraph G)
+    (hn : 3 ≤ Fintype.card V)
+    (hCM : IsCohenMacaulayRing
+      (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G)) :
+    Fintype.card V = 3 := by
+  have hEq := isEquidim_of_isCohenMacaulayRing_binomialEdge (K := K) G hCM
+  have hPrime := (corollary_3_7_equidim (K := K) G hCyc hn).mp hEq
+  exact (corollary_3_7 (K := K) G hCyc hn).mpr hPrime
+
+/-- In a cycle graph with exactly three vertices, every pair of distinct
+vertices is adjacent. -/
+private theorem cycle_card3_adj_of_ne (G : SimpleGraph V) (hCyc : IsCycleGraph G)
+    (hcard : Fintype.card V = 3) {u w : V} (huw : u ≠ w) : G.Adj u w := by
+  obtain ⟨_, hDeg⟩ := hCyc
+  obtain ⟨n1, n2, hn12, hadj1, hadj2, honly⟩ := hDeg u
+  -- {u, n1, n2} has 3 distinct elements = |V|, hence = univ.
+  have h3 : ({u, n1, n2} : Finset V).card = Fintype.card V := by
+    rw [hcard, Finset.card_insert_of_notMem, Finset.card_pair hn12]
+    simp only [Finset.mem_insert, Finset.mem_singleton, not_or]
+    exact ⟨G.ne_of_adj hadj1, G.ne_of_adj hadj2⟩
+  have hw_mem := (Finset.eq_univ_of_card _ h3) ▸ Finset.mem_univ w
+  simp only [Finset.mem_insert, Finset.mem_singleton] at hw_mem
+  rcases hw_mem.resolve_left (Ne.symm huw) with rfl | rfl
+  · exact hadj1
+  · exact hadj2
+
+/-- **Cor 3.7 backward, Fin version (cycle length = 3 ⟹ CM).** For a cycle
+graph `G` on `Fin n` with `n = 3`, `S ⧸ J_G` is Cohen–Macaulay.
+
+Proof: `G` is the complete graph on 3 vertices (every pair adjacent), which
+is closed and satisfies Proposition 1.6's transitivity condition vacuously
+(the condition requires `k + 1 < n = 3`, impossible once `j < k` with
+`i, j, k : Fin 3`). Apply `proposition_1_6`. -/
+theorem corollary_3_7_cm_backward_fin {n : ℕ} {G : SimpleGraph (Fin n)}
+    (hCyc : IsCycleGraph G) (hn : n = 3) :
+    IsCohenMacaulayRing
+      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ binomialEdgeIdeal (K := K) G) := by
+  have hcard : Fintype.card (Fin n) = 3 := by simp [hn]
+  have hAdj : ∀ u w : Fin n, u ≠ w → G.Adj u w :=
+    fun u w huw => cycle_card3_adj_of_ne G hCyc hcard huw
+  have h2n : 2 ≤ n := by omega
+  have hClosed : IsClosedGraph G := by
+    refine ⟨?_, ?_⟩
+    · intro i j k _ _ hjk _ _; exact hAdj j k hjk
+    · intro i j k _ _ hij _ _; exact hAdj i j hij
+  have hCond : SatisfiesProp1_6Condition n G := by
+    intro i j k hj hk hij hjk _ _
+    -- Need contradiction: i < j < k in Fin n = Fin 3, with k.val + 1 < 3.
+    have : k.val + 1 < 3 := hn ▸ hk
+    have : k.val < 2 := by omega
+    have : j.val < k.val := hjk
+    have : i.val < j.val := hij
+    omega
+  exact proposition_1_6 (K := K) h2n hCyc.1 hClosed hCond
+
+/-- **Paper-faithful Corollary 3.7, Fin version, Cohen–Macaulay branch.**
+
+For a cycle `G` on `Fin n` with `n ≥ 3`,
+`S ⧸ J_G` is Cohen–Macaulay ↔ `n = 3`. -/
+theorem corollary_3_7_cm_fin {n : ℕ} (hn : 3 ≤ n) {G : SimpleGraph (Fin n)}
+    (hCyc : IsCycleGraph G) :
+    IsCohenMacaulayRing
+      (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ binomialEdgeIdeal (K := K) G) ↔
+    n = 3 := by
+  constructor
+  · intro hCM
+    have := corollary_3_7_cm_forward (K := K) G hCyc (by simpa using hn) hCM
+    simpa using this
+  · intro h3
+    exact corollary_3_7_cm_backward_fin (K := K) hCyc h3
+
+end Corollary3_7_CM
