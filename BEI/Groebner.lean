@@ -31,9 +31,8 @@ noncomputable instance : LinearOrder (BinomialEdgeVars V) where
     cases a <;> exact le_refl _
 
   le_trans a b c h1 h2 := by
-    cases a <;> cases b <;> cases c <;> simp_all only [binomialEdgeLE]
-    · exact le_trans h2 h1
-    · exact le_trans h2 h1
+    cases a <;> cases b <;> cases c <;> simp_all only [binomialEdgeLE] <;>
+      exact le_trans h2 h1
 
   le_antisymm a b h1 h2 := by
     cases a <;> cases b <;> simp_all only [binomialEdgeLE]
@@ -41,10 +40,7 @@ noncomputable instance : LinearOrder (BinomialEdgeVars V) where
     · exact congrArg Sum.inr (le_antisymm h2 h1)
 
   le_total a b := by
-    cases a <;> cases b <;> simp only [binomialEdgeLE]
-    case inl.inl => exact le_total _ _
-    case inl.inr => exact Or.inr trivial
-    case inr.inl => exact Or.inl trivial
-    case inr.inr => exact le_total _ _
+    cases a <;> cases b <;>
+      first | exact le_total _ _ | exact Or.inr trivial | exact Or.inl trivial
 
 end
