@@ -29,11 +29,11 @@ private lemma mem_pairSurvivors_iff {u w x : V} :
     x ∈ pairSurvivors u w ↔ x ≠ u ∧ x ≠ w := by
   simp [pairSurvivors, Finset.mem_insert, Finset.mem_singleton, not_or]
 
-omit [Fintype V] in
+omit [LinearOrder V] [Fintype V] in
 private lemma fst_ne_of_mem_pairSurvivors {u w x : V} (hx : x ∈ pairSurvivors u w) : x ≠ u :=
   (mem_pairSurvivors_iff.mp hx).1
 
-omit [Fintype V] in
+omit [LinearOrder V] [Fintype V] in
 private lemma snd_ne_of_mem_pairSurvivors {u w x : V} (hx : x ∈ pairSurvivors u w) : x ≠ w :=
   (mem_pairSurvivors_iff.mp hx).2
 
@@ -183,7 +183,7 @@ theorem cycle_exists_nonadj (G : SimpleGraph V) (hCyc : IsCycleGraph G)
   simp only [Finset.mem_insert, Finset.mem_singleton, not_or] at hw
   exact ⟨v, w, Ne.symm hw.1, fun hadj => (honly w hadj).elim hw.2.1 hw.2.2⟩
 
-omit [Fintype V] in
+omit [LinearOrder V] [Fintype V] in
 private lemma cycle_edge_on_arc (G : SimpleGraph V) {u w : V} (S : Set V)
     (hS : S = pairSurvivors u w) {c : G.Walk u u} (hc_not_nil : ¬c.Nil)
     {arc1 : G.Walk c.snd w} {arc2 : G.Walk w u}
@@ -206,7 +206,7 @@ private lemma cycle_edge_on_arc (G : SimpleGraph V) {u w : V} (S : Set V)
     · exact hb_ne_u h_eq.symm
   · exact List.mem_append.mp (htail_edges ▸ h)
 
-omit [Fintype V] in
+omit [LinearOrder V] [Fintype V] in
 private lemma cycle_vertex_on_arc {G : SimpleGraph V} {u w : V} (S : Set V)
     (hS : S = pairSurvivors u w) {c : G.Walk u u} {arc1 : G.Walk c.snd w}
     {arc2 : G.Walk w u} (hmem_tail_of_ne_u : ∀ v : V, v ≠ u → v ∈ c.tail.support)
@@ -221,7 +221,7 @@ private lemma cycle_vertex_on_arc {G : SimpleGraph V} {u w : V} (S : Set V)
   · exact Or.inl h
   · exact Or.inr (List.tail_subset _ h)
 
-omit [Fintype V] in
+omit [LinearOrder V] [Fintype V] in
 private lemma cycle_arc1_reachable (G : SimpleGraph V) {u w : V} (S : Set V)
     (hS : S = pairSurvivors u w) {c : G.Walk u u} {arc1 : G.Walk c.snd w}
     (harc1_path : arc1.IsPath) (hu_not_arc1 : u ∉ arc1.support) (hc_snd_S : c.snd ∈ S) :
@@ -241,7 +241,7 @@ private lemma cycle_arc1_reachable (G : SimpleGraph V) {u w : V} (S : Set V)
       exact hw_not (h ▸ hx)
     simpa [hS, mem_pairSurvivors_iff] using ⟨hxu, hxw⟩
 
-omit [Fintype V] in
+omit [LinearOrder V] [Fintype V] in
 private lemma cycle_arc2_reachable (G : SimpleGraph V) {u w : V} (S : Set V)
     (hS : S = pairSurvivors u w) {arc2 : G.Walk w u} (harc2_path : arc2.IsPath)
     (harc2_not_nil : ¬arc2.Nil) (harc2_snd_S : arc2.snd ∈ S) :
@@ -306,7 +306,7 @@ private lemma cycle_no_cross_edge {G : SimpleGraph V} {S : Set V}
       ⟨SimpleGraph.Walk.fst_mem_support_of_mem_edges arc2 h,
         SimpleGraph.Walk.snd_mem_support_of_mem_edges arc2 h⟩
 
-omit [Fintype V] in
+omit [LinearOrder V] [Fintype V] in
 private lemma cycle_pair_separated (G : SimpleGraph V) {u w : V} (S : Set V)
     (hS : S = pairSurvivors u w) {c : G.Walk u u} {arc1 : G.Walk c.snd w}
     {arc2 : G.Walk w u}
@@ -339,7 +339,7 @@ private lemma cycle_pair_separated (G : SimpleGraph V) {u w : V} (S : Set V)
           exact snd_ne_of_mem_pairSurvivors hy_pair hyw
         · exact hx_not_arc2 hx2
 
-omit [Fintype V] in
+omit [LinearOrder V] [Fintype V] in
 private lemma cycle_components_cover (G : SimpleGraph V) {u w : V} (S : Set V)
     (hS : S = pairSurvivors u w) {c : G.Walk u u} {arc1 : G.Walk c.snd w}
     {arc2 : G.Walk w u} (hc_snd_S : c.snd ∈ S) (harc2_snd_S : arc2.snd ∈ S)

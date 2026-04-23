@@ -46,7 +46,7 @@ instance beStandardGrading_isGradedAlgebra :
     GradedAlgebra (beStandardGrading : ℕ → Submodule K (MvPolynomial (BinomialEdgeVars V) K)) :=
   weightedGradedAlgebra K _
 
-omit [DecidableEq V] in
+omit [DecidableEq V] [Fintype V] in
 /-- Under the standard grading, the binomial edge ideal `J_G` is homogeneous
 of degree 2: each generator `x_i y_j - x_j y_i` has weighted degree 2 since
 all variables have weight 1. -/
@@ -77,7 +77,7 @@ noncomputable instance beQuotientGrading_isGradedRing (G : SimpleGraph V) :
   GradedQuotient.gradedRing beStandardGrading (binomialEdgeIdeal (K := K) G)
     (binomialEdgeIdeal_isHomogeneous G)
 
-omit [DecidableEq V] in
+omit [DecidableEq V] [Fintype V] in
 /-- The quotient `R ⧸ J_G` is connected graded: its degree-0 piece is `K`. -/
 theorem beQuotientGrading_connectedGraded (G : SimpleGraph V) :
     GradedIrrelevant.ConnectedGraded (beQuotientGrading (K := K) G) := by
@@ -116,7 +116,7 @@ theorem beQuotientGrading_connectedGraded (G : SimpleGraph V) :
   rw [hk]
   simp
 
-omit [DecidableEq V] in
+omit [DecidableEq V] [Fintype V] in
 /-- `R ⧸ J_G` is nontrivial: `J_G ≠ ⊤`. -/
 theorem beQuotient_nontrivial (G : SimpleGraph V) :
     Nontrivial (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) := by
@@ -139,7 +139,7 @@ theorem beQuotient_nontrivial (G : SimpleGraph V) :
       simp [ha]
   simp at hcc
 
-omit [DecidableEq V] in
+omit [DecidableEq V] [Fintype V] in
 noncomputable instance beQuotient_nontrivial_inst (G : SimpleGraph V) :
     Nontrivial (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) :=
   beQuotient_nontrivial G

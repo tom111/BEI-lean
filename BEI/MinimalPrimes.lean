@@ -295,6 +295,7 @@ lemma sameComponent_to_reachable (G : SimpleGraph V) (S : Finset V)
       SimpleGraph.induce_adj.mpr hbc.1
     exact ⟨walk_ub.append (SimpleGraph.Walk.cons hadj SimpleGraph.Walk.nil)⟩
 
+omit [LinearOrder V] in
 /-- If `i` is a cut-vertex relative to `S`, then two components of `G[V \ S]` merge when `i` is
 removed from `S`. Formally: there exist `a, b ∉ S` connected in `G[V \ (S \ {i})]` but not in
 `G[V \ S]`. -/
@@ -338,6 +339,7 @@ lemma exists_merged_of_cutVertex (G : SimpleGraph V) (S : Finset V) (i : V)
     rw [SimpleGraph.ConnectedComponent.eq]
     exact sameComponent_to_reachable G S a.val b.val a.prop b.prop hsc
 
+omit [LinearOrder V] in
 /-- Helper: if `a → i → c` with `a, c ∉ S` and `i` is not a cut vertex relative to `S`,
 then `a` and `c` are connected in `G[V ∖ S]`. Proved by showing the component-count map
 `G[V∖S].CC → G[V∖(S∖{i})].CC` is surjective but not injective, contradicting the
@@ -386,6 +388,7 @@ private lemma bypass_adj {G : SimpleGraph V} {S : Finset V} {i a c : V}
               (SimpleGraph.Walk.cons (v := SimpleGraph.induceHomOfLE G hincl |>.toHom ⟨c, hcS⟩)
                 (by rw [SimpleGraph.induce_adj]; exact hic) SimpleGraph.Walk.nil)⟩)) hCaCc
 
+omit [LinearOrder V] in
 /-- Key component-preservation sub-lemma: if `i ∈ S` is **not** a cut-vertex relative to `S`
 (i.e., removing `i` from `S` does not decrease the component count of `G[V ∖ S]`),
 then any path in `G[V ∖ (S ∖ {i})]` between vertices of `V ∖ S` can be lifted to a path in
@@ -470,6 +473,7 @@ theorem corollary_3_9 (G : SimpleGraph V) (S : Finset V)
     (hConn : G.Connected) :
     primeComponent (K := K) G S ∈ (binomialEdgeIdeal (K := K) G).minimalPrimes ↔
     S = ∅ ∨ ∀ i ∈ S, IsCutVertexRelative G S i := by
+  let _ := hConn
   simp only [Ideal.minimalPrimes, Set.mem_setOf_eq, Minimal]
   constructor
   · -- (→): P_S minimal → S = ∅ or every vertex of S is a cut-vertex relative to S.

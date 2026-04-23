@@ -1167,6 +1167,7 @@ private lemma exists_adj_bridge_of_sameComponent_erase
         exact ⟨hyj, hyS, hax_lifted.tail ⟨hxy.1, hxS, hyS⟩⟩
     · right; exact hresult
 
+omit [LinearOrder V] in
 /-- If `a, b ∉ T`, `SameComponent G (T.erase j) a b`, and `¬ SameComponent G T a b`,
 then `componentCount G (T.erase j) < componentCount G T`.
 
