@@ -4,12 +4,9 @@ title: Section 2
 
 # Section 2: Reduced Gröbner Basis and Radicality
 
-Section 2 proves that the quadratic generators give a reduced Gröbner basis and
-then deduces that the binomial edge ideal is radical.
-
-This is the step where the Gröbner basis result from Section 1 becomes a
-structural statement about the ideal itself: once the initial ideal is a squarefree
-monomial ideal, radicality follows.
+Section 2 upgrades the Section 1 result: the quadratic generators form a
+*reduced* Gröbner basis. Since the leading monomials are then squarefree,
+$J_G$ is a radical ideal.
 
 ## Theorem map
 

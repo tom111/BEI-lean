@@ -2,22 +2,14 @@
 title: toMathlib
 ---
 
-# toMathlib: Supporting Infrastructure
+# Supporting Algebra
 
-This page records the supporting algebra that sits behind the main BEI files.
-It is mainly for readers who want to know what general-purpose commutative
-algebra and monomial-ideal infrastructure had to be added locally in order to
-formalize the paper. If you only want the mathematical results from the paper,
-the section pages are the better starting point.
-
-## How to read this page
-
-The `toMathlib/` directory has three roles:
-
-1. **supporting equidimensional definitions**;
-2. **Cohen–Macaulay foundations**, partially adapted from Mathlib PR
-   [`#26218`](https://github.com/leanprover-community/mathlib4/pull/26218);
-3. **project-specific algebra and combinatorics** needed for the BEI proofs.
+The `toMathlib/` directory contains general-purpose commutative algebra and
+monomial-ideal infrastructure used by the main BEI proofs. Some of this
+material is intended for possible upstreaming to Mathlib; the rest is
+project-specific algebra and combinatorics. The Cohen–Macaulay layer is
+partially adapted from Mathlib PR
+[`#26218`](https://github.com/leanprover-community/mathlib4/pull/26218).
 
 ## Equidimensional support
 

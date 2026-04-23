@@ -5,13 +5,9 @@ title: Section 4
 # Section 4: Conditional Independence Ideals and Robustness
 
 Section 4 identifies the conditional-independence ideals from the paper with
-binomial edge ideals and then transfers the algebraic results from the earlier
-sections.
-
-This is the bridge from algebraic graph theory to algebraic statistics. Once
-the conditional-independence ideals are identified with binomial edge ideals,
-the radicality, prime decomposition, and minimal-prime results can be imported
-into that setting.
+binomial edge ideals, so the radicality, prime decomposition, and
+minimal-prime results from earlier sections transfer to the algebraic
+statistics setting.
 
 ## Theorem map
 

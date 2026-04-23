@@ -4,13 +4,6 @@ title: Foundations
 
 # Foundations and Definitions
 
-<div class="intro-card">
-This page collects the main mathematical objects that appear throughout the
-paper and shows how they are represented in Lean. The emphasis is on the
-mathematics first: graphs, binomial edge ideals, the term order, and the
-conditions used in the main theorems.
-</div>
-
 ## Core Algebraic Setup
 
 The ambient ring is a polynomial ring in variables `x_i` and `y_i`, one pair

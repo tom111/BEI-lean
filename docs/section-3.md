@@ -4,14 +4,9 @@ title: Section 3
 
 # Section 3: Prime Decomposition, Dimension, Minimal Primes
 
-Section 3 contains the algebraic core of the paper: the prime ideals `P_S`,
-the decomposition of `J_G`, the dimension formula, and the description of the
-minimal primes.
-
-For mathematicians, this is the page that explains how the graph controls the
-prime ideals of the binomial edge ideal. This section records the prime
-decomposition, dimension, minimal-prime, and cycle criteria attached to
-binomial edge ideals.
+Section 3 is the algebraic core of the paper: the prime ideals $P_S$,
+the decomposition of $J_G$, the dimension formula, and the description of the
+minimal primes, all read off from the graph.
 
 ## Theorem map
 

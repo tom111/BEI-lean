@@ -2,10 +2,7 @@
 title: About
 ---
 
-# About The Project
-
-This page collects the repository-level metadata — size, directory layout,
-and commit activity — that the main pages keep out of the way.
+# About
 
 {% assign repo_stats = site.data.repo_stats %}
 

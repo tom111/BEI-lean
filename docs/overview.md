@@ -4,12 +4,6 @@ title: Overview
 
 # Overview
 
-<div class="intro-card">
-This page is the reader's map: a tour of the paper's four sections and a
-pointer to the Lean files behind each of them. It is written for a
-mathematician coming from the paper, not for a Lean user.
-</div>
-
 ## What the formalization covers
 
 - **Section 1** characterizes closed graphs by a quadratic Gröbner basis
@@ -49,9 +43,3 @@ Supporting generic lemmas intended for possible upstreaming live in:
 - including [toMathlib/Equidim/Defs.lean](https://github.com/tom111/BEI-lean/blob/master/toMathlib/Equidim/Defs.lean)
 - and are summarized in the dedicated [toMathlib support page](./toMathlib.html)
 
-## Reading the section pages
-
-Each section page pairs the paper statements with the corresponding Lean
-declarations and the file where the proof lives. Most theorems are close
-formal matches; a few are reformulated, and those are called out in prose
-under the relevant table.
