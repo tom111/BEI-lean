@@ -14,7 +14,8 @@ items are:
   `BEI/GraphProperties.lean`, `BEI/Groebner.lean`,
   `BEI/GroebnerAPI.lean`, `BEI/GroebnerBasis.lean`,
   `BEI/GroebnerBasisSPolynomial.lean`, `BEI/GroebnerDeformation.lean`,
-  `BEI/HerzogLemmas.lean`, `BEI/MinimalPrimes.lean`.
+  `BEI/HerzogLemmas.lean`, `BEI/MinimalPrimes.lean`,
+  `BEI/MonomialOrder.lean`.
 
 Everything else under `BEI/`, `Supplement/`, and `toMathlib/` in
 `TODO.md` is still pending.

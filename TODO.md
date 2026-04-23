@@ -58,7 +58,7 @@
 - `[x]` `BEI/GroebnerDeformation.lean`
 - `[x]` `BEI/HerzogLemmas.lean`
 - `[x]` `BEI/MinimalPrimes.lean`
-- `[ ]` `BEI/MonomialOrder.lean`
+- `[x]` `BEI/MonomialOrder.lean`
 - `[ ]` `BEI/PrimeDecomposition.lean`
 - `[ ]` `BEI/PrimeDecompositionDimension.lean`
 - `[ ]` `BEI/PrimeIdeals.lean`
