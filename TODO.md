@@ -73,7 +73,7 @@
 
 #### `toMathlib/`
 
-- `[ ]` `toMathlib/CohenMacaulay/Basic.lean`
+- `[x]` `toMathlib/CohenMacaulay/Basic.lean`
 - `[ ]` `toMathlib/CohenMacaulay/Defs.lean`
 - `[ ]` `toMathlib/CohenMacaulay/Localization.lean`
 - `[ ]` `toMathlib/CohenMacaulay/Polynomial.lean`

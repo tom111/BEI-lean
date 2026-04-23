@@ -201,11 +201,7 @@ theorem isCohenMacaulayLocalRing_of_weaklyRegular_length_eq_dim {rs : List R}
       ringDepth_le_of_isWeaklyRegular R hreg hmem
     have h_depth_ub : (ringDepth R : WithBot ℕ∞) ≤ ringKrullDim R :=
       ringDepth_le_ringKrullDim R
-    apply le_antisymm
-    · -- ringKrullDim R ≤ ↑(ringDepth R)
-      rw [hdim]
-      exact_mod_cast h_depth_lb
-    · exact h_depth_ub
+    exact le_antisymm (hdim ▸ by exact_mod_cast h_depth_lb) h_depth_ub
 
 /-- A Noetherian local ring of Krull dimension zero is Cohen-Macaulay.
 
