@@ -17,6 +17,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_PATH = REPO_ROOT / "docs" / "_data" / "repo_stats.json"
+LEAN_LINE_CACHE: dict[str, int] = {}
 
 
 @dataclass
@@ -41,9 +42,23 @@ def format_int(value: int) -> str:
     return f"{value:,}"
 
 
+def format_signed_int(value: int) -> str:
+    return f"{value:+,}"
+
+
 def month_label(month_key: str) -> str:
     parsed = datetime.strptime(month_key, "%Y-%m")
     return parsed.strftime("%b %Y")
+
+
+def day_label(day_key: str) -> str:
+    parsed = datetime.strptime(day_key, "%Y-%m-%d")
+    return parsed.strftime("%b %d, %Y")
+
+
+def short_day_label(day_key: str) -> str:
+    parsed = datetime.strptime(day_key, "%Y-%m-%d")
+    return parsed.strftime("%b %d")
 
 
 def directory_label(path: Path) -> str:
@@ -54,7 +69,7 @@ def directory_label(path: Path) -> str:
 
 def tracked_lean_paths() -> list[Path]:
     output = run_git("ls-files", "*.lean")
-    return [REPO_ROOT / Path(line) for line in output.splitlines() if line.strip()]
+    return [Path(line) for line in output.splitlines() if line.strip()]
 
 
 def collect_lean_stats() -> tuple[dict[str, int | str], list[dict[str, int | str]]]:
@@ -64,12 +79,12 @@ def collect_lean_stats() -> tuple[dict[str, int | str], list[dict[str, int | str
     lean_paths = tracked_lean_paths()
 
     for lean_path in lean_paths:
-        contents = lean_path.read_text(encoding="utf-8")
+        contents = run_git("show", f"HEAD:{lean_path.as_posix()}")
         lines = contents.splitlines()
         line_count = len(lines)
         nonblank_count = sum(1 for line in lines if line.strip())
 
-        label = directory_label(lean_path.relative_to(REPO_ROOT))
+        label = directory_label(lean_path)
         per_directory[label].total_lines += line_count
         per_directory[label].nonblank_lines += nonblank_count
         per_directory[label].file_count += 1
@@ -103,6 +118,195 @@ def collect_lean_stats() -> tuple[dict[str, int | str], list[dict[str, int | str
         "nonblank_lean_lines_display": format_int(nonblank_lines),
     }
     return summary, directory_rows
+
+
+def lean_lines_at_commit(commit: str) -> int:
+    cached = LEAN_LINE_CACHE.get(commit)
+    if cached is not None:
+        return cached
+    paths = [
+        line
+        for line in run_git("ls-tree", "-r", "--name-only", commit).splitlines()
+        if line.strip().endswith(".lean")
+    ]
+    total_lines = 0
+    for path in paths:
+        contents = run_git("show", f"{commit}:{path}")
+        total_lines += len(contents.splitlines())
+    LEAN_LINE_CACHE[commit] = total_lines
+    return total_lines
+
+
+def daily_lean_commits() -> list[tuple[str, str]]:
+    raw_history = [
+        line
+        for line in run_git(
+            "log",
+            "--format=%H\t%ad",
+            "--date=short",
+            "--",
+            "*.lean",
+        ).splitlines()
+        if line.strip()
+    ]
+
+    if not raw_history:
+        return []
+
+    daily_commits: list[tuple[str, str]] = []
+    seen_days: set[str] = set()
+    for entry in raw_history:
+        commit, day = entry.split("\t", maxsplit=1)
+        if day in seen_days:
+            continue
+        seen_days.add(day)
+        daily_commits.append((commit, day))
+
+    daily_commits.reverse()
+    return daily_commits
+
+
+def build_lean_history_rows(
+    daily_commits: list[tuple[str, str]],
+) -> list[dict[str, int | str]]:
+    history_rows: list[dict[str, int | str]] = []
+    previous_lines: int | None = None
+
+    for commit, day in daily_commits:
+        total_lines = lean_lines_at_commit(commit)
+        if previous_lines is None:
+            delta = 0
+            delta_display = "0"
+            delta_direction = "flat"
+        else:
+            delta = total_lines - previous_lines
+            delta_display = format_signed_int(delta)
+            delta_direction = (
+                "up" if delta > 0 else "down" if delta < 0 else "flat"
+            )
+
+        history_rows.append(
+            {
+                "date": day,
+                "label": day_label(day),
+                "short_label": short_day_label(day),
+                "lean_lines": total_lines,
+                "lean_lines_display": format_int(total_lines),
+                "delta_from_previous": delta,
+                "delta_from_previous_display": delta_display,
+                "delta_direction": delta_direction,
+            }
+        )
+        previous_lines = total_lines
+    return history_rows
+
+
+def summarize_lean_history(
+    history_rows: list[dict[str, int | str]], snapshot_count: int = 8
+) -> tuple[dict[str, int | str], list[dict[str, int | str]]]:
+    if not history_rows:
+        return {
+            "lean_snapshot_count": 0,
+            "lean_snapshot_count_display": "0",
+            "lean_lines_recent_change": 0,
+            "lean_lines_recent_change_display": "0",
+            "lean_lines_recent_change_direction": "flat",
+            "lean_snapshot_start_date": "",
+            "lean_snapshot_end_date": "",
+            "lean_snapshot_start_label": "",
+            "lean_snapshot_end_label": "",
+        }, []
+
+    recent_rows = history_rows[-snapshot_count:]
+    if len(recent_rows) >= 2:
+        recent_change = recent_rows[-1]["lean_lines"] - recent_rows[0]["lean_lines"]
+        recent_change_display = format_signed_int(recent_change)
+        recent_change_direction = (
+            "up" if recent_change > 0 else "down" if recent_change < 0 else "flat"
+        )
+    else:
+        recent_change = 0
+        recent_change_display = "0"
+        recent_change_direction = "flat"
+
+    summary: dict[str, int | str] = {
+        "lean_snapshot_count": len(recent_rows),
+        "lean_snapshot_count_display": format_int(len(recent_rows)),
+        "lean_lines_recent_change": recent_change,
+        "lean_lines_recent_change_display": recent_change_display,
+        "lean_lines_recent_change_direction": recent_change_direction,
+        "lean_snapshot_start_date": recent_rows[0]["date"],
+        "lean_snapshot_end_date": recent_rows[-1]["date"],
+        "lean_snapshot_start_label": recent_rows[0]["label"],
+        "lean_snapshot_end_label": recent_rows[-1]["label"],
+    }
+    return summary, recent_rows
+
+
+def build_lean_line_chart(
+    history_rows: list[dict[str, int | str]],
+    width: int = 520,
+    height: int = 180,
+) -> dict[str, int | str | list[dict[str, int | str | float]]]:
+    if not history_rows:
+        return {
+            "width": width,
+            "height": height,
+            "polyline_points": "",
+            "area_points": "",
+            "min_lines_display": "0",
+            "max_lines_display": "0",
+            "x_ticks": [],
+        }
+
+    pad_x = 20.0
+    pad_y = 18.0
+    plot_width = width - 2 * pad_x
+    plot_height = height - 2 * pad_y
+    line_values = [int(row["lean_lines"]) for row in history_rows]
+    min_lines = min(line_values)
+    max_lines = max(line_values)
+
+    def point_for(index: int, line_total: int) -> tuple[float, float]:
+        if len(history_rows) == 1:
+            x = width / 2
+        else:
+            x = pad_x + index * plot_width / (len(history_rows) - 1)
+        if max_lines == min_lines:
+            y = pad_y + plot_height / 2
+        else:
+            y = pad_y + (max_lines - line_total) * plot_height / (max_lines - min_lines)
+        return x, y
+
+    points = [point_for(index, value) for index, value in enumerate(line_values)]
+    polyline_points = " ".join(f"{x:.1f},{y:.1f}" for x, y in points)
+    area_points = " ".join(
+        [
+            f"{points[0][0]:.1f},{height - pad_y:.1f}",
+            polyline_points,
+            f"{points[-1][0]:.1f},{height - pad_y:.1f}",
+        ]
+    )
+
+    tick_indices = sorted({0, len(history_rows) // 2, len(history_rows) - 1})
+    x_ticks = [
+        {
+            "x": round(points[index][0], 1),
+            "x_percent": round(points[index][0] * 100 / width, 2),
+            "label": history_rows[index]["short_label"],
+        }
+        for index in tick_indices
+    ]
+
+    return {
+        "width": width,
+        "height": height,
+        "polyline_points": polyline_points,
+        "area_points": area_points,
+        "min_lines_display": format_int(min_lines),
+        "max_lines_display": format_int(max_lines),
+        "x_ticks": x_ticks,
+    }
 
 
 def collect_git_stats() -> tuple[
@@ -173,13 +377,17 @@ def collect_git_stats() -> tuple[
 
 def main() -> None:
     lean_summary, directory_rows = collect_lean_stats()
+    full_lean_history_rows = build_lean_history_rows(daily_lean_commits())
+    lean_history_summary, lean_history_rows = summarize_lean_history(full_lean_history_rows)
     git_summary, recent_month_rows, yearly_rows = collect_git_stats()
 
     payload = {
         "generated_on": date.today().isoformat(),
         "script_path": "scripts/generate_repo_stats.py",
-        "summary": {**lean_summary, **git_summary},
+        "summary": {**lean_summary, **lean_history_summary, **git_summary},
         "directory_breakdown": directory_rows,
+        "recent_lean_history": lean_history_rows,
+        "lean_line_chart": build_lean_line_chart(lean_history_rows),
         "recent_months": recent_month_rows,
         "commits_by_year": yearly_rows,
     }

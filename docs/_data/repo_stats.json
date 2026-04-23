@@ -2,20 +2,29 @@
   "generated_on": "2026-04-23",
   "script_path": "scripts/generate_repo_stats.py",
   "summary": {
-    "lean_files": 49,
-    "lean_files_display": "49",
-    "lean_lines": 38931,
-    "lean_lines_display": "38,931",
-    "nonblank_lean_lines": 36542,
-    "nonblank_lean_lines_display": "36,542",
-    "total_commits": 343,
-    "total_commits_display": "343",
-    "commits_last_30_days": 294,
-    "commits_last_30_days_display": "294",
-    "commits_last_90_days": 343,
-    "commits_last_90_days_display": "343",
-    "commits_last_365_days": 343,
-    "commits_last_365_days_display": "343",
+    "lean_files": 50,
+    "lean_files_display": "50",
+    "lean_lines": 38993,
+    "lean_lines_display": "38,993",
+    "nonblank_lean_lines": 36563,
+    "nonblank_lean_lines_display": "36,563",
+    "lean_snapshot_count": 8,
+    "lean_snapshot_count_display": "8",
+    "lean_lines_recent_change": 14485,
+    "lean_lines_recent_change_display": "+14,485",
+    "lean_lines_recent_change_direction": "up",
+    "lean_snapshot_start_date": "2026-04-13",
+    "lean_snapshot_end_date": "2026-04-23",
+    "lean_snapshot_start_label": "Apr 13, 2026",
+    "lean_snapshot_end_label": "Apr 23, 2026",
+    "total_commits": 360,
+    "total_commits_display": "360",
+    "commits_last_30_days": 311,
+    "commits_last_30_days_display": "311",
+    "commits_last_90_days": 360,
+    "commits_last_90_days_display": "360",
+    "commits_last_365_days": 360,
+    "commits_last_365_days_display": "360",
     "first_commit_date": "2026-02-17",
     "latest_commit_date": "2026-04-23",
     "active_days": 66,
@@ -24,12 +33,12 @@
   "directory_breakdown": [
     {
       "label": "BEI/",
-      "file_count": 23,
-      "file_count_display": "23",
-      "total_lines": 27164,
-      "total_lines_display": "27,164",
-      "nonblank_lines": 25743,
-      "nonblank_lines_display": "25,743"
+      "file_count": 24,
+      "file_count_display": "24",
+      "total_lines": 27225,
+      "total_lines_display": "27,225",
+      "nonblank_lines": 25763,
+      "nonblank_lines_display": "25,763"
     },
     {
       "label": "toMathlib/",
@@ -53,12 +62,119 @@
       "label": "repo root",
       "file_count": 1,
       "file_count_display": "1",
-      "total_lines": 24,
-      "total_lines_display": "24",
-      "nonblank_lines": 24,
-      "nonblank_lines_display": "24"
+      "total_lines": 25,
+      "total_lines_display": "25",
+      "nonblank_lines": 25,
+      "nonblank_lines_display": "25"
     }
   ],
+  "recent_lean_history": [
+    {
+      "date": "2026-04-13",
+      "label": "Apr 13, 2026",
+      "short_label": "Apr 13",
+      "lean_lines": 24508,
+      "lean_lines_display": "24,508",
+      "delta_from_previous": 1114,
+      "delta_from_previous_display": "+1,114",
+      "delta_direction": "up"
+    },
+    {
+      "date": "2026-04-17",
+      "label": "Apr 17, 2026",
+      "short_label": "Apr 17",
+      "lean_lines": 26252,
+      "lean_lines_display": "26,252",
+      "delta_from_previous": 1744,
+      "delta_from_previous_display": "+1,744",
+      "delta_direction": "up"
+    },
+    {
+      "date": "2026-04-18",
+      "label": "Apr 18, 2026",
+      "short_label": "Apr 18",
+      "lean_lines": 28396,
+      "lean_lines_display": "28,396",
+      "delta_from_previous": 2144,
+      "delta_from_previous_display": "+2,144",
+      "delta_direction": "up"
+    },
+    {
+      "date": "2026-04-19",
+      "label": "Apr 19, 2026",
+      "short_label": "Apr 19",
+      "lean_lines": 31886,
+      "lean_lines_display": "31,886",
+      "delta_from_previous": 3490,
+      "delta_from_previous_display": "+3,490",
+      "delta_direction": "up"
+    },
+    {
+      "date": "2026-04-20",
+      "label": "Apr 20, 2026",
+      "short_label": "Apr 20",
+      "lean_lines": 34246,
+      "lean_lines_display": "34,246",
+      "delta_from_previous": 2360,
+      "delta_from_previous_display": "+2,360",
+      "delta_direction": "up"
+    },
+    {
+      "date": "2026-04-21",
+      "label": "Apr 21, 2026",
+      "short_label": "Apr 21",
+      "lean_lines": 36806,
+      "lean_lines_display": "36,806",
+      "delta_from_previous": 2560,
+      "delta_from_previous_display": "+2,560",
+      "delta_direction": "up"
+    },
+    {
+      "date": "2026-04-22",
+      "label": "Apr 22, 2026",
+      "short_label": "Apr 22",
+      "lean_lines": 38553,
+      "lean_lines_display": "38,553",
+      "delta_from_previous": 1747,
+      "delta_from_previous_display": "+1,747",
+      "delta_direction": "up"
+    },
+    {
+      "date": "2026-04-23",
+      "label": "Apr 23, 2026",
+      "short_label": "Apr 23",
+      "lean_lines": 38993,
+      "lean_lines_display": "38,993",
+      "delta_from_previous": 440,
+      "delta_from_previous_display": "+440",
+      "delta_direction": "up"
+    }
+  ],
+  "lean_line_chart": {
+    "width": 520,
+    "height": 180,
+    "polyline_points": "20.0,162.0 88.6,144.7 157.1,123.3 225.7,88.7 294.3,65.2 362.9,39.7 431.4,22.4 500.0,18.0",
+    "area_points": "20.0,162.0 20.0,162.0 88.6,144.7 157.1,123.3 225.7,88.7 294.3,65.2 362.9,39.7 431.4,22.4 500.0,18.0 500.0,162.0",
+    "min_lines_display": "24,508",
+    "max_lines_display": "38,993",
+    "x_ticks": [
+      {
+        "x": 20.0,
+        "x_percent": 3.85,
+        "label": "Apr 13"
+      },
+      {
+        "x": 294.3,
+        "x_percent": 56.59,
+        "label": "Apr 20"
+      },
+      {
+        "x": 500.0,
+        "x_percent": 96.15,
+        "label": "Apr 23"
+      }
+    ]
+  },
   "recent_months": [
     {
       "month": "2026-02",
@@ -75,15 +191,15 @@
     {
       "month": "2026-04",
       "label": "Apr 2026",
-      "commit_count": 248,
-      "commit_count_display": "248"
+      "commit_count": 265,
+      "commit_count_display": "265"
     }
   ],
   "commits_by_year": [
     {
       "year": "2026",
-      "commit_count": 343,
-      "commit_count_display": "343"
+      "commit_count": 360,
+      "commit_count_display": "360"
     }
   ]
 }

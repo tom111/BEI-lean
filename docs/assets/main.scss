@@ -298,6 +298,18 @@ p, li {
   font-size: 0.92rem;
 }
 
+.stats-delta--up {
+  color: #1d6f4f;
+}
+
+.stats-delta--down {
+  color: #a6412b;
+}
+
+.stats-delta--flat {
+  color: #17324d;
+}
+
 .stats-panels {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
@@ -316,6 +328,59 @@ p, li {
 .stats-panel h3 {
   margin-top: 0;
   margin-bottom: 0.8rem;
+}
+
+.stats-chart {
+  position: relative;
+  margin-top: 0.25rem;
+  padding: 0.25rem 0 1.7rem 2.9rem;
+}
+
+.stats-chart svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.stats-chart__area {
+  fill: rgba(31, 95, 139, 0.14);
+}
+
+.stats-chart__line {
+  fill: none;
+  stroke: #1f5f8b;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.stats-chart__bounds {
+  position: absolute;
+  inset: 0 auto 1.7rem 0;
+  width: 2.6rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #5b748c;
+  font-size: 0.82rem;
+  text-align: right;
+}
+
+.stats-chart__ticks {
+  position: absolute;
+  left: 2.9rem;
+  right: 0;
+  bottom: 0;
+  height: 1.35rem;
+}
+
+.stats-chart__tick {
+  position: absolute;
+  transform: translateX(-50%);
+  color: #5b748c;
+  font-size: 0.82rem;
+  white-space: nowrap;
 }
 
 .stats-table {
