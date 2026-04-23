@@ -5109,10 +5109,7 @@ private theorem L4ForwardPoly_vanishes_on_gens {n : ℕ}
         rw [smallerHHGraph, SimpleGraph.fromRel_adj]
         refine ⟨?_, Or.inl ⟨a, b, hab, rfl, ?_, hc_succ, hadjG'⟩⟩
         · intro heq
-          have : a.val = b.val + 1 := by
-            have := congrArg Fin.val heq
-            simp [Fin.castSucc, Fin.castAdd, Fin.castLE] at this
-            exact this
+          have : a.val = b.val + 1 := by exact_mod_cast congrArg Fin.val heq
           have hab_val : a.val ≤ b.val := hab
           omega
         · simp
@@ -5275,13 +5272,8 @@ private theorem smallerHHGraph_adj_imp {n : ℕ}
     -- u = ⟨b.val+1, hb⟩ = a'.castSucc, so a'.val = b.val+1
     -- v = a.castSucc, v.val = b'.val+1, so a.val = b'.val + 1
     have ha' : a'.val = b.val + 1 := by
-      have := congrArg Fin.val hu_eq
-      simp [Fin.castSucc, Fin.castAdd, Fin.castLE] at this
-      omega
-    have hb' : a.val = b'.val + 1 := by
-      have h1 : (a.castSucc : Fin (pairedCount G U + 1)).val = b'.val + 1 := hv_eq
-      simp at h1
-      exact h1
+      exact_mod_cast (congrArg Fin.val hu_eq).symm
+    have hb' : a.val = b'.val + 1 := by exact_mod_cast hv_eq
     -- a' ≤ b' gives b.val + 1 ≤ b'.val, and a.val = b'.val + 1, so a.val ≥ b.val + 2.
     have h1 : a'.val ≤ b'.val := hab'
     have h2 : a.val ≤ b.val := hab
@@ -5940,8 +5932,6 @@ private theorem L1ForwardPoly_hhUnitProduct_eq {n : ℕ}
   rw [L1ForwardPoly_X, L1ForwardGen_of_U hnW huU]
   rw [L1UnitRightHom_X]
 
-set_option maxHeartbeats 400000 in
--- heartbeats needed to elaborate the composed AlgHom over a tensor target.
 /-- `L1UnitRightHom` factors as `includeRight ∘ algebraMap`. -/
 private theorem L1UnitRightHom_eq_includeRight_algebraMap {n : ℕ}
     (G : SimpleGraph (Fin n)) (U : Finset (BinomialEdgeVars (Fin n)))
@@ -6536,7 +6526,7 @@ private theorem L1Forward_Backward_tmul_right_X {n : ℕ}
     exact h (Or.inl hvU_set)
   rw [L1ForwardGen_of_U hvnW hvU]
 
--- The `set φL, set φR` pattern plus MvPolynomial/Ideal.Quotient extensionality
+-- The `set φL, set φR` pattern plus MvPolynomial/Ideal.Quotient extensionality.
 set_option maxHeartbeats 1600000 in
 -- heartbeats needed: target type `L1Target` is a heavy tensor product of a quotient
 -- and a localization; algHom extensionality on pure tensors is expensive.
@@ -7429,8 +7419,6 @@ private lemma quotLocalRingHom_algebraMap
       (Ideal.Quotient.mk (killLastPairIdeal (K := K) G) x) := by
   simp [quotLocalRingHom, Localization.localRingHom_to_map]
 
-set_option maxHeartbeats 400000 in
--- heartbeats needed to elaborate the composed quotient/localization ring hom.
 /-- The `localRingHom` kills `span{xL, yL}`: both last-pair images map to 0
 under `R_G → R_G ⧸ killLastPairIdeal → Localization.AtPrime augIdealQuot`. -/
 private lemma quotLocalRingHom_kills_lastPair
@@ -7699,7 +7687,7 @@ private noncomputable def locAugIdealQuotEquivLocAugIdealReduced
 
 /-! ##### Assembly: `isCohenMacaulayLocalRing_at_augIdealReduced_step` -/
 
-set_option maxHeartbeats 800000 in
+set_option maxHeartbeats 400000 in
 -- heartbeats needed: assembly over iterated quotients + localizations.
 /-- **Inductive case** (`r ≥ 1`): Bridge from L5's CM conclusion
 `IsCohenMacaulayLocalRing (QuotSMulTop mkyL RpQ)` to CM of
@@ -7858,8 +7846,6 @@ HH quotient at `s_U` to
 `reducedHHRing G' ⊗[K] Localization.Away (rename Sum.inr (hhUnitProductSub U))`,
 where `G' = smallerHHGraph G (↑U)` and the `Sum.inr` embeds the `U`-index into
 `↑(lambdaSet G (↑U)) ⊕ ↑(U : Set _)`. -/
-set_option maxHeartbeats 400000 in
--- heartbeats needed: E_U is a 4-step AlgEquiv composition over heavy types.
 /-- **Session C1: the bundled monomial-localisation equiv `E_U`** for an
 independent finset `U`. Specialised to `K : Type` (universe 0) so that it can
 be composed with `polynomialAwayTensorEquiv`, which requires all type arguments
@@ -7906,7 +7892,7 @@ private noncomputable def E_U {K : Type} [Field K]
       (β := ((U : Set (BinomialEdgeVars (Fin n))) : Type _))
       (hhUnitProductSub (K := K) U))
 
-set_option maxHeartbeats 800000 in
+set_option maxHeartbeats 400000 in
 -- heartbeats needed: E_U is a 4-step AlgEquiv.trans; unfolding its action on a
 -- specific element requires elaborating nested tensor/localization types.
 /-- **E_U forward on a paired-left survivor variable**.
@@ -8033,7 +8019,7 @@ private theorem E_U_algebraMap_mkI_X_pairedSurvivor_inl
         (Localization.Away (hhUnitProductSub (K := K) U))) := rfl
   rw [h11, map_one]
 
-set_option maxHeartbeats 800000 in
+set_option maxHeartbeats 400000 in
 -- heartbeats needed: E_U is a 4-step AlgEquiv.trans; unfolding its action on a
 -- specific element requires elaborating nested tensor/localization types.
 /-- **E_U forward on a paired-right survivor variable**.
@@ -8150,7 +8136,7 @@ private theorem E_U_algebraMap_mkI_X_pairedSurvivor_inr
 
 /-! #### Main theorem -/
 
-set_option maxHeartbeats 1600000 in
+set_option maxHeartbeats 800000 in
 -- heartbeats + synth budget needed: main graded local-to-global assembly is heavy.
 set_option synthInstance.maxHeartbeats 400000 in
 /-- **Graded local-to-global for the HH quotient**: Under HH conditions, the quotient
