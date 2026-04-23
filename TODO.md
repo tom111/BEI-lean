@@ -84,7 +84,7 @@ than theorem-critical formalization.
 
 #### Root
 
-- `[ ]` `BEI.lean`
+- `[x]` `BEI.lean`
 
 #### `BEI/`
 
