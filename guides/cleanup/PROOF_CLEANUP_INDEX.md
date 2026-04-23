@@ -6,12 +6,14 @@ These guides are for refactoring the existing formalization so that proofs becom
 - more human-readable;
 - easier for Claude to extend without regressions.
 
-Current live hotspots from the 2026-04-20 repo state:
+Current live hotspots from the 2026-04-23 repo state:
 
 - `BEI/Equidim.lean` is now the largest and noisiest active file.
 - `BEI/CoveredWalks.lean`, `BEI/PrimeDecompositionDimension.lean`,
   `BEI/PrimeIdeals.lean`, and `BEI/GroebnerBasisSPolynomial.lean`
   remain the main BEI proof-engineering bottlenecks.
+- `BEI/CycleUnmixed.lean` now isolates the old cycle hotspot and should be treated
+  through its dedicated performance packet, not by reopening `BEI/MinimalPrimes.lean`.
 - `toMathlib/CohenMacaulay/Polynomial.lean` is now a real maintenance target,
   not just background support code.
 - `BEI/GroebnerDeformation.lean` is large and active, but should receive
@@ -20,15 +22,19 @@ Current live hotspots from the 2026-04-20 repo state:
 
 Recommended order:
 
-1. [PUBLIC_THEOREM_LAYER.md](/home/tom/BEI-lean/guides/cleanup/PUBLIC_THEOREM_LAYER.md)
-2. [PATH_AND_INTERNAL_VERTEX_API.md](/home/tom/BEI-lean/guides/cleanup/PATH_AND_INTERNAL_VERTEX_API.md)
-3. [MONOMIAL_AND_FINSUPP_API.md](/home/tom/BEI-lean/guides/cleanup/MONOMIAL_AND_FINSUPP_API.md)
-4. [EVALUATION_MAP_API.md](/home/tom/BEI-lean/guides/cleanup/EVALUATION_MAP_API.md)
-5. [EQUIDIM_DECOMPOSITION.md](/home/tom/BEI-lean/guides/cleanup/EQUIDIM_DECOMPOSITION.md)
-6. [CM_SUPPORT_REFACTOR.md](/home/tom/BEI-lean/guides/cleanup/CM_SUPPORT_REFACTOR.md)
-7. [FILE_SPLITTING_PLAN.md](/home/tom/BEI-lean/guides/cleanup/FILE_SPLITTING_PLAN.md)
-8. [LINTER_AND_STYLE_CLEANUP.md](/home/tom/BEI-lean/guides/cleanup/LINTER_AND_STYLE_CLEANUP.md)
-9. [STATUS_AND_CI_HYGIENE.md](/home/tom/BEI-lean/guides/cleanup/STATUS_AND_CI_HYGIENE.md)
+1. [LEAN_CODE_SMELL_AUDIT.md](/home/tom/BEI-lean/guides/cleanup/LEAN_CODE_SMELL_AUDIT.md)
+2. [LEAN_CODE_SMELL_WORKLIST.md](/home/tom/BEI-lean/guides/cleanup/LEAN_CODE_SMELL_WORKLIST.md)
+3. [MINIMALPRIMES_CYCLE_PERFORMANCE.md](/home/tom/BEI-lean/guides/cleanup/MINIMALPRIMES_CYCLE_PERFORMANCE.md)
+4. [LEAN_PERFORMANCE_TRIAGE.md](/home/tom/BEI-lean/guides/cleanup/LEAN_PERFORMANCE_TRIAGE.md)
+5. [PUBLIC_THEOREM_LAYER.md](/home/tom/BEI-lean/guides/cleanup/PUBLIC_THEOREM_LAYER.md)
+6. [PATH_AND_INTERNAL_VERTEX_API.md](/home/tom/BEI-lean/guides/cleanup/PATH_AND_INTERNAL_VERTEX_API.md)
+7. [MONOMIAL_AND_FINSUPP_API.md](/home/tom/BEI-lean/guides/cleanup/MONOMIAL_AND_FINSUPP_API.md)
+8. [EVALUATION_MAP_API.md](/home/tom/BEI-lean/guides/cleanup/EVALUATION_MAP_API.md)
+9. [EQUIDIM_DECOMPOSITION.md](/home/tom/BEI-lean/guides/cleanup/EQUIDIM_DECOMPOSITION.md)
+10. [CM_SUPPORT_REFACTOR.md](/home/tom/BEI-lean/guides/cleanup/CM_SUPPORT_REFACTOR.md)
+11. [FILE_SPLITTING_PLAN.md](/home/tom/BEI-lean/guides/cleanup/FILE_SPLITTING_PLAN.md)
+12. [LINTER_AND_STYLE_CLEANUP.md](/home/tom/BEI-lean/guides/cleanup/LINTER_AND_STYLE_CLEANUP.md)
+13. [STATUS_AND_CI_HYGIENE.md](/home/tom/BEI-lean/guides/cleanup/STATUS_AND_CI_HYGIENE.md)
 
 General rule:
 
