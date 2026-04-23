@@ -242,9 +242,9 @@ theorem prop_3_8 (G : SimpleGraph V) (S T : Finset V) :
             Ideal.subset_span (Set.mem_union_left _ ⟨k, hkS, Or.inl rfl⟩)
           have hyk : X (Sum.inr k) ∈ primeComponent (K := K) G S :=
             Ideal.subset_span (Set.mem_union_left _ ⟨k, hkS, Or.inr rfl⟩)
-          apply (primeComponent (K := K) G S).sub_mem
-          · exact (primeComponent (K := K) G S).mul_mem_left _ hyk
-          · exact Ideal.mul_mem_right _ _ hxk
+          exact (primeComponent (K := K) G S).sub_mem
+            ((primeComponent (K := K) G S).mul_mem_left _ hyk)
+            (Ideal.mul_mem_right _ _ hxk)
         · -- j ∉ S, k ∉ S: use component-preservation to get SameComponent G S j k
           apply Ideal.subset_span
           exact Set.mem_union_right _ ⟨j, k, hjk,
