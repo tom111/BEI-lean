@@ -149,10 +149,8 @@ theorem mul_left_injective_of_notMem_irrelevant
         rwa [Finset.mem_singleton] at this⟩
   rw [hfilter_eq, Finset.sum_singleton] at hcoe_formula
   -- `(s * u)_j = s_0 * u_j = k • u_j ≠ 0`, contradiction.
-  have huj_ne : (DirectSum.decompose 𝒜 u j : A) ≠ 0 := by
-    intro h
-    apply (DFinsupp.mem_support_iff.mp hj_mem)
-    exact Subtype.ext h
+  have huj_ne : (DirectSum.decompose 𝒜 u j : A) ≠ 0 :=
+    fun h => (DFinsupp.mem_support_iff.mp hj_mem) (Subtype.ext h)
   have hprod_ne :
       (DirectSum.decompose 𝒜 s 0 : A) *
         (DirectSum.decompose 𝒜 u j : A) ≠ 0 := by

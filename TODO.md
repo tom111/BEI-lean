@@ -83,7 +83,7 @@
 - `[x]` `toMathlib/GradedAssociatedPrime.lean`
 - `[x]` `toMathlib/GradedCM.lean`
 - `[x]` `toMathlib/GradedEquidim.lean`
-- `[ ]` `toMathlib/GradedFiniteFree.lean`
+- `[x]` `toMathlib/GradedFiniteFree.lean`
 - `[ ]` `toMathlib/GradedIrrelevant.lean`
 - `[ ]` `toMathlib/GradedPrimeAvoidance.lean`
 - `[ ]` `toMathlib/GradedQuotient.lean`
