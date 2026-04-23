@@ -61,6 +61,7 @@ Lean files themselves.
 - `toMathlib/MonomialIdeal.lean` — monomial ideals in `MvPolynomial`, variable-generated prime ideals, the prime classification for monomial ideals, `coeff_pow_lexMax`, `radical_isMonomial`, the full primary monomial ideal characterization (`isPrimary_iff`), and supporting structural lemmas
 - `toMathlib/SquarefreeMonomialPrimes.lean` — variable-pair ideals (edge ideals), vertex covers, and minimal prime ↔ minimal vertex cover classification
 - `toMathlib/HeightVariableIdeal.lean` — quotients by variable ideals, quotient equivalences, and Krull-dimension formulas used in the Proposition 1.6 CM branch
+- `scripts/generate_repo_stats.py` — computes code-size and git-history statistics for `docs/_data/repo_stats.json`, which is used by the homepage
 - `BEI.lean` — Root library entry point
 - `BEI.tex` — Reference paper with the mathematical content being formalized
 - `TODO.md` / `FORMALIZATION_MAP.md` — human-facing status docs that must be updated whenever theorem status or file layout changes
