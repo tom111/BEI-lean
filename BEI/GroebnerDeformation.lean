@@ -263,11 +263,6 @@ lemma binomialEdgeIdeal_le_baseInclude_comap_sup
 
 section BaseQuotEquiv
 
--- The iso construction below needs more elaboration budget than the default
--- because of the deeply-nested types `MvPolynomial (DefVars n) K`.
-set_option linter.style.setOption false in
-set_option maxHeartbeats 1200000
-
 variable {n : ℕ} (G : SimpleGraph (Fin n))
 
 /-- Abbreviation for the target sup ideal. -/
@@ -417,11 +412,6 @@ is zero, so `specZero` serves as the backward map and its composition with
 `baseInclude` equals the identity. -/
 
 section SpecZeroQuotEquiv
-
--- The iso construction below needs more elaboration budget than the default
--- because of the deeply-nested types `MvPolynomial (DefVars n) K`.
-set_option linter.style.setOption false in
-set_option maxHeartbeats 1200000
 
 variable {n : ℕ} (G : SimpleGraph (Fin n))
 
@@ -1726,7 +1716,6 @@ private lemma coprime_twisted_degrees_ne {n : ℕ}
     hnei_tX, if_false, if_true, zero_add, add_zero] at h1
   omega
 
-set_option maxHeartbeats 800000 in
 -- The Buchberger S-polynomial case analysis (shared-first / shared-last /
 -- coprime) unfolds to large polynomial identities; the default heartbeat
 -- budget is insufficient for the elaborator to process all three cases.
