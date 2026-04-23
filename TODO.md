@@ -59,7 +59,7 @@
 - `[x]` `BEI/HerzogLemmas.lean`
 - `[x]` `BEI/MinimalPrimes.lean`
 - `[x]` `BEI/MonomialOrder.lean`
-- `[ ]` `BEI/PrimeDecomposition.lean`
+- `[x]` `BEI/PrimeDecomposition.lean`
 - `[ ]` `BEI/PrimeDecompositionDimension.lean`
 - `[ ]` `BEI/PrimeIdeals.lean`
 - `[ ]` `BEI/Proposition1_6.lean`

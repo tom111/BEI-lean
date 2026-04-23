@@ -24,7 +24,7 @@ Cycle/equidimensional corollaries and related consequences are handled in
 
 noncomputable section
 
-open MvPolynomial SimpleGraph Classical
+open MvPolynomial SimpleGraph
 
 /-! ## Krull dimension -/
 -- `ringKrullDim` is provided by Mathlib (via `Mathlib.RingTheory.Ideal.Height`),
@@ -125,6 +125,7 @@ private lemma minimalPrime_eq_primeComponent (G : SimpleGraph V)
     (P : Ideal (MvPolynomial (BinomialEdgeVars V) K))
     (hmin : P ∈ (binomialEdgeIdeal (K := K) G).minimalPrimes) :
     ∃ S : Finset V, P = primeComponent (K := K) G S := by
+  classical
   set S := Finset.univ.filter (fun v =>
     X (Sum.inl v : BinomialEdgeVars V) ∈ P ∧
     X (Sum.inr v : BinomialEdgeVars V) ∈ P)
@@ -199,6 +200,7 @@ theorem minimalPrimes_characterization (G : SimpleGraph V) :
         P = primeComponent (K := K) G S ∧
         ∀ T : Finset V, primeComponent (K := K) G T ≤ primeComponent (K := K) G S →
           primeComponent (K := K) G S ≤ primeComponent (K := K) G T } := by
+  classical
   ext P
   constructor
   · -- Forward: minimal prime → minimal P_S
