@@ -153,6 +153,7 @@ Do not keep obsolete guides around if they now misrepresent the active work.
 - Use the Lean skill workflow and Lean MCP tools as the default method for cleanup and proof-golf work.
 - For any simplification, shortening, refactor, or proof-golf pass, require that the whole project still builds cleanly before treating the pass as complete.
 - Before each commit, require that the whole project still builds cleanly.
+- Never change the statement of any paper-facing theorem unless explicitly instructed.
 - Do not change theorem, lemma, definition, or exported API statements during cleanup work unless explicitly instructed.
 - Do not introduce new axioms during cleanup work.
 - If it is unclear whether a cleanup strategy is sound, stable, or worth pursuing, write the open questions into a markdown file under `questions/` before proceeding.

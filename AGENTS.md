@@ -123,6 +123,8 @@ For any Lean simplification, shortening, refactor, or proof-golf pass:
 - use the Lean skill workflow and Lean MCP tools as the default working method;
 - require that the whole project still builds cleanly before considering the pass complete;
 - require that the whole project still builds cleanly again before each commit;
+- never change the statement of any paper-facing theorem under any circumstances unless
+  explicitly instructed;
 - do not change theorem, lemma, definition, or API statements unless explicitly asked;
 - do not introduce new axioms;
 - if it is unclear whether a cleanup strategy is correct, stable, or worth pursuing,
