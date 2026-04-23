@@ -213,9 +213,7 @@ theorem IsMonomial.isPrime_iff_eq_span_X_image
       · obtain ⟨i, hi, hxi⟩ := exists_variable_mem_of_monomial_mem_prime hprime hmono
         exact ⟨i, hxi, Finsupp.mem_support_iff.mp hi⟩
     · -- span (X '' s) ≤ I: immediate from the definition of s
-      apply span_le.mpr
-      rintro q ⟨i, hi, rfl⟩
-      exact hi
+      exact span_le.mpr (by rintro q ⟨i, hi, rfl⟩; exact hi)
   · -- variable-generated ideals are prime
     rintro ⟨s, rfl⟩
     exact MvPolynomial.isPrime_span_X_image_set s

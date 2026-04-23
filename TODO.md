@@ -92,7 +92,7 @@
 - `[x]` `toMathlib/HeightVariableIdeal.lean`
 - `[x]` `toMathlib/IntegralDimension.lean`
 - `[x]` `toMathlib/IsPrimeSpanX.lean`
-- `[ ]` `toMathlib/MonomialIdeal.lean`
+- `[x]` `toMathlib/MonomialIdeal.lean`
 - `[ ]` `toMathlib/PolynomialAwayTensor.lean`
 - `[ ]` `toMathlib/QuotientDimension.lean`
 - `[ ]` `toMathlib/SquarefreeMonomialPrimes.lean`
