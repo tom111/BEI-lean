@@ -199,9 +199,7 @@ omit [Nontrivial A] [IsNoetherianRing A] [Algebra.FiniteType K A] in
 private lemma homogeneousCore_lt_of_not_isHomogeneous (p : Ideal A)
     (hp_not_hom : ¬ p.IsHomogeneous 𝒜) :
     (p.homogeneousCore 𝒜).toIdeal < p := by
-  refine lt_of_le_of_ne (homogeneousCore_le 𝒜 p) ?_
-  intro h
-  apply hp_not_hom
+  refine lt_of_le_of_ne (homogeneousCore_le 𝒜 p) fun h => hp_not_hom ?_
   rw [Ideal.IsHomogeneous.iff_eq]
   exact h
 

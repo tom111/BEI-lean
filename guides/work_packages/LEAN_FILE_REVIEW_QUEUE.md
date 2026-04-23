@@ -25,7 +25,7 @@ items are:
   `toMathlib/CohenMacaulay/Polynomial.lean`,
   `toMathlib/CohenMacaulay/TensorPolynomialAway.lean`,
   `toMathlib/Equidim/Defs.lean`, `toMathlib/FiniteFreeEquidim.lean`,
-  `toMathlib/GradedAssociatedPrime.lean`.
+  `toMathlib/GradedAssociatedPrime.lean`, `toMathlib/GradedCM.lean`.
 
 Everything else under `BEI/`, `Supplement/`, and `toMathlib/` in
 `TODO.md` is still pending.
