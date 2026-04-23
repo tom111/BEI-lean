@@ -87,22 +87,22 @@ h1, h2, h3, h4 {
 }
 
 h1 {
-  font-size: 2.6rem;
-  line-height: 1.08;
+  font-size: 1.9rem;
+  line-height: 1.15;
   margin: 0.4em 0 0.4em;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.005em;
 }
 
 h2 {
-  font-size: 1.5rem;
-  line-height: 1.25;
-  margin: 2.3em 0 0.7em;
+  font-size: 1.2rem;
+  line-height: 1.3;
+  margin: 2em 0 0.6em;
 }
 
 h3 {
-  font-size: 1.15rem;
-  line-height: 1.3;
-  margin: 1.5em 0 0.4em;
+  font-size: 1rem;
+  line-height: 1.35;
+  margin: 1.4em 0 0.35em;
 }
 
 p { margin: 0 0 1em; }
@@ -178,15 +178,15 @@ mjx-container[display="true"] {
 
 .masthead__title {
   font-weight: 700;
-  font-size: clamp(2.2rem, 5vw, 3.1rem);
-  line-height: 1.08;
-  margin: 0 0 0.8rem;
+  font-size: 2rem;
+  line-height: 1.15;
+  margin: 0 0 0.7rem;
   color: var(--ink);
-  letter-spacing: -0.015em;
+  letter-spacing: -0.01em;
 }
 
 .masthead__lede {
-  font-size: 1.1rem;
+  font-size: 1.02rem;
   line-height: 1.55;
   color: var(--ink);
   max-width: 42rem;
@@ -340,16 +340,16 @@ mjx-container[display="true"] {
 
 .section-card strong {
   display: block;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--ink);
-  margin-bottom: 0.3rem;
-  line-height: 1.3;
+  margin-bottom: 0.25rem;
+  line-height: 1.35;
 }
 
 .section-card__meta {
   display: block;
-  font-size: 0.98rem;
+  font-size: 0.95rem;
   line-height: 1.5;
   color: var(--ink-muted);
 }
@@ -397,10 +397,8 @@ mjx-container[display="true"] {
   display: block;
   font-size: 0.88rem;
   color: var(--ink-muted);
-  margin-bottom: 0.2rem;
-  text-transform: none;
-  letter-spacing: 0;
-  font-weight: 500;
+  margin-bottom: 0.15rem;
+  font-weight: 400;
 }
 
 .theorem-highlight__label {
@@ -413,11 +411,10 @@ mjx-container[display="true"] {
 .theorem-highlight__title {
   display: block;
   margin-top: 0.1rem;
-  font-weight: 500;
-  font-style: italic;
-  font-size: 1.22rem;
+  font-weight: 400;
+  font-size: 1rem;
   color: var(--ink);
-  line-height: 1.25;
+  line-height: 1.4;
 }
 
 .theorem-highlight__badges {
@@ -561,16 +558,16 @@ a.theorem-pane__link {
 
 .stats-card__value {
   display: block;
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 600;
-  line-height: 1.05;
+  line-height: 1.1;
   color: var(--ink);
 }
 
 .stats-card__label {
   display: block;
-  margin-top: 0.3rem;
-  font-size: 0.95rem;
+  margin-top: 0.25rem;
+  font-size: 0.92rem;
   color: var(--ink-muted);
 }
 
@@ -813,17 +810,14 @@ blockquote {
   font-size: 1rem;
   color: var(--ink);
   margin-bottom: 0.1rem;
-  text-transform: none;
-  letter-spacing: 0;
 }
 
 .theorem-compare__title {
   display: block;
-  font-weight: 500;
-  font-style: italic;
-  font-size: 1.22rem;
+  font-weight: 400;
+  font-size: 1rem;
   color: var(--ink);
-  line-height: 1.22;
+  line-height: 1.4;
 }
 
 .theorem-compare__badges {

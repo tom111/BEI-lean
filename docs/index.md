@@ -11,14 +11,6 @@ title: Binomial Edge Ideals
     <p class="masthead__lede">
       A machine-checked companion to <em>Binomial edge ideals and conditional independence statements</em>. Read the paper alongside the formal proofs, and follow any theorem down to the Lean code that verifies it.
     </p>
-    <nav class="masthead__nav">
-      <a href="{{ '/overview.html' | relative_url }}">Overview</a>
-      <a href="{{ '/foundations.html' | relative_url }}">Definitions</a>
-      <a href="{{ '/section-1.html' | relative_url }}">§&nbsp;1</a>
-      <a href="{{ '/section-2.html' | relative_url }}">§&nbsp;2</a>
-      <a href="{{ '/section-3.html' | relative_url }}">§&nbsp;3</a>
-      <a href="{{ '/section-4.html' | relative_url }}">§&nbsp;4</a>
-    </nav>
     <figure class="masthead__plate">
       <div class="masthead__plate-graph">
         <svg viewBox="0 0 300 110" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A path graph on four vertices labeled 1 through 4">
