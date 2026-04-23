@@ -37,6 +37,8 @@ Optional proof-engineering work, not on the theorem-proving critical path.
 - [cleanup/EQUIDIM_DECOMPOSITION.md](cleanup/EQUIDIM_DECOMPOSITION.md)
 - [cleanup/CM_SUPPORT_REFACTOR.md](cleanup/CM_SUPPORT_REFACTOR.md)
 - [cleanup/FILE_SPLITTING_PLAN.md](cleanup/FILE_SPLITTING_PLAN.md)
+- [cleanup/MINIMALPRIMES_CYCLE_PERFORMANCE.md](cleanup/MINIMALPRIMES_CYCLE_PERFORMANCE.md)
+- [cleanup/LEAN_PERFORMANCE_TRIAGE.md](cleanup/LEAN_PERFORMANCE_TRIAGE.md)
 - [cleanup/LINTER_AND_STYLE_CLEANUP.md](cleanup/LINTER_AND_STYLE_CLEANUP.md)
 - [cleanup/STATUS_AND_CI_HYGIENE.md](cleanup/STATUS_AND_CI_HYGIENE.md)
 
