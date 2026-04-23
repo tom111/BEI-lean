@@ -77,7 +77,7 @@
 - `[x]` `toMathlib/CohenMacaulay/Defs.lean`
 - `[x]` `toMathlib/CohenMacaulay/Localization.lean`
 - `[x]` `toMathlib/CohenMacaulay/Polynomial.lean`
-- `[ ]` `toMathlib/CohenMacaulay/TensorPolynomialAway.lean`
+- `[x]` `toMathlib/CohenMacaulay/TensorPolynomialAway.lean`
 - `[ ]` `toMathlib/Equidim/Defs.lean`
 - `[ ]` `toMathlib/FiniteFreeEquidim.lean`
 - `[ ]` `toMathlib/GradedAssociatedPrime.lean`
