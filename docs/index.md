@@ -7,7 +7,7 @@ title: Binomial Edge Ideals
     <div class="masthead__eyebrow">
       Formalization of Herzog, Hibi, Hreinsdóttir, Kahle &amp; Rauh &middot; 2010
     </div>
-    <h1 class="masthead__title">Binomial Edge <em>Ideals</em></h1>
+    <h1 class="masthead__title">Binomial Edge Ideals</h1>
     <p class="masthead__lede">
       A machine-checked companion to <em>Binomial edge ideals and conditional independence statements</em>. Read the paper alongside the formal proofs, and follow any theorem down to the Lean code that verifies it.
     </p>
@@ -22,18 +22,18 @@ title: Binomial Edge Ideals
     <figure class="masthead__plate">
       <div class="masthead__plate-graph">
         <svg viewBox="0 0 300 110" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A path graph on four vertices labeled 1 through 4">
-          <g fill="none" stroke="#1a1815" stroke-width="1.5" stroke-linecap="round">
+          <g fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round">
             <line x1="30" y1="45" x2="110" y2="45"/>
             <line x1="110" y1="45" x2="190" y2="45"/>
             <line x1="190" y1="45" x2="270" y2="45"/>
           </g>
-          <g fill="#f4ece0" stroke="#1a1815" stroke-width="1.5">
+          <g fill="#fbfaf6" stroke="#1a1a1a" stroke-width="1.5">
             <circle cx="30" cy="45" r="7.5"/>
             <circle cx="110" cy="45" r="7.5"/>
             <circle cx="190" cy="45" r="7.5"/>
             <circle cx="270" cy="45" r="7.5"/>
           </g>
-          <g fill="#1a1815" font-family="Fraunces, serif" font-style="italic" font-size="16" text-anchor="middle">
+          <g fill="#1a1a1a" font-family="'Source Serif 4', serif" font-style="italic" font-size="16" text-anchor="middle">
             <text x="30" y="85">1</text>
             <text x="110" y="85">2</text>
             <text x="190" y="85">3</text>
