@@ -230,11 +230,10 @@ lemma rename_collapse_eq_zero (G : SimpleGraph V)
     MvPolynomial.rename (collapse (V := V)) f = 0 := by
   have hle : binomialEdgeIdeal (K := K) G ≤
       RingHom.ker (MvPolynomial.rename
-        (collapse (V := V)) : MvPolynomial _ K →ₐ[K] _).toRingHom := by
-    apply Ideal.span_le.mpr
-    intro g hg
-    obtain ⟨i, j, _, _, rfl⟩ := hg
-    exact RingHom.mem_ker.mpr (rename_collapse_generator i j)
+        (collapse (V := V)) : MvPolynomial _ K →ₐ[K] _).toRingHom :=
+    Ideal.span_le.mpr <| by
+      rintro g ⟨i, j, _, _, rfl⟩
+      exact RingHom.mem_ker.mpr (rename_collapse_generator i j)
   exact RingHom.mem_ker.mp (hle hf)
 
 omit [DecidableEq V] in
