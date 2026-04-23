@@ -22,8 +22,6 @@ new formalization task appears.
 
 - [answers/ANSWER_04_HEIGHT_ADDITIVITY_REPAIR.md](answers/ANSWER_04_HEIGHT_ADDITIVITY_REPAIR.md)
   Dormant infrastructure repair; useful reference, not on the critical path.
-- [answers/ANSWER_05_LEAN_PERFORMANCE_RESEARCH.md](answers/ANSWER_05_LEAN_PERFORMANCE_RESEARCH.md)
-  Source-backed note on reducing heartbeat use and improving Lean/build performance.
 
 ## Cleanup And Refactor Packets
 
@@ -68,6 +66,7 @@ Completed / superseded packets, retained for historical context only. Do not tre
 
 ### Earlier completed packets
 
+- `archive/ANSWER_05_LEAN_PERFORMANCE_RESEARCH.md` — source-backed Lean performance note; now superseded by the concrete cleanup packets.
 - `archive/NEXT_SESSION_PROMPT.md` — retired follow-up memo from the Prop 1.6 / Corollary 3.4 phase.
 - `archive/COROLLARY_3_4_IMPLEMENTATION.md` — consumed implementation packet for Corollaries 3.4 and 3.7.
 - `archive/CM_LOCALIZES.md` — CM-localizes theorem packet (landed).
