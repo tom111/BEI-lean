@@ -132,7 +132,6 @@ private lemma not_last_of_internal' (ρ : List V) (a b : V)
       rw [← this] at hnd_rest
       exact (List.nodup_append.mp hnd_rest).2.2 _ (hb_last ▸ hv_dp) _ (List.Mem.head _) rfl
 
-set_option maxHeartbeats 800000 in
 omit [DecidableEq V] in
 theorem theorem_2_1 (G : SimpleGraph V) :
     binomialEdgeMonomialOrder.IsGroebnerBasis
@@ -195,18 +194,26 @@ theorem theorem_2_1 (G : SimpleGraph V) :
       (hσ.2.2.2.1.sublist (List.tail_sublist σ)).sublist (List.dropLast_sublist _)
     have hdeg_ij := fij_degree (K := K) i j hij
     have hdeg_il := fij_degree (K := K) i l hil
-    have hfij_inr : ∀ v, v ≠ j → binomialEdgeMonomialOrder.degree (fij (K := K) i j) (Sum.inr v) = 0 := by
+    have hfij_inr : ∀ v, v ≠ j →
+        binomialEdgeMonomialOrder.degree (fij (K := K) i j) (Sum.inr v) = 0 := by
       intro v hne; rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-      simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr v from fun h => hne.symm (Sum.inr_injective h)]
-    have hfil_inr : ∀ v, v ≠ l → binomialEdgeMonomialOrder.degree (fij (K := K) i l) (Sum.inr v) = 0 := by
+      simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr v from
+        fun h => hne.symm (Sum.inr_injective h)]
+    have hfil_inr : ∀ v, v ≠ l →
+        binomialEdgeMonomialOrder.degree (fij (K := K) i l) (Sum.inr v) = 0 := by
       intro v hne; rw [hdeg_il, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-      simp [show (Sum.inr l : BinomialEdgeVars V) ≠ Sum.inr v from fun h => hne.symm (Sum.inr_injective h)]
-    have hfij_inl : ∀ v, v ≠ i → binomialEdgeMonomialOrder.degree (fij (K := K) i j) (Sum.inl v) = 0 := by
+      simp [show (Sum.inr l : BinomialEdgeVars V) ≠ Sum.inr v from
+        fun h => hne.symm (Sum.inr_injective h)]
+    have hfij_inl : ∀ v, v ≠ i →
+        binomialEdgeMonomialOrder.degree (fij (K := K) i j) (Sum.inl v) = 0 := by
       intro v hne; rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-      simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl v from fun h => hne.symm (Sum.inl_injective h)]
-    have hfil_inl : ∀ v, v ≠ i → binomialEdgeMonomialOrder.degree (fij (K := K) i l) (Sum.inl v) = 0 := by
+      simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl v from
+        fun h => hne.symm (Sum.inl_injective h)]
+    have hfil_inl : ∀ v, v ≠ i →
+        binomialEdgeMonomialOrder.degree (fij (K := K) i l) (Sum.inl v) = 0 := by
       intro v hne; rw [hdeg_il, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-      simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl v from fun h => hne.symm (Sum.inl_injective h)]
+      simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl v from
+        fun h => hne.symm (Sum.inl_injective h)]
     have hE_ge_D : ∀ w, E w ≥ D w := by
       intro w; simp only [hE_def, Finsupp.add_apply, Finsupp.single_apply]; split_ifs <;> omega
     -- (using module-level not_head_of_internal' and not_last_of_internal')
@@ -384,18 +391,26 @@ theorem theorem_2_1 (G : SimpleGraph V) :
       (hσ.2.2.2.1.sublist (List.tail_sublist σ)).sublist (List.dropLast_sublist _)
     have hdeg_ij := fij_degree (K := K) i j hij
     have hdeg_kj := fij_degree (K := K) k j hkj
-    have hfij_inr : ∀ v, v ≠ j → binomialEdgeMonomialOrder.degree (fij (K := K) i j) (Sum.inr v) = 0 := by
+    have hfij_inr : ∀ v, v ≠ j →
+        binomialEdgeMonomialOrder.degree (fij (K := K) i j) (Sum.inr v) = 0 := by
       intro v hne; rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-      simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr v from fun h => hne.symm (Sum.inr_injective h)]
-    have hfkj_inr : ∀ v, v ≠ j → binomialEdgeMonomialOrder.degree (fij (K := K) k j) (Sum.inr v) = 0 := by
+      simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr v from
+        fun h => hne.symm (Sum.inr_injective h)]
+    have hfkj_inr : ∀ v, v ≠ j →
+        binomialEdgeMonomialOrder.degree (fij (K := K) k j) (Sum.inr v) = 0 := by
       intro v hne; rw [hdeg_kj, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-      simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr v from fun h => hne.symm (Sum.inr_injective h)]
-    have hfij_inl : ∀ v, v ≠ i → binomialEdgeMonomialOrder.degree (fij (K := K) i j) (Sum.inl v) = 0 := by
+      simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr v from
+        fun h => hne.symm (Sum.inr_injective h)]
+    have hfij_inl : ∀ v, v ≠ i →
+        binomialEdgeMonomialOrder.degree (fij (K := K) i j) (Sum.inl v) = 0 := by
       intro v hne; rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-      simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl v from fun h => hne.symm (Sum.inl_injective h)]
-    have hfkj_inl : ∀ v, v ≠ k → binomialEdgeMonomialOrder.degree (fij (K := K) k j) (Sum.inl v) = 0 := by
+      simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl v from
+        fun h => hne.symm (Sum.inl_injective h)]
+    have hfkj_inl : ∀ v, v ≠ k →
+        binomialEdgeMonomialOrder.degree (fij (K := K) k j) (Sum.inl v) = 0 := by
       intro v hne; rw [hdeg_kj, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-      simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl v from fun h => hne.symm (Sum.inl_injective h)]
+      simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl v from
+        fun h => hne.symm (Sum.inl_injective h)]
     have hE_ge_D : ∀ w, E w ≥ D w := by
       intro w; simp only [hE_def, Finsupp.add_apply, Finsupp.single_apply]; split_ifs <;> omega
     -- Coverage building blocks for Case 5
@@ -502,8 +517,7 @@ theorem theorem_2_1 (G : SimpleGraph V) :
         have heq : (monomial D) ((1 : K) * 1) * (x (K := K) j * fij i k) =
             -(monomial E 1 * fij (K := K) k i) := by
           unfold BinomialEdgeVars at E D ⊢
-          simp only [hE_def, one_mul, x, neg_mul, mul_neg, fij_antisymm i k,
-                     neg_neg, ← mul_assoc]
+          simp only [hE_def, one_mul, x, mul_neg, fij_antisymm i k, ← mul_assoc]
           congr 2
           change monomial D (1 : K) * monomial (Finsupp.single (Sum.inl j) 1) 1 = _
           rw [monomial_mul, one_mul]
@@ -673,8 +687,9 @@ theorem theorem_2_1 (G : SimpleGraph V) :
       · -- i < k
         -- Prove h₁: IsRemainder (monomial Q₁ 1 * fij i k) G 0
         -- The walk τ_ik has mixed x/y coverage: π-vertices (j < w) have x-coverage (Q₁(inl w) ≥ 1),
-        -- σ-vertices (w < k) have y-coverage (Q₁(inr w) ≥ 1). Neither isRemainder_fij_of_covered_walk
-        -- nor _y handles this directly. A mixed-coverage walk helper is needed.
+        -- σ-vertices (w < k) have y-coverage (Q₁(inr w) ≥ 1).
+        -- Neither isRemainder_fij_of_covered_walk nor _y handles this directly.
+        -- A mixed-coverage walk helper is needed.
         have h₁ : binomialEdgeMonomialOrder.IsRemainder
             (monomial Q₁ 1 * fij (K := K) i k) (groebnerBasisSet G) 0 := by
           have hπ_int_nd : (internalVertices π).Nodup :=
@@ -691,11 +706,11 @@ theorem theorem_2_1 (G : SimpleGraph V) :
             by_cases hw_eq_j : w = j
             · right; subst hw_eq_j
               simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply,
-                Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+                reduceCtorEq, ite_true, ite_false]; omega
             · by_cases hw_eq_l : w = l
               · left; subst hw_eq_l
                 simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply,
-                  Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+                  reduceCtorEq, ite_true, ite_false]; omega
               · -- w ≠ i, j, k, l: both fij degrees are 0 at w's position, use sPolyD
                 have hfij_inr0 : binomialEdgeMonomialOrder.degree
                     (fij (K := K) i j) (Sum.inr w) = 0 := by
@@ -795,11 +810,11 @@ theorem theorem_2_1 (G : SimpleGraph V) :
               by_cases hw_eq_k : w = k
               · left; subst hw_eq_k
                 simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply,
-                  Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+                  reduceCtorEq, ite_true, ite_false]; omega
               · by_cases hw_eq_i : w = i
                 · right; subst hw_eq_i
                   simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply,
-                    Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+                    reduceCtorEq, ite_true, ite_false]; omega
                 · have hfij_inr0 : binomialEdgeMonomialOrder.degree
                       (fij (K := K) i j) (Sum.inr w) = 0 := by
                     rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
@@ -962,11 +977,11 @@ theorem theorem_2_1 (G : SimpleGraph V) :
               by_cases hw_eq_j : w = j
               · right; subst hw_eq_j
                 simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply,
-                  Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+                  reduceCtorEq, ite_true, ite_false]; omega
               · by_cases hw_eq_l : w = l
                 · left; subst hw_eq_l
                   simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply,
-                    Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+                    reduceCtorEq, ite_true, ite_false]; omega
                 · have hfij_inr0 : binomialEdgeMonomialOrder.degree
                       (fij (K := K) i j) (Sum.inr w) = 0 := by
                     rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
@@ -1072,11 +1087,11 @@ theorem theorem_2_1 (G : SimpleGraph V) :
               by_cases hw_eq_k : w = k
               · left; subst hw_eq_k
                 simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply,
-                  Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+                  reduceCtorEq, ite_true, ite_false]; omega
               · by_cases hw_eq_i : w = i
                 · right; subst hw_eq_i
                   simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply,
-                    Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+                    reduceCtorEq, ite_true, ite_false]; omega
                 · have hfij_inr0 : binomialEdgeMonomialOrder.degree
                       (fij (K := K) i j) (Sum.inr w) = 0 := by
                     rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
@@ -1232,7 +1247,8 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                 (x (K := K) l * y j * fij k i - x k * y i * fij l j)) := by
             simp only [fij_antisymm i k, fij_antisymm j l]; ring
           rw [heq]; exact isRemainder_neg' _ _ h
-        -- Now goal: IsRemainder (monomial D (1*1) * (x l * y j * fij k i - x k * y i * fij l j)) G 0
+        -- Now goal:
+        -- IsRemainder (monomial D (1*1) * (x l * y j * fij k i - x k * y i * fij l j)) G 0
         -- This has the same structure as the i < k case with (k,i) and (l,j) playing the roles
         -- of (i,k) and (j,l). Since k < i, fij(k,i) has k < i.
         -- The proof follows the same pattern as the i < k case above.
@@ -1263,11 +1279,11 @@ theorem theorem_2_1 (G : SimpleGraph V) :
             by_cases hw_eq_j : w = j
             · right; subst hw_eq_j
               simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply,
-                Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+                reduceCtorEq, ite_true, ite_false]; omega
             · by_cases hw_eq_l : w = l
               · left; subst hw_eq_l
                 simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply,
-                  Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+                  reduceCtorEq, ite_true, ite_false]; omega
               · have hfij_inr0 : binomialEdgeMonomialOrder.degree
                     (fij (K := K) i j) (Sum.inr w) = 0 := by
                   rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
@@ -1365,11 +1381,11 @@ theorem theorem_2_1 (G : SimpleGraph V) :
               by_cases hw_eq_k : w = k
               · left; subst hw_eq_k
                 simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply,
-                  Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+                  reduceCtorEq, ite_true, ite_false]; omega
               · by_cases hw_eq_i : w = i
                 · right; subst hw_eq_i
                   simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply,
-                    Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+                    reduceCtorEq, ite_true, ite_false]; omega
                 · have hfij_inr0 : binomialEdgeMonomialOrder.degree
                       (fij (K := K) i j) (Sum.inr w) = 0 := by
                     rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
@@ -1499,7 +1515,6 @@ theorem theorem_2_1 (G : SimpleGraph V) :
               have hQ₁_val : Q₁ (Sum.inl l) = D (Sum.inl l) + 1 := by
                 unfold BinomialEdgeVars at Q₁ hQ₁_def ⊢
                 simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply,
-                  show ((Sum.inl l : V ⊕ V) = Sum.inl l) from rfl,
                   Sum.inr_ne_inl, ite_true, ite_false]; omega
               have hQ₂_val : Q₂ (Sum.inl l) = D (Sum.inl l) := by
                 unfold BinomialEdgeVars at Q₂ hQ₂_def ⊢
@@ -1555,11 +1570,11 @@ theorem theorem_2_1 (G : SimpleGraph V) :
               by_cases hw_eq_j : w = j
               · left; subst hw_eq_j
                 simp only [hR₁_def, Finsupp.add_apply, Finsupp.single_apply,
-                  Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+                  reduceCtorEq, ite_true, ite_false]; omega
               · by_cases hw_eq_l : w = l
                 · right; subst hw_eq_l
                   simp only [hR₁_def, Finsupp.add_apply, Finsupp.single_apply,
-                    Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+                    reduceCtorEq, ite_true, ite_false]; omega
                 · have hfij_inr0 : binomialEdgeMonomialOrder.degree
                       (fij (K := K) i j) (Sum.inr w) = 0 := by
                     rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
@@ -1664,11 +1679,11 @@ theorem theorem_2_1 (G : SimpleGraph V) :
               by_cases hw_eq_i : w = i
               · left; subst hw_eq_i
                 simp only [hR₂_def, Finsupp.add_apply, Finsupp.single_apply,
-                  Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+                  reduceCtorEq, ite_true, ite_false]; omega
               · by_cases hw_eq_k : w = k
                 · right; subst hw_eq_k
                   simp only [hR₂_def, Finsupp.add_apply, Finsupp.single_apply,
-                    Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, ite_true, ite_false]; omega
+                    reduceCtorEq, ite_true, ite_false]; omega
                 · have hfij_inr0 : binomialEdgeMonomialOrder.degree
                       (fij (K := K) i j) (Sum.inr w) = 0 := by
                     rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]

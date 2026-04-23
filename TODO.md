@@ -54,7 +54,7 @@
 - `[x]` `BEI/Groebner.lean`
 - `[x]` `BEI/GroebnerAPI.lean`
 - `[x]` `BEI/GroebnerBasis.lean`
-- `[ ]` `BEI/GroebnerBasisSPolynomial.lean`
+- `[x]` `BEI/GroebnerBasisSPolynomial.lean`
 - `[ ]` `BEI/GroebnerDeformation.lean`
 - `[ ]` `BEI/HerzogLemmas.lean`
 - `[ ]` `BEI/MinimalPrimes.lean`

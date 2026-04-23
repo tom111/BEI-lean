@@ -12,7 +12,8 @@ items are:
   (cleanup pass complete; structural split tracked in
   [`EQUIDIM_FILE_SPLIT.md`](EQUIDIM_FILE_SPLIT.md)),
   `BEI/GraphProperties.lean`, `BEI/Groebner.lean`,
-  `BEI/GroebnerAPI.lean`, `BEI/GroebnerBasis.lean`.
+  `BEI/GroebnerAPI.lean`, `BEI/GroebnerBasis.lean`,
+  `BEI/GroebnerBasisSPolynomial.lean`.
 
 Everything else under `BEI/`, `Supplement/`, and `toMathlib/` in
 `TODO.md` is still pending.
