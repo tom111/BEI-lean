@@ -105,8 +105,8 @@ lemma ext_connecting_surjective (M : ModuleCat.{u} R)
     {n₀ n₁ : ℕ} (hn : n₀ + 1 = n₁)
     (γ : Ext (k_ R) M n₁) :
     ∃ β : Ext (k_ R) (ModuleCat.smulShortComplex M x).X₃ n₀,
-      β.comp (hreg.smulShortComplex_shortExact).extClass hn = γ := by
-  exact Ext.covariant_sequence_exact₁ (k_ R) hreg.smulShortComplex_shortExact γ
+      β.comp (hreg.smulShortComplex_shortExact).extClass hn = γ :=
+  Ext.covariant_sequence_exact₁ (k_ R) hreg.smulShortComplex_shortExact γ
     (ext_postcomp_smulShortComplex_f_zero M hx γ) hn
 
 /-- **Vanishing transfer via δ**: if `Ext^n(k, M/xM)` is subsingleton and δ is
@@ -577,8 +577,8 @@ private lemma unmixedness_of_dim_le (d : ℕ) :
       rw [Ideal.Quotient.eq_zero_iff_mem]
       exact ⟨1, Submodule.mem_top, show x • (1 : S) = x from mul_one x⟩
     -- q ⊊ comap P (since x ∈ comap P \ q)
-    have hq_lt : q < Ideal.comap (Ideal.Quotient.mk (x • ⊤ : Ideal S)) P := by
-      exact lt_of_le_of_ne hq_le_comap (fun h => hxq (h ▸ hx_in_comap))
+    have hq_lt : q < Ideal.comap (Ideal.Quotient.mk (x • ⊤ : Ideal S)) P :=
+      lt_of_le_of_ne hq_le_comap (fun h => hxq (h ▸ hx_in_comap))
     -- height(q) + 1 ≤ height(comap P) ≤ 1
     haveI : P.IsPrime := hP_ass.isPrime
     haveI : (Ideal.comap (Ideal.Quotient.mk (x • ⊤ : Ideal S)) P).IsPrime :=
