@@ -24,7 +24,7 @@ items are:
   `toMathlib/CohenMacaulay/Localization.lean`,
   `toMathlib/CohenMacaulay/Polynomial.lean`,
   `toMathlib/CohenMacaulay/TensorPolynomialAway.lean`,
-  `toMathlib/Equidim/Defs.lean`.
+  `toMathlib/Equidim/Defs.lean`, `toMathlib/FiniteFreeEquidim.lean`.
 
 Everything else under `BEI/`, `Supplement/`, and `toMathlib/` in
 `TODO.md` is still pending.
