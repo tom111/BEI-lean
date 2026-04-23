@@ -97,6 +97,6 @@ theorem ringKrullDim_quotient_radical_equidim [IsNoetherianRing R]
     exact (Ideal.minimalPrimes_eq_empty_iff I).not.mpr hne
   obtain ⟨P₀, hP₀⟩ := hne_mp
   rw [ringKrullDim_quotient_radical I hrad]
-  apply le_antisymm
-  · exact iSup₂_le fun P hP => (hequidim P hP).le
-  · exact le_iSup₂_of_le P₀ hP₀ (hequidim P₀ hP₀).ge
+  exact le_antisymm
+    (iSup₂_le fun P hP => (hequidim P hP).le)
+    (le_iSup₂_of_le P₀ hP₀ (hequidim P₀ hP₀).ge)

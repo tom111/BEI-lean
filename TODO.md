@@ -94,7 +94,7 @@
 - `[x]` `toMathlib/IsPrimeSpanX.lean`
 - `[x]` `toMathlib/MonomialIdeal.lean`
 - `[x]` `toMathlib/PolynomialAwayTensor.lean`
-- `[ ]` `toMathlib/QuotientDimension.lean`
+- `[x]` `toMathlib/QuotientDimension.lean`
 - `[ ]` `toMathlib/SquarefreeMonomialPrimes.lean`
 - `[ ]` `toMathlib/TensorLocalisation.lean`
 
