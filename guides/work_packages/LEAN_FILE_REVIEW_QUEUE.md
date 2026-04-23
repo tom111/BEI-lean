@@ -30,7 +30,7 @@ items are:
   `toMathlib/GradedIrrelevant.lean`, `toMathlib/GradedPrimeAvoidance.lean`,
   `toMathlib/GradedQuotient.lean`, `toMathlib/GradedRegularSop.lean`,
   `toMathlib/HeightDeterminantal.lean`, `toMathlib/HeightVariableIdeal.lean`,
-  `toMathlib/IntegralDimension.lean`.
+  `toMathlib/IntegralDimension.lean`, `toMathlib/IsPrimeSpanX.lean`.
 
 Everything else under `BEI/`, `Supplement/`, and `toMathlib/` in
 `TODO.md` is still pending.

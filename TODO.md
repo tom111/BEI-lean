@@ -91,7 +91,7 @@
 - `[x]` `toMathlib/HeightDeterminantal.lean`
 - `[x]` `toMathlib/HeightVariableIdeal.lean`
 - `[x]` `toMathlib/IntegralDimension.lean`
-- `[ ]` `toMathlib/IsPrimeSpanX.lean`
+- `[x]` `toMathlib/IsPrimeSpanX.lean`
 - `[ ]` `toMathlib/MonomialIdeal.lean`
 - `[ ]` `toMathlib/PolynomialAwayTensor.lean`
 - `[ ]` `toMathlib/QuotientDimension.lean`
