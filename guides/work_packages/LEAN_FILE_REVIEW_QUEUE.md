@@ -31,7 +31,7 @@ items are:
   `toMathlib/GradedQuotient.lean`, `toMathlib/GradedRegularSop.lean`,
   `toMathlib/HeightDeterminantal.lean`, `toMathlib/HeightVariableIdeal.lean`,
   `toMathlib/IntegralDimension.lean`, `toMathlib/IsPrimeSpanX.lean`,
-  `toMathlib/MonomialIdeal.lean`.
+  `toMathlib/MonomialIdeal.lean`, `toMathlib/PolynomialAwayTensor.lean`.
 
 Everything else under `BEI/`, `Supplement/`, and `toMathlib/` in
 `TODO.md` is still pending.
