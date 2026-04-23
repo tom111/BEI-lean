@@ -69,15 +69,15 @@ noncomputable def fij (i j : V) : MvPolynomial (BinomialEdgeVars V) K :=
 
 theorem fij_degree (i j : V) (hij : i < j) :
     binomialEdgeMonomialOrder.degree (fij (K := K) i j) =
-      Finsupp.single (Sum.inl i) 1 + Finsupp.single (Sum.inr j) 1 := by
+      Finsupp.single (Sum.inl i) 1 + Finsupp.single (Sum.inr j) 1
 ```
 
 ## Gröbner-Basis Layer
 
-The Gröbner-basis proofs use explicit remainder computations and Buchberger's
-criterion. The formalization packages this through Lean predicates for
-remainders and Gröbner bases, and then applies them to the quadratic generators
-of the binomial edge ideal.
+The Gröbner-basis proofs run by explicit remainder computations and
+Buchberger's criterion. The formalization packages this through reusable
+definitions for remainders and Gröbner bases, and then applies them to the
+quadratic generators of the binomial edge ideal.
 
 | Mathematical object | Lean declaration(s) | File | Notes |
 |---|---|---|---|

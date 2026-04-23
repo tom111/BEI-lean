@@ -5,30 +5,26 @@ title: Overview
 # Overview
 
 <div class="intro-card">
-The site follows the four main sections of the paper and shows where each
-result appears in the formalization, together with the relevant files.
+This page is the reader's map: a tour of the paper's four sections and a
+pointer to the Lean files behind each of them. It is written for a
+mathematician coming from the paper, not for a Lean user.
 </div>
 
-## Aim
+## What the formalization covers
 
-The formalization stays close to the statements in
-[BEI.tex](https://github.com/tom111/BEI-lean/blob/master/BEI.tex).
+- **Section 1** characterizes closed graphs by a quadratic Gröbner basis
+  criterion and derives the Cohen–Macaulay condition.
+- **Section 2** shows that the edge binomials give a reduced Gröbner basis,
+  and deduces that $J_G$ is radical.
+- **Section 3** describes the prime decomposition, the dimension formula, and
+  the minimal primes of $J_G$ in graph-theoretic terms.
+- **Section 4** identifies conditional independence ideals in algebraic
+  statistics with binomial edge ideals, and transfers the earlier results to
+  that setting.
 
-When a formal statement is phrased a little differently from the paper, the
-section pages point that out explicitly.
-
-## Mathematical roadmap
-
-- Section 1 characterizes closed graphs by a quadratic Gröbner basis criterion.
-- Section 2 proves that the quadratic generators form a reduced Gröbner basis
-  and deduces radicality.
-- Section 3 describes the prime decomposition, dimension formula, and minimal
-  primes of binomial edge ideals.
-- Section 4 connects these ideals to conditional independence statements.
-
-For a reader coming from the paper, the section pages are the main entry point.
-The code-file list below is mainly for navigation once you know which theorem or
-construction you want to inspect.
+The Lean statements stay close to the paper; in a handful of places a formal
+statement is reformulated (same mathematics, different packaging) and each
+section page flags those cases in prose.
 
 ## Main source files
 
@@ -53,26 +49,9 @@ Supporting generic lemmas intended for possible upstreaming live in:
 - including [toMathlib/Equidim/Defs.lean](https://github.com/tom111/BEI-lean/blob/master/toMathlib/Equidim/Defs.lean)
 - and are summarized in the dedicated [toMathlib support page](./toMathlib.html)
 
-## By paper section
-
-- Section 1: closed graphs, path-like consequences, the closure operation, and the Cohen--Macaulay criterion.
-- Section 2: reduced Gröbner bases and radicality.
-- Section 3: prime ideals `P_S`, prime decomposition, dimension, and minimal
-  primes, together with the Cohen–Macaulay dimension and cycle criteria.
-- Section 4: the translation to conditional independence ideals and the transfer
-  of the results from Sections 2 and 3.
-
 ## Reading the section pages
 
-Each section page records:
-
-- the paper result;
-- the corresponding theorem name(s);
-- the file where the proof lives;
-- whether the formal statement follows the paper directly or uses an equivalent formulation.
-
-Here:
-
-- `Exact` means the formal theorem follows the paper statement closely.
-- `Equivalent` means the mathematics is the same, but the formal statement is
-  phrased differently.
+Each section page pairs the paper statements with the corresponding Lean
+declarations and the file where the proof lives. Most theorems are close
+formal matches; a few are reformulated, and those are called out in prose
+under the relevant table.

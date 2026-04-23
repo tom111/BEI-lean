@@ -5,10 +5,11 @@
       <strong class="theorem-highlight__label">{{ include.item.paper_label }}</strong>
       <span class="theorem-highlight__title">{{ include.item.paper_title }}</span>
     </div>
+    {% if include.item.fidelity and include.item.fidelity != "Exact" %}
     <div class="theorem-highlight__badges">
-      <span class="status-badge status-badge--{{ include.item.status | downcase }}">{{ include.item.status }}</span>
       <span class="fidelity-badge">{{ include.item.fidelity }}</span>
     </div>
+    {% endif %}
   </div>
 
   <div class="theorem-highlight__body">

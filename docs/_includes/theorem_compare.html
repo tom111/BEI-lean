@@ -5,10 +5,11 @@
       <span class="theorem-compare__label">{{ include.item.paper_label }}</span>
       <strong class="theorem-compare__title">{{ include.item.paper_title }}</strong>
     </div>
+    {% if include.item.fidelity and include.item.fidelity != "Exact" %}
     <div class="theorem-compare__badges">
-      <span class="status-badge status-badge--{{ include.item.status | downcase }}">{{ include.item.status }}</span>
       <span class="fidelity-badge">{{ include.item.fidelity }}</span>
     </div>
+    {% endif %}
   </div>
 
   <div class="theorem-compare__grid">

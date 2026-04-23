@@ -10,14 +10,16 @@ consequences and the closure construction.
 
 ## Theorem map
 
-| Paper result | Lean declaration(s) | Lean file | Fidelity |
-|---|---|---|---|
-| Theorem 1.1 | `theorem_1_1` | [ClosedGraphs.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/ClosedGraphs.lean) | Exact |
-| Proposition 1.2 | `prop_1_2` | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Exact |
-| Corollary 1.3 | `cor_1_3` and related wrappers | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Exact |
-| Proposition 1.4 | `prop_1_4` | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Equivalent |
-| Proposition 1.5 | `prop_1_5` | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) | Exact |
-| Proposition 1.6 | `proposition_1_6`, `binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm`, `prop_1_6_herzogHibi`, `monomialInitialIdeal_isCohenMacaulay` | [Proposition1_6.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Proposition1_6.lean), [GroebnerDeformation.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GroebnerDeformation.lean), [Equidim.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Equidim.lean) | Exact |
+| Paper result | Lean declaration(s) | Lean file |
+|---|---|---|
+| Theorem 1.1 | `theorem_1_1` | [ClosedGraphs.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/ClosedGraphs.lean) |
+| Proposition 1.2 | `prop_1_2` | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) |
+| Corollary 1.3 | `cor_1_3` and related wrappers | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) |
+| Proposition 1.4 | `prop_1_4` | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) |
+| Proposition 1.5 | `prop_1_5` | [GraphProperties.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GraphProperties.lean) |
+| Proposition 1.6 | `proposition_1_6`, `binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm`, `prop_1_6_herzogHibi`, `monomialInitialIdeal_isCohenMacaulay` | [Proposition1_6.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Proposition1_6.lean), [GroebnerDeformation.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/GroebnerDeformation.lean), [Equidim.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Equidim.lean) |
+
+Proposition 1.4 is packaged equivalently in Lean (same mathematics, slightly different phrasing); the card below has the paper statement and the Lean statement side by side.
 
 ## Paper vs Lean
 

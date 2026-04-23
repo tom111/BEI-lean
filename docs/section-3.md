@@ -15,32 +15,18 @@ binomial edge ideals.
 
 ## Theorem map
 
-| Paper result | Lean declaration(s) | Lean file | Fidelity |
-|---|---|---|---|
-| Lemma 3.1 | `lemma_3_1` | [PrimeIdeals.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeIdeals.lean) | Exact |
-| Theorem 3.2 | `theorem_3_2` | [PrimeDecomposition.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecomposition.lean) | Exact |
-| Corollary 3.3 | `corollary_3_3` | [PrimeDecompositionDimension.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecompositionDimension.lean) | Exact |
-| Corollary 3.3 lower bound | `corollary_3_3_lower_bound` | [PrimeDecompositionDimension.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecompositionDimension.lean) | Exact |
-| Corollary 3.4 | `corollary_3_4`, `corollary_3_4_connected` | [Corollary3_4.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Corollary3_4.lean) | Exact |
-| Proposition 3.6 | `prop_3_6` | [PrimeDecomposition.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecomposition.lean) | Equivalent |
-| Corollary 3.7 | `corollary_3_7`, `corollary_3_7_unmixed`, `corollary_3_7_cm_forward`, `corollary_3_7_cm_fin` | [PrimeDecomposition.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecomposition.lean), [MinimalPrimes.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/MinimalPrimes.lean), [Corollary3_4.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Corollary3_4.lean) | Exact |
-| Proposition 3.8 | `prop_3_8` | [MinimalPrimes.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/MinimalPrimes.lean) | Equivalent |
-| Corollary 3.9 | `corollary_3_9` | [MinimalPrimes.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/MinimalPrimes.lean) | Equivalent |
+| Paper result | Lean declaration(s) | Lean file |
+|---|---|---|
+| Lemma 3.1 | `lemma_3_1` | [PrimeIdeals.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeIdeals.lean) |
+| Theorem 3.2 | `theorem_3_2` | [PrimeDecomposition.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecomposition.lean) |
+| Corollary 3.3 | `corollary_3_3` | [PrimeDecompositionDimension.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecompositionDimension.lean) |
+| Corollary 3.3 lower bound | `corollary_3_3_lower_bound` | [PrimeDecompositionDimension.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecompositionDimension.lean) |
+| Corollary 3.4 | `corollary_3_4`, `corollary_3_4_connected` | [Corollary3_4.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Corollary3_4.lean) |
+| Proposition 3.6 | `prop_3_6` | [PrimeDecomposition.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecomposition.lean) |
+| Corollary 3.7 | `corollary_3_7`, `corollary_3_7_unmixed`, `corollary_3_7_cm_forward`, `corollary_3_7_cm_fin` | [PrimeDecomposition.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecomposition.lean), [MinimalPrimes.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/MinimalPrimes.lean), [Corollary3_4.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Corollary3_4.lean) |
+| Proposition 3.8 | `prop_3_8` | [MinimalPrimes.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/MinimalPrimes.lean) |
+| Corollary 3.9 | `corollary_3_9` | [MinimalPrimes.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/MinimalPrimes.lean) |
 
-## Reading the table
-
-- `Exact` means the Lean theorem follows the paper statement closely.
-- `Equivalent` means the same mathematics is formalized, but the Lean theorem is
-  packaged differently.
-## Notes
-
-Prime decomposition, minimal primes, and the dimension formula appear here in
-the same part of the site as the Section 3 Cohen--Macaulay consequences. The
-main additional declarations on this page are:
-
-- the prime decomposition is formalized;
-- the dimension consequences are formalized;
-- the minimal-prime characterization is formalized;
-- the prime, unmixed, and Cohen–Macaulay cycle-graph equivalences are formalized;
-- and the equivalent-packaging items on this page are Proposition 3.6,
-  Proposition 3.8, and Corollary 3.9.
+Proposition 3.6, Proposition 3.8, and Corollary 3.9 are packaged a little
+differently in Lean than in the paper (same mathematics, slightly different
+phrasing); the remaining entries are close formal matches to the paper.
