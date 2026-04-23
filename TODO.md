@@ -69,7 +69,7 @@
 
 #### `Supplement/`
 
-- `[ ]` `Supplement/RauhApproach.lean`
+- `[x]` `Supplement/RauhApproach.lean`
 
 #### `toMathlib/`
 

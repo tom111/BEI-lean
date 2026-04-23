@@ -18,7 +18,8 @@ items are:
   `BEI/MonomialOrder.lean`, `BEI/PrimeDecomposition.lean`,
   `BEI/PrimeDecompositionDimension.lean`, `BEI/PrimeIdeals.lean`,
   `BEI/Proposition1_6.lean`, `BEI/Radical.lean`, `BEI/ReducedHH.lean`,
-  `BEI/Scratch.lean` (scratchpad with pre-existing errors; not imported).
+  `BEI/Scratch.lean` (scratchpad with pre-existing errors; not imported),
+  `Supplement/RauhApproach.lean` (archived alternative; not imported).
 
 Everything else under `BEI/`, `Supplement/`, and `toMathlib/` in
 `TODO.md` is still pending.
