@@ -196,6 +196,7 @@ private lemma primeComponent_le_ker (G : SimpleGraph V) (S : Finset V) :
 /-! ### Helpers for ker ≤ P_S(G) -/
 
 -- Use an open section to avoid repeating `open Classical in`
+-- and to avoid inserting `classical` at the start of ~50 private helpers.
 section ker_helpers
 set_option linter.style.openClassical false
 open Classical
@@ -1514,8 +1515,6 @@ private lemma span_genSet31_le (G : SimpleGraph V) (S : Finset V) :
     have hsc := sameComponent_compRep G S hvS
     exact minor_mem_primeComponent (K := K) G S (Ne.symm hvr) hsc.symm
 
-set_option maxHeartbeats 800000 in
--- This minimal-prime argument expands several large `aeval` and kernel expressions.
 open Classical in
 /-- P_S(G) is a minimal prime of span(genSet31). The key step uses the
 Plücker identity: for j,k in the same component with representative r,
@@ -1602,8 +1601,6 @@ private lemma lbMap_full_eq (G : SimpleGraph V) (S : Finset V) :
     · have h2 : i ∈ Finset.univ.filter (· ∉ S) := Finset.mem_filter.mpr ⟨Finset.mem_univ _, h1⟩
       simp [h1, h2]
 
-set_option maxHeartbeats 800000 in
--- Factoring the x-kill map through `aeval` requires large elaboration and simplification.
 open Classical in
 private lemma ker_lbMap_insert_Ux (G : SimpleGraph V) (S : Finset V)
     (T Ux Uy : Finset V) (i : V) (hiT : i ∉ T) :
@@ -1639,8 +1636,6 @@ private lemma ker_lbMap_insert_Ux (G : SimpleGraph V) (S : Finset V)
   simp only [AlgHom.comp_apply] at hstep
   rw [AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, hstep, hf', map_zero]
 
-set_option maxHeartbeats 800000 in
--- The y-kill map has the same large `aeval`-factorization shape as the x-kill map.
 open Classical in
 private lemma ker_lbMap_insert_Uy (G : SimpleGraph V) (S : Finset V)
     (T Ux Uy : Finset V) (i : V) (hiT : i ∉ T)
@@ -1675,8 +1670,6 @@ private lemma ker_lbMap_insert_Uy (G : SimpleGraph V) (S : Finset V)
   simp only [AlgHom.comp_apply] at hstep
   rw [AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, hstep, hf', map_zero]
 
-set_option maxHeartbeats 800000 in
--- Adding one Segre variable again factors through a large `aeval`-defined map.
 open Classical in
 private lemma ker_lbMap_insert_T (G : SimpleGraph V) (S : Finset V)
     (T : Finset V) (v : V) (hvT : v ∉ T)
