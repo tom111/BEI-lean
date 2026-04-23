@@ -66,12 +66,13 @@ section IrrelevantMap
 variable {K A : Type u} [Field K] [CommRing A] [Nontrivial A] [Algebra K A]
 variable (𝒜 : ℕ → Submodule K A) [GradedRing 𝒜]
 
+omit [Nontrivial A] in
 /-- The image of the irrelevant ideal under the quotient map coincides with
 the irrelevant ideal of the induced graded quotient ring. This rewrite
 identifies the "image of `𝒜₊`" with the "`𝒜₊` of the quotient". -/
 lemma irrelevant_map_quotient_span_singleton
     (_h𝒜₀ : ConnectedGraded 𝒜) {ℓ : A}
-    (hℓ_hom : SetLike.IsHomogeneousElem 𝒜 ℓ)
+    (_hℓ_hom : SetLike.IsHomogeneousElem 𝒜 ℓ)
     (_hℓ_irr : ℓ ∈ (HomogeneousIdeal.irrelevant 𝒜).toIdeal)
     [hgr : GradedRing
         (GradedQuotient.gradedQuotientPiece 𝒜 (Ideal.span ({ℓ} : Set A)))] :
@@ -87,7 +88,7 @@ lemma irrelevant_map_quotient_span_singleton
     rw [HomogeneousIdeal.toIdeal_irrelevant_le]
     intro i hi x hx
     -- `x ∈ 𝒜' i` — pullback to an element of `𝒜 i`, which lies in `m`.
-    simp only [GradedQuotient.gradedQuotientPiece, Submodule.mem_map] at hx
+    simp only [GradedQuotient.gradedQuotientPiece] at hx
     obtain ⟨a, ha_mem, ha_eq⟩ := hx
     have ha_m : a ∈ (HomogeneousIdeal.irrelevant 𝒜).toIdeal :=
       HomogeneousIdeal.mem_irrelevant_of_mem 𝒜 hi ha_mem
@@ -168,6 +169,7 @@ section Descent
 variable {K A : Type u} [Field K] [CommRing A] [Nontrivial A] [Algebra K A]
 variable (𝒜 : ℕ → Submodule K A) [GradedRing 𝒜] [IsNoetherianRing A]
 
+omit [Nontrivial A] [IsNoetherianRing A] in
 /-- A non-zero-divisor is globally `IsSMulRegular`. -/
 private lemma isSMulRegular_of_mem_nonZeroDivisors
     {ℓ : A} (hℓ : ℓ ∈ nonZeroDivisors A) : IsSMulRegular A ℓ := by
