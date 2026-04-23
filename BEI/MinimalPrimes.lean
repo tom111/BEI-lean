@@ -42,6 +42,7 @@ private def evalInlWitness (i : V) : BinomialEdgeVars V → K :=
 private def evalPairWitness (u v : V) : BinomialEdgeVars V → K :=
   fun w => if w = Sum.inl u then 1 else if w = Sum.inr v then 1 else 0
 
+omit [Fintype V] in
 private lemma primeComponent_le_ker_evalInlWitness
     (G : SimpleGraph V) (S : Finset V) (i : V) (hi : i ∉ S) :
     primeComponent (K := K) G S ≤ RingHom.ker (MvPolynomial.eval (evalInlWitness (K := K) i)) := by
@@ -60,6 +61,7 @@ private lemma primeComponent_le_ker_evalInlWitness
   · simp [evalInlWitness]
   · simp [x, y, evalInlWitness]
 
+omit [Fintype V] in
 private lemma primeComponent_le_ker_evalPairWitness
     (G : SimpleGraph V) (S : Finset V) (u v : V) (huS : u ∉ S) (hvS : v ∉ S)
     (hnotpath : ¬Relation.ReflTransGen (fun a b => G.Adj a b ∧ a ∉ S ∧ b ∉ S) u v) :
@@ -107,6 +109,7 @@ private lemma primeComponent_le_ker_evalPairWitness
       · simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl u from
           fun h => hkU (Sum.inl.inj h)]
 
+omit [LinearOrder V] [Fintype V] in
 private lemma evalPairWitness_cross_eq_one (u v : V) (huv : u ≠ v) :
     MvPolynomial.eval (evalPairWitness (K := K) u v) (x u * y v - x v * y u) = 1 := by
   simp only [x, y, MvPolynomial.eval_sub, MvPolynomial.eval_mul, MvPolynomial.eval_X]
@@ -125,6 +128,7 @@ private lemma evalPairWitness_cross_eq_one (u v : V) (huv : u ≠ v) :
 
 /-! ## Key sub-lemma: variables outside S are not in P_S -/
 
+omit [DecidableEq V] [Fintype V] in
 /-- If `i ∉ S`, then `X(Sum.inl i) ∉ primeComponent G S`.
 Proved by evaluating at the point `x_i = 1`, everything else `= 0`. -/
 lemma prop_3_8_var_not_mem (G : SimpleGraph V) (S : Finset V) (i : V) (hi : i ∉ S) :
@@ -137,6 +141,7 @@ lemma prop_3_8_var_not_mem (G : SimpleGraph V) (S : Finset V) (i : V) (hi : i �
 
 /-! ## Proposition 3.8: Containment of prime ideals -/
 
+omit [DecidableEq V] [Fintype V] in
 /-- Component preservation sub-lemma for `prop_3_8` (→ direction):
 If `P_T ≤ P_S` and `u, v ∉ T ∪ S` are in the same component of `G[V\T]`,
 then they are in the same component of `G[V\S]`.
@@ -178,6 +183,7 @@ private lemma prop_3_8_sameComponent_preserved
   have heval := evalPairWitness_cross_eq_one (K := K) u v huv
   exact one_ne_zero (heval.symm.trans (RingHom.mem_ker.mp (hker hmem_S)))
 
+omit [DecidableEq V] [Fintype V] in
 /--
 **Proposition 3.8** (Herzog et al. 2010):
 `P_T(G) ⊆ P_S(G)` if and only if:
@@ -246,6 +252,7 @@ theorem prop_3_8 (G : SimpleGraph V) (S T : Finset V) :
 
 /-! ## Corollary 3.9: Minimal prime characterization -/
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- Helper: a walk in the induced subgraph gives a `ReflTransGen` path. -/
 lemma induced_walk_to_reflTransGen {G : SimpleGraph V} {S : Finset V}
     (u v : {w : V | w ∉ S}) (walk : (G.induce {w : V | w ∉ S}).Walk u v) :
@@ -255,6 +262,7 @@ lemma induced_walk_to_reflTransGen {G : SimpleGraph V} {S : Finset V}
   | @cons p q r hadj _ ih =>
     exact Relation.ReflTransGen.head ⟨SimpleGraph.induce_adj.mp hadj, p.2, q.2⟩ ih
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- Monotonicity of `SameComponent`: if `T ⊆ S`, then any path avoiding `S` also avoids `T`,
 so `SameComponent G S u v → SameComponent G T u v`. -/
 lemma SameComponent_mono (G : SimpleGraph V) {S T : Finset V} (hTS : T ≤ S)
@@ -264,6 +272,7 @@ lemma SameComponent_mono (G : SimpleGraph V) {S T : Finset V} (hTS : T ≤ S)
     (fun a b ⟨hadj, haS, hbS⟩ => ⟨hadj, fun haT => haS (hTS haT), fun hbT => hbS (hTS hbT)⟩)
     hsc.2.2
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- Convert `SameComponent G S u v` to `Reachable` in the induced subgraph `G[V \ S]`. -/
 lemma sameComponent_to_reachable (G : SimpleGraph V) (S : Finset V)
     (u v : V) (huS : u ∉ S) (hvS : v ∉ S) (hsc : SameComponent G S u v) :
@@ -523,6 +532,7 @@ theorem corollary_3_9 (G : SimpleGraph V) (S : Finset V)
     have hsc_S : SameComponent G S a b := hComp_TS a b haT hbT haS hbS hsc_T
     exact hnotsc_S hsc_S
 
+omit [DecidableEq V] in
 /-- The set of minimal primes of J_G is finite. -/
 theorem minimalPrimes_finite (G : SimpleGraph V) :
     Set.Finite (binomialEdgeIdeal (K := K) G).minimalPrimes :=
@@ -531,6 +541,7 @@ theorem minimalPrimes_finite (G : SimpleGraph V) :
   Ideal.finite_minimalPrimes_of_isNoetherianRing
     (MvPolynomial (BinomialEdgeVars V) K) (binomialEdgeIdeal (K := K) G)
 
+omit [LinearOrder V] [Fintype V] in
 /--
 `i` is a cut-vertex relative to S iff adding i to `S \ {i}` strictly increases c(S):
   `c(S) > c(S \ {i})`

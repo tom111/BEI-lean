@@ -46,6 +46,7 @@ instance beStandardGrading_isGradedAlgebra :
     GradedAlgebra (beStandardGrading : ℕ → Submodule K (MvPolynomial (BinomialEdgeVars V) K)) :=
   weightedGradedAlgebra K _
 
+omit [DecidableEq V] in
 /-- Under the standard grading, the binomial edge ideal `J_G` is homogeneous
 of degree 2: each generator `x_i y_j - x_j y_i` has weighted degree 2 since
 all variables have weight 1. -/
@@ -76,9 +77,11 @@ noncomputable instance beQuotientGrading_isGradedRing (G : SimpleGraph V) :
   GradedQuotient.gradedRing beStandardGrading (binomialEdgeIdeal (K := K) G)
     (binomialEdgeIdeal_isHomogeneous G)
 
+omit [DecidableEq V] in
 /-- The quotient `R ⧸ J_G` is connected graded: its degree-0 piece is `K`. -/
 theorem beQuotientGrading_connectedGraded (G : SimpleGraph V) :
     GradedIrrelevant.ConnectedGraded (beQuotientGrading (K := K) G) := by
+  classical
   intro x hx
   obtain ⟨p, hp_mem, rfl⟩ := hx
   change p ∈ weightedHomogeneousSubmodule K (beStandardWeight : BinomialEdgeVars V → ℕ) 0 at hp_mem
@@ -113,9 +116,11 @@ theorem beQuotientGrading_connectedGraded (G : SimpleGraph V) :
   rw [hk]
   simp
 
+omit [DecidableEq V] in
 /-- `R ⧸ J_G` is nontrivial: `J_G ≠ ⊤`. -/
 theorem beQuotient_nontrivial (G : SimpleGraph V) :
     Nontrivial (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) := by
+  classical
   rw [Ideal.Quotient.nontrivial_iff]
   intro htop
   have h1 : (1 : MvPolynomial (BinomialEdgeVars V) K) ∈ binomialEdgeIdeal (K := K) G := by
@@ -134,6 +139,7 @@ theorem beQuotient_nontrivial (G : SimpleGraph V) :
       simp [ha]
   simp at hcc
 
+omit [DecidableEq V] in
 noncomputable instance beQuotient_nontrivial_inst (G : SimpleGraph V) :
     Nontrivial (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) :=
   beQuotient_nontrivial G
@@ -150,6 +156,7 @@ instance beQuotient_isNoetherian (G : SimpleGraph V) :
     IsNoetherianRing (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) :=
   inferInstance
 
+omit [DecidableEq V] in
 /-- **CM ⇒ equidim for binomial edge ideals.** The core bridge used by the
 paper-faithful §3 statements: if `S ⧸ J_G` is Cohen–Macaulay, it is
 equidimensional in the local surrogate sense.
@@ -164,6 +171,7 @@ theorem isEquidim_of_isCohenMacaulayRing_binomialEdge (G : SimpleGraph V)
       (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G)) :
     IsEquidim
       (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) := by
+  classical
   letI : Nontrivial
       (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) :=
     beQuotient_nontrivial G
@@ -181,6 +189,7 @@ theorem isEquidim_of_isCohenMacaulayRing_binomialEdge (G : SimpleGraph V)
     GradedFiniteFree.isEquidimRing_of_isCohenMacaulayLocalRing_at_irrelevant_finiteFree
       (beQuotientGrading (K := K) G) hconn hCM_loc
 
+omit [DecidableEq V] in
 /-- **Paper-faithful Corollary 3.4.** If `S ⧸ J_G` is Cohen–Macaulay, then
 `dim(S ⧸ J_G) = |V| + c(G)`. -/
 theorem corollary_3_4 (G : SimpleGraph V)
@@ -191,6 +200,7 @@ theorem corollary_3_4 (G : SimpleGraph V)
     ↑(Fintype.card V + componentCount G ∅) :=
   corollary_3_4_equidim (K := K) G (isEquidim_of_isCohenMacaulayRing_binomialEdge G hCM)
 
+omit [DecidableEq V] in
 /-- **Corollary 3.4 for connected graphs.** If `G` is connected and
 `S ⧸ J_G` is CM, then `dim(S ⧸ J_G) = |V| + 1`. -/
 theorem corollary_3_4_connected (G : SimpleGraph V) (hConn : G.Connected)
@@ -238,6 +248,7 @@ section Corollary3_7_CM
 variable {K : Type} [Field K]
 variable {V : Type} [LinearOrder V] [DecidableEq V] [Fintype V]
 
+omit [DecidableEq V] in
 /-- **Cor 3.7 forward (CM → cycle length = 3).** For a cycle `G` on `V` with
 `|V| ≥ 3`, Cohen–Macaulayness of `S ⧸ J_G` forces `|V| = 3`.
 
@@ -252,10 +263,12 @@ theorem corollary_3_7_cm_forward (G : SimpleGraph V) (hCyc : IsCycleGraph G)
   have hPrime := (corollary_3_7_equidim (K := K) G hCyc hn).mp hEq
   exact (corollary_3_7 (K := K) G hCyc hn).mpr hPrime
 
+omit [LinearOrder V] [DecidableEq V] in
 /-- In a cycle graph with exactly three vertices, every pair of distinct
 vertices is adjacent. -/
 private theorem cycle_card3_adj_of_ne (G : SimpleGraph V) (hCyc : IsCycleGraph G)
     (hcard : Fintype.card V = 3) {u w : V} (huw : u ≠ w) : G.Adj u w := by
+  classical
   obtain ⟨_, hDeg⟩ := hCyc
   obtain ⟨n1, n2, hn12, hadj1, hadj2, honly⟩ := hDeg u
   -- {u, n1, n2} has 3 distinct elements = |V|, hence = univ.

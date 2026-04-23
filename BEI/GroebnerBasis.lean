@@ -23,6 +23,7 @@ open MvPolynomial MonomialOrder
 
 /-! ## Degree computation helpers -/
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- Exact degree of `∏ X(f w)` at `v`: equals 1 if `v ∈ l.map f`, else 0.
 Requires `f` injective and `l` nodup so that the variable does not repeat. -/
 private lemma prod_X_image_degree_eq' {σ R : Type*} [CommSemiring R] [NoZeroDivisors R]
@@ -46,11 +47,13 @@ private lemma prod_X_image_degree_eq' {σ R : Type*} [CommSemiring R] [NoZeroDiv
     · have h1' : ¬ (v = f a) := fun h => h1 h.symm
       simp [h1, h1']
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- If `v ∉ image of f over l`, then the product `∏ X(f w)` has degree 0 at `v`. -/
 private lemma prod_X_image_degree_zero' {σ R : Type*} [CommSemiring R] [NoZeroDivisors R]
-    [Nontrivial R] [DecidableEq σ] (f : V → σ) (l : List V) (m : MonomialOrder σ)
+    [Nontrivial R] (f : V → σ) (l : List V) (m : MonomialOrder σ)
     (v : σ) (hv : v ∉ l.map f) :
     m.degree ((l.map (fun w => (X (f w) : MvPolynomial σ R))).prod) v = 0 := by
+  classical
   induction l with
   | nil => simp [degree_one]
   | cons a t ih =>
@@ -197,18 +200,21 @@ private lemma groebnerElement_degree_inr (G : SimpleGraph V)
     · rw [if_pos hvyl, if_neg hvj, if_pos (Or.inr hvyl)]
     · rw [if_neg hvyl, if_neg hvj, if_neg (not_or.mpr ⟨hvj, hvyl⟩)]
 
+omit [DecidableEq V] in
 /-- The degree of `groebnerElement i j π` at `Sum.inl i` is exactly 1. -/
 private lemma groebnerElement_degree_at_inl_i (G : SimpleGraph V)
     (i j : V) (π : List V) (hπ : IsAdmissiblePath G i j π) :
     binomialEdgeMonomialOrder.degree (groebnerElement (K := K) i j π) (Sum.inl i) = 1 := by
   rw [groebnerElement_degree_inl G i j π hπ]; simp
 
+omit [DecidableEq V] in
 /-- The degree of `groebnerElement i j π` at `Sum.inr j` is exactly 1. -/
 private lemma groebnerElement_degree_at_inr_j (G : SimpleGraph V)
     (i j : V) (π : List V) (hπ : IsAdmissiblePath G i j π) :
     binomialEdgeMonomialOrder.degree (groebnerElement (K := K) i j π) (Sum.inr j) = 1 := by
   rw [groebnerElement_degree_inr G i j π hπ]; simp
 
+omit [DecidableEq V] in
 /-- If two groebnerElements with the same endpoints (i, j) but different paths have
 the degree of the first ≤ degree of the second, we reach a contradiction.
 (The leading monomials of distinct admissible paths from i to j are incomparable.)
@@ -488,6 +494,7 @@ private lemma groebnerElement_reduced_same_endpoints (G : SimpleGraph V)
   exact hπ₂_min π' hπ'_sub hπ'_ne hπ'_head hπ'_last hπ'_chain
     (fun v hv => hπ₂_vert v (hπ'_sub.subset hv))
 
+omit [DecidableEq V] in
 theorem theorem_2_1_reduced (G : SimpleGraph V)
     (i₁ j₁ : V) (π₁ : List V) (hπ₁ : IsAdmissiblePath G i₁ j₁ π₁)
     (i₂ j₂ : V) (π₂ : List V) (hπ₂ : IsAdmissiblePath G i₂ j₂ π₂)
@@ -548,11 +555,13 @@ theorem theorem_2_1_reduced (G : SimpleGraph V)
 -- Helper lemmas `prod_X_image_degree_eq'`, `prod_X_image_degree_zero'` are defined above
 -- (in the "Degree computation helpers" section).
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- For a Nodup list and injective `f`, the product `∏ X(f w)` has degree ≤ 1 at every `v`. -/
 private lemma prod_X_image_squarefree {σ R : Type*} [CommSemiring R] [NoZeroDivisors R]
-    [Nontrivial R] [DecidableEq σ] (f : V → σ) (hf : Function.Injective f) (l : List V)
+    [Nontrivial R] (f : V → σ) (hf : Function.Injective f) (l : List V)
     (hnd : l.Nodup) (m : MonomialOrder σ) (v : σ) :
     m.degree ((l.map (fun w => (X (f w) : MvPolynomial σ R))).prod) v ≤ 1 := by
+  classical
   rw [prod_X_image_degree_eq' (R := R) f hf l hnd m v]
   split_ifs <;> simp
 
@@ -562,6 +571,7 @@ The paper states Theorem 2.1 as a single result: the admissible-path family is
 a **reduced** Groebner basis. We package the two separately-proved parts into one
 combined statement. -/
 
+omit [DecidableEq V] in
 /--
 **Theorem 2.1** (paper-faithful wrapper): The admissible-path Groebner basis set is
 a reduced Groebner basis of `J_G`. This combines:
@@ -584,6 +594,7 @@ theorem theorem_2_1_isReducedGroebnerBasis (G : SimpleGraph V) :
 
 -- Corollary 2.2 is proved in BEI/Radical.lean via the squarefree Gröbner basis argument.
 
+omit [DecidableEq V] in
 /--
 The leading monomials of the Groebner basis elements are squarefree:
 each variable appears at most once in `u_π · x_i · y_j`.

@@ -26,6 +26,7 @@ open MvPolynomial MonomialOrder
 
 /-! ## Theorem 2.1: Reduced Gröbner basis -/
 
+omit [DecidableEq V] [Fintype V] in
 /-- The Gröbner basis set spans `J_G`: every generator `f_{ij}` is in the span
 (via trivial admissible paths), and every `u_π · f_{ij}` lies in `J_G`
 (see `groebnerElement_mem` in `AdmissiblePaths.lean`). -/
@@ -43,6 +44,7 @@ theorem groebnerBasisSet_span (G : SimpleGraph V) :
 
 /-! ## Leading coefficient of groebnerElement -/
 
+omit [DecidableEq V] in
 /-- The leading coefficient of `groebnerElement i j π` is 1 (a unit).
 Since `groebnerElement i j π = pathMonomial i j π * fij i j`, the leading coefficient
 is `leadingCoeff(pathMonomial) * leadingCoeff(fij) = 1 * 1 = 1`. -/
@@ -64,6 +66,7 @@ theorem groebnerElement_leadingCoeff (i j : V) (π : List V) (hij : i < j) :
                  MonomialOrder.leadingCoeff_X, ih, one_mul]
   simp [this]
 
+omit [DecidableEq V] in
 /-- The leading coefficient of each groebnerElement is a unit. -/
 theorem groebnerElement_leadingCoeff_isUnit
     (i j : V) (π : List V) (hπ : IsAdmissiblePath G i j π) :
@@ -82,6 +85,7 @@ decomposes into a telescoping sum along the τ-path (concatenation of the
 two paths), which provides a standard expression with remainder 0.
 -/
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /--
 **Theorem 2.1** (Herzog et al. 2010): The set
   `{ u_π · f_{ij} | i < j, π admissible path from i to j in G }`
@@ -99,7 +103,6 @@ theorem. Here the two properties are proved separately, then combined in the wra
 
 Reference: Herzog et al. (2010), Theorem 2.1.
 -/
-
 private lemma not_head_of_internal' (ρ : List V) (a : V)
     (hh : ρ.head? = some a) (hnd : ρ.Nodup) (v : V)
     (hv : v ∈ internalVertices ρ) : v ≠ a := by
@@ -110,6 +113,7 @@ private lemma not_head_of_internal' (ρ : List V) (a : V)
     simp only [List.head?_cons, Option.some.injEq] at hh
     rw [hh] at hnd; exact (List.nodup_cons.mp hnd).1 this
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 private lemma not_last_of_internal' (ρ : List V) (a b : V)
     (hh : ρ.head? = some a) (hl : ρ.getLast? = some b) (hnd : ρ.Nodup) (v : V)
     (hv : v ∈ internalVertices ρ) : v ≠ b := by
@@ -129,9 +133,11 @@ private lemma not_last_of_internal' (ρ : List V) (a b : V)
       exact (List.nodup_append.mp hnd_rest).2.2 _ (hb_last ▸ hv_dp) _ (List.Mem.head _) rfl
 
 set_option maxHeartbeats 800000 in
+omit [DecidableEq V] in
 theorem theorem_2_1 (G : SimpleGraph V) :
     binomialEdgeMonomialOrder.IsGroebnerBasis
       (groebnerBasisSet (K := K) G) (binomialEdgeIdeal (K := K) G) := by
+  classical
   -- All groebnerElements have unit leading coefficients
   have hUnit : ∀ g ∈ groebnerBasisSet (K := K) G,
       IsUnit (binomialEdgeMonomialOrder.leadingCoeff g) := by

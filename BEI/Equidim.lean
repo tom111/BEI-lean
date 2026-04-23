@@ -1629,7 +1629,7 @@ private theorem ell_not_mem_minimalPrime_map_diagSubstHom {n : ℕ} {G : SimpleG
 is a monomial ideal: for every `f ∈ span S` and `d ∈ f.support`,
 `monomial d 1 ∈ span S`. -/
 private theorem isMonomial_span_of_support_singleton
-    {σ : Type*} [DecidableEq σ]
+    {σ : Type*}
     {S : Set (MvPolynomial σ K)}
     (hS : ∀ s ∈ S, ∃ d, s.support ⊆ {d}) :
     (Ideal.span S).IsMonomial := by
@@ -1685,11 +1685,12 @@ is divisible (componentwise) by some generator exponent.
 This is a fundamental property of monomial ideals: `monomial d 1 ∈ span{monomial e_j 1}`
 implies `∃ j, e_j ≤ d`. -/
 private theorem support_divisible_by_generator
-    {σ : Type*} [DecidableEq σ]
+    {σ : Type*}
     {S : Set (MvPolynomial σ K)}
     (hS : ∀ s ∈ S, ∃ e, s.support ⊆ {e})
     {f : MvPolynomial σ K} (hf : f ∈ Ideal.span S) :
     ∀ d ∈ f.support, ∃ s ∈ S, ∃ e, s.support ⊆ {e} ∧ e ≤ d := by
+  classical
   -- Induction on span membership
   induction hf using Submodule.span_induction with
   | mem x hx =>

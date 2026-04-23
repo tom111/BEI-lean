@@ -131,6 +131,7 @@ end MonomialOrder
 
 /-! ## Corollary 2.2 -/
 
+omit [DecidableEq V] in
 /--
 **Corollary 2.2** (Herzog et al. 2010): `J_G` is a radical ideal.
 
@@ -139,6 +140,7 @@ from Theorem 2.1 with squarefree leading monomials.
 -/
 theorem corollary_2_2 (G : SimpleGraph V) :
     (binomialEdgeIdeal (K := K) G).IsRadical := by
+  classical
   rw [show binomialEdgeIdeal (K := K) G = Ideal.span (groebnerBasisSet (K := K) G)
     from (groebnerBasisSet_span G).symm]
   exact binomialEdgeMonomialOrder.isRadical_of_squarefree_isGroebnerBasis

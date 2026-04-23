@@ -32,6 +32,7 @@ open MvPolynomial SimpleGraph Classical
 
 /-! ## Helper lemmas for Theorem 3.2 -/
 
+omit [DecidableEq V] [Fintype V] in
 /-- The binomial `x_a y_b - x_b y_a` lies in `J_G` whenever `G.Adj a b`. -/
 private lemma bij_mem_binomialEdgeIdeal (G : SimpleGraph V) {a b : V} (hadj : G.Adj a b) :
     (x (K := K) a * y b - x b * y a) ∈ binomialEdgeIdeal G := by
@@ -43,18 +44,21 @@ private lemma bij_mem_binomialEdgeIdeal (G : SimpleGraph V) {a b : V} (hadj : G.
     have hsub := Ideal.sub_mem _ h0 hgen
     convert hsub using 1; ring
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- x-telescope identity (inline, avoids importing HerzogLemmas). -/
 private lemma x_telescope (a b c : V) :
     x (K := K) b * (x a * y c - x c * y a) =
     x a * (x b * y c - x c * y b) + x c * (x a * y b - x b * y a) := by
   simp only [x, y]; ring
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- y-telescope identity (inline, avoids importing HerzogLemmas). -/
 private lemma y_telescope (a b c : V) :
     y (K := K) b * (x a * y c - x c * y a) =
     y c * (x a * y b - x b * y a) + y a * (x b * y c - x c * y b) := by
   simp only [x, y]; ring
 
+omit [DecidableEq V] [Fintype V] in
 /-- **Telescope lemma**: if `P` is prime and contains `J_G`, and `S = {v : x_v ∈ P ∧ y_v ∈ P}`,
 then for any pair `j, k` connected by a path in `G[V \ S]`, the binomial `x_j y_k − x_k y_j`
 lies in `P`.
@@ -90,6 +94,7 @@ private lemma bij_mem_prime_of_reflTransGen (G : SimpleGraph V)
         exact P.add_mem (P.mul_mem_left _ h_bc) (P.mul_mem_left _ ih)
       exact (hPr.mem_or_mem htele).resolve_left hxb
 
+omit [DecidableEq V] [Fintype V] in
 /-- For any prime ideal `P ≥ J_G`, the prime component `P_S(G)` is contained in `P`,
 where `S = {v : x_v ∈ P ∧ y_v ∈ P}`.
 
@@ -111,6 +116,7 @@ lemma primeComponent_le_prime (G : SimpleGraph V)
   · exact (hS_fwd i hiS).2
   · exact bij_mem_prime_of_reflTransGen G P hPr hJG S hS_bwd hsc.2.2
 
+omit [DecidableEq V] in
 /-- Every minimal prime of `J_G` equals `P_S(G)` for `S = {v : x_v ∈ P ∧ y_v ∈ P}`.
 
 The proof: `P_S ≤ P` by `primeComponent_le_prime`, `P_S` is prime and `≥ J_G`,
@@ -141,6 +147,7 @@ private lemma minimalPrime_eq_primeComponent (G : SimpleGraph V)
 
 /-! ## Theorem 3.2: Prime decomposition -/
 
+omit [DecidableEq V] in
 /-- The intersection of all `P_S(G)` equals the radical of `J_G`.
 
 This is proved without assuming radicality: the ≤ direction uses the minimal prime
@@ -159,6 +166,7 @@ lemma iInf_primeComponent_eq_radical (G : SimpleGraph V) :
     rw [Ideal.radical_eq_sInf]
     exact sInf_le ⟨binomialEdgeIdeal_le_primeComponent G S, primeComponent_isPrime G S⟩
 
+omit [DecidableEq V] in
 /--
 **Theorem 3.2** (Herzog et al. 2010):
   `J_G = ⋂_{S ⊆ V} P_S(G)`
@@ -179,6 +187,7 @@ theorem theorem_3_2 (G : SimpleGraph V) :
         = (binomialEdgeIdeal (K := K) G).radical := iInf_primeComponent_eq_radical G
       _ ≤ binomialEdgeIdeal (K := K) G := corollary_2_2 G
 
+omit [DecidableEq V] in
 /--
 The minimal primes of `J_G` are exactly the minimal elements among `{P_S(G)}`.
 
@@ -222,6 +231,7 @@ theorem minimalPrimes_characterization (G : SimpleGraph V) :
 
 /-! ## Proposition 3.6: J_G is prime iff components are complete -/
 
+omit [DecidableEq V] in
 /--
 **Proposition 3.6** (Herzog et al. 2010): `J_G` is a prime ideal if and only if
 every connected component of G is a complete graph (i.e., reachable implies adjacent).
@@ -243,6 +253,7 @@ Reference: Herzog et al. (2010), Proposition 3.6.
 theorem prop_3_6 (G : SimpleGraph V) :
     (binomialEdgeIdeal (K := K) G).IsPrime ↔
     ∀ u w : V, G.Reachable u w → G.Adj u w ∨ u = w := by
+  classical
   constructor
   · -- Backward: J_G prime → all components complete
     intro hPrime u w hreach
@@ -334,6 +345,7 @@ def IsCycleGraph (G : SimpleGraph V) : Prop :=
   G.Connected ∧
   ∀ v : V, ∃ u w : V, u ≠ w ∧ G.Adj v u ∧ G.Adj v w ∧ ∀ z : V, G.Adj v z → z = u ∨ z = w
 
+omit [DecidableEq V] in
 /--
 **Corollary 3.7** (Herzog et al. 2010): For a cycle G of length n ≥ 3:
   (a) n = 3
@@ -347,6 +359,7 @@ Reference: Herzog et al. (2010), Corollary 3.7.
 theorem corollary_3_7 (G : SimpleGraph V) (hCyc : IsCycleGraph G)
     (hn : 3 ≤ Fintype.card V) :
     Fintype.card V = 3 ↔ (binomialEdgeIdeal (K := K) G).IsPrime := by
+  classical
   obtain ⟨hConn, hDeg⟩ := hCyc
   -- Helper: complete cycle graph has ≤ 3 vertices
   have aux : (∀ u w : V, u ≠ w → G.Adj u w) → Fintype.card V ≤ 3 := by

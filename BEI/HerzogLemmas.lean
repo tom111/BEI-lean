@@ -70,6 +70,7 @@ private lemma finsupp_sup_le_D {ι : Type*} (d₁ d₂ f₁ f₂ : ι →₀ ℕ
 
 /-! ## IsRemainder helpers -/
 
+omit [DecidableEq V] in
 /-- If there exists an admissible path from `a` to `b`, and `q` is any polynomial
 such that `pathMonomial a b σ` divides `q` (as monomials), then
 `IsRemainder (q * fij a b) groebnerBasisSet 0`.
@@ -84,6 +85,7 @@ lemma isRemainder_fij_via_groebnerElement (G : SimpleGraph V)
     (hdiv : d_σ ≤ d_q) :
     binomialEdgeMonomialOrder.IsRemainder
       (q * fij (K := K) a b) (groebnerBasisSet G) 0 := by
+  classical
   have hge_mem : groebnerElement (K := K) a b σ ∈ groebnerBasisSet G :=
     ⟨a, b, σ, hσ, rfl⟩
   have hge_eq : groebnerElement (K := K) a b σ = monomial d_σ 1 * fij a b := by
@@ -235,6 +237,7 @@ lemma rename_collapse_eq_zero (G : SimpleGraph V)
     exact RingHom.mem_ker.mpr (rename_collapse_generator i j)
   exact RingHom.mem_ker.mp (hle hf)
 
+omit [DecidableEq V] in
 /-- For nonzero f ∈ J_G, there exists d' ≠ LM(f) in support(f) with the same
 column degree. This follows from rename collapse f = 0 and
 coeff(f, LM(f)) ≠ 0. -/
@@ -245,6 +248,7 @@ lemma exists_other_support_same_colDeg (G : SimpleGraph V)
       Finsupp.mapDomain (collapse (V := V)) d' =
         Finsupp.mapDomain (collapse (V := V))
           (binomialEdgeMonomialOrder.degree f) := by
+  classical
   set d := binomialEdgeMonomialOrder.degree f
   set c := Finsupp.mapDomain (collapse (V := V)) d
   have h_zero := rename_collapse_eq_zero G f hf_mem

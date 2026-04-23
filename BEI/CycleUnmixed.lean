@@ -19,17 +19,21 @@ private def singletonSurvivors (v : V) : Set V := {x : V | x ∉ ({v} : Finset V
 
 private def pairSurvivors (u w : V) : Set V := {x : V | x ∉ ({u, w} : Finset V)}
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 private lemma mem_singletonSurvivors_iff {v x : V} :
     x ∈ singletonSurvivors v ↔ x ≠ v := by
   simp [singletonSurvivors]
 
+omit [LinearOrder V] [Fintype V] in
 private lemma mem_pairSurvivors_iff {u w x : V} :
     x ∈ pairSurvivors u w ↔ x ≠ u ∧ x ≠ w := by
   simp [pairSurvivors, Finset.mem_insert, Finset.mem_singleton, not_or]
 
+omit [Fintype V] in
 private lemma fst_ne_of_mem_pairSurvivors {u w x : V} (hx : x ∈ pairSurvivors u w) : x ≠ u :=
   (mem_pairSurvivors_iff.mp hx).1
 
+omit [Fintype V] in
 private lemma snd_ne_of_mem_pairSurvivors {u w x : V} (hx : x ∈ pairSurvivors u w) : x ≠ w :=
   (mem_pairSurvivors_iff.mp hx).2
 
@@ -46,6 +50,7 @@ private lemma reachable_induce_of_walk (G : SimpleGraph V) (S : Set V)
     exact (SimpleGraph.Adj.reachable (show (G.induce S).Adj ⟨u, hsup u (Or.inl rfl)⟩
       ⟨v, hsup v (Or.inr rest.start_mem_support)⟩ from hadj)).trans (ih hsup')
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 private lemma isCycles_of_isCycleGraph (G : SimpleGraph V) (hCyc : IsCycleGraph G) :
     G.IsCycles := by
   intro v _
@@ -56,6 +61,7 @@ private lemma isCycles_of_isCycleGraph (G : SimpleGraph V) (hCyc : IsCycleGraph 
   simp only [SimpleGraph.neighborSet]
   exact ⟨fun hz => honly z hz, fun hz => hz.elim (· ▸ huv) (· ▸ hvw)⟩
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 private lemma mem_support_of_cycle_walk (G : SimpleGraph V) (hConn : G.Connected) {u : V}
     {c : G.Walk u u}
     (hc_verts : c.toSubgraph.verts = (G.connectedComponentMk u).supp) (v : V) :
@@ -64,6 +70,7 @@ private lemma mem_support_of_cycle_walk (G : SimpleGraph V) (hConn : G.Connected
   simp only [SimpleGraph.ConnectedComponent.mem_supp_iff, SimpleGraph.ConnectedComponent.eq]
   exact hConn.preconnected v u
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 private lemma mem_tail_support_of_ne (G : SimpleGraph V) {a b : V} (w : G.Walk a b)
     (hw : ¬w.Nil) {v : V} (hv : v ≠ a) (hmem : v ∈ w.support) :
     v ∈ w.tail.support := by
@@ -73,6 +80,7 @@ private lemma mem_tail_support_of_ne (G : SimpleGraph V) {a b : V} (w : G.Walk a
   rw [h_cons] at hmem
   exact (List.mem_cons.mp hmem).resolve_left hv
 
+omit [DecidableEq V] in
 private lemma cycle_edge_mem_edges (G : SimpleGraph V) (hConn : G.Connected)
     (hcycles : G.IsCycles) {u : V} {c : G.Walk u u} (hc_cycle : c.IsCycle)
     (hc_verts : c.toSubgraph.verts = (G.connectedComponentMk u).supp) :
@@ -86,6 +94,7 @@ private lemma cycle_edge_mem_edges (G : SimpleGraph V) (hConn : G.Connected)
 /-! ## Corollary 3.7 unmixed branch -/
 
 -- Hamiltonian cycle extraction plus `takeUntil` reachability is still expensive here.
+omit [DecidableEq V] in
 /-- In a cycle graph, the induced subgraph on `V \ {v}` is preconnected.
 Uses the `IsCycles` API: obtain a Hamiltonian cycle walk at `v`, take its tail
 (a path visiting every other vertex), then transfer initial segments into the
@@ -134,6 +143,7 @@ private lemma cycle_induce_preconnected (G : SimpleGraph V) (hCyc : IsCycleGraph
     simpa [S, mem_singletonSurvivors_iff] using hxv
   exact reachable_induce_of_walk G S w hw_S
 
+omit [DecidableEq V] in
 /-- Removing a single vertex from a cycle graph gives a connected induced
 subgraph. Therefore `componentCount G {v} = 1`. -/
 theorem cycle_componentCount_singleton (G : SimpleGraph V) (hCyc : IsCycleGraph G)
@@ -153,10 +163,12 @@ theorem cycle_componentCount_singleton (G : SimpleGraph V) (hCyc : IsCycleGraph 
   change Nat.card G'.ConnectedComponent = 1
   exact Nat.card_of_subsingleton (G'.connectedComponentMk ⟨n1, hn1S⟩)
 
+omit [LinearOrder V] [DecidableEq V] in
 /-- On a cycle with `n ≥ 4` vertices, there exist two non-adjacent vertices. -/
 theorem cycle_exists_nonadj (G : SimpleGraph V) (hCyc : IsCycleGraph G)
     (hn : 4 ≤ Fintype.card V) :
     ∃ u w : V, u ≠ w ∧ ¬G.Adj u w := by
+  classical
   have hDeg := hCyc.2
   obtain ⟨v⟩ := hCyc.1.nonempty
   obtain ⟨n1, n2, _, hadj1, hadj2, honly⟩ := hDeg v
@@ -171,6 +183,7 @@ theorem cycle_exists_nonadj (G : SimpleGraph V) (hCyc : IsCycleGraph G)
   simp only [Finset.mem_insert, Finset.mem_singleton, not_or] at hw
   exact ⟨v, w, Ne.symm hw.1, fun hadj => (honly w hadj).elim hw.2.1 hw.2.2⟩
 
+omit [Fintype V] in
 private lemma cycle_edge_on_arc (G : SimpleGraph V) {u w : V} (S : Set V)
     (hS : S = pairSurvivors u w) {c : G.Walk u u} (hc_not_nil : ¬c.Nil)
     {arc1 : G.Walk c.snd w} {arc2 : G.Walk w u}
@@ -188,11 +201,12 @@ private lemma cycle_edge_on_arc (G : SimpleGraph V) {u w : V} (S : Set V)
   · exfalso
     have hb_ne_u : b ≠ u := fst_ne_of_mem_pairSurvivors hb_pair
     have hu_mem : u ∈ (s(a, b) : Sym2 V) := h ▸ Sym2.mem_mk_left u c.snd
-    rcases Sym2.mem_iff.mp hu_mem with rfl | rfl
-    · exact ha_ne_u rfl
-    · exact hb_ne_u rfl
+    rcases Sym2.mem_iff.mp hu_mem with h_eq | h_eq
+    · exact ha_ne_u h_eq.symm
+    · exact hb_ne_u h_eq.symm
   · exact List.mem_append.mp (htail_edges ▸ h)
 
+omit [Fintype V] in
 private lemma cycle_vertex_on_arc {G : SimpleGraph V} {u w : V} (S : Set V)
     (hS : S = pairSurvivors u w) {c : G.Walk u u} {arc1 : G.Walk c.snd w}
     {arc2 : G.Walk w u} (hmem_tail_of_ne_u : ∀ v : V, v ≠ u → v ∈ c.tail.support)
@@ -207,6 +221,7 @@ private lemma cycle_vertex_on_arc {G : SimpleGraph V} {u w : V} (S : Set V)
   · exact Or.inl h
   · exact Or.inr (List.tail_subset _ h)
 
+omit [Fintype V] in
 private lemma cycle_arc1_reachable (G : SimpleGraph V) {u w : V} (S : Set V)
     (hS : S = pairSurvivors u w) {c : G.Walk u u} {arc1 : G.Walk c.snd w}
     (harc1_path : arc1.IsPath) (hu_not_arc1 : u ∉ arc1.support) (hc_snd_S : c.snd ∈ S) :
@@ -226,6 +241,7 @@ private lemma cycle_arc1_reachable (G : SimpleGraph V) {u w : V} (S : Set V)
       exact hw_not (h ▸ hx)
     simpa [hS, mem_pairSurvivors_iff] using ⟨hxu, hxw⟩
 
+omit [Fintype V] in
 private lemma cycle_arc2_reachable (G : SimpleGraph V) {u w : V} (S : Set V)
     (hS : S = pairSurvivors u w) {arc2 : G.Walk w u} (harc2_path : arc2.IsPath)
     (harc2_not_nil : ¬arc2.Nil) (harc2_snd_S : arc2.snd ∈ S) :
@@ -257,6 +273,7 @@ private lemma cycle_arc2_reachable (G : SimpleGraph V) {u w : V} (S : Set V)
       exact hw_not (h ▸ hx)
     simpa [hS, mem_pairSurvivors_iff] using ⟨hxu, hxw⟩
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 private lemma cycle_arcs_intersect_only_at_split {G : SimpleGraph V} {u w : V}
     {c : G.Walk u u} {arc1 : G.Walk c.snd w} {arc2 : G.Walk w u}
     (htail_path : c.tail.IsPath) (harc2_not_nil : ¬arc2.Nil)
@@ -273,6 +290,7 @@ private lemma cycle_arcs_intersect_only_at_split {G : SimpleGraph V} {u w : V}
     exact (List.mem_cons.mp hv2).resolve_left hvw
   exact List.disjoint_of_nodup_append hnodup hv1 hv_arc2_tail
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 private lemma cycle_no_cross_edge {G : SimpleGraph V} {S : Set V}
     {u1 v1 u2 v2 : V} {arc1 : G.Walk u1 v1} {arc2 : G.Walk u2 v2}
     (hedge_on_arc : ∀ x y : V, x ∈ S → y ∈ S → G.Adj x y →
@@ -288,6 +306,7 @@ private lemma cycle_no_cross_edge {G : SimpleGraph V} {S : Set V}
       ⟨SimpleGraph.Walk.fst_mem_support_of_mem_edges arc2 h,
         SimpleGraph.Walk.snd_mem_support_of_mem_edges arc2 h⟩
 
+omit [Fintype V] in
 private lemma cycle_pair_separated (G : SimpleGraph V) {u w : V} (S : Set V)
     (hS : S = pairSurvivors u w) {c : G.Walk u u} {arc1 : G.Walk c.snd w}
     {arc2 : G.Walk w u}
@@ -320,6 +339,7 @@ private lemma cycle_pair_separated (G : SimpleGraph V) {u w : V} (S : Set V)
           exact snd_ne_of_mem_pairSurvivors hy_pair hyw
         · exact hx_not_arc2 hx2
 
+omit [Fintype V] in
 private lemma cycle_components_cover (G : SimpleGraph V) {u w : V} (S : Set V)
     (hS : S = pairSurvivors u w) {c : G.Walk u u} {arc1 : G.Walk c.snd w}
     {arc2 : G.Walk w u} (hc_snd_S : c.snd ∈ S) (harc2_snd_S : arc2.snd ∈ S)
@@ -434,6 +454,7 @@ theorem cycle_componentCount_pair_nonadj (G : SimpleGraph V) (hCyc : IsCycleGrap
   simpa [comp1, comp2, G'] using
     cycle_components_cover G S rfl hc_snd_S harc2_snd_S hmem_arc harc1_reach harc2_reach comp
 
+omit [DecidableEq V] in
 /--
 **Corollary 3.7 (unmixed branch)**: For a cycle `G` with `n ≥ 3` vertices,
 `J_G` is prime iff `J_G` is unmixed.
