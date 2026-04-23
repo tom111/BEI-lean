@@ -137,6 +137,6 @@ prop_1_6:
       url: "https://github.com/tom111/BEI-lean/blob/master/BEI/Equidim.lean"
   notes: >
     The paper statement is formalized as `proposition_1_6`. The proof combines the
-    Herzog--Hibi reduction, the monomial-side CM theorem, and a separate
-    paper-faithful Gröbner deformation transfer back to `J_G`. The direct
-    equidimensional route remains in the repo as a separate surrogate argument.
+    Herzog--Hibi reduction, the monomial-side CM theorem, and a Gröbner
+    deformation transfer back to `J_G`. The direct equidimensional route remains
+    in the repo as a separate surrogate argument.

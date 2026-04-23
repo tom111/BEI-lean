@@ -9,9 +9,9 @@ the decomposition of `J_G`, the dimension formula, and the description of the
 minimal primes.
 
 For mathematicians, this is the page that explains how the graph controls the
-prime ideals of the binomial edge ideal. The complete prime decomposition and
-dimension formula are formalized. Proposition 1.6, Corollary 3.4, and
-Corollary 3.7 are formalized as well.
+prime ideals of the binomial edge ideal. This section records the prime
+decomposition, dimension, minimal-prime, and cycle criteria attached to
+binomial edge ideals.
 
 ## Theorem map
 
@@ -32,19 +32,15 @@ Corollary 3.7 are formalized as well.
 - `Exact` means the Lean theorem follows the paper statement closely.
 - `Equivalent` means the same mathematics is formalized, but the Lean theorem is
   packaged differently.
-- `Partial` means a paper statement has only been reached through an
-  equidimensional or otherwise incomplete substitute so far.
-
 ## Notes
 
-Prime decomposition, minimal primes, and the dimension formula are formalized.
-The Section 3 Cohen–Macaulay status is:
+Prime decomposition, minimal primes, and the dimension formula appear here in
+the same part of the site as the Section 3 Cohen--Macaulay consequences. The
+main additional declarations on this page are:
 
 - the prime decomposition is formalized;
 - the dimension consequences are formalized;
 - the minimal-prime characterization is formalized;
-- Proposition 1.6 is formalized in its paper-faithful CM form;
-- Corollary 3.4 is formalized in its paper-faithful CM form;
 - the prime, unmixed, and Cohen–Macaulay cycle-graph equivalences are formalized;
 - and the equivalent-packaging items on this page are Proposition 3.6,
   Proposition 3.8, and Corollary 3.9.

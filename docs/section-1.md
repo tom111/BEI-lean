@@ -53,12 +53,12 @@ The supporting examples now split by strength:
 
 ### Proposition 1.6
 
-This branch is now complete.
-
-The paper-faithful theorem is `proposition_1_6` in `BEI/Proposition1_6.lean`.
-Its proof is assembled in the same order as the paper-facing strategy:
+The main declaration is `proposition_1_6` in `BEI/Proposition1_6.lean`.
+Its proof is assembled in the same order as the paper's strategy:
 
 - `prop_1_6_herzogHibi` packages the graph hypotheses into the HH bipartite conditions;
 - `monomialInitialIdeal_isCohenMacaulay` proves the monomial-side CM theorem;
 - `binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm` and `groebnerDeformation_cm_transfer` carry CM back from the initial ideal to `J_G`;
-- and the direct equidimensional route in `PrimeDecompositionDimension.lean` remains available as a separate surrogate argument, not a replacement for the paper statement.
+- and the direct equidimensional route in `PrimeDecompositionDimension.lean`
+  remains available as a separate surrogate argument, not as the main theorem
+  recorded on this page.

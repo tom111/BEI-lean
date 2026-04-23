@@ -6,8 +6,8 @@ title: Overview
 
 <div class="intro-card">
 The site follows the four main sections of the paper. The goal is not only to
-record where each Lean theorem lives, but to show which mathematical results
-have already been formalized and which ones are still open.
+record where each Lean theorem lives, but to show how the Lean declarations are
+packaged relative to the published statements.
 </div>
 
 ## Aim
@@ -15,10 +15,8 @@ have already been formalized and which ones are still open.
 The formalization stays close to the statements in
 [BEI.tex](https://github.com/tom111/BEI-lean/blob/master/BEI.tex).
 
-The paper-faithful Cohen–Macaulay theorem of Proposition 1.6 is now fully
-formalized. The remaining gaps are the full Cohen–Macaulay branches of
-Corollaries 3.4 and 3.7, which are still represented in Lean by
-equidimensional surrogates.
+The section pages mark each paper result as either an exact statement match or
+an equivalent reformulation.
 
 ## Mathematical roadmap
 
@@ -58,7 +56,7 @@ Supporting generic lemmas intended for possible upstreaming live in:
 
 ## By paper section
 
-- Section 1: closed graphs, path-like consequences, the closure operation, and the paper-faithful Proposition 1.6 theorem.
+- Section 1: closed graphs, path-like consequences, the closure operation, and the Cohen--Macaulay criterion.
 - Section 2: reduced Gröbner bases and radicality.
 - Section 3: prime ideals `P_S`, prime decomposition, dimension, and minimal
   primes, together with the Cohen–Macaulay dimension and cycle criteria.
@@ -72,11 +70,10 @@ Each section page records:
 - the paper result;
 - the corresponding Lean declaration(s);
 - the file where the proof lives;
-- whether the Lean statement is exact, equivalent, or only partial.
+- whether the Lean statement is exact or equivalent.
 
 Here:
 
 - `Exact` means the Lean theorem matches the paper statement closely.
 - `Equivalent` means the mathematics is the same, but the formal statement is
   packaged differently.
-- `Partial` means only part of the paper statement is formalized so far.

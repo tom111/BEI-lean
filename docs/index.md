@@ -9,9 +9,8 @@ title: Binomial Edge Ideals
       This project formalizes the main algebraic results of
       <em>Binomial edge ideals and conditional independence statements</em> in Lean.
       The named results from Sections 1 through 4 are represented in Lean.
-      The theorem map is complete: the paper-faithful statements are formalized
-      directly where possible, and the remaining non-verbatim cases are
-      packaged as equivalent reformulations.
+      The section pages distinguish exact statement matches from equivalent
+      reformulations.
     </p>
     <div class="quick-links quick-links--hero">
       <a href="{{ '/overview.html' | relative_url }}">Overview</a>
@@ -30,19 +29,18 @@ title: Binomial Edge Ideals
   <div class="landing-summary">
     <div class="landing-summary__metric">
       <span class="landing-summary__value">21 / 21</span>
-      <span class="landing-summary__label">main results completed</span>
+      <span class="landing-summary__label">named results tracked</span>
     </div>
     <div class="landing-summary__metric">
       <span class="landing-summary__value">5</span>
       <span class="landing-summary__label">equivalent reformulations</span>
     </div>
     <div class="landing-summary__note">
-      <strong>Current status:</strong> the project already covers the main
-      Gröbner, radicality, prime-decomposition, dimension, minimal-prime, and
-      conditional-independence results from the paper, and the full project
-      builds. Equivalent packaging remains for Proposition 1.4, Theorem 2.1,
-      Proposition 3.6, Proposition 3.8, and Corollary 3.9; the remaining named
-      results are formalized exactly.
+      <strong>Scope:</strong> the site covers the paper's Gröbner-basis,
+      radicality, prime-decomposition, dimension, minimal-prime, and
+      conditional-independence results. Equivalent packaging remains for
+      Proposition 1.4, Theorem 2.1, Proposition 3.6, Proposition 3.8, and
+      Corollary 3.9; the remaining named results are listed as exact matches.
     </div>
   </div>
 </div>
@@ -65,49 +63,35 @@ formal statement matches the published one.
     <span class="result-item__icon" data-icon="&#10003;"></span>
     <div>
       <strong>Closed graphs and quadratic Gröbner bases</strong>
-      <span>Theorem 1.1 and the main Section 1 graph-theoretic consequences are formalized.</span>
+      <span>Section 1 covers the Gröbner-basis criterion, graph-theoretic consequences, the closure operation, and the Cohen--Macaulay criterion.</span>
     </div>
   </div>
   <div class="result-item result-item--done">
     <span class="result-item__icon" data-icon="&#10003;"></span>
     <div>
-      <strong>Section 2 complete</strong>
-      <span>The Gröbner basis theorem and the radicality corollary are formalized.</span>
+      <strong>Reduced Gröbner bases and radicality</strong>
+      <span>Section 2 records the reduced Gröbner basis theorem together with the radicality consequence.</span>
     </div>
   </div>
   <div class="result-item result-item--done">
     <span class="result-item__icon" data-icon="&#10003;"></span>
     <div>
       <strong>Prime decomposition and dimension theory</strong>
-      <span>The prime ideals, prime decomposition, dimension formula, minimal primes, and the cycle-graph prime, unmixed, and Cohen–Macaulay criteria are formalized.</span>
+      <span>Section 3 covers the prime ideals `P_S`, the decomposition of `J_G`, the dimension formula, the minimal-prime criterion, and the cycle criterion.</span>
     </div>
   </div>
   <div class="result-item result-item--done">
     <span class="result-item__icon" data-icon="&#10003;"></span>
     <div>
-      <strong>Section 4 complete</strong>
-      <span>Conditional independence ideals are linked to binomial edge ideals, with bridge theorems, radicality, prime decomposition, and minimal-prime results.</span>
+      <strong>Conditional independence ideals</strong>
+      <span>Section 4 identifies the conditional-independence ideals with binomial edge ideals and transfers radicality, prime decomposition, and minimal-prime results.</span>
     </div>
   </div>
   <div class="result-item result-item--done">
     <span class="result-item__icon" data-icon="&#10003;"></span>
     <div>
-      <strong>Paper-faithful Proposition 1.6 complete</strong>
-      <span>The full Cohen–Macaulay theorem, its Gröbner deformation transfer, and the path-graph example are formalized.</span>
-    </div>
-  </div>
-  <div class="result-item result-item--done">
-    <span class="result-item__icon" data-icon="&#10003;"></span>
-    <div>
-      <strong>Section 3 complete</strong>
-      <span>The Cohen–Macaulay dimension formula and the cycle-graph criterion are formalized in their paper-facing forms.</span>
-    </div>
-  </div>
-  <div class="result-item result-item--done">
-    <span class="result-item__icon" data-icon="&#10003;"></span>
-    <div>
-      <strong>Complete theorem map</strong>
-      <span>All named paper results are represented on the section pages, with exact and equivalent packaging marked explicitly.</span>
+      <strong>Statement map</strong>
+      <span>The section pages mark each named result as either an exact match to the paper statement or an equivalent reformulation.</span>
     </div>
   </div>
 </div>
@@ -123,22 +107,22 @@ formal statement matches the published one.
   <a class="section-card" href="{{ '/section-1.html' | relative_url }}">
     <span class="section-card__kicker">Section 1</span>
     <strong>Closed graphs and quadratic Gröbner bases</strong>
-    <span class="section-card__meta">complete</span>
+    <span class="section-card__meta">criterion, consequences, closure, and Cohen--Macaulay condition</span>
   </a>
   <a class="section-card" href="{{ '/section-2.html' | relative_url }}">
     <span class="section-card__kicker">Section 2</span>
     <strong>Reduced Gröbner basis and radicality</strong>
-    <span class="section-card__meta">complete</span>
+    <span class="section-card__meta">reduced basis theorem and radicality consequence</span>
   </a>
   <a class="section-card" href="{{ '/section-3.html' | relative_url }}">
     <span class="section-card__kicker">Section 3</span>
     <strong>Prime decomposition, dimension, minimal primes</strong>
-    <span class="section-card__meta">complete, including the cycle-graph Cohen-Macaulay criterion</span>
+    <span class="section-card__meta">prime decomposition, dimension, minimal primes, and cycle criterion</span>
   </a>
   <a class="section-card" href="{{ '/section-4.html' | relative_url }}">
     <span class="section-card__kicker">Section 4</span>
     <strong>Conditional independence ideals and robustness</strong>
-    <span class="section-card__meta">bridge theorems and the main binary-output results are complete</span>
+    <span class="section-card__meta">bridge theorems and transferred algebraic consequences</span>
   </a>
 </div>
 

@@ -13,10 +13,10 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 
 ## Active Work Packages
 
-1. [work_packages/NEXT_SESSION_PROMPT.md](work_packages/NEXT_SESSION_PROMPT.md)
-   **Proposition 1.6 is now AXIOM-CLEAN (2026-04-22).** This file records the full proof chain and lists possible follow-up targets: Corollary 3.4 full paper statement, proof cleanup, dormant-sorry retirement, and Mathlib upstreaming candidates.
-2. [work_packages/COROLLARY_3_4_IMPLEMENTATION.md](work_packages/COROLLARY_3_4_IMPLEMENTATION.md)
-   Lean implementation packet for the full paper-faithful Corollary 3.4, using the local-CM theorem plus a BEI-specific global bridge.
+There are currently no active theorem-critical work packages.
+
+Use `cleanup/`, `process/`, and `website/` for ongoing maintenance work until a
+new formalization task appears.
 
 ## Answers And Decision Notes
 
@@ -64,6 +64,8 @@ Completed / superseded packets, retained for historical context only. Do not tre
 
 ### Earlier completed packets
 
+- `archive/NEXT_SESSION_PROMPT.md` — retired follow-up memo from the Prop 1.6 / Corollary 3.4 phase.
+- `archive/COROLLARY_3_4_IMPLEMENTATION.md` — consumed implementation packet for Corollaries 3.4 and 3.7.
 - `archive/CM_LOCALIZES.md` — CM-localizes theorem packet (landed).
 - `archive/CM_PARAMETER_PREFIX_UNMIXED.md` — superseded route.
 - `archive/DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md` — superseded route.
