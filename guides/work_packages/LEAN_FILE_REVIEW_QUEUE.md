@@ -27,7 +27,7 @@ items are:
   `toMathlib/Equidim/Defs.lean`, `toMathlib/FiniteFreeEquidim.lean`,
   `toMathlib/GradedAssociatedPrime.lean`, `toMathlib/GradedCM.lean`,
   `toMathlib/GradedEquidim.lean`, `toMathlib/GradedFiniteFree.lean`,
-  `toMathlib/GradedIrrelevant.lean`.
+  `toMathlib/GradedIrrelevant.lean`, `toMathlib/GradedPrimeAvoidance.lean`.
 
 Everything else under `BEI/`, `Supplement/`, and `toMathlib/` in
 `TODO.md` is still pending.

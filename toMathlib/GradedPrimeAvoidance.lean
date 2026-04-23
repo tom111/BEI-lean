@@ -462,6 +462,8 @@ noncomputable def quotientSpanSingletonGrading
     GradedRing (GradedQuotient.gradedQuotientPiece 𝒜 (Ideal.span {ℓ})) :=
   GradedQuotient.gradedRing 𝒜 _ (isHomogeneous_span_singleton_of_homogeneous 𝒜 hℓ)
 
+-- Silences a false-positive `unused variable hℓ`: the lint does not
+-- detect the use in the `letI` decorator on the `GradedRing` instance below.
 set_option linter.unusedVariables false in
 /-- **Connected graded transfer to quotient.** If the ambient grading `𝒜` is
 connected and `ℓ` is homogeneous, then the induced grading on `A ⧸ ⟨ℓ⟩`
