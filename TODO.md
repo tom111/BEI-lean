@@ -30,73 +30,10 @@
 
 ### Lean File Review Queue
 
-- `[ ]` Run a file-by-file Lean cleanup pass for simplification, shortening,
-  proof golf, and presentation improvements where appropriate.
-  **Follow the per-file recipe in
-  [`guides/work_packages/LEAN_FILE_REVIEW_QUEUE.md`](guides/work_packages/LEAN_FILE_REVIEW_QUEUE.md)**
-  — every file uses `/lean4:refactor` then `/lean4:golf` and the Lean MCP
-  tools, never ad-hoc rewrites.
-
-#### Root
-
-- `[x]` `BEI.lean`
-
-#### `BEI/`
-
-- `[x]` `BEI/AdmissiblePaths.lean`
-- `[x]` `BEI/CIIdeals.lean`
-- `[x]` `BEI/ClosedGraphs.lean`
-- `[x]` `BEI/Corollary3_4.lean`
-- `[x]` `BEI/CoveredWalks.lean`
-- `[x]` `BEI/Definitions.lean`
-- `[x]` `BEI/Equidim.lean`
-- `[x]` `BEI/GraphProperties.lean`
-- `[x]` `BEI/Groebner.lean`
-- `[x]` `BEI/GroebnerAPI.lean`
-- `[x]` `BEI/GroebnerBasis.lean`
-- `[x]` `BEI/GroebnerBasisSPolynomial.lean`
-- `[x]` `BEI/GroebnerDeformation.lean`
-- `[x]` `BEI/HerzogLemmas.lean`
-- `[x]` `BEI/MinimalPrimes.lean`
-- `[x]` `BEI/MonomialOrder.lean`
-- `[x]` `BEI/PrimeDecomposition.lean`
-- `[x]` `BEI/PrimeDecompositionDimension.lean`
-- `[x]` `BEI/PrimeIdeals.lean`
-- `[x]` `BEI/Proposition1_6.lean`
-- `[x]` `BEI/Radical.lean`
-- `[x]` `BEI/ReducedHH.lean`
-- `[x]` `BEI/Scratch.lean`
-
-#### `Supplement/`
-
-- `[x]` `Supplement/RauhApproach.lean`
-
-#### `toMathlib/`
-
-- `[x]` `toMathlib/CohenMacaulay/Basic.lean`
-- `[x]` `toMathlib/CohenMacaulay/Defs.lean`
-- `[x]` `toMathlib/CohenMacaulay/Localization.lean`
-- `[x]` `toMathlib/CohenMacaulay/Polynomial.lean`
-- `[x]` `toMathlib/CohenMacaulay/TensorPolynomialAway.lean`
-- `[x]` `toMathlib/Equidim/Defs.lean`
-- `[x]` `toMathlib/FiniteFreeEquidim.lean`
-- `[x]` `toMathlib/GradedAssociatedPrime.lean`
-- `[x]` `toMathlib/GradedCM.lean`
-- `[x]` `toMathlib/GradedEquidim.lean`
-- `[x]` `toMathlib/GradedFiniteFree.lean`
-- `[x]` `toMathlib/GradedIrrelevant.lean`
-- `[x]` `toMathlib/GradedPrimeAvoidance.lean`
-- `[x]` `toMathlib/GradedQuotient.lean`
-- `[x]` `toMathlib/GradedRegularSop.lean`
-- `[x]` `toMathlib/HeightDeterminantal.lean`
-- `[x]` `toMathlib/HeightVariableIdeal.lean`
-- `[x]` `toMathlib/IntegralDimension.lean`
-- `[x]` `toMathlib/IsPrimeSpanX.lean`
-- `[x]` `toMathlib/MonomialIdeal.lean`
-- `[x]` `toMathlib/PolynomialAwayTensor.lean`
-- `[x]` `toMathlib/QuotientDimension.lean`
-- `[x]` `toMathlib/SquarefreeMonomialPrimes.lean`
-- `[x]` `toMathlib/TensorLocalisation.lean`
+- `[x]` Run a file-by-file Lean cleanup pass for simplification, shortening,
+  proof golf, and presentation improvements where appropriate. Queue
+  completed 2026-04-24; the per-file recipe packet is archived at
+  [`guides/archive/LEAN_FILE_REVIEW_QUEUE.md`](guides/archive/LEAN_FILE_REVIEW_QUEUE.md).
 
 ---
 

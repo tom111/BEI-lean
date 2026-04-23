@@ -17,10 +17,6 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
   — split `BEI/Equidim.lean` (8106 lines) into a `BEI/Equidim/` directory
   with one file per mathematical block. Supersedes
   `cleanup/EQUIDIM_DECOMPOSITION.md`.
-- [work_packages/LEAN_FILE_REVIEW_QUEUE.md](work_packages/LEAN_FILE_REVIEW_QUEUE.md)
-  — per-file recipe (`/lean4:refactor` then `/lean4:golf`, with
-  heartbeat tightening) for the remaining files in `TODO.md`'s `Lean
-  File Review Queue`.
 
 Otherwise, use `cleanup/`, `process/`, and `website/` for ongoing
 maintenance work until a new formalization task appears.
@@ -73,6 +69,10 @@ Completed / superseded packets, retained for historical context only. Do not tre
 
 ### Earlier completed packets
 
+- `archive/LEAN_FILE_REVIEW_QUEUE.md` — per-file cleanup queue, fully
+  consumed 2026-04-24; every `BEI/`, `Supplement/`, and `toMathlib/`
+  source file has been through the `review → refactor → golf →
+  heartbeat → verify → checkpoint` recipe.
 - `archive/MINIMALPRIMES_CYCLE_PERFORMANCE.md` — completed cycle/unmixed performance packet; split landed, helper decomposition finished, heartbeat overrides removed.
 - `archive/ANSWER_05_LEAN_PERFORMANCE_RESEARCH.md` — source-backed Lean performance note; now superseded by the concrete cleanup packets.
 - `archive/NEXT_SESSION_PROMPT.md` — retired follow-up memo from the Prop 1.6 / Corollary 3.4 phase.
