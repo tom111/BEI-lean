@@ -29,7 +29,8 @@ items are:
   `toMathlib/GradedEquidim.lean`, `toMathlib/GradedFiniteFree.lean`,
   `toMathlib/GradedIrrelevant.lean`, `toMathlib/GradedPrimeAvoidance.lean`,
   `toMathlib/GradedQuotient.lean`, `toMathlib/GradedRegularSop.lean`,
-  `toMathlib/HeightDeterminantal.lean`, `toMathlib/HeightVariableIdeal.lean`.
+  `toMathlib/HeightDeterminantal.lean`, `toMathlib/HeightVariableIdeal.lean`,
+  `toMathlib/IntegralDimension.lean`.
 
 Everything else under `BEI/`, `Supplement/`, and `toMathlib/` in
 `TODO.md` is still pending.

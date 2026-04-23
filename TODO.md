@@ -90,7 +90,7 @@
 - `[x]` `toMathlib/GradedRegularSop.lean`
 - `[x]` `toMathlib/HeightDeterminantal.lean`
 - `[x]` `toMathlib/HeightVariableIdeal.lean`
-- `[ ]` `toMathlib/IntegralDimension.lean`
+- `[x]` `toMathlib/IntegralDimension.lean`
 - `[ ]` `toMathlib/IsPrimeSpanX.lean`
 - `[ ]` `toMathlib/MonomialIdeal.lean`
 - `[ ]` `toMathlib/PolynomialAwayTensor.lean`
