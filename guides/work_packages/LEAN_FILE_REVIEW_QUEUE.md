@@ -11,7 +11,8 @@ items are:
   `BEI/CoveredWalks.lean`, `BEI/Definitions.lean`, `BEI/Equidim.lean`
   (cleanup pass complete; structural split tracked in
   [`EQUIDIM_FILE_SPLIT.md`](EQUIDIM_FILE_SPLIT.md)),
-  `BEI/GraphProperties.lean`, `BEI/Groebner.lean`.
+  `BEI/GraphProperties.lean`, `BEI/Groebner.lean`,
+  `BEI/GroebnerAPI.lean`.
 
 Everything else under `BEI/`, `Supplement/`, and `toMathlib/` in
 `TODO.md` is still pending.

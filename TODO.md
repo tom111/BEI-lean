@@ -52,7 +52,7 @@
 - `[x]` `BEI/Equidim.lean`
 - `[x]` `BEI/GraphProperties.lean`
 - `[x]` `BEI/Groebner.lean`
-- `[ ]` `BEI/GroebnerAPI.lean`
+- `[x]` `BEI/GroebnerAPI.lean`
 - `[ ]` `BEI/GroebnerBasis.lean`
 - `[ ]` `BEI/GroebnerBasisSPolynomial.lean`
 - `[ ]` `BEI/GroebnerDeformation.lean`

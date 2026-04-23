@@ -141,9 +141,8 @@ theorem isGroebnerBasis_iff_sPolynomial_isRemainder {R : Type*} [Field R]
     -- The linear combination part is in Ideal.span G
     have hlin_mem : Finsupp.linearCombination _ (fun (b : ↑G) ↦ b.val) h_coeff ∈ Ideal.span G := by
       simp only [Finsupp.linearCombination_apply]
-      apply Submodule.sum_mem
-      intro b _
-      exact Ideal.mul_mem_left _ _ (Ideal.subset_span b.prop)
+      exact Submodule.sum_mem _
+        fun b _ => Ideal.mul_mem_left _ _ (Ideal.subset_span b.prop)
     -- So r = S(g₁,g₂) - linear_combination is also in Ideal.span G
     have hr_mem : r ∈ Ideal.span G := by
       have r_eq : r = m.sPolynomial g₁.val g₂.val -
@@ -1187,8 +1186,7 @@ theorem isGroebnerBasis_iff_sPolynomial_isRemainder {R : Type*} [Field R]
                 exact ⟨⟨hc0_bound, hadj_b1_bound⟩,
                        ⟨hadj_b2_bound, hh12_bound⟩⟩
     · -- span(lt(G)) ⊆ span(lt(span G)) — easy direction
-      apply Ideal.span_mono
-      exact Set.image_mono Ideal.subset_span
+      exact Ideal.span_mono (Set.image_mono Ideal.subset_span)
 
 end MonomialOrder
 
