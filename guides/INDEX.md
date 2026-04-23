@@ -20,8 +20,7 @@ new formalization task appears.
 
 ## Answers And Decision Notes
 
-- [answers/ANSWER_04_HEIGHT_ADDITIVITY_REPAIR.md](answers/ANSWER_04_HEIGHT_ADDITIVITY_REPAIR.md)
-  Dormant infrastructure repair; useful reference, not on the critical path.
+There are currently no live answer memos in `guides/answers/`.
 
 ## Cleanup And Refactor Packets
 
