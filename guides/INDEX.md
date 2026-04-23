@@ -35,7 +35,6 @@ Optional proof-engineering work, not on the theorem-proving critical path.
 - [cleanup/EQUIDIM_DECOMPOSITION.md](cleanup/EQUIDIM_DECOMPOSITION.md)
 - [cleanup/CM_SUPPORT_REFACTOR.md](cleanup/CM_SUPPORT_REFACTOR.md)
 - [cleanup/FILE_SPLITTING_PLAN.md](cleanup/FILE_SPLITTING_PLAN.md)
-- [cleanup/MINIMALPRIMES_CYCLE_PERFORMANCE.md](cleanup/MINIMALPRIMES_CYCLE_PERFORMANCE.md)
 - [cleanup/LEAN_PERFORMANCE_TRIAGE.md](cleanup/LEAN_PERFORMANCE_TRIAGE.md)
 - [cleanup/LEAN_CODE_SMELL_AUDIT.md](cleanup/LEAN_CODE_SMELL_AUDIT.md)
 - [cleanup/LEAN_CODE_SMELL_WORKLIST.md](cleanup/LEAN_CODE_SMELL_WORKLIST.md)
@@ -68,6 +67,7 @@ Completed / superseded packets, retained for historical context only. Do not tre
 
 ### Earlier completed packets
 
+- `archive/MINIMALPRIMES_CYCLE_PERFORMANCE.md` — completed cycle/unmixed performance packet; split landed, helper decomposition finished, heartbeat overrides removed.
 - `archive/ANSWER_05_LEAN_PERFORMANCE_RESEARCH.md` — source-backed Lean performance note; now superseded by the concrete cleanup packets.
 - `archive/NEXT_SESSION_PROMPT.md` — retired follow-up memo from the Prop 1.6 / Corollary 3.4 phase.
 - `archive/COROLLARY_3_4_IMPLEMENTATION.md` — consumed implementation packet for Corollaries 3.4 and 3.7.

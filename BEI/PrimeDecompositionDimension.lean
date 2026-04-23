@@ -1,5 +1,5 @@
 import BEI.PrimeDecomposition
-import BEI.MinimalPrimes
+import BEI.CycleUnmixed
 import Mathlib.RingTheory.KrullDimension.Polynomial
 import Mathlib.RingTheory.KrullDimension.Field
 import Mathlib.RingTheory.Ideal.MinimalPrime.Localization

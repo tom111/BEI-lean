@@ -12,8 +12,8 @@ Current live hotspots from the 2026-04-23 repo state:
 - `BEI/CoveredWalks.lean`, `BEI/PrimeDecompositionDimension.lean`,
   `BEI/PrimeIdeals.lean`, and `BEI/GroebnerBasisSPolynomial.lean`
   remain the main BEI proof-engineering bottlenecks.
-- `BEI/CycleUnmixed.lean` now isolates the old cycle hotspot and should be treated
-  through its dedicated performance packet, not by reopening `BEI/MinimalPrimes.lean`.
+- `BEI/CycleUnmixed.lean` now isolates the old cycle hotspot; its dedicated
+  performance packet is complete and archived.
 - `toMathlib/CohenMacaulay/Polynomial.lean` is now a real maintenance target,
   not just background support code.
 - `BEI/GroebnerDeformation.lean` is large and active, but should receive
@@ -24,17 +24,21 @@ Recommended order:
 
 1. [LEAN_CODE_SMELL_AUDIT.md](/home/tom/BEI-lean/guides/cleanup/LEAN_CODE_SMELL_AUDIT.md)
 2. [LEAN_CODE_SMELL_WORKLIST.md](/home/tom/BEI-lean/guides/cleanup/LEAN_CODE_SMELL_WORKLIST.md)
-3. [MINIMALPRIMES_CYCLE_PERFORMANCE.md](/home/tom/BEI-lean/guides/cleanup/MINIMALPRIMES_CYCLE_PERFORMANCE.md)
-4. [LEAN_PERFORMANCE_TRIAGE.md](/home/tom/BEI-lean/guides/cleanup/LEAN_PERFORMANCE_TRIAGE.md)
-5. [PUBLIC_THEOREM_LAYER.md](/home/tom/BEI-lean/guides/cleanup/PUBLIC_THEOREM_LAYER.md)
-6. [PATH_AND_INTERNAL_VERTEX_API.md](/home/tom/BEI-lean/guides/cleanup/PATH_AND_INTERNAL_VERTEX_API.md)
-7. [MONOMIAL_AND_FINSUPP_API.md](/home/tom/BEI-lean/guides/cleanup/MONOMIAL_AND_FINSUPP_API.md)
-8. [EVALUATION_MAP_API.md](/home/tom/BEI-lean/guides/cleanup/EVALUATION_MAP_API.md)
-9. [EQUIDIM_DECOMPOSITION.md](/home/tom/BEI-lean/guides/cleanup/EQUIDIM_DECOMPOSITION.md)
-10. [CM_SUPPORT_REFACTOR.md](/home/tom/BEI-lean/guides/cleanup/CM_SUPPORT_REFACTOR.md)
-11. [FILE_SPLITTING_PLAN.md](/home/tom/BEI-lean/guides/cleanup/FILE_SPLITTING_PLAN.md)
-12. [LINTER_AND_STYLE_CLEANUP.md](/home/tom/BEI-lean/guides/cleanup/LINTER_AND_STYLE_CLEANUP.md)
-13. [STATUS_AND_CI_HYGIENE.md](/home/tom/BEI-lean/guides/cleanup/STATUS_AND_CI_HYGIENE.md)
+3. [LEAN_PERFORMANCE_TRIAGE.md](/home/tom/BEI-lean/guides/cleanup/LEAN_PERFORMANCE_TRIAGE.md)
+4. [PUBLIC_THEOREM_LAYER.md](/home/tom/BEI-lean/guides/cleanup/PUBLIC_THEOREM_LAYER.md)
+5. [PATH_AND_INTERNAL_VERTEX_API.md](/home/tom/BEI-lean/guides/cleanup/PATH_AND_INTERNAL_VERTEX_API.md)
+6. [MONOMIAL_AND_FINSUPP_API.md](/home/tom/BEI-lean/guides/cleanup/MONOMIAL_AND_FINSUPP_API.md)
+7. [EVALUATION_MAP_API.md](/home/tom/BEI-lean/guides/cleanup/EVALUATION_MAP_API.md)
+8. [EQUIDIM_DECOMPOSITION.md](/home/tom/BEI-lean/guides/cleanup/EQUIDIM_DECOMPOSITION.md)
+9. [CM_SUPPORT_REFACTOR.md](/home/tom/BEI-lean/guides/cleanup/CM_SUPPORT_REFACTOR.md)
+10. [FILE_SPLITTING_PLAN.md](/home/tom/BEI-lean/guides/cleanup/FILE_SPLITTING_PLAN.md)
+11. [LINTER_AND_STYLE_CLEANUP.md](/home/tom/BEI-lean/guides/cleanup/LINTER_AND_STYLE_CLEANUP.md)
+12. [STATUS_AND_CI_HYGIENE.md](/home/tom/BEI-lean/guides/cleanup/STATUS_AND_CI_HYGIENE.md)
+
+Completed:
+
+- [archive/MINIMALPRIMES_CYCLE_PERFORMANCE.md](/home/tom/BEI-lean/guides/archive/MINIMALPRIMES_CYCLE_PERFORMANCE.md)
+  Split `CycleUnmixed`, decomposed the cycle component-count proof, removed the heartbeat overrides, and trimmed `MinimalPrimes` imports.
 
 General rule:
 

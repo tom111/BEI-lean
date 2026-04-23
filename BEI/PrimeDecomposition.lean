@@ -381,7 +381,7 @@ theorem corollary_3_7 (G : SimpleGraph V) (hCyc : IsCycleGraph G)
       ((prop_3_6 (K := K) G).mp hPrime u w (hConn.preconnected u w)).resolve_right huw
     exact le_antisymm (aux hAdj) hn
 
--- Corollary 3.7 unmixed branch (a↔b↔c) is in MinimalPrimes.lean to avoid import cycle.
+-- Corollary 3.7 unmixed branch and the cycle component-count lemmas are in CycleUnmixed.lean.
 -- Corollary 3.7 CM branch (a↔d) is in PrimeDecompositionDimension.lean to avoid import cycle.
 
 end

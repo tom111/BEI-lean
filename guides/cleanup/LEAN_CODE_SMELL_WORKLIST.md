@@ -128,7 +128,8 @@ Done when:
 - `BEI/GroebnerDeformation.lean`
   Profile the three raised declarations before any larger cleanup plan.
 - `BEI/CycleUnmixed.lean`
-  Continue under `MINIMALPRIMES_CYCLE_PERFORMANCE.md`, not in a separate packet.
+  The dedicated `MINIMALPRIMES_CYCLE_PERFORMANCE.md` packet is complete and archived;
+  route any new performance work through `LEAN_PERFORMANCE_TRIAGE.md` unless a fresh packet is needed.
 - `BEI/Corollary3_4.lean`
   Low priority unless the single local raise survives broader support cleanup.
 

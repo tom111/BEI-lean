@@ -218,7 +218,7 @@ The paper's Corollary 3.7 asserts the equivalence of
 
 for a cycle `G` of length `n`. Existing files already handle the (a ↔ b) and
 (a ↔ c) equivalences (`corollary_3_7` in `BEI/PrimeDecomposition.lean`,
-`corollary_3_7_unmixed` in `BEI/MinimalPrimes.lean`) and the equidimensional
+`corollary_3_7_unmixed` in `BEI/CycleUnmixed.lean`) and the equidimensional
 surrogate of the CM branch (`corollary_3_7_equidim` in
 `BEI/PrimeDecompositionDimension.lean`).
 

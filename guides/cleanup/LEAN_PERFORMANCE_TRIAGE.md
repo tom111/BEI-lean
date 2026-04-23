@@ -8,6 +8,11 @@ file-specific `MinimalPrimes` diagnosis into concrete work packages.
 This packet is the repo-level triage plan that should be used after, or alongside,
 the dedicated `MinimalPrimes` cycle packet.
 
+Status note:
+
+- the dedicated `MINIMALPRIMES_CYCLE_PERFORMANCE.md` packet is now complete and archived;
+- use this triage packet for the next repo-level performance targets.
+
 ## Scope
 
 This is a **cleanup and performance packet**, not theorem development.
@@ -43,19 +48,17 @@ Large hotspot files:
 
 Work in this order:
 
-1. `BEI/MinimalPrimes.lean`
-   Reason: worst single heartbeat raise, one giant theorem, clear structural split.
-2. `BEI/Equidim.lean`
+1. `BEI/Equidim.lean`
    Reason: worst file by count and the only hotspot visibly using
    `synthInstance.maxHeartbeats`.
-3. `BEI/PrimeIdeals.lean`
+2. `BEI/PrimeIdeals.lean`
    Reason: eight overrides, explicit note that `aeval_X` unfolding is expensive,
    and likely reusable support lemmas.
-4. `BEI/ClosedGraphs.lean`
+3. `BEI/ClosedGraphs.lean`
    Reason: multiple local raises in a moderate-size file.
-5. `toMathlib/CohenMacaulay/Polynomial.lean`
+4. `toMathlib/CohenMacaulay/Polynomial.lean`
    Reason: repeated raises in a support file that is widely imported.
-6. `BEI/GroebnerDeformation.lean`
+5. `BEI/GroebnerDeformation.lean`
    Reason: fewer raises, but still large and potentially import-heavy.
 
 ## Standard measurement workflow

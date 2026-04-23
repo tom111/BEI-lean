@@ -13,6 +13,7 @@ import BEI.Equidim
 import BEI.PrimeIdeals
 import BEI.PrimeDecomposition
 import BEI.MinimalPrimes
+import BEI.CycleUnmixed
 import BEI.CIIdeals
 import BEI.GroebnerDeformation
 import BEI.Proposition1_6

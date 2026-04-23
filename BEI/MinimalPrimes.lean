@@ -1,10 +1,4 @@
-import BEI.PrimeIdeals
 import BEI.PrimeDecomposition
-import Mathlib.RingTheory.Ideal.MinimalPrime.Basic
-import Mathlib.RingTheory.Ideal.MinimalPrime.Noetherian
-import Mathlib.RingTheory.Polynomial.Basic
-import Mathlib.RingTheory.Artinian.Ring
-import Mathlib.Combinatorics.SimpleGraph.Matching
 
 variable {K : Type*} [Field K]
 variable {V : Type*} [LinearOrder V] [DecidableEq V] [Fintype V]
@@ -42,37 +36,104 @@ Reference: Herzog et al. (2010), Corollary 3.9.
 def IsCutVertexRelative (G : SimpleGraph V) (S : Finset V) (i : V) : Prop :=
   i ∈ S ∧ componentCount G (S.erase i) < componentCount G S
 
+private def evalInlWitness (i : V) : BinomialEdgeVars V → K :=
+  fun v => if v = Sum.inl i then 1 else 0
+
+private def evalPairWitness (u v : V) : BinomialEdgeVars V → K :=
+  fun w => if w = Sum.inl u then 1 else if w = Sum.inr v then 1 else 0
+
+private lemma primeComponent_le_ker_evalInlWitness
+    (G : SimpleGraph V) (S : Finset V) (i : V) (hi : i ∉ S) :
+    primeComponent (K := K) G S ≤ RingHom.ker (MvPolynomial.eval (evalInlWitness (K := K) i)) := by
+  apply Ideal.span_le.mpr
+  intro f hf
+  simp only [SetLike.mem_coe, RingHom.mem_ker]
+  simp only [Set.mem_union, Set.mem_setOf_eq] at hf
+  rcases hf with ⟨s, hsS, rfl | rfl⟩ | ⟨j, k, _, _, rfl⟩
+  · simp only [MvPolynomial.eval_X, evalInlWitness]
+    apply if_neg
+    intro heq
+    have hsi : s = i := by
+      change (Sum.inl s : V ⊕ V) = Sum.inl i at heq
+      exact Sum.inl.inj heq
+    exact hi (hsi ▸ hsS)
+  · simp [evalInlWitness]
+  · simp [x, y, evalInlWitness]
+
+private lemma primeComponent_le_ker_evalPairWitness
+    (G : SimpleGraph V) (S : Finset V) (u v : V) (huS : u ∉ S) (hvS : v ∉ S)
+    (hnotpath : ¬Relation.ReflTransGen (fun a b => G.Adj a b ∧ a ∉ S ∧ b ∉ S) u v) :
+    primeComponent (K := K) G S ≤
+      RingHom.ker (MvPolynomial.eval (evalPairWitness (K := K) u v)) := by
+  have hR_sym_S : Symmetric (fun a b => G.Adj a b ∧ a ∉ S ∧ b ∉ S) :=
+    fun a b ⟨ha, hb, hc⟩ => ⟨G.symm ha, hc, hb⟩
+  apply Ideal.span_le.mpr
+  intro f hf
+  simp only [SetLike.mem_coe, RingHom.mem_ker, Set.mem_union, Set.mem_setOf_eq] at hf ⊢
+  rcases hf with ⟨s, hsS, rfl | rfl⟩ | ⟨j, k, hjk, hjkS, rfl⟩
+  · simp only [MvPolynomial.eval_X, evalPairWitness,
+      if_neg (show (Sum.inl s : BinomialEdgeVars V) ≠ Sum.inl u from
+        fun h => huS (Sum.inl.inj h ▸ hsS)),
+      if_neg (show (Sum.inl s : BinomialEdgeVars V) ≠ Sum.inr v from by simp)]
+  · simp only [MvPolynomial.eval_X, evalPairWitness,
+      if_neg (show (Sum.inr s : BinomialEdgeVars V) ≠ Sum.inl u from by simp),
+      if_neg (show (Sum.inr s : BinomialEdgeVars V) ≠ Sum.inr v from
+        fun h => hvS (Sum.inr.inj h ▸ hsS))]
+  · simp only [x, y, MvPolynomial.eval_sub, MvPolynomial.eval_mul, MvPolynomial.eval_X,
+      evalPairWitness,
+      if_neg (show (Sum.inl j : BinomialEdgeVars V) ≠ Sum.inr v from by simp),
+      if_neg (show (Sum.inr k : BinomialEdgeVars V) ≠ Sum.inl u from by simp),
+      if_neg (show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inr v from by simp),
+      if_neg (show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inl u from by simp)]
+    rcases eq_or_ne j u with hjU | hjU
+    · have hkU : k ≠ u := ne_of_gt (hjU ▸ hjk)
+      simp only [if_pos (congrArg Sum.inl hjU), one_mul,
+        if_neg (show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl u from
+          fun h => hkU (Sum.inl.inj h)), zero_mul, sub_zero]
+      rcases eq_or_ne k v with hkV | hkV
+      · rw [hjU, hkV] at hjkS
+        exact absurd hjkS.2.2 hnotpath
+      · simp [show (Sum.inr k : BinomialEdgeVars V) ≠ Sum.inr v from
+          fun h => hkV (Sum.inr.inj h)]
+    · simp only [if_neg (show (Sum.inl j : BinomialEdgeVars V) ≠ Sum.inl u from
+        fun h => hjU (Sum.inl.inj h)), zero_mul, zero_sub, neg_eq_zero]
+      rcases eq_or_ne k u with hkU | hkU
+      · simp only [if_pos (congrArg Sum.inl hkU), one_mul]
+        rcases eq_or_ne j v with hjV | hjV
+        · rw [hkU, hjV] at hjkS
+          exact absurd (Relation.ReflTransGen.symmetric hR_sym_S hjkS.2.2) hnotpath
+        · simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr v from
+            fun h => hjV (Sum.inr.inj h)]
+      · simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl u from
+          fun h => hkU (Sum.inl.inj h)]
+
+private lemma evalPairWitness_cross_eq_one (u v : V) (huv : u ≠ v) :
+    MvPolynomial.eval (evalPairWitness (K := K) u v) (x u * y v - x v * y u) = 1 := by
+  simp only [x, y, MvPolynomial.eval_sub, MvPolynomial.eval_mul, MvPolynomial.eval_X]
+  have h1 : evalPairWitness (K := K) u v (Sum.inl u) = 1 := by
+    simp [evalPairWitness]
+  have h2 : evalPairWitness (K := K) u v (Sum.inr v) = 1 := by
+    simp [evalPairWitness, show (Sum.inr v : BinomialEdgeVars V) ≠ Sum.inl u from by simp]
+  have h3 : evalPairWitness (K := K) u v (Sum.inl v) = 0 := by
+    simp [evalPairWitness, show (Sum.inl v : BinomialEdgeVars V) ≠ Sum.inl u from
+      fun h => huv (Sum.inl.inj h).symm, show (Sum.inl v : BinomialEdgeVars V) ≠ Sum.inr v from
+      by simp]
+  have h4 : evalPairWitness (K := K) u v (Sum.inr u) = 0 := by
+    simp [evalPairWitness, show (Sum.inr u : BinomialEdgeVars V) ≠ Sum.inl u from by simp,
+      show (Sum.inr u : BinomialEdgeVars V) ≠ Sum.inr v from fun h => huv (Sum.inr.inj h)]
+  simp [h1, h2, h3, h4]
+
 /-! ## Key sub-lemma: variables outside S are not in P_S -/
 
 /-- If `i ∉ S`, then `X(Sum.inl i) ∉ primeComponent G S`.
 Proved by evaluating at the point `x_i = 1`, everything else `= 0`. -/
 lemma prop_3_8_var_not_mem (G : SimpleGraph V) (S : Finset V) (i : V) (hi : i ∉ S) :
     X (Sum.inl i) ∉ primeComponent (K := K) G S := by
-  -- Evaluate at σ: x_i ↦ 1, everything else ↦ 0
-  let σ : BinomialEdgeVars V → K := fun v => if v = Sum.inl i then 1 else 0
-  -- Every generator of primeComponent G S evaluates to 0 under σ
-  have hker : primeComponent (K := K) G S ≤ RingHom.ker (MvPolynomial.eval σ) := by
-    apply Ideal.span_le.mpr
-    intro f hf
-    simp only [SetLike.mem_coe, RingHom.mem_ker]
-    simp only [Set.mem_union, Set.mem_setOf_eq] at hf
-    rcases hf with ⟨s, hsS, rfl | rfl⟩ | ⟨j, k, _, _, rfl⟩
-    · -- X(Sum.inl s): s ∈ S but i ∉ S, so s ≠ i
-      simp only [MvPolynomial.eval_X, σ]
-      apply if_neg
-      intro heq
-      have hsi : s = i := by
-        change (Sum.inl s : V ⊕ V) = Sum.inl i at heq; exact Sum.inl.inj heq
-      exact hi (hsi ▸ hsS)
-    · -- X(Sum.inr s): different constructor from Sum.inl
-      simp [σ]
-    · -- x j * y k - x k * y j: y-variables all evaluate to 0
-      simp [x, y, σ]
-  -- Contradiction: if X(inl i) ∈ primeComponent G S, eval σ gives 1 = 0
   intro hmem
-  have h0 : MvPolynomial.eval σ (X (Sum.inl i) : MvPolynomial (BinomialEdgeVars V) K) = 0 :=
-    RingHom.mem_ker.mp (hker hmem)
-  simp [σ] at h0
+  have h0 : MvPolynomial.eval (evalInlWitness (K := K) i)
+      (X (Sum.inl i) : MvPolynomial (BinomialEdgeVars V) K) = 0 :=
+    RingHom.mem_ker.mp (primeComponent_le_ker_evalInlWitness (K := K) G S i hi hmem)
+  simp [evalInlWitness] at h0
 
 /-! ## Proposition 3.8: Containment of prime ideals -/
 
@@ -102,8 +163,6 @@ private lemma prop_3_8_sameComponent_preserved
   -- Symmetry helpers
   have hR_sym_T : Symmetric (fun a b => G.Adj a b ∧ a ∉ T ∧ b ∉ T) :=
     fun a b ⟨ha, hb, hc⟩ => ⟨G.symm ha, hc, hb⟩
-  have hR_sym_S : Symmetric (fun a b => G.Adj a b ∧ a ∉ S ∧ b ∉ S) :=
-    fun a b ⟨ha, hb, hc⟩ => ⟨G.symm ha, hc, hb⟩
   -- x_u * y_v - x_v * y_u ∈ P_T
   have hmem_T : x u * y v - x v * y u ∈ primeComponent (K := K) G T := by
     rcases lt_or_gt_of_ne huv with hlt | hlt
@@ -115,74 +174,8 @@ private lemma prop_3_8_sameComponent_preserved
       have hneg := (primeComponent (K := K) G T).neg_mem hgen
       rwa [neg_sub] at hneg
   have hmem_S := hle hmem_T
-  -- Evaluation map: x_u ↦ 1, y_v ↦ 1, everything else ↦ 0
-  let σ : BinomialEdgeVars V → K :=
-    fun w => if w = Sum.inl u then 1 else if w = Sum.inr v then 1 else 0
-  -- Every generator of P_S evaluates to 0 under σ
-  have hker : primeComponent (K := K) G S ≤ RingHom.ker (MvPolynomial.eval σ) := by
-    apply Ideal.span_le.mpr
-    intro f hf
-    simp only [SetLike.mem_coe, RingHom.mem_ker, Set.mem_union, Set.mem_setOf_eq] at hf ⊢
-    rcases hf with ⟨s, hsS, rfl | rfl⟩ | ⟨j, k, hjk, hjkS, rfl⟩
-    · -- X(inl s): s ≠ u since s ∈ S but u ∉ S
-      simp only [MvPolynomial.eval_X, σ,
-        if_neg (show (Sum.inl s : BinomialEdgeVars V) ≠ Sum.inl u from
-          fun h => huS (Sum.inl.inj h ▸ hsS)),
-        if_neg (show (Sum.inl s : BinomialEdgeVars V) ≠ Sum.inr v from by simp)]
-    · -- X(inr s): s ≠ v since s ∈ S but v ∉ S
-      simp only [MvPolynomial.eval_X, σ,
-        if_neg (show (Sum.inr s : BinomialEdgeVars V) ≠ Sum.inl u from by simp),
-        if_neg (show (Sum.inr s : BinomialEdgeVars V) ≠ Sum.inr v from
-          fun h => hvS (Sum.inr.inj h ▸ hsS))]
-    · -- x_j * y_k - x_k * y_j: eval = 0 (SameComponent G S j k cannot give path u→v)
-      simp only [x, y, MvPolynomial.eval_sub, MvPolynomial.eval_mul, MvPolynomial.eval_X, σ,
-        if_neg (show (Sum.inl j : BinomialEdgeVars V) ≠ Sum.inr v from by simp),
-        if_neg (show (Sum.inr k : BinomialEdgeVars V) ≠ Sum.inl u from by simp),
-        if_neg (show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inr v from by simp),
-        if_neg (show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inl u from by simp)]
-      -- Goal: (if Sum.inl j = Sum.inl u then 1 else 0) * (if Sum.inr k = Sum.inr v then 1 else 0)
-      --     - (if Sum.inl k = Sum.inl u then 1 else 0) * (if Sum.inr j = Sum.inr v then 1 else 0) = 0
-      rcases eq_or_ne j u with hjU | hjU
-      · -- j = u: k ≠ u (since j < k), so second product = 0
-        have hkU : k ≠ u := ne_of_gt (hjU ▸ hjk)
-        simp only [if_pos (congrArg Sum.inl hjU), one_mul,
-                   if_neg (show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl u from
-                     fun h => hkU (Sum.inl.inj h)), zero_mul, sub_zero]
-        -- Goal: (if Sum.inr k = Sum.inr v then 1 else 0) = 0
-        rcases eq_or_ne k v with hkV | hkV
-        · rw [hjU, hkV] at hjkS; exact absurd hjkS.2.2 hnotpath
-        · simp [show (Sum.inr k : BinomialEdgeVars V) ≠ Sum.inr v from
-            fun h => hkV (Sum.inr.inj h)]
-      · -- j ≠ u: first product = 0
-        simp only [if_neg (show (Sum.inl j : BinomialEdgeVars V) ≠ Sum.inl u from
-                     fun h => hjU (Sum.inl.inj h)),
-                   zero_mul, zero_sub, neg_eq_zero]
-        -- Goal: (if Sum.inl k = Sum.inl u then 1 else 0) * (if Sum.inr j = Sum.inr v then 1 else 0) = 0
-        rcases eq_or_ne k u with hkU | hkU
-        · simp only [if_pos (congrArg Sum.inl hkU), one_mul]
-          -- Goal: (if Sum.inr j = Sum.inr v then 1 else 0) = 0
-          rcases eq_or_ne j v with hjV | hjV
-          · rw [hkU, hjV] at hjkS
-            exact absurd (Relation.ReflTransGen.symmetric hR_sym_S hjkS.2.2) hnotpath
-          · simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr v from
-              fun h => hjV (Sum.inr.inj h)]
-        · simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl u from
-            fun h => hkU (Sum.inl.inj h)]
-  -- Contradiction: eval σ (x_u * y_v - x_v * y_u) = 1, but it's in the kernel (= 0)
-  have heval : MvPolynomial.eval σ (x u * y v - x v * y u) = 1 := by
-    simp only [x, y, MvPolynomial.eval_sub, MvPolynomial.eval_mul, MvPolynomial.eval_X]
-    have h1 : σ (Sum.inl u) = 1 := by simp [σ]
-    have h2 : σ (Sum.inr v) = 1 := by
-      simp [σ, show (Sum.inr v : BinomialEdgeVars V) ≠ Sum.inl u from by simp]
-    have h3 : σ (Sum.inl v) = 0 := by
-      simp [σ, show (Sum.inl v : BinomialEdgeVars V) ≠ Sum.inl u from
-              fun h => huv (Sum.inl.inj h).symm,
-            show (Sum.inl v : BinomialEdgeVars V) ≠ Sum.inr v from by simp]
-    have h4 : σ (Sum.inr u) = 0 := by
-      simp [σ, show (Sum.inr u : BinomialEdgeVars V) ≠ Sum.inl u from by simp,
-            show (Sum.inr u : BinomialEdgeVars V) ≠ Sum.inr v from
-              fun h => huv (Sum.inr.inj h)]
-    simp [h1, h2, h3, h4]
+  have hker := primeComponent_le_ker_evalPairWitness (K := K) G S u v huS hvS hnotpath
+  have heval := evalPairWitness_cross_eq_one (K := K) u v huv
   exact one_ne_zero (heval.symm.trans (RingHom.mem_ker.mp (hker hmem_S)))
 
 /--
@@ -546,374 +539,5 @@ theorem cutVertex_iff_componentCount (G : SimpleGraph V) (S : Finset V) (i : V) 
     IsCutVertexRelative G S i ↔
     i ∈ S ∧ componentCount G (S.erase i) < componentCount G S := by
   rfl
-
-/-- Transfer a G-walk whose support lies in S to reachability in G.induce S. -/
-private lemma reachable_induce_of_walk (G : SimpleGraph V) (S : Set V)
-    {a b : V} (w : G.Walk a b) (hsup : ∀ x ∈ w.support, x ∈ S) :
-    (G.induce S).Reachable ⟨a, hsup a w.start_mem_support⟩ ⟨b, hsup b w.end_mem_support⟩ := by
-  induction w with
-  | nil => exact SimpleGraph.Reachable.refl _
-  | @cons u v w hadj rest ih =>
-    simp only [SimpleGraph.Walk.support_cons, List.mem_cons] at hsup
-    have hsup' : ∀ x ∈ rest.support, x ∈ S := fun x hx => hsup x (Or.inr hx)
-    exact (SimpleGraph.Adj.reachable (show (G.induce S).Adj ⟨u, hsup u (Or.inl rfl)⟩
-      ⟨v, hsup v (Or.inr rest.start_mem_support)⟩ from hadj)).trans (ih hsup')
-
-/-! ## Corollary 3.7 unmixed branch -/
-
--- Cycle walk transfer through IsCycles API
-set_option maxHeartbeats 800000 in
-/-- In a cycle graph, the induced subgraph on `V \ {v}` is preconnected.
-Uses the IsCycles API: obtain a Hamiltonian cycle walk at v, take its tail (a path visiting
-every other vertex), then transfer initial segments into the induced subgraph. -/
-private lemma cycle_induce_preconnected (G : SimpleGraph V) (hCyc : IsCycleGraph G)
-    (v : V) (_hn : 3 ≤ Fintype.card V) :
-    (G.induce {x : V | x ∉ ({v} : Finset V)}).Preconnected := by
-  classical
-  obtain ⟨hConn, hDeg⟩ := hCyc
-  obtain ⟨n1, _, _, hadj1, _, _⟩ := hDeg v
-  have hn1v : n1 ≠ v := G.ne_of_adj hadj1.symm
-  set S : Set V := {x : V | x ∉ ({v} : Finset V)} with hS_def
-  set G' := G.induce S
-  have hn1S : n1 ∈ S := by simp [S, hn1v]
-  -- Bridge: IsCycleGraph → IsCycles
-  have hcycles : G.IsCycles := by
-    intro w hw; obtain ⟨u', w', huw, huv, hvw, honly'⟩ := hDeg w
-    apply Set.ncard_eq_two.mpr; refine ⟨u', w', huw, ?_⟩
-    ext z; simp only [SimpleGraph.neighborSet]
-    exact ⟨fun hz => honly' z hz, fun hz => hz.elim (· ▸ huv) (· ▸ hvw)⟩
-  -- Get cycle walk based at v visiting all vertices
-  have hv_supp : v ∈ (G.connectedComponentMk v).supp := by
-    simp [SimpleGraph.ConnectedComponent.supp]
-  obtain ⟨c, hc_cycle, hc_verts⟩ :=
-    hcycles.exists_cycle_toSubgraph_verts_eq_connectedComponentSupp
-      hv_supp ⟨n1, hadj1⟩
-  have htail_path := hc_cycle.isPath_tail
-  have hc_snd_ne : c.snd ≠ v := (G.ne_of_adj (c.adj_snd hc_cycle.not_nil)).symm
-  have hc_snd_S : c.snd ∈ S := by simp [S, hc_snd_ne]
-  -- For any t ∈ S, build a walk from c.snd to t in G' via takeUntil on c.tail
-  suffices hsuff : ∀ (t : V) (ht : t ∈ S), G'.Reachable ⟨c.snd, hc_snd_S⟩ ⟨t, ht⟩ by
-    intro ⟨a, ha⟩ ⟨b, hb⟩; exact (hsuff a ha).symm.trans (hsuff b hb)
-  intro t ht
-  have ht_ne : t ≠ v := by intro h; simp [S, h] at ht
-  have ht_supp : t ∈ c.support := by
-    rw [← SimpleGraph.Walk.mem_verts_toSubgraph, hc_verts]
-    simp only [SimpleGraph.ConnectedComponent.mem_supp_iff, SimpleGraph.ConnectedComponent.eq]
-    exact hConn.preconnected t v
-  have ht_tail : t ∈ c.tail.support := by
-    rw [c.support_tail_of_not_nil hc_cycle.not_nil]
-    have h_cons := (List.cons_head_tail c.support_ne_nil).symm
-    rw [SimpleGraph.Walk.head_support c] at h_cons; rw [h_cons] at ht_supp
-    exact (List.mem_cons.mp ht_supp).resolve_left ht_ne
-  -- The walk from c.snd to t avoids v (endpoint avoidance on the path c.tail)
-  let w := c.tail.takeUntil t ht_tail
-  have hv_not : v ∉ w.support :=
-    SimpleGraph.Walk.endpoint_notMem_support_takeUntil htail_path ht_tail (Ne.symm ht_ne)
-  have hw_S : ∀ x ∈ w.support, x ∈ S := by
-    intro x hx; simp only [S, Set.mem_setOf_eq, Finset.mem_singleton]
-    exact fun h => hv_not (h ▸ hx)
-  exact reachable_induce_of_walk G S w hw_S
-
-/-- Removing a single vertex from a cycle graph gives a connected induced subgraph.
-Therefore `componentCount G {v} = 1`. -/
-theorem cycle_componentCount_singleton (G : SimpleGraph V) (hCyc : IsCycleGraph G)
-    (v : V) (hn : 3 ≤ Fintype.card V) :
-    componentCount G {v} = 1 := by
-  classical
-  unfold componentCount
-  set G' := G.induce {x : V | x ∉ ({v} : Finset V)}
-  obtain ⟨n1, _, _, _, _, _⟩ := hCyc.2 v
-  have hn1v : n1 ≠ v := G.ne_of_adj (by assumption : G.Adj v n1).symm
-  have hn1S : n1 ∈ ({x : V | x ∉ ({v} : Finset V)} : Set V) := by simp [hn1v]
-  have hpc := cycle_induce_preconnected G hCyc v hn
-  haveI := hpc.subsingleton_connectedComponent
-  exact Nat.card_of_subsingleton (G'.connectedComponentMk ⟨n1, hn1S⟩)
-
-/-- On a cycle with n ≥ 4 vertices, there exist two non-adjacent vertices. -/
-theorem cycle_exists_nonadj (G : SimpleGraph V) (hCyc : IsCycleGraph G)
-    (hn : 4 ≤ Fintype.card V) :
-    ∃ u w : V, u ≠ w ∧ ¬G.Adj u w := by
-  have hDeg := hCyc.2
-  -- Pick any vertex v
-  obtain ⟨v⟩ := hCyc.1.nonempty
-  obtain ⟨n1, n2, hn12, hadj1, hadj2, honly⟩ := hDeg v
-  -- {v, n1, n2} has 3 elements; since |V| ≥ 4, there exists w ∉ {v, n1, n2}
-  have h3 : ({v, n1, n2} : Finset V).card ≤ 3 := Finset.card_le_three
-  have huniv : (Finset.univ : Finset V).card = Fintype.card V := Finset.card_univ
-  have : ∃ w : V, w ∉ ({v, n1, n2} : Finset V) := by
-    by_contra h; push_neg at h
-    have : Finset.univ ⊆ {v, n1, n2} := fun x _ => h x
-    linarith [Finset.card_le_card this]
-  obtain ⟨w, hw⟩ := this
-  simp only [Finset.mem_insert, Finset.mem_singleton, not_or] at hw
-  -- w ≠ v and w is not adjacent to v (since v's only neighbors are n1 and n2)
-  exact ⟨v, w, Ne.symm hw.1, fun hadj => (honly w hadj).elim hw.2.1 hw.2.2⟩
-
-set_option maxHeartbeats 4000000 in
-/-- Removing two non-adjacent vertices from a cycle gives exactly 2 components. -/
-theorem cycle_componentCount_pair_nonadj (G : SimpleGraph V) (hCyc : IsCycleGraph G)
-    (u w : V) (hne : u ≠ w) (hnadj : ¬G.Adj u w) (hn : 4 ≤ Fintype.card V) :
-    componentCount G {u, w} = 2 := by
-  classical
-  obtain ⟨hConn, hDeg⟩ := hCyc
-  set S : Set V := {x : V | x ∉ ({u, w} : Finset V)} with hS_def
-  set G' := G.induce S
-  unfold componentCount
-  -- Bridge: IsCycleGraph → IsCycles
-  have hcycles : G.IsCycles := by
-    intro v _; obtain ⟨u', w', huw, huv, hvw, honly'⟩ := hDeg v
-    apply Set.ncard_eq_two.mpr; refine ⟨u', w', huw, ?_⟩
-    ext z; simp only [SimpleGraph.neighborSet]
-    exact ⟨fun hz => honly' z hz, fun hz => hz.elim (· ▸ huv) (· ▸ hvw)⟩
-  haveI : LocallyFinite G := fun _ => Fintype.ofFinite _
-  -- Hamiltonian cycle walk at u
-  obtain ⟨n1, n2, hn12, hadj1, hadj2, honly_u⟩ := hDeg u
-  obtain ⟨c, hc_cycle, hc_verts⟩ :=
-    hcycles.exists_cycle_toSubgraph_verts_eq_connectedComponentSupp
-      (show u ∈ (G.connectedComponentMk u).supp by
-        simp [SimpleGraph.ConnectedComponent.supp]) ⟨n1, hadj1⟩
-  -- Every vertex is on the cycle
-  have hmem_cycle : ∀ v : V, v ∈ c.support := by
-    intro v; rw [← SimpleGraph.Walk.mem_verts_toSubgraph, hc_verts]
-    simp only [SimpleGraph.ConnectedComponent.mem_supp_iff, SimpleGraph.ConnectedComponent.eq]
-    exact hConn.preconnected v u
-  -- Every G-edge is an edge of c (key: IsCycles + Hamiltonian)
-  have hedge_of_adj : ∀ a b : V, G.Adj a b → s(a, b) ∈ c.edges := by
-    intro a b hab
-    rw [← SimpleGraph.Walk.adj_toSubgraph_iff_mem_edges]
-    exact (hc_cycle.adj_toSubgraph_iff_of_isCycles hcycles
-      (c.mem_verts_toSubgraph.mpr (hmem_cycle a)) b).mpr hab
-  -- c.tail is a path from c.snd to u
-  have htail_path := hc_cycle.isPath_tail
-  have hc_not_nil := hc_cycle.not_nil
-  have hc_snd_adj : G.Adj u c.snd := c.adj_snd hc_not_nil
-  have hc_snd_ne_u : c.snd ≠ u := (G.ne_of_adj hc_snd_adj).symm
-  have hc_snd_ne_w : c.snd ≠ w := fun h => hnadj (h ▸ hc_snd_adj)
-  have hc_snd_S : c.snd ∈ S := by
-    simp only [S, Set.mem_setOf_eq, Finset.mem_insert, Finset.mem_singleton, not_or]
-    exact ⟨hc_snd_ne_u, hc_snd_ne_w⟩
-  -- Any vertex ≠ u is on c.tail
-  have hmem_tail_of_ne_u : ∀ v : V, v ≠ u → v ∈ c.tail.support := by
-    intro v hvu
-    have hv_supp := hmem_cycle v
-    rw [← c.cons_support_tail hc_not_nil] at hv_supp
-    exact (List.mem_cons.mp hv_supp).resolve_left hvu
-  have hw_tail : w ∈ c.tail.support := hmem_tail_of_ne_u w hne.symm
-  -- Split c.tail at w: arc1 = c.snd → ... → w, arc2 = w → ... → u
-  set arc1 := c.tail.takeUntil w hw_tail
-  set arc2 := c.tail.dropUntil w hw_tail
-  have harc1_path : arc1.IsPath := htail_path.takeUntil hw_tail
-  have harc2_path : arc2.IsPath := htail_path.dropUntil hw_tail
-  have htail_spec : arc1.append arc2 = c.tail := c.tail.take_spec hw_tail
-  have hu_not_arc1 : u ∉ arc1.support :=
-    SimpleGraph.Walk.endpoint_notMem_support_takeUntil htail_path hw_tail hne
-  -- Edge decomposition
-  have htail_edges : c.tail.edges = arc1.edges ++ arc2.edges := by
-    rw [← htail_spec]; exact SimpleGraph.Walk.edges_append arc1 arc2
-  -- Every G-edge between surviving vertices is on an arc
-  have hedge_on_arc : ∀ a b : V, a ∈ S → b ∈ S → G.Adj a b →
-      s(a, b) ∈ arc1.edges ∨ s(a, b) ∈ arc2.edges := by
-    intro a b haS hbS hab
-    have hab_c := hedge_of_adj a b hab
-    rw [← c.cons_tail_eq hc_not_nil, SimpleGraph.Walk.edges_cons] at hab_c
-    have ha_ne_u : a ≠ u := by
-      simp only [S, Set.mem_setOf_eq, Finset.mem_insert, Finset.mem_singleton, not_or] at haS
-      exact haS.1
-    rcases List.mem_cons.mp hab_c with h | h
-    · exfalso
-      have hb_ne_u : b ≠ u := by
-        simp only [S, Set.mem_setOf_eq, Finset.mem_insert, Finset.mem_singleton, not_or] at hbS
-        exact hbS.1
-      have hu_mem : u ∈ (s(a, b) : Sym2 V) := h ▸ Sym2.mem_mk_left u c.snd
-      rcases Sym2.mem_iff.mp hu_mem with rfl | rfl
-      · exact ha_ne_u rfl
-      · exact hb_ne_u rfl
-    · exact List.mem_append.mp (htail_edges ▸ h)
-  -- Arc2 has a surviving vertex: arc2.snd
-  have harc2_not_nil : ¬arc2.Nil := fun h => hne.symm (SimpleGraph.Walk.Nil.eq h)
-  have harc2_snd_adj : G.Adj w arc2.snd := arc2.adj_snd harc2_not_nil
-  have harc2_snd_ne_u : arc2.snd ≠ u := fun h => hnadj (h ▸ harc2_snd_adj).symm
-  have harc2_snd_ne_w : arc2.snd ≠ w := (G.ne_of_adj harc2_snd_adj).symm
-  have harc2_snd_S : arc2.snd ∈ S := by
-    simp only [S, Set.mem_setOf_eq, Finset.mem_insert, Finset.mem_singleton, not_or]
-    exact ⟨harc2_snd_ne_u, harc2_snd_ne_w⟩
-  have harc2_snd_mem : arc2.snd ∈ arc2.support :=
-    List.mem_of_mem_tail (arc2.snd_mem_tail_support harc2_not_nil)
-  -- Every surviving vertex is on arc1.support or arc2.support
-  have hmem_arc : ∀ v : V, v ∈ S → v ∈ arc1.support ∨ v ∈ arc2.support := by
-    intro v hv
-    have hv_ne_u : v ≠ u := by
-      simp only [S, Set.mem_setOf_eq, Finset.mem_insert, Finset.mem_singleton, not_or] at hv
-      exact hv.1
-    have hv_tail := hmem_tail_of_ne_u v hv_ne_u
-    rw [← htail_spec, SimpleGraph.Walk.support_append] at hv_tail
-    rcases List.mem_append.mp hv_tail with h | h
-    · exact Or.inl h
-    · exact Or.inr (List.tail_subset _ h)
-  -- Arc1 connectivity: surviving arc1 vertices are G'-reachable from c.snd
-  have harc1_reach : ∀ (t : V), t ∈ arc1.support → t ≠ w → (ht : t ∈ S) →
-      G'.Reachable ⟨c.snd, hc_snd_S⟩ ⟨t, ht⟩ := by
-    intro t ht htw htS
-    have hw_not : w ∉ (arc1.takeUntil t ht).support :=
-      SimpleGraph.Walk.endpoint_notMem_support_takeUntil harc1_path ht htw.symm
-    have hu_not : u ∉ (arc1.takeUntil t ht).support := fun hu =>
-      hu_not_arc1 (SimpleGraph.Walk.support_takeUntil_subset arc1 ht hu)
-    exact reachable_induce_of_walk G S (arc1.takeUntil t ht) fun x hx => by
-      simp only [S, Set.mem_setOf_eq, Finset.mem_insert, Finset.mem_singleton, not_or]
-      exact ⟨fun hxu => hu_not (hxu ▸ hx), fun hxw => hw_not (hxw ▸ hx)⟩
-  -- Arc2 connectivity: surviving arc2 vertices are G'-reachable from arc2.snd
-  have harc2_reach : ∀ (t : V), t ∈ arc2.support → t ≠ w → t ≠ u → (ht : t ∈ S) →
-      G'.Reachable ⟨arc2.snd, harc2_snd_S⟩ ⟨t, ht⟩ := by
-    intro t ht htw htu htS
-    have harc2_tail_path : arc2.tail.IsPath := by
-      rw [← SimpleGraph.Walk.cons_tail_eq arc2 harc2_not_nil] at harc2_path
-      exact harc2_path.of_cons
-    have ht_tail : t ∈ arc2.tail.support := by
-      have := arc2.cons_support_tail harc2_not_nil
-      rw [← this] at ht
-      exact (List.mem_cons.mp ht).resolve_left htw
-    have hw_not_tail : w ∉ arc2.tail.support := by
-      intro hmem
-      have := harc2_path.support_nodup
-      rw [← arc2.cons_support_tail harc2_not_nil] at this
-      exact (List.nodup_cons.mp this).1 hmem
-    have hu_not : u ∉ (arc2.tail.takeUntil t ht_tail).support :=
-      SimpleGraph.Walk.endpoint_notMem_support_takeUntil harc2_tail_path ht_tail htu.symm
-    have hw_not : w ∉ (arc2.tail.takeUntil t ht_tail).support := fun hw =>
-      hw_not_tail (SimpleGraph.Walk.support_takeUntil_subset arc2.tail ht_tail hw)
-    exact reachable_induce_of_walk G S (arc2.tail.takeUntil t ht_tail) fun x hx => by
-      simp only [S, Set.mem_setOf_eq, Finset.mem_insert, Finset.mem_singleton, not_or]
-      exact ⟨fun hxu => hu_not (hxu ▸ hx), fun hxw => hw_not (hxw ▸ hx)⟩
-  -- Arc disjointness: arc1.support ∩ arc2.support = {w}
-  have harc_disjoint : ∀ v : V, v ∈ arc1.support → v ∈ arc2.support → v = w := by
-    intro v hv1 hv2
-    by_contra hvw
-    have hnodup := htail_path.support_nodup
-    rw [← htail_spec, SimpleGraph.Walk.support_append] at hnodup
-    have hv_arc2_tail : v ∈ arc2.support.tail := by
-      rw [← arc2.support_tail_of_not_nil harc2_not_nil]
-      have := arc2.cons_support_tail harc2_not_nil
-      rw [← this] at hv2
-      exact (List.mem_cons.mp hv2).resolve_left hvw
-    exact List.disjoint_of_nodup_append hnodup hv1 hv_arc2_tail
-  -- Cross-edge classification
-  have hno_cross_edge : ∀ (a b : V), a ∈ S → b ∈ S → G.Adj a b →
-      (a ∈ arc1.support ∧ b ∈ arc1.support) ∨ (a ∈ arc2.support ∧ b ∈ arc2.support) := by
-    intro a b haS hbS hab
-    rcases hedge_on_arc a b haS hbS hab with h | h
-    · exact Or.inl ⟨SimpleGraph.Walk.fst_mem_support_of_mem_edges arc1 h,
-                     SimpleGraph.Walk.snd_mem_support_of_mem_edges arc1 h⟩
-    · exact Or.inr ⟨SimpleGraph.Walk.fst_mem_support_of_mem_edges arc2 h,
-                     SimpleGraph.Walk.snd_mem_support_of_mem_edges arc2 h⟩
-  -- Key membership
-  have hc_snd_arc1 : c.snd ∈ arc1.support := arc1.start_mem_support
-  have hc_snd_not_arc2 : c.snd ∉ arc2.support :=
-    fun h => hc_snd_ne_w (harc_disjoint c.snd hc_snd_arc1 h)
-  have harc2_snd_not_arc1 : arc2.snd ∉ arc1.support :=
-    fun h => harc2_snd_ne_w (harc_disjoint arc2.snd h harc2_snd_mem)
-  -- Separation: c.snd and arc2.snd in different components
-  have hsep : ¬G'.Reachable ⟨c.snd, hc_snd_S⟩ ⟨arc2.snd, harc2_snd_S⟩ := by
-    intro ⟨p⟩
-    suffices h : ∀ (a b : S) (q : G'.Walk a b),
-        (a : V) ∈ arc1.support → (a : V) ∉ arc2.support → (b : V) ∈ arc1.support by
-      exact harc2_snd_not_arc1 (h _ _ p hc_snd_arc1 hc_snd_not_arc2)
-    intro a b q
-    induction q with
-    | nil => intro ha _; exact ha
-    | @cons x y z hadj_xy rest ih =>
-      intro hx_arc1 hx_not_arc2
-      apply ih
-      · rcases hno_cross_edge x y x.2 y.2 hadj_xy with ⟨_, hy1⟩ | ⟨hx2, _⟩
-        · exact hy1
-        · exact absurd hx2 hx_not_arc2
-      · intro hy_arc2
-        rcases hno_cross_edge x y x.2 y.2 hadj_xy with ⟨_, hy1⟩ | ⟨hx2, _⟩
-        · have hyw := harc_disjoint y hy1 hy_arc2
-          have hyS := y.2
-          simp only [S, Set.mem_setOf_eq, Finset.mem_insert, Finset.mem_singleton,
-            not_or] at hyS
-          exact hyS.2 hyw
-        · exact hx_not_arc2 hx2
-  -- Assemble: Nat.card = 2
-  set comp1 := G'.connectedComponentMk ⟨c.snd, hc_snd_S⟩
-  set comp2 := G'.connectedComponentMk ⟨arc2.snd, harc2_snd_S⟩
-  rw [Nat.card_eq_two_iff]
-  refine ⟨comp1, comp2, fun heq => hsep (SimpleGraph.ConnectedComponent.exact heq), ?_⟩
-  ext comp
-  simp only [Set.mem_insert_iff, Set.mem_singleton_iff, Set.mem_univ, iff_true]
-  obtain ⟨⟨v, hv⟩, rfl⟩ := Quot.exists_rep comp
-  rcases hmem_arc v hv with harc | harc
-  · have hvw : v ≠ w := by
-      simp only [S, Set.mem_setOf_eq, Finset.mem_insert, Finset.mem_singleton, not_or] at hv
-      exact hv.2
-    exact Or.inl (SimpleGraph.ConnectedComponent.sound (harc1_reach v harc hvw hv).symm)
-  · have hvw : v ≠ w := by
-      simp only [S, Set.mem_setOf_eq, Finset.mem_insert, Finset.mem_singleton, not_or] at hv
-      exact hv.2
-    have hvu : v ≠ u := by
-      simp only [S, Set.mem_setOf_eq, Finset.mem_insert, Finset.mem_singleton, not_or] at hv
-      exact hv.1
-    exact Or.inr (SimpleGraph.ConnectedComponent.sound (harc2_reach v harc hvw hvu hv).symm)
-/--
-**Corollary 3.7 (unmixed branch)**: For a cycle G with n ≥ 3 vertices,
-  `J_G` is prime ↔ `J_G` is unmixed.
-
-Reference: Herzog et al. (2010), Corollary 3.7 (a)↔(b)↔(c).
--/
-theorem corollary_3_7_unmixed (G : SimpleGraph V) (hCyc : IsCycleGraph G)
-    (hn : 3 ≤ Fintype.card V) :
-    (binomialEdgeIdeal (K := K) G).IsPrime ↔
-    (binomialEdgeIdeal (K := K) G).IsUnmixed := by
-  constructor
-  · exact Ideal.IsPrime.isUnmixed
-  · intro hunmixed
-    rw [← corollary_3_7 (K := K) G hCyc hn]
-    by_contra h4
-    have hn4 : 4 ≤ Fintype.card V := by omega
-    obtain ⟨u, w, huw, hnadj⟩ := cycle_exists_nonadj G hCyc hn4
-    have hP0_min : primeComponent (K := K) G ∅ ∈
-        (binomialEdgeIdeal (K := K) G).minimalPrimes := by
-      exact (corollary_3_9 (K := K) G ∅ hCyc.1).mpr (Or.inl rfl)
-    have hPuw_min : primeComponent (K := K) G {u, w} ∈
-        (binomialEdgeIdeal (K := K) G).minimalPrimes := by
-      apply (corollary_3_9 (K := K) G {u, w} hCyc.1).mpr
-      right; intro i hi
-      rw [cutVertex_iff_componentCount]
-      refine ⟨hi, ?_⟩
-      rw [cycle_componentCount_pair_nonadj G hCyc u w huw hnadj hn4]
-      -- c({u,w}.erase i) = 1 since i ∈ {u,w} means {u,w}\{i} is a singleton
-      -- and c(singleton) = 1 by cycle_componentCount_singleton
-      simp only [Finset.mem_insert, Finset.mem_singleton] at hi
-      -- i ∈ {u, w} so either i = u or i = w
-      rcases hi with rfl | rfl
-      · -- i = u: {u,w}.erase u = {w}, componentCount G {w} = 1 < 2
-        simp [huw]
-        rw [cycle_componentCount_singleton G hCyc _ (by omega)]; omega
-      · -- i = w: {u,w}.erase w = {u}, componentCount G {u} = 1 < 2
-        have hne : i ∉ ({u} : Finset V) := by simp [show i ≠ u from Ne.symm huw]
-        rw [show ({u, i} : Finset V) = insert i {u} from by rw [Finset.pair_comm]]
-        rw [Finset.erase_insert hne]
-        rw [cycle_componentCount_singleton G hCyc _ (by omega)]; omega
-    have hc0 : componentCount G ∅ = 1 := by
-      rw [componentCount_empty]
-      haveI := hCyc.1.preconnected.subsingleton_connectedComponent
-      have hne := hCyc.1.nonempty
-      exact Nat.card_of_subsingleton (G.connectedComponentMk hne.some)
-    have hP0_ht : Ideal.height (primeComponent (K := K) G ∅) =
-        (Fintype.card V - 1 : ℕ) := by
-      rw [lemma_3_1 (K := K)]; congr 1
-      simp [hc0]
-    have hcuw : componentCount G {u, w} = 2 :=
-      cycle_componentCount_pair_nonadj G hCyc u w huw hnadj hn4
-    have hPuw_ht : Ideal.height (primeComponent (K := K) G {u, w}) =
-        (Fintype.card V : ℕ) := by
-      rw [lemma_3_1 (K := K)]; congr 1
-      rw [hcuw, Finset.card_pair huw]; omega
-    have : Ideal.height (primeComponent (K := K) G ∅) ≠
-        Ideal.height (primeComponent (K := K) G {u, w}) := by
-      rw [hP0_ht, hPuw_ht]
-      simp only [ne_eq, Nat.cast_inj]
-      omega
-    exact this (hunmixed _ _ hP0_min hPuw_min)
 
 end

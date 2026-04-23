@@ -7,22 +7,71 @@ analysis into a concrete work package for performance improvements.
 
 This packet is the first and highest-priority cleanup target.
 
+## Completion status (2026-04-23)
+
+This packet is complete and archived.
+
+- The cycle/unmixed branch now lives in `BEI/CycleUnmixed.lean`.
+- `BEI/MinimalPrimes.lean` has been reduced back to the Proposition 3.8 / 3.9 core.
+- The `Mathlib.Combinatorics.SimpleGraph.Matching` import moved with the cycle branch,
+  so non-cycle files no longer pay that import cost through `BEI/MinimalPrimes.lean`.
+- The whole project builds after the split.
+
+What also landed in the cycle file:
+
+- a named `IsCycleGraph -> IsCycles` bridge helper;
+- named survivor-set helpers for the singleton and pair cases;
+- extracted helper lemmas for cycle support, tail support, and cycle-edge classification;
+- separate private lemmas for the pair-removal proof's arc coverage, arc reachability,
+  no-cross-edge argument, separation argument, and final component-cover argument;
+- both cycle declarations now elaborate below the default heartbeat budget, so the
+  local `maxHeartbeats` overrides were removed completely.
+
+What also landed back in `BEI/MinimalPrimes.lean`:
+
+- named evaluation witnesses `evalInlWitness` and `evalPairWitness`;
+- extracted kernel-containment helpers for the two Proposition 3.8 evaluation patterns;
+- an extracted witness-computation lemma for
+  `eval (x_u * y_v - x_v * y_u) = 1`.
+- direct-import trimming via compile-drop checks; the file now needs only
+  `import BEI.PrimeDecomposition`.
+
+Packet-close evidence:
+
+- removing `Mathlib.Combinatorics.SimpleGraph.Matching` from `BEI/CycleUnmixed.lean`
+  breaks the `IsCycles`-based declarations, so that import is genuinely needed;
+- `BEI/MinimalPrimes.lean` still compiles after dropping its extra direct imports,
+  so those imports were redundant and were deleted;
+- scratch `#count_heartbeats approximately in` checks put both
+  `cycle_induce_preconnected` and `cycle_componentCount_pair_nonadj`
+  below the default `200000` heartbeat limit.
+
+Future related work, if needed, belongs in:
+
+- `LEAN_PERFORMANCE_TRIAGE.md` for repo-level performance cleanup;
+- `EVALUATION_MAP_API.md` for broader normalization of evaluation-map helper patterns.
+
+Current MCP profiler spot checks on the refactored file reported:
+
+- `cycle_induce_preconnected`: about `4.8 ms`;
+- `cycle_componentCount_pair_nonadj`: about `2.4 ms`.
+
+Treat those numbers as a quick post-refactor signal, not as a replacement for
+`#count_heartbeats` if heartbeat budgeting becomes important again.
+
 ## Scope
 
 This is a **performance and file-structure cleanup packet**, not new theorem work.
 
-Target file:
+Target files:
 
-- `BEI/MinimalPrimes.lean`
+- `BEI/CycleUnmixed.lean` for the cycle / unmixed Corollary 3.7 branch
+- `BEI/MinimalPrimes.lean` for the remaining Proposition 3.8 evaluation-map cleanup
 
-Target block:
+Current hotspot declarations:
 
-- everything from `/-! ## Corollary 3.7 unmixed branch -/` onward
-
-Main hotspot declarations:
-
-- `cycle_induce_preconnected` at line ~569
-- `cycle_componentCount_pair_nonadj` at line ~654
+- `cycle_induce_preconnected` at line ~94 in `BEI/CycleUnmixed.lean`
+- `cycle_componentCount_pair_nonadj` at line ~178 in `BEI/CycleUnmixed.lean`
 
 Why this packet comes first:
 
@@ -63,32 +112,19 @@ Replace one giant heartbeat-heavy theorem by:
 2. one short assembly theorem; and
 3. `6–8` private helper lemmas with local, measurable heartbeat costs.
 
-## Recommended file split
+## File split status
 
-Move everything from
+Completed on 2026-04-23:
 
-- `/-! ## Corollary 3.7 unmixed branch -/`
+- everything from the old `/-! ## Corollary 3.7 unmixed branch -/` block was moved
+  into `BEI/CycleUnmixed.lean`;
+- dependent references were updated in `BEI.lean`,
+  `BEI/PrimeDecompositionDimension.lean`, `BEI/PrimeDecomposition.lean`,
+  `BEI/Corollary3_4.lean`, and `FORMALIZATION_MAP.md`.
 
-into a new file, with one of these names:
+Resolved after the split:
 
-- `BEI/CycleUnmixed.lean`
-- `BEI/CycleComponentCounts.lean`
-
-Preferred default:
-
-- `BEI/CycleUnmixed.lean`
-
-Reason:
-
-- this block is mathematically self-contained;
-- the Matching/IsCycles/cycle-support API is only used here;
-- the non-cycle Proposition 3.8 material should no longer pay that import cost;
-- smaller files should improve rebuild scope and readability.
-
-After the split:
-
-- run `#min_imports` on the new file;
-- run `#min_imports` on the reduced `BEI/MinimalPrimes.lean`;
+- rerun direct import checks on the new and reduced files;
 - keep the public theorem names unchanged unless explicitly requested.
 
 ## Required decomposition

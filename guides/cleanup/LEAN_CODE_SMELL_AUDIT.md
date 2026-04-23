@@ -248,19 +248,19 @@ Concrete next move:
 Evidence:
 
 - `507` lines
-- `2` heartbeat overrides at `800000`
-- the old giant `MinimalPrimes` cycle theorem is already isolated here
+- `0` local heartbeat overrides after the completed cycle packet
+- the old giant `MinimalPrimes` cycle theorem is already isolated here and now split into helper lemmas
 
 Concrete next move:
 
-- continue under `MINIMALPRIMES_CYCLE_PERFORMANCE.md`;
-- do not duplicate that packet here.
+- the dedicated cycle packet is complete and archived;
+- if new pressure appears here, continue under `LEAN_PERFORMANCE_TRIAGE.md` or write a fresh packet.
 
 ## Cross-links to existing packets
 
 The following existing guides should be reused rather than duplicated:
 
-- `MINIMALPRIMES_CYCLE_PERFORMANCE.md` for `BEI/CycleUnmixed.lean`
+- `archive/MINIMALPRIMES_CYCLE_PERFORMANCE.md` for the completed `BEI/CycleUnmixed.lean` pass
 - `LEAN_PERFORMANCE_TRIAGE.md` for repo-wide heartbeat measurement workflow
 - `EVALUATION_MAP_API.md` for `BEI/PrimeIdeals.lean`
 - `PATH_AND_INTERNAL_VERTEX_API.md` for graph/path helper extraction
