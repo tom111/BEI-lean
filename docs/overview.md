@@ -61,8 +61,7 @@ Supporting generic lemmas intended for possible upstreaming live in:
 - Section 1: closed graphs, path-like consequences, the closure operation, and the paper-faithful Proposition 1.6 theorem.
 - Section 2: reduced Gröbner bases and radicality.
 - Section 3: prime ideals `P_S`, prime decomposition, dimension, and minimal
-  primes. The remaining partial pieces are the full Cohen–Macaulay statements of
-  Corollaries 3.4 and 3.7.
+  primes, together with the Cohen–Macaulay dimension and cycle criteria.
 - Section 4: the translation to conditional independence ideals and the transfer
   of the results from Sections 2 and 3.
 

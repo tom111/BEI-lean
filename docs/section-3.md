@@ -10,9 +10,8 @@ minimal primes.
 
 For mathematicians, this is the page that explains how the graph controls the
 prime ideals of the binomial edge ideal. The complete prime decomposition and
-dimension formula are formalized. Proposition 1.6 and Corollary 3.4 are now
-formalized as well. What remains open is not the prime theory itself, but the
-later Cohen–Macaulay consequence in Corollary 3.7.
+dimension formula are formalized. Proposition 1.6, Corollary 3.4, and
+Corollary 3.7 are formalized as well.
 
 ## Theorem map
 
@@ -24,7 +23,7 @@ later Cohen–Macaulay consequence in Corollary 3.7.
 | Corollary 3.3 lower bound | `corollary_3_3_lower_bound` | [PrimeDecompositionDimension.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecompositionDimension.lean) | Exact |
 | Corollary 3.4 | `corollary_3_4`, `corollary_3_4_connected` | [Corollary3_4.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Corollary3_4.lean) | Exact |
 | Proposition 3.6 | `prop_3_6` | [PrimeDecomposition.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecomposition.lean) | Equivalent |
-| Corollary 3.7 | `corollary_3_7`, `corollary_3_7_unmixed`, `corollary_3_7_equidim` | [PrimeDecomposition.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecomposition.lean), [MinimalPrimes.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/MinimalPrimes.lean), [PrimeDecompositionDimension.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecompositionDimension.lean) | Partial |
+| Corollary 3.7 | `corollary_3_7`, `corollary_3_7_unmixed`, `corollary_3_7_cm_forward`, `corollary_3_7_cm_fin` | [PrimeDecomposition.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecomposition.lean), [MinimalPrimes.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/MinimalPrimes.lean), [Corollary3_4.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Corollary3_4.lean) | Exact |
 | Proposition 3.8 | `prop_3_8` | [MinimalPrimes.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/MinimalPrimes.lean) | Equivalent |
 | Corollary 3.9 | `corollary_3_9` | [MinimalPrimes.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/MinimalPrimes.lean) | Equivalent |
 
@@ -46,6 +45,6 @@ The Section 3 Cohen–Macaulay status is:
 - the minimal-prime characterization is formalized;
 - Proposition 1.6 is formalized in its paper-faithful CM form;
 - Corollary 3.4 is formalized in its paper-faithful CM form;
-- the prime and unmixed cycle-graph equivalences are formalized exactly;
-- and the remaining Cohen–Macaulay statement is currently represented by
-  `corollary_3_7_equidim`.
+- the prime, unmixed, and Cohen–Macaulay cycle-graph equivalences are formalized;
+- and the equivalent-packaging items on this page are Proposition 3.6,
+  Proposition 3.8, and Corollary 3.9.

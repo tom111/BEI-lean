@@ -57,14 +57,11 @@ faithfully the current Lean statements match the paper.
 | CI prime decomposition | `ciIdealSpec_primeDecomposition` | `BEI/CIIdeals.lean` | Exact | Transferred from Theorem 3.2 |
 | CI minimal primes | `ciIdealSpec_minimalPrimes` | `BEI/CIIdeals.lean` | Exact | Transferred from Corollary 3.9; requires connected union graph |
 
-## Current Open Endpoints
+## Paper Endpoint Status
 
-| Paper endpoint | Current state |
+| Scope | Current state |
 |---|---|
-| Proposition 1.6 | equidimensional surrogate proved; HH-side global CM theorem `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal` now proved (both `p ≤ augIdeal` and `p ⊄ augIdeal` branches closed via F2 route + Session C3 assembly, 2026-04-20); Gröbner CM transfer to the original ideal remains |
-| Corollary 3.4 | only the equidimensional surrogate consequence is proved |
-| Corollary 3.7 | prime/unmixed branches are proved; the CM branch is only represented by the equidimensional surrogate |
-| Section 4 | complete: bridges, radicality, prime decomposition, and minimal-prime transfer all proved |
+| Sections 1--4 | All paper endpoints listed above are represented in Lean. The section tables record which statements are exact matches and which are equivalent reformulations. |
 
 ## Supporting `toMathlib` Progress
 
