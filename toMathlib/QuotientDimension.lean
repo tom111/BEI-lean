@@ -79,3 +79,24 @@ theorem ringKrullDim_quotient_radical (I : Ideal R) (_hrad : I.IsRadical) :
     ⨆ (P : Ideal R) (_ : P ∈ I.minimalPrimes), ringKrullDim (R ⧸ P) := by
   simp only [ringKrullDim_quotient]
   exact krullDim_zeroLocus_eq_iSup_minimalPrimes I
+
+/-! ## Dimension of quotient by equidimensional radical ideal -/
+
+/-- If `I` is a radical ideal whose minimal primes all have the same Krull
+codimension `d`, then `dim(R/I) = d`. Uses `ringKrullDim_quotient_radical`
+(the sup formula) together with equidimensionality to compute the sup as a
+constant. -/
+theorem ringKrullDim_quotient_radical_equidim [IsNoetherianRing R]
+    {I : Ideal R} (hne : I ≠ ⊤) (hrad : I.IsRadical)
+    {d : WithBot ℕ∞}
+    (hequidim : ∀ P ∈ I.minimalPrimes, ringKrullDim (R ⧸ P) = d) :
+    ringKrullDim (R ⧸ I) = d := by
+  -- minimalPrimes is nonempty since I ≠ ⊤
+  have hne_mp : I.minimalPrimes.Nonempty := by
+    rw [Set.nonempty_iff_ne_empty]
+    exact (Ideal.minimalPrimes_eq_empty_iff I).not.mpr hne
+  obtain ⟨P₀, hP₀⟩ := hne_mp
+  rw [ringKrullDim_quotient_radical I hrad]
+  apply le_antisymm
+  · exact iSup₂_le fun P hP => (hequidim P hP).le
+  · exact le_iSup₂_of_le P₀ hP₀ (hequidim P₀ hP₀).ge

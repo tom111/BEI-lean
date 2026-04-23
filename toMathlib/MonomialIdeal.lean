@@ -286,6 +286,55 @@ theorem isPrimary_monomial_criterion
 
 end Ideal
 
+/-- An ideal spanned by polynomials with at-most-singleton support is monomial:
+for every `f ∈ span S` and `d ∈ f.support`, `monomial d 1 ∈ span S`. -/
+theorem isMonomial_span_of_support_singleton {σ : Type*} {K : Type*} [Field K]
+    {S : Set (MvPolynomial σ K)}
+    (hS : ∀ s ∈ S, ∃ d, s.support ⊆ {d}) :
+    (Ideal.span S).IsMonomial := by
+  classical
+  intro f hf
+  induction hf using Submodule.span_induction with
+  | mem x hx =>
+    obtain ⟨e, he⟩ := hS x hx
+    intro d hd
+    have hde : d = e := Finset.mem_singleton.mp (he hd)
+    have hc_ne : x.coeff e ≠ 0 :=
+      MvPolynomial.mem_support_iff.mp (hde ▸ hd)
+    rw [hde]
+    have heq : MvPolynomial.monomial e (1 : K) =
+        MvPolynomial.C (x.coeff e)⁻¹ * x := by
+      set c := x.coeff e with hc_def
+      have hx_eq : x = MvPolynomial.monomial e c := by
+        ext m
+        simp only [MvPolynomial.coeff_monomial]
+        by_cases hme : e = m
+        · simp [hme, hc_def]
+        · rw [if_neg hme]
+          exact MvPolynomial.notMem_support_iff.mp
+            (fun hm => hme (Finset.mem_singleton.mp (he hm)).symm)
+      rw [hx_eq, MvPolynomial.C_mul_monomial, inv_mul_cancel₀ hc_ne]
+    rw [heq]
+    exact (Ideal.span S).mul_mem_left _ (Ideal.subset_span hx)
+  | zero =>
+    intro d hd; simp at hd
+  | add x y _ _ ihx ihy =>
+    intro d hd
+    rcases Finset.mem_union.mp (Finset.mem_of_subset MvPolynomial.support_add hd) with h | h
+    · exact ihx d h
+    · exact ihy d h
+  | smul a x _ ihx =>
+    intro d hd
+    simp only [smul_eq_mul] at hd
+    have hd_mem := Finset.mem_of_subset (MvPolynomial.support_mul a x) hd
+    rw [Finset.mem_add] at hd_mem
+    obtain ⟨da, hda, df, hdf, rfl⟩ := hd_mem
+    have hdf_mem := ihx df hdf
+    rw [show MvPolynomial.monomial (da + df) (1 : K) =
+      MvPolynomial.monomial da (1 : K) * MvPolynomial.monomial df 1 from by
+        rw [MvPolynomial.monomial_mul, one_mul]]
+    exact (Ideal.span S).mul_mem_left _ hdf_mem
+
 /-! ### Radical of a monomial ideal is monomial -/
 
 section RadicalMonomial

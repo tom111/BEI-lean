@@ -9,6 +9,9 @@ import Mathlib.RingTheory.Ideal.MinimalPrime.Basic
 import Mathlib.RingTheory.Ideal.MinimalPrime.Localization
 import Mathlib.RingTheory.Regular.RegularSequence
 import toMathlib.QuotientDimension
+import toMathlib.IdealQuotientHelpers
+import toMathlib.MinimalPrimesRegular
+import toMathlib.MvPolynomialHomogeneous
 import toMathlib.CohenMacaulay.Defs
 import toMathlib.CohenMacaulay.Basic
 import toMathlib.CohenMacaulay.Localization
@@ -273,18 +276,6 @@ theorem hhEdgeSet_diagonal {n : ℕ} {G : SimpleGraph (Fin n)}
     (Sum.inl i, Sum.inr i) ∈ hhEdgeSet G :=
   ⟨i, i, hi, hHH.diagonal i hi, le_refl i, rfl⟩
 
-/-- In a minimal vertex cover, for each element `v ∈ S`, removing `v` uncovers
-some edge. -/
-private theorem minimalCover_remove_not_cover {σ : Type*}
-    {edges : Set (σ × σ)}
-    {S : Set σ}
-    (hS : MvPolynomial.IsMinimalVertexCover edges S)
-    {v : σ} (hv : v ∈ S) :
-    ¬MvPolynomial.IsVertexCover edges (S \ {v}) := by
-  intro hcover
-  have hle : S ⊆ S \ {v} := hS.2 _ hcover Set.diff_subset
-  exact (hle hv).2 (by simp)
-
 /-- Under HH conditions, removing `Sum.inl i` from a minimal cover reveals an uncovered
 edge `(Sum.inl i, Sum.inr j)` with `Sum.inr j ∉ S`. -/
 private theorem remove_inl_uncovers {n : ℕ} {G : SimpleGraph (Fin n)}
@@ -293,7 +284,7 @@ private theorem remove_inl_uncovers {n : ℕ} {G : SimpleGraph (Fin n)}
     {i : Fin n} (hxi : Sum.inl i ∈ S) :
     ∃ (j : Fin n) (hj : j.val + 1 < n),
       G.Adj i ⟨j.val + 1, by omega⟩ ∧ i ≤ j ∧ Sum.inr j ∉ S := by
-  have hnotcover := minimalCover_remove_not_cover hS hxi
+  have hnotcover := MvPolynomial.isMinimalVertexCover_not_isVertexCover_diff_singleton hS hxi
   simp only [MvPolynomial.IsVertexCover, not_forall] at hnotcover
   obtain ⟨a, b, hab, hnot⟩ := hnotcover
   push_neg at hnot
@@ -328,7 +319,7 @@ private theorem remove_inr_uncovers {n : ℕ} {G : SimpleGraph (Fin n)}
     {i : Fin n} (hyi : Sum.inr i ∈ S) :
     ∃ (j : Fin n) (hi' : i.val + 1 < n),
       G.Adj j ⟨i.val + 1, by omega⟩ ∧ j ≤ i ∧ Sum.inl j ∉ S := by
-  have hnotcover := minimalCover_remove_not_cover hS hyi
+  have hnotcover := MvPolynomial.isMinimalVertexCover_not_isVertexCover_diff_singleton hS hyi
   simp only [MvPolynomial.IsVertexCover, not_forall] at hnotcover
   obtain ⟨a, b, hab, hnot⟩ := hnotcover
   push_neg at hnot
@@ -391,7 +382,7 @@ theorem minimalVertexCover_subset_active {n : ℕ} {G : SimpleGraph (Fin n)}
     {v : BinomialEdgeVars (Fin n)} (hv : v ∈ S) :
     ∃ i : Fin n, (v = Sum.inl i ∨ v = Sum.inr i) ∧ i.val + 1 < n := by
   -- v ∈ S means removing v uncovers some edge in hhEdgeSet
-  have hnotcover := minimalCover_remove_not_cover hS hv
+  have hnotcover := MvPolynomial.isMinimalVertexCover_not_isVertexCover_diff_singleton hS hv
   simp only [MvPolynomial.IsVertexCover, not_forall] at hnotcover
   obtain ⟨a, b, hab, hnot⟩ := hnotcover
   push_neg at hnot
@@ -1625,60 +1616,6 @@ private theorem ell_not_mem_minimalPrime_map_diagSubstHom {n : ℕ} {G : SimpleG
   · exact ha₁_notC ((MvPolynomial.X_mem_span_X_image_iff (R := K)).mp h)
   · exact hb₂_notC ((MvPolynomial.X_mem_span_X_image_iff (R := K)).mp h)
 
-/-- An ideal spanned by monomials (polynomials with at-most-singleton support)
-is a monomial ideal: for every `f ∈ span S` and `d ∈ f.support`,
-`monomial d 1 ∈ span S`. -/
-private theorem isMonomial_span_of_support_singleton
-    {σ : Type*}
-    {S : Set (MvPolynomial σ K)}
-    (hS : ∀ s ∈ S, ∃ d, s.support ⊆ {d}) :
-    (Ideal.span S).IsMonomial := by
-  classical
-  intro f hf
-  induction hf using Submodule.span_induction with
-  | mem x hx =>
-    obtain ⟨e, he⟩ := hS x hx
-    intro d hd
-    -- d must equal e since x.support ⊆ {e}
-    have hde : d = e := Finset.mem_singleton.mp (he hd)
-    -- x has singleton support, so x = monomial e (coeff e x)
-    have hc_ne : x.coeff e ≠ 0 :=
-      MvPolynomial.mem_support_iff.mp (hde ▸ hd)
-    -- monomial d 1 = monomial e 1 = C(coeff e x)⁻¹ * x ∈ span S
-    rw [hde]
-    have heq : MvPolynomial.monomial e (1 : K) =
-        MvPolynomial.C (x.coeff e)⁻¹ * x := by
-      set c := x.coeff e with hc_def
-      have hx_eq : x = MvPolynomial.monomial e c := by
-        ext m
-        simp only [MvPolynomial.coeff_monomial]
-        by_cases hme : e = m
-        · simp [hme, hc_def]
-        · rw [if_neg hme]
-          exact MvPolynomial.notMem_support_iff.mp
-            (fun hm => hme (Finset.mem_singleton.mp (he hm)).symm)
-      rw [hx_eq, MvPolynomial.C_mul_monomial, inv_mul_cancel₀ hc_ne]
-    rw [heq]
-    exact (Ideal.span S).mul_mem_left _ (Ideal.subset_span hx)
-  | zero =>
-    intro d hd; simp at hd
-  | add x y _ _ ihx ihy =>
-    intro d hd
-    rcases Finset.mem_union.mp (Finset.mem_of_subset MvPolynomial.support_add hd) with h | h
-    · exact ihx d h
-    · exact ihy d h
-  | smul a x _ ihx =>
-    intro d hd
-    simp only [smul_eq_mul] at hd
-    have hd_mem := Finset.mem_of_subset (MvPolynomial.support_mul a x) hd
-    rw [Finset.mem_add] at hd_mem
-    obtain ⟨da, hda, df, hdf, rfl⟩ := hd_mem
-    have hdf_mem := ihx df hdf
-    rw [show MvPolynomial.monomial (da + df) (1 : K) =
-      MvPolynomial.monomial da (1 : K) * MvPolynomial.monomial df 1 from by
-        rw [MvPolynomial.monomial_mul, one_mul]]
-    exact (Ideal.span S).mul_mem_left _ hdf_mem
-
 /-- In an ideal spanned by monomials with singleton support, every support monomial
 is divisible (componentwise) by some generator exponent.
 
@@ -2504,78 +2441,6 @@ variable {K : Type*} [Field K]
 
 open RingTheory.Sequence MvPolynomial
 
-/-- Membership in `J.map mk_I` is equivalent to membership in `I ⊔ J`. -/
-private lemma mem_map_mk_iff_mem_sup {R : Type*} [CommRing R]
-    {I J : Ideal R} (x : R) :
-    Ideal.Quotient.mk I x ∈ J.map (Ideal.Quotient.mk I) ↔ x ∈ I ⊔ J := by
-  constructor
-  · intro h
-    rw [Ideal.mem_map_iff_of_surjective _ Ideal.Quotient.mk_surjective] at h
-    obtain ⟨j, hj, hjx⟩ := h
-    rw [Ideal.Quotient.eq] at hjx
-    have : x - j ∈ I := by
-      rw [show x - j = -(j - x) from by ring]; exact I.neg_mem hjx
-    rw [show x = (x - j) + j from by ring]
-    exact (I ⊔ J).add_mem (Ideal.mem_sup_left this) (Ideal.mem_sup_right hj)
-  · intro h
-    have : Ideal.Quotient.mk I x ∈ (I ⊔ J).map (Ideal.Quotient.mk I) :=
-      Ideal.mem_map_of_mem _ h
-    rwa [Ideal.map_sup, Ideal.map_quotient_self, bot_sup_eq] at this
-
-/-- Transfer of `IsSMulRegular` through double quotient: if `r` is a NZD on
-`R ⧸ (I ⊔ J)`, then `mk_I(r)` is a NZD on `(R ⧸ I) ⧸ J.map mk_I`
-(where the scalar action uses the `R ⧸ I`-algebra structure). -/
-private lemma isSMulRegular_of_doubleQuot {R : Type*} [CommRing R]
-    {I J : Ideal R} {r : R}
-    (hreg : IsSMulRegular (R ⧸ (I ⊔ J))
-      (Ideal.Quotient.mk (I ⊔ J) r)) :
-    IsSMulRegular ((R ⧸ I) ⧸ J.map (Ideal.Quotient.mk I))
-      (Ideal.Quotient.mk I r) := by
-  set mkI := Ideal.Quotient.mk I
-  set mkIJ := Ideal.Quotient.mk (I ⊔ J)
-  set mkJ' := Ideal.Quotient.mk (Ideal.map mkI J)
-  intro a b hab
-  obtain ⟨a', rfl⟩ := Ideal.Quotient.mk_surjective a
-  obtain ⟨a'', rfl⟩ := Ideal.Quotient.mk_surjective a'
-  obtain ⟨b', rfl⟩ := Ideal.Quotient.mk_surjective b
-  obtain ⟨b'', rfl⟩ := Ideal.Quotient.mk_surjective b'
-  change mkI r • mkJ' (mkI a'') = mkI r • mkJ' (mkI b'') at hab
-  simp only [Algebra.smul_def, Ideal.Quotient.algebraMap_eq] at hab
-  have hab' : mkJ' (mkI (r * a'')) = mkJ' (mkI (r * b'')) := by
-    rwa [map_mul mkI r a'', map_mul mkI r b'']
-  rw [Ideal.Quotient.eq, ← map_sub, mem_map_mk_iff_mem_sup,
-      show r * a'' - r * b'' = r * (a'' - b'') from by ring] at hab'
-  rw [Ideal.Quotient.eq, ← map_sub, mem_map_mk_iff_mem_sup]
-  have h1 : mkIJ r * mkIJ (a'' - b'') = 0 := by
-    rw [← map_mul]; exact Ideal.Quotient.eq_zero_iff_mem.mpr hab'
-  have h2 := hreg (show mkIJ r • mkIJ (a'' - b'') = mkIJ r • 0 from by
-    rw [smul_eq_mul, smul_zero]; exact h1)
-  exact Ideal.Quotient.eq_zero_iff_mem.mp h2
-
-/-- For the self-module of a ring, `I • ⊤ = I` as a submodule. -/
-private lemma ideal_smul_top_self {R : Type*} [CommRing R] (I : Ideal R) :
-    I • (⊤ : Submodule R R) = I.restrictScalars R := by
-  rw [Ideal.smul_top_eq_map, show algebraMap R R = RingHom.id R from rfl,
-      Ideal.map_id]
-
-/-- `Ideal.ofList` commutes with ring homomorphism maps. -/
-private lemma Ideal.ofList_map {R S : Type*} [CommSemiring R]
-    [CommSemiring S] (f : R →+* S) (rs : List R) :
-    (Ideal.ofList rs).map f = Ideal.ofList (rs.map f) := by
-  simp only [Ideal.ofList, Ideal.map_span]
-  congr 1; ext x; simp [List.mem_map]
-
-/-- The step-`i` module quotient in `IsWeaklyRegular` on the self-module
-of `R ⧸ I` matches the double quotient `(R ⧸ I) ⧸ J.map mk_I`. -/
-private lemma self_module_step_eq {R : Type*} [CommRing R]
-    {I : Ideal R} (rs : List R) (i : ℕ) :
-    Ideal.ofList (List.take i (rs.map (Ideal.Quotient.mk I))) •
-      (⊤ : Submodule (R ⧸ I) (R ⧸ I)) =
-    ((Ideal.ofList (List.take i rs)).map
-      (Ideal.Quotient.mk I)).restrictScalars (R ⧸ I) := by
-  rw [ideal_smul_top_self]; congr 1
-  rw [← List.map_take, Ideal.ofList_map]
-
 /-- The i-th diagonal linear form `x_i + y_i` for `i < n - 1`. -/
 private noncomputable def diagElem (n : ℕ) (j : Fin (n - 1)) :
     MvPolynomial (BinomialEdgeVars (Fin n)) K :=
@@ -2611,7 +2476,8 @@ sequence on the self-module of `S ⧸ bipartiteEdgeMonomialIdeal G`.
 This packages the iterated regularity theorem
 `sum_XY_isSMulRegular_mod_diagonalSum` into the Mathlib `IsWeaklyRegular`
 format, using the bridge lemmas `isSMulRegular_of_doubleQuot`,
-`ideal_smul_top_self`, and `self_module_step_eq`. -/
+`Ideal.smul_top_self_eq_restrictScalars`, and
+`Ideal.ofList_take_map_mk_smul_top`. -/
 theorem bipartiteEdgeMonomialIdeal_isWeaklyRegular
     {n : ℕ} {G : SimpleGraph (Fin n)}
     (hHH : HerzogHibiConditions n G) :
@@ -2629,7 +2495,7 @@ theorem bipartiteEdgeMonomialIdeal_isWeaklyRegular
     simp [rs, diagElems] at hidx; omega
   have hidxn : idx < n := by omega
   -- Rewrite the module quotient to a double-quotient ring quotient
-  rw [self_module_step_eq rs idx, diagElems_ofList_take_eq idx (by omega)]
+  rw [Ideal.ofList_take_map_mk_smul_top rs idx, diagElems_ofList_take_eq idx (by omega)]
   -- Identify the idx-th element
   simp only [List.getElem_map, rs, diagElems, List.getElem_ofFn]
   -- Transfer regularity through the double quotient
@@ -2645,33 +2511,6 @@ theorem diagElems_length {n : ℕ} :
     (diagElems (K := K) n).length = n - 1 := List.length_ofFn
 
 end WeaklyRegularPackaging
-
-/-! ### Krull dimension of radical equidimensional quotients -/
-
-/-- For a radical ideal `I` in a Noetherian ring with all minimal prime
-quotients having the same Krull dimension `d`, the quotient `R ⧸ I` also
-has Krull dimension `d`.
-
-Uses `ringKrullDim_quotient_radical` (the sup formula) together with
-equidimensionality to compute the sup as a constant. -/
-theorem ringKrullDim_quotient_radical_equidim {R : Type*} [CommRing R]
-    [IsNoetherianRing R]
-    {I : Ideal R} (hne : I ≠ ⊤) (hrad : I.IsRadical)
-    {d : WithBot ℕ∞}
-    (hequidim : ∀ P ∈ I.minimalPrimes, ringKrullDim (R ⧸ P) = d) :
-    ringKrullDim (R ⧸ I) = d := by
-  -- minimalPrimes is nonempty since I ≠ ⊤
-  have hne_mp : I.minimalPrimes.Nonempty := by
-    rw [Set.nonempty_iff_ne_empty]
-    exact (Ideal.minimalPrimes_eq_empty_iff I).not.mpr hne
-  obtain ⟨P₀, hP₀⟩ := hne_mp
-  -- Use the sup formula
-  rw [ringKrullDim_quotient_radical I hrad]
-  apply le_antisymm
-  · -- ≤: every term in the sup equals d
-    exact iSup₂_le fun P hP => (hequidim P hP).le
-  · -- ≥: the sup is ≥ d (using P₀)
-    exact le_iSup₂_of_le P₀ hP₀ (hequidim P₀ hP₀).ge
 
 /-! ### HH quotient dimension formula -/
 
@@ -3423,7 +3262,7 @@ theorem bipartiteEdgeMonomialIdeal_isWeaklyRegular_full {n : ℕ} (hn : 2 ≤ n)
   rw [hrslen] at hidx
   by_cases h_diag : idx < n - 1
   · -- Case 1: Diagonal elements (idx < n - 1)
-    rw [self_module_step_eq rs idx]
+    rw [Ideal.ofList_take_map_mk_smul_top rs idx]
     simp only [List.getElem_map]
     rw [ofList_take_fullRegSeq_le hn idx (by omega)]
     have hlt : idx < (diagElems (K := K) n).length := by simp [diagElems_length]; omega
@@ -3436,7 +3275,7 @@ theorem bipartiteEdgeMonomialIdeal_isWeaklyRegular_full {n : ℕ} (hn : 2 ≤ n)
   · by_cases h_x : idx = n - 1
     · -- Case 2: x_{n-1} (idx = n - 1)
       subst h_x
-      rw [self_module_step_eq rs (n - 1)]
+      rw [Ideal.ofList_take_map_mk_smul_top rs (n - 1)]
       simp only [List.getElem_map]
       rw [ofList_take_fullRegSeq_le hn (n - 1) le_rfl]
       have hge : (diagElems (K := K) n).length ≤ n - 1 := by simp [diagElems_length]
@@ -3453,7 +3292,7 @@ theorem bipartiteEdgeMonomialIdeal_isWeaklyRegular_full {n : ℕ} (hn : 2 ≤ n)
       -- rw can handle List.take (no proof dependency in its type)
       rw [show List.take idx (List.map (↑mkI) rs) =
           List.take n (List.map (↑mkI) rs) from by rw [h_y]]
-      rw [self_module_step_eq rs n]
+      rw [Ideal.ofList_take_map_mk_smul_top rs n]
       simp only [List.getElem_map]
       rw [ofList_take_n_fullRegSeq hn]
       have hge : (diagElems (K := K) n).length ≤ n := by simp [diagElems_length]
@@ -3735,30 +3574,6 @@ private lemma isSMulRegular_mk_y_last {n : ℕ} (hn : 2 ≤ n)
   rw [RingTheory.Sequence.isWeaklyRegular_cons_iff'] at hwreg2
   exact hwreg2.1
 
-open scoped Pointwise in
-/-- Bridging lemma: `(x • ⊤ : Submodule R R) = Ideal.span {x}` as ideals. This lets
-us identify `QuotSMulTop x R` with `R ⧸ Ideal.span {x}`. -/
-private lemma smul_top_eq_span_singleton {R : Type*} [CommRing R] (x : R) :
-    ((x • (⊤ : Submodule R R)) : Ideal R) = Ideal.span {x} := by
-  apply le_antisymm
-  · rintro y ⟨z, _, rfl⟩
-    change (DistribSMul.toLinearMap R R x) z ∈ Ideal.span {x}
-    exact Ideal.mem_span_singleton'.mpr ⟨z, by simp [mul_comm]⟩
-  · intro y hy
-    rcases Ideal.mem_span_singleton'.mp hy with ⟨z, rfl⟩
-    refine ⟨z, Submodule.mem_top, ?_⟩
-    change (DistribSMul.toLinearMap R R x) z = z * x
-    simp [mul_comm]
-
-open scoped Pointwise in
-/-- Ring equivalence between the two quotient views: `QuotSMulTop x R ≃+* R ⧸ Ideal.span {x}`.
-Since `Ideal R = Submodule R R` definitionally, this is just `Ideal.quotEquivOfEq` applied
-to `smul_top_eq_span_singleton`. -/
-private noncomputable def quotSMulTopRingEquivIdealQuotient
-    {R : Type*} [CommRing R] (x : R) :
-    QuotSMulTop x R ≃+* R ⧸ Ideal.span {x} :=
-  Ideal.quotEquivOfEq (smul_top_eq_span_singleton x)
-
 /-- `Ideal.span {x_last}` is proper (x_last is not a unit since it's in maximalIdeal). -/
 private lemma span_x_inl_last_ne_top {n : ℕ} (hn : 1 ≤ n) (G : SimpleGraph (Fin n)) :
     Ideal.span {algebraMap _ (Localization.AtPrime (augIdeal (K := K) G))
@@ -3876,7 +3691,7 @@ private theorem isCohenMacaulayLocalRing_reducedHH_at_augIdeal {n : ℕ} (hn : 2
     have hreg_Rp : IsSMulRegular RpQ yL := by
       have h := isSMulRegular_X_inr_last_quot_lastInl (K := K') hn hHH
       exact (LinearEquiv.isSMulRegular_congr
-        (Submodule.quotEquivOfEq _ _ (smul_top_eq_span_singleton _)) _).mp h
+        (Submodule.quotEquivOfEq _ _ (Submodule.smul_top_eq_span_singleton _)) _).mp h
     -- Step 2: convert Rp-scalar to self-scalar
     exact (isSMulRegular_map (a := yL)
       (fun r : Rp => (Ideal.Quotient.mk (Ideal.span {xL}) r))
@@ -4082,73 +3897,6 @@ private lemma minimalPrime_le_augIdeal {n : ℕ} (G : SimpleGraph (Fin n))
 
 /-! #### Regular elements in primes of positive height -/
 
-/-- In a reduced ring, an element outside all minimal primes is SMulRegular.
-
-In a reduced ring `sInf (minimalPrimes R) = 0`, so if `r ∉ q` for each
-minimal prime `q`, then `r * s = 0` forces `s ∈ ∩ q = 0`. -/
-private lemma isSMulRegular_of_not_mem_minimalPrimes'
-    {S : Type*} [CommRing S] [IsReduced S]
-    {r : S} (hr : ∀ q ∈ minimalPrimes S, r ∉ q) : IsSMulRegular S r := by
-  intro a b hab
-  have heq : r * a = r * b := by exact_mod_cast hab
-  have h0 : r * (a - b) = 0 := by rw [mul_sub]; exact sub_eq_zero.mpr heq
-  have hmem : a - b ∈ sInf (minimalPrimes S) := by
-    rw [Ideal.mem_sInf]; intro q hq
-    exact (((minimalPrimes_eq_minimals (R := S) ▸ hq).1).mem_or_mem
-      (h0 ▸ q.zero_mem : r * (a - b) ∈ q)).resolve_left (hr q hq)
-  rw [show sInf (minimalPrimes S) = (⊥ : Ideal S) from by
-    change sInf ((⊥ : Ideal S).minimalPrimes) = ⊥
-    rw [Ideal.sInf_minimalPrimes]; exact nilradical_eq_zero S, Ideal.mem_bot] at hmem
-  exact sub_eq_zero.mp hmem
-
-/-- **Regular element in `p ∩ m` for reduced rings**: In a reduced Noetherian ring
-where every minimal prime is below a non-minimal prime `m`, any prime `p` of positive
-height contains an `R`-regular element that also lies in `m`.
-
-The proof uses a domain-based argument: for each minimal prime `q`, we show
-`p ⊓ m ⊄ q`. Since `q` is prime and both `p` and `m` strictly contain `q`
-(by height and minimality considerations), taking `a ∈ p \ q` and `b ∈ m \ q`
-gives `ab ∈ (p ⊓ m) \ q` by primality. Prime avoidance then produces an element
-outside all minimal primes (hence regular). -/
-private theorem exists_smulRegular_in_inf'
-    {S : Type*} [CommRing S] [IsNoetherianRing S] [IsReduced S]
-    (m : Ideal S) [m.IsPrime]
-    (hmin_le : ∀ q ∈ minimalPrimes S, q ≤ m)
-    (hm_ne_min : m ∉ minimalPrimes S)
-    (p : Ideal S) [p.IsPrime]
-    (hp : (0 : WithBot ℕ∞) < Ideal.height p) :
-    ∃ x ∈ p, x ∈ m ∧ IsSMulRegular S x := by
-  have hp_not_min : p ∉ minimalPrimes S := by
-    intro hmin; simp [Ideal.height_eq_primeHeight, Ideal.primeHeight_eq_zero_iff.mpr hmin] at hp
-  -- Step 1: p ⊓ m ⊄ q for each minimal prime q
-  have hp_inf_not_le : ∀ q ∈ minimalPrimes S, ¬(p ⊓ m ≤ q) := by
-    intro q hq hle
-    have hq_prime : q.IsPrime := (minimalPrimes_eq_minimals (R := S) ▸ hq).1
-    -- p contains some minimal prime q'; since q' ≤ m, we get q' ≤ p ⊓ m ≤ q, hence q' = q
-    obtain ⟨q', hq'min, hq'p⟩ := Ideal.exists_minimalPrimes_le (show (⊥ : Ideal S) ≤ p from bot_le)
-    have hq'minR : q' ∈ minimalPrimes S := hq'min
-    have hq'q : q' ≤ q := le_trans (le_inf hq'p (hmin_le q' hq'minR)) hle
-    have hq'eq : q' = q := le_antisymm hq'q
-      ((minimalPrimes_eq_minimals (R := S) ▸ hq).2
-        (minimalPrimes_eq_minimals (R := S) ▸ hq'minR).1 hq'q)
-    -- So q ≤ p and q < p, q < m
-    have hq_lt_p : q < p := lt_of_le_of_ne (hq'eq ▸ hq'p) (fun h => hp_not_min (h.symm ▸ hq))
-    have hq_lt_m : q < m := lt_of_le_of_ne (hmin_le q hq) (fun h => hm_ne_min (h.symm ▸ hq))
-    -- Domain argument: a ∈ p\q, b ∈ m\q, ab ∈ (p ⊓ m) \ q
-    obtain ⟨a, hap, haq⟩ := Set.exists_of_ssubset hq_lt_p
-    obtain ⟨b, hbm, hbq⟩ := Set.exists_of_ssubset hq_lt_m
-    exact (hq_prime.mem_or_mem (hle ⟨p.mul_mem_right b hap, m.mul_mem_left a hbm⟩)).elim haq hbq
-  -- Step 2: prime avoidance → ∃ x ∈ p ⊓ m outside all minimal primes
-  have hfin : (minimalPrimes S).Finite := Ideal.finite_minimalPrimes_of_isNoetherianRing S ⊥
-  have h_not_sub : ¬((p ⊓ m : Set S) ⊆ ⋃ q ∈ minimalPrimes S, (q : Set S)) := by
-    rw [show (p ⊓ m : Set S) = ↑(p ⊓ m : Ideal S) from rfl,
-      Ideal.subset_union_prime_finite hfin 0 0
-        (fun q hq _ _ => (minimalPrimes_eq_minimals (R := S) ▸ hq).1)]
-    exact fun ⟨q, hq, hle⟩ => hp_inf_not_le q hq hle
-  obtain ⟨x, hx_mem, hx_not_mem⟩ := Set.not_subset.mp h_not_sub
-  simp only [Set.mem_iUnion] at hx_not_mem; push_neg at hx_not_mem
-  exact ⟨x, hx_mem.1, hx_mem.2, isSMulRegular_of_not_mem_minimalPrimes' hx_not_mem⟩
-
 /-- **Regular element in `p ∩ augIdeal` for the HH quotient**: For any prime `p` not
 contained in the augmentation ideal, there exists an element of `p ∩ augIdeal` that is
 a non-zero-divisor on the HH quotient ring.
@@ -4159,7 +3907,7 @@ in `maxIdeal(R_p) ∩ maxIdeal(R_{m⁺})` needed for both forward and converse C
 The proof uses:
 - the HH quotient is reduced (`bipartiteEdgeMonomialIdeal_isRadical`);
 - all minimal primes are below `augIdeal` (`minimalPrime_le_augIdeal`);
-- a domain-based prime avoidance argument (`exists_smulRegular_in_inf'`). -/
+- a domain-based prime avoidance argument (`exists_smulRegular_in_inter`). -/
 private lemma exists_smulRegular_in_augIdeal {n : ℕ} (hn : 2 ≤ n)
     {G : SimpleGraph (Fin n)} (hHH : HerzogHibiConditions n G)
     {p : Ideal (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸
@@ -4207,7 +3955,7 @@ private lemma exists_smulRegular_in_augIdeal {n : ℕ} (hn : 2 ≤ n)
       (bipartiteEdgeMonomialIdeal_ne_top (K := K) G)
     have hfield : ringKrullDim R' = 0 := (ringKrullDimZero_iff_ringKrullDim_eq_zero).mp ‹_›
     rw [hfield] at hdim; exact absurd hdim (by norm_cast)
-  exact exists_smulRegular_in_inf' (augIdeal (K := K) G)
+  exact exists_smulRegular_in_inter (augIdeal (K := K) G)
     (fun q hq => minimalPrime_le_augIdeal G hq) hm_ne_min p hp_pos
 
 /-! #### Graded contraction lemma
@@ -4217,124 +3965,6 @@ in a quotient by a homogeneous ideal, any element with invertible constant
 coefficient is a non-zero-divisor.  This is the key ingredient in the
 Bruns–Herzog 2.1.3(b) proof that graded CM at the irrelevant ideal implies
 global CM. -/
-
-/-- If `f` has zero constant coefficient and all homogeneous components of `g` below
-degree `d` vanish, then `homogeneousComponent d (f * g) = 0`.
-
-This is the degree-counting core of the graded contraction argument:
-the lowest-degree component of the product is determined only by the constant
-coefficient of the first factor. -/
-private lemma homogeneousComponent_mul_eq_zero_of_low_degrees
-    {σ : Type*} {R : Type*} [CommSemiring R]
-    {f g : MvPolynomial σ R} {d : ℕ}
-    (hf : MvPolynomial.constantCoeff f = 0)
-    (hg : ∀ j < d, MvPolynomial.homogeneousComponent j g = 0) :
-    MvPolynomial.homogeneousComponent d (f * g) = 0 := by
-  classical
-  ext m
-  rw [MvPolynomial.coeff_homogeneousComponent, MvPolynomial.coeff_zero]
-  split_ifs with hmd
-  · rw [MvPolynomial.coeff_mul]
-    apply Finset.sum_eq_zero
-    intro ⟨a, b⟩ hab
-    rw [Finset.mem_antidiagonal] at hab
-    by_cases ha : a = 0
-    · simp [ha, ← MvPolynomial.constantCoeff_eq, hf]
-    · have hab_deg : a.degree + b.degree = d := by
-        rw [← Finsupp.degree.map_add, hab]; exact hmd
-      have ha_pos : 0 < a.degree := by
-        rw [pos_iff_ne_zero]; exact fun h => ha ((Finsupp.degree_eq_zero_iff a).mp h)
-      have hb_lt : b.degree < d := by omega
-      have : MvPolynomial.coeff b g = 0 := by
-        have := congr_arg (MvPolynomial.coeff b) (hg b.degree hb_lt)
-        rwa [MvPolynomial.coeff_homogeneousComponent, if_pos rfl,
-          MvPolynomial.coeff_zero] at this
-      rw [this, mul_zero]
-  · rfl
-
-/-- Helper: `homogeneousComponent j` applied to a sum of lower homogeneous
-components of `g` recovers `homogeneousComponent j g` for `j < d`. -/
-private lemma homogeneousComponent_sum_low_eq
-    {σ : Type*} {R : Type*} [CommSemiring R]
-    (g : MvPolynomial σ R) (d : ℕ) {j : ℕ} (hj : j < d) :
-    MvPolynomial.homogeneousComponent j
-      (∑ k ∈ Finset.range d, MvPolynomial.homogeneousComponent k g) =
-    MvPolynomial.homogeneousComponent j g := by
-  rw [_root_.map_sum (MvPolynomial.homogeneousComponent j)]
-  simp_rw [MvPolynomial.homogeneousComponent_of_mem
-    (MvPolynomial.homogeneousComponent_mem _ g)]
-  exact (Finset.sum_ite_eq (Finset.range d) j _).trans
-    (if_pos (Finset.mem_range.mpr hj))
-
-/-- **Graded contraction lemma for `MvPolynomial`**: if `I` is a homogeneous
-ideal (closed under taking homogeneous components), `f * g ∈ I`, and
-`constantCoeff f` is a unit, then `g ∈ I`.
-
-Equivalently: in `MvPolynomial σ K ⧸ I`, any element with invertible
-constant coefficient is a non-zero-divisor.
-
-The proof works by strong induction on the degree: at each step,
-subtracting the already-proved low-degree components and using the
-degree-counting lemma `homogeneousComponent_mul_eq_zero_of_low_degrees`
-shows that the unit constant coefficient of `f` forces each successive
-homogeneous component of `g` into `I`. -/
-private theorem mem_of_mul_mem_of_isUnit_constantCoeff
-    {σ : Type*} {K : Type*} [Field K]
-    {I : Ideal (MvPolynomial σ K)}
-    (hI_hom : ∀ p ∈ I, ∀ (d : ℕ), MvPolynomial.homogeneousComponent d p ∈ I)
-    {f g : MvPolynomial σ K}
-    (hfg : f * g ∈ I)
-    (hf : IsUnit (MvPolynomial.constantCoeff f)) :
-    g ∈ I := by
-  classical
-  -- Suffice to show all homogeneous components are in I
-  suffices h : ∀ d, MvPolynomial.homogeneousComponent d g ∈ I by
-    rw [show g = ∑ i ∈ Finset.range (g.totalDegree + 1),
-      MvPolynomial.homogeneousComponent i g from (MvPolynomial.sum_homogeneousComponent g).symm]
-    exact I.sum_mem (fun d _ => h d)
-  intro d
-  induction d using Nat.strongRecOn with
-  | ind d ih =>
-    set c := MvPolynomial.constantCoeff f
-    set g_low := ∑ j ∈ Finset.range d, MvPolynomial.homogeneousComponent j g
-    have hg_low_mem : g_low ∈ I :=
-      I.sum_mem (fun j hj => ih j (Finset.mem_range.mp hj))
-    -- g - g_low has no components below degree d
-    have hg_high_vanish : ∀ j < d,
-        MvPolynomial.homogeneousComponent j (g - g_low) = 0 := by
-      intro j hj
-      rw [map_sub, homogeneousComponent_sum_low_eq g d hj, sub_self]
-    -- homogeneousComponent d (g - g_low) = homogeneousComponent d g
-    have hcomp_eq : MvPolynomial.homogeneousComponent d (g - g_low) =
-        MvPolynomial.homogeneousComponent d g := by
-      rw [map_sub]
-      have : MvPolynomial.homogeneousComponent d g_low = 0 := by
-        rw [_root_.map_sum (MvPolynomial.homogeneousComponent d)]
-        simp_rw [MvPolynomial.homogeneousComponent_of_mem
-          (MvPolynomial.homogeneousComponent_mem _ g)]
-        exact Finset.sum_eq_zero
-          (fun k hk => if_neg (by rw [Finset.mem_range] at hk; omega))
-      rw [this, sub_zero]
-    -- f * (g - g_low) ∈ I
-    have hfg_high : f * (g - g_low) ∈ I := by
-      rw [mul_sub]; exact I.sub_mem hfg (I.mul_mem_left f hg_low_mem)
-    -- Write f = C c + f' where f' has zero constant coefficient
-    set f' := f - MvPolynomial.C c
-    have hf'_cc : MvPolynomial.constantCoeff f' = 0 := by simp [f', c]
-    -- degree-d component of f' * (g - g_low) vanishes
-    have hvanish : MvPolynomial.homogeneousComponent d (f' * (g - g_low)) = 0 :=
-      homogeneousComponent_mul_eq_zero_of_low_degrees hf'_cc hg_high_vanish
-    -- degree-d component of f * (g - g_low) is in I
-    have hcomp_fgh : MvPolynomial.homogeneousComponent d (f * (g - g_low)) ∈ I :=
-      hI_hom _ hfg_high d
-    -- so C c * homogeneousComponent d g ∈ I
-    have hCcg : MvPolynomial.C c * MvPolynomial.homogeneousComponent d g ∈ I := by
-      have : f * (g - g_low) = MvPolynomial.C c * (g - g_low) + f' * (g - g_low) := by ring
-      rw [this, map_add, hvanish, add_zero, MvPolynomial.homogeneousComponent_C_mul,
-        hcomp_eq] at hcomp_fgh
-      exact hcomp_fgh
-    -- C c is a unit → cancel
-    exact (Submodule.smul_mem_iff_of_isUnit I (RingHom.isUnit_map MvPolynomial.C hf)).mp hCcg
 
 /-! #### Homogeneity of the bipartite edge monomial ideal -/
 

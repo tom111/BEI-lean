@@ -245,6 +245,15 @@ theorem variablePairIdeal_isRadical (edges : Set (σ × σ))
   -- But i ∈ C means m(i) = 0, contradiction
   exact hi_ne hi_C
 
+/-- In a minimal vertex cover, removing any element `v ∈ S` uncovers some edge:
+the resulting set `S \ {v}` is no longer a vertex cover. -/
+theorem isMinimalVertexCover_not_isVertexCover_diff_singleton {edges : Set (σ × σ)}
+    {S : Set σ} (hS : IsMinimalVertexCover edges S) {v : σ} (hv : v ∈ S) :
+    ¬IsVertexCover edges (S \ {v}) := by
+  intro hcover
+  have hle : S ⊆ S \ {v} := hS.2 _ hcover Set.diff_subset
+  exact (hle hv).2 (by simp)
+
 end MvPolynomial
 
 end
