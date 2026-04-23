@@ -49,6 +49,26 @@ theorem_3_2:
   lean_file_label: "PrimeDecomposition.lean"
   lean_url: "https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecomposition.lean"
 
+corollary_3_4:
+  section: "Section 3"
+  paper_label: "Corollary 3.4"
+  paper_title: "Dimension from Cohen-Macaulayness"
+  status: "proved"
+  fidelity: "Exact"
+  paper_statement_tex: >
+    If $S / J_G$ is Cohen--Macaulay and $G$ has $n$ vertices and $c$
+    connected components, then $\dim(S / J_G) = n + c$.
+  lean_name: "`corollary_3_4`"
+  lean_snippet: |
+    theorem corollary_3_4 (G : SimpleGraph V)
+        (hCM : IsCohenMacaulayRing
+          (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G)) :
+        ringKrullDim
+          (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) =
+          ↑(Fintype.card V + componentCount G ∅)
+  lean_file_label: "Corollary3_4.lean"
+  lean_url: "https://github.com/tom111/BEI-lean/blob/master/BEI/Corollary3_4.lean"
+
 ci_bridge:
   section: "Section 4"
   paper_label: "Section 4 Bridge"
