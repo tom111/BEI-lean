@@ -50,7 +50,7 @@
 - `[x]` `BEI/CoveredWalks.lean`
 - `[x]` `BEI/Definitions.lean`
 - `[x]` `BEI/Equidim.lean`
-- `[ ]` `BEI/GraphProperties.lean`
+- `[x]` `BEI/GraphProperties.lean`
 - `[ ]` `BEI/Groebner.lean`
 - `[ ]` `BEI/GroebnerAPI.lean`
 - `[ ]` `BEI/GroebnerBasis.lean`

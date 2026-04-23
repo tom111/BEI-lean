@@ -72,12 +72,9 @@ theorem graphClosure_le (G : SimpleGraph V) : G ≤ graphClosure G :=
   le_sInf fun _ hH => hH.1
 
 /-- The complete graph is a closed supergraph of any graph. -/
-theorem top_isClosedGraph : IsClosedGraph (⊤ : SimpleGraph V) := by
-  constructor
-  · intro i j k _ _ hjk _ _
-    exact (SimpleGraph.top_adj j k).mpr hjk
-  · intro i j k _ _ hij _ _
-    exact (SimpleGraph.top_adj i j).mpr hij
+theorem top_isClosedGraph : IsClosedGraph (⊤ : SimpleGraph V) :=
+  ⟨fun _ _ hjk _ _ => (SimpleGraph.top_adj ..).mpr hjk,
+   fun _ _ hij _ _ => (SimpleGraph.top_adj ..).mpr hij⟩
 
 /-- The set of closed supergraphs is always nonempty (contains ⊤). -/
 theorem closedSupergraphs_nonempty (G : SimpleGraph V) :
@@ -115,13 +112,10 @@ theorem prop_1_5 (G : SimpleGraph V) :
   ⟨graphClosure G,
    ⟨graphClosure_le G, graphClosure_isClosedGraph G,
     fun H' hGH' hH' => graphClosure_minimal G H' hGH' hH'⟩,
-   by
-     intro H ⟨hGH, hHcl, hHmin⟩
-     apply le_antisymm
-     · -- H ≤ graphClosure G: graphClosure G also satisfies the minimality property of H
-       exact hHmin (graphClosure G) (graphClosure_le G) (graphClosure_isClosedGraph G)
-     · -- graphClosure G ≤ H: by definition of graphClosure as sInf
-       exact graphClosure_minimal G H hGH hHcl⟩
+   fun H ⟨hGH, hHcl, hHmin⟩ =>
+     le_antisymm
+       (hHmin (graphClosure G) (graphClosure_le G) (graphClosure_isClosedGraph G))
+       (graphClosure_minimal G H hGH hHcl)⟩
 
 /-! ## Properties of closed graphs (Proposition 1.2) -/
 
@@ -305,6 +299,18 @@ private lemma isDW_penultimate_lt {G : SimpleGraph V} {u v : V} (w : G.Walk u v)
       simp only [Walk.support, IsDirectedWalk] at hw
       exact ih (by simp) hw.2
 
+/-- If `a` and `b` are distinct vertices joined by a length-2 walk through `m`
+but are themselves not adjacent, then `G.dist a b = 2`. -/
+private lemma dist_eq_two_of_mid_not_adj {V : Type*} {G : SimpleGraph V} {a b m : V}
+    (hab : a ≠ b) (ham : G.Adj a m) (hmb : G.Adj m b) (hnadj : ¬ G.Adj a b) :
+    G.dist a b = 2 := by
+  let W : G.Walk a b := Walk.cons ham (Walk.cons hmb Walk.nil)
+  have hW_len : W.length = 2 := rfl
+  have hd_le : G.dist a b ≤ 2 := hW_len ▸ dist_le W
+  have hd_pos : 0 < G.dist a b := W.reachable.pos_dist_of_ne hab
+  have hd1 : G.dist a b ≠ 1 := mt dist_eq_one_iff_adj.mp hnadj
+  omega
+
 /--
 **Proposition 1.4** (Herzog et al. 2010): G is closed with respect to the given
 linear order if and only if for every pair i < j, all shortest walks from i to j
@@ -443,25 +449,18 @@ theorem prop_1_4 (G : SimpleGraph V) :
       · -- Case j < k: build walk j → i → k, get contradiction
         by_contra h_nadj
         let W := Walk.cons hadj_ij.symm (Walk.cons hadj_ik Walk.nil)
-        have hW_len : W.length = 2 := rfl
-        have hd_le : G.dist j k ≤ 2 := hW_len ▸ dist_le W
-        have hd_pos : 0 < G.dist j k := W.reachable.pos_dist_of_ne (ne_of_lt hjk)
-        have hd1 : G.dist j k ≠ 1 := mt dist_eq_one_iff_adj.mp h_nadj
-        have hd2 : G.dist j k = 2 := by omega
-        have hdirected := h j k hjk W (by rw [hW_len, hd2])
+        have hd2 : G.dist j k = 2 :=
+          dist_eq_two_of_mid_not_adj (ne_of_lt hjk) hadj_ij.symm hadj_ik h_nadj
+        have hdirected := h j k hjk W (show W.length = G.dist j k from by rw [hd2]; rfl)
         -- hdirected : IsDirectedWalk G [j, i, k]; first step requires j < i, false
         exact absurd hdirected.1.2 (not_lt.mpr hij.le)
       · -- Case k < j: build walk k → i → j, get contradiction
-        -- hkj : j > k, equivalently k < j
         by_contra h_nadj
         let W := Walk.cons hadj_ik.symm (Walk.cons hadj_ij Walk.nil)
-        have hW_len : W.length = 2 := rfl
-        have hkj' : k < j := hkj
-        have hd_le : G.dist k j ≤ 2 := hW_len ▸ dist_le W
-        have hd_pos : 0 < G.dist k j := W.reachable.pos_dist_of_ne (ne_of_lt hkj')
-        have hd1 : G.dist k j ≠ 1 := fun h => h_nadj (dist_eq_one_iff_adj.mp h).symm
-        have hd2 : G.dist k j = 2 := by omega
-        have hdirected := h k j hkj' W (by rw [hW_len, hd2])
+        have hd2 : G.dist k j = 2 :=
+          dist_eq_two_of_mid_not_adj (ne_of_lt hkj) hadj_ik.symm hadj_ij
+            (fun h => h_nadj h.symm)
+        have hdirected := h k j hkj W (show W.length = G.dist k j from by rw [hd2]; rfl)
         -- hdirected : IsDirectedWalk G [k, i, j]; first step requires k < i, false
         exact absurd hdirected.1.2 (not_lt.mpr hik.le)
     · -- Condition 2: i < k → j < k → i ≠ j → G.Adj i k → G.Adj j k → G.Adj i j
@@ -470,25 +469,18 @@ theorem prop_1_4 (G : SimpleGraph V) :
       · -- Case i < j: build walk i → k → j, get contradiction
         by_contra h_nadj
         let W := Walk.cons hadj_ik (Walk.cons hadj_jk.symm Walk.nil)
-        have hW_len : W.length = 2 := rfl
-        have hd_le : G.dist i j ≤ 2 := hW_len ▸ dist_le W
-        have hd_pos : 0 < G.dist i j := W.reachable.pos_dist_of_ne (ne_of_lt hij)
-        have hd1 : G.dist i j ≠ 1 := mt dist_eq_one_iff_adj.mp h_nadj
-        have hd2 : G.dist i j = 2 := by omega
-        have hdirected := h i j hij W (by rw [hW_len, hd2])
+        have hd2 : G.dist i j = 2 :=
+          dist_eq_two_of_mid_not_adj (ne_of_lt hij) hadj_ik hadj_jk.symm h_nadj
+        have hdirected := h i j hij W (show W.length = G.dist i j from by rw [hd2]; rfl)
         -- hdirected : IsDirectedWalk G [i, k, j]; second step requires k < j, false
         exact absurd hdirected.2.1.2 (not_lt.mpr hjk.le)
       · -- Case j < i: build walk j → k → i, get contradiction
-        -- hji : i > j, equivalently j < i
         by_contra h_nadj
         let W := Walk.cons hadj_jk (Walk.cons hadj_ik.symm Walk.nil)
-        have hW_len : W.length = 2 := rfl
-        have hji' : j < i := hji
-        have hd_le : G.dist j i ≤ 2 := hW_len ▸ dist_le W
-        have hd_pos : 0 < G.dist j i := W.reachable.pos_dist_of_ne (ne_of_lt hji')
-        have hd1 : G.dist j i ≠ 1 := fun h => h_nadj (dist_eq_one_iff_adj.mp h).symm
-        have hd2 : G.dist j i = 2 := by omega
-        have hdirected := h j i hji' W (by rw [hW_len, hd2])
+        have hd2 : G.dist j i = 2 :=
+          dist_eq_two_of_mid_not_adj (ne_of_lt hji) hadj_jk hadj_ik.symm
+            (fun h => h_nadj h.symm)
+        have hdirected := h j i hji W (show W.length = G.dist j i from by rw [hd2]; rfl)
         -- hdirected : IsDirectedWalk G [j, k, i]; second step requires k < i, false
         exact absurd hdirected.2.1.2 (not_lt.mpr hik.le)
 

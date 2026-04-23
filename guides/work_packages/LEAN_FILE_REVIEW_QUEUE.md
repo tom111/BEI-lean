@@ -10,7 +10,8 @@ items are:
   `BEI/ClosedGraphs.lean`, `BEI/Corollary3_4.lean`,
   `BEI/CoveredWalks.lean`, `BEI/Definitions.lean`, `BEI/Equidim.lean`
   (cleanup pass complete; structural split tracked in
-  [`EQUIDIM_FILE_SPLIT.md`](EQUIDIM_FILE_SPLIT.md)).
+  [`EQUIDIM_FILE_SPLIT.md`](EQUIDIM_FILE_SPLIT.md)),
+  `BEI/GraphProperties.lean`.
 
 Everything else under `BEI/`, `Supplement/`, and `toMathlib/` in
 `TODO.md` is still pending.
