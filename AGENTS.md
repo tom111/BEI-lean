@@ -33,6 +33,21 @@ For mathematical truth and target statements, use this priority:
 
 If the docs disagree with the code or the paper, treat the docs as stale until checked.
 
+## External Tooling
+
+The repo contains a root-level git submodule:
+
+- [lean4-skills](/home/tom/BEI-lean/lean4-skills): pinned third-party AI tooling / skill repo
+
+It is part of the working environment, but not part of the BEI source tree.
+
+Rules:
+
+- initialize submodules after clone with `git submodule update --init --recursive`;
+- do not edit `lean4-skills/` during normal BEI work unless explicitly asked;
+- if the submodule is updated, treat that as a separate tooling change and commit it
+  separately from theorem or docs work.
+
 
 ## Workflow Directories
 

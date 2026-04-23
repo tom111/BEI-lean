@@ -1,0 +1,3 @@
+[submodule "lean4-skills"]
+	path = lean4-skills
+	url = https://github.com/cameronfreer/lean4-skills.git

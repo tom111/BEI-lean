@@ -31,6 +31,19 @@ There is no test suite. Correctness is enforced by Lean's type checker, so a suc
 snapshot; current theorem status belongs in `TODO.md`, `FORMALIZATION_MAP.md`, and the
 Lean files themselves.
 
+This repo also contains a root-level git submodule:
+
+- `lean4-skills/` — pinned third-party AI tooling / skill repository used by the local
+  agent workflow
+
+After cloning, initialize it with:
+
+```bash
+git submodule update --init --recursive
+```
+
+Do not edit `lean4-skills/` as part of normal BEI work unless explicitly asked.
+
 ## Project Structure
 
 - `BEI/Definitions.lean` — Core mathematical definitions: `BinomialEdgeVars V` (= `V ⊕ V`), notation `x i` and `y i` for the two copies of variables, `binomialEdgeIdeal G`, and `IsClosedGraph G` (Condition (b) of Theorem 1.1 in Herzog et al.)
@@ -62,6 +75,7 @@ Lean files themselves.
 - `toMathlib/SquarefreeMonomialPrimes.lean` — variable-pair ideals (edge ideals), vertex covers, and minimal prime ↔ minimal vertex cover classification
 - `toMathlib/HeightVariableIdeal.lean` — quotients by variable ideals, quotient equivalences, and Krull-dimension formulas used in the Proposition 1.6 CM branch
 - `scripts/generate_repo_stats.py` — computes code-size and git-history statistics for `docs/_data/repo_stats.json`, which is used by the homepage
+- `lean4-skills/` — root-level submodule pinning the external Lean AI skill/tooling repo used by the local workflow
 - `BEI.lean` — Root library entry point
 - `BEI.tex` — Reference paper with the mathematical content being formalized
 - `TODO.md` / `FORMALIZATION_MAP.md` — human-facing status docs that must be updated whenever theorem status or file layout changes
