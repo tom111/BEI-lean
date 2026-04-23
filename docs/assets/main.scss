@@ -686,6 +686,14 @@ a.theorem-pane__link {
   margin-right: 0.4rem;
 }
 
+.stats-chart__legend-note {
+  margin-top: 0.3rem;
+  font-size: 0.92rem;
+  color: var(--ink-muted);
+  font-style: italic;
+  line-height: 1.5;
+}
+
 .stats-chart__bounds {
   position: absolute;
   inset: 0 auto 1.6rem 0;

@@ -4,27 +4,27 @@
   "summary": {
     "lean_files": 50,
     "lean_files_display": "50",
-    "lean_lines": 39090,
-    "lean_lines_display": "39,090",
-    "nonblank_lean_lines": 36661,
-    "nonblank_lean_lines_display": "36,661",
+    "lean_lines": 39095,
+    "lean_lines_display": "39,095",
+    "nonblank_lean_lines": 36666,
+    "nonblank_lean_lines_display": "36,666",
     "lean_snapshot_count": 8,
     "lean_snapshot_count_display": "8",
-    "lean_lines_recent_change": 14582,
-    "lean_lines_recent_change_display": "+14,582",
+    "lean_lines_recent_change": 14587,
+    "lean_lines_recent_change_display": "+14,587",
     "lean_lines_recent_change_direction": "up",
     "lean_snapshot_start_date": "2026-04-13",
     "lean_snapshot_end_date": "2026-04-23",
     "lean_snapshot_start_label": "Apr 13, 2026",
     "lean_snapshot_end_label": "Apr 23, 2026",
-    "total_commits": 370,
-    "total_commits_display": "370",
-    "commits_last_30_days": 321,
-    "commits_last_30_days_display": "321",
-    "commits_last_90_days": 370,
-    "commits_last_90_days_display": "370",
-    "commits_last_365_days": 370,
-    "commits_last_365_days_display": "370",
+    "total_commits": 373,
+    "total_commits_display": "373",
+    "commits_last_30_days": 324,
+    "commits_last_30_days_display": "324",
+    "commits_last_90_days": 373,
+    "commits_last_90_days_display": "373",
+    "commits_last_365_days": 373,
+    "commits_last_365_days_display": "373",
     "first_commit_date": "2026-02-17",
     "latest_commit_date": "2026-04-23",
     "active_days": 66,
@@ -35,10 +35,10 @@
       "label": "BEI/",
       "file_count": 24,
       "file_count_display": "24",
-      "total_lines": 27307,
-      "total_lines_display": "27,307",
-      "nonblank_lines": 25846,
-      "nonblank_lines_display": "25,846"
+      "total_lines": 27312,
+      "total_lines_display": "27,312",
+      "nonblank_lines": 25851,
+      "nonblank_lines_display": "25,851"
     },
     {
       "label": "toMathlib/",
@@ -143,20 +143,20 @@
       "date": "2026-04-23",
       "label": "Apr 23, 2026",
       "short_label": "Apr 23",
-      "lean_lines": 39090,
-      "lean_lines_display": "39,090",
-      "delta_from_previous": 537,
-      "delta_from_previous_display": "+537",
+      "lean_lines": 39095,
+      "lean_lines_display": "39,095",
+      "delta_from_previous": 542,
+      "delta_from_previous_display": "+542",
       "delta_direction": "up"
     }
   ],
   "lean_line_chart": {
     "width": 720,
     "height": 220,
-    "polyline_points": "20.0,202.0 34.8,196.7 49.6,196.3 64.3,196.1 79.1,195.4 93.9,195.4 108.7,195.2 123.5,194.2 138.3,193.8 153.0,190.9 167.8,186.8 182.6,185.0 197.4,182.1 212.2,182.0 227.0,170.9 241.7,167.6 256.5,168.3 271.3,167.0 286.1,164.9 300.9,163.0 315.7,158.5 330.4,153.9 345.2,150.5 360.0,140.8 374.8,139.7 389.6,136.5 404.3,133.8 419.1,132.6 433.9,130.4 448.7,126.3 463.5,122.4 478.3,117.7 493.0,113.4 507.8,112.4 522.6,110.8 537.4,106.2 552.2,100.9 567.0,95.9 581.7,91.9 596.5,86.6 611.3,78.4 626.1,68.3 640.9,51.9 655.7,40.8 670.4,28.8 685.2,20.5 700.0,18.0",
-    "area_points": "20.0,202.0 20.0,202.0 34.8,196.7 49.6,196.3 64.3,196.1 79.1,195.4 93.9,195.4 108.7,195.2 123.5,194.2 138.3,193.8 153.0,190.9 167.8,186.8 182.6,185.0 197.4,182.1 212.2,182.0 227.0,170.9 241.7,167.6 256.5,168.3 271.3,167.0 286.1,164.9 300.9,163.0 315.7,158.5 330.4,153.9 345.2,150.5 360.0,140.8 374.8,139.7 389.6,136.5 404.3,133.8 419.1,132.6 433.9,130.4 448.7,126.3 463.5,122.4 478.3,117.7 493.0,113.4 507.8,112.4 522.6,110.8 537.4,106.2 552.2,100.9 567.0,95.9 581.7,91.9 596.5,86.6 611.3,78.4 626.1,68.3 640.9,51.9 655.7,40.8 670.4,28.8 685.2,20.5 700.0,18.0 700.0,202.0",
+    "polyline_points": "20.0,202.0 34.8,196.7 49.6,196.3 64.3,196.1 79.1,195.4 93.9,195.4 108.7,195.2 123.5,194.2 138.3,193.8 153.0,190.9 167.8,186.8 182.6,185.1 197.4,182.1 212.2,182.0 227.0,170.9 241.7,167.6 256.5,168.3 271.3,167.0 286.1,164.9 300.9,163.0 315.7,158.5 330.4,153.9 345.2,150.5 360.0,140.8 374.8,139.7 389.6,136.5 404.3,133.8 419.1,132.6 433.9,130.4 448.7,126.3 463.5,122.4 478.3,117.8 493.0,113.5 507.8,112.4 522.6,110.8 537.4,106.2 552.2,100.9 567.0,95.9 581.7,91.9 596.5,86.7 611.3,78.4 626.1,68.4 640.9,51.9 655.7,40.8 670.4,28.8 685.2,20.6 700.0,18.0",
+    "area_points": "20.0,202.0 20.0,202.0 34.8,196.7 49.6,196.3 64.3,196.1 79.1,195.4 93.9,195.4 108.7,195.2 123.5,194.2 138.3,193.8 153.0,190.9 167.8,186.8 182.6,185.1 197.4,182.1 212.2,182.0 227.0,170.9 241.7,167.6 256.5,168.3 271.3,167.0 286.1,164.9 300.9,163.0 315.7,158.5 330.4,153.9 345.2,150.5 360.0,140.8 374.8,139.7 389.6,136.5 404.3,133.8 419.1,132.6 433.9,130.4 448.7,126.3 463.5,122.4 478.3,117.8 493.0,113.5 507.8,112.4 522.6,110.8 537.4,106.2 552.2,100.9 567.0,95.9 581.7,91.9 596.5,86.7 611.3,78.4 626.1,68.4 640.9,51.9 655.7,40.8 670.4,28.8 685.2,20.6 700.0,18.0 700.0,202.0",
     "min_lines_display": "2",
-    "max_lines_display": "39,090",
+    "max_lines_display": "39,095",
     "x_ticks": [
       {
         "x": 20.0,
@@ -197,6 +197,7 @@
         "date_label": "Mar 09, 2026",
         "title": "Theorem 1.1",
         "description": "Closed graphs characterised by a quadratic Gr\u00f6bner basis.",
+        "note": "The bulk of the work that followed went into Theorem 2.1, which required importing substantial Gr\u00f6bner-basis infrastructure from a Mathlib pull request.",
         "x": 227.0,
         "y": 170.9,
         "label_y": 156.9,
@@ -209,6 +210,7 @@
         "date_label": "Mar 29, 2026",
         "title": "Theorem 3.2 and Corollary 2.2",
         "description": "Prime decomposition of J_G and radicality.",
+        "note": "",
         "x": 374.8,
         "y": 139.7,
         "label_y": 125.7,
@@ -221,9 +223,10 @@
         "date_label": "Apr 06, 2026",
         "title": "Section 4 bridge",
         "description": "Conditional independence ideals identified with binomial edge ideals.",
+        "note": "Closing Proposition 1.6 then required porting and extending a large amount of Cohen\u2013Macaulay machinery into the project \u2014 the costliest infrastructure work of the formalisation.",
         "x": 493.0,
-        "y": 113.4,
-        "label_y": 99.4,
+        "y": 113.5,
+        "label_y": 99.5,
         "lean_lines": 18815,
         "lean_lines_display": "18,815"
       },
@@ -233,8 +236,9 @@
         "date_label": "Apr 22, 2026",
         "title": "Proposition 1.6",
         "description": "Paper-faithful Cohen\u2013Macaulay criterion, axiom-clean.",
+        "note": "",
         "x": 685.2,
-        "y": 20.5,
+        "y": 20.6,
         "label_y": 14.0,
         "lean_lines": 38553,
         "lean_lines_display": "38,553"
@@ -257,15 +261,15 @@
     {
       "month": "2026-04",
       "label": "Apr 2026",
-      "commit_count": 275,
-      "commit_count_display": "275"
+      "commit_count": 278,
+      "commit_count_display": "278"
     }
   ],
   "commits_by_year": [
     {
       "year": "2026",
-      "commit_count": 370,
-      "commit_count_display": "370"
+      "commit_count": 373,
+      "commit_count_display": "373"
     }
   ]
 }

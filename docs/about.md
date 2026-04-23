@@ -44,6 +44,9 @@ title: About
       <li>
         <span class="stats-chart__legend-date">{{ m.date_label }}</span>
         <strong>{{ m.title }}</strong> — {{ m.description }}
+        {% if m.note and m.note != "" %}
+        <div class="stats-chart__legend-note">{{ m.note }}</div>
+        {% endif %}
       </li>
       {% endfor %}
     </ol>

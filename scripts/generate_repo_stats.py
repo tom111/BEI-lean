@@ -24,6 +24,7 @@ MILESTONES: list[dict[str, str]] = [
         "date": "2026-03-09",
         "title": "Theorem 1.1",
         "description": "Closed graphs characterised by a quadratic Gröbner basis.",
+        "note": "The bulk of the work that followed went into Theorem 2.1, which required importing substantial Gröbner-basis infrastructure from a Mathlib pull request.",
     },
     {
         "date": "2026-03-29",
@@ -34,6 +35,7 @@ MILESTONES: list[dict[str, str]] = [
         "date": "2026-04-06",
         "title": "Section 4 bridge",
         "description": "Conditional independence ideals identified with binomial edge ideals.",
+        "note": "Closing Proposition 1.6 then required porting and extending a large amount of Cohen–Macaulay machinery into the project — the costliest infrastructure work of the formalisation.",
     },
     {
         "date": "2026-04-22",
@@ -352,6 +354,7 @@ def build_lean_line_chart(
                 "date_label": day_label(ms["date"]),
                 "title": ms.get("title", ""),
                 "description": ms.get("description", ""),
+                "note": ms.get("note", ""),
                 "x": round(mx, 1),
                 "y": round(my, 1),
                 "label_y": round(max(my - 14, pad_y - 4), 1),
