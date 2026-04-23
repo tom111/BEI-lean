@@ -32,6 +32,10 @@
 
 - `[ ]` Run a file-by-file Lean cleanup pass for simplification, shortening,
   proof golf, and presentation improvements where appropriate.
+  **Follow the per-file recipe in
+  [`guides/work_packages/LEAN_FILE_REVIEW_QUEUE.md`](guides/work_packages/LEAN_FILE_REVIEW_QUEUE.md)**
+  — every file uses `/lean4:refactor` then `/lean4:golf` and the Lean MCP
+  tools, never ad-hoc rewrites.
 
 #### Root
 

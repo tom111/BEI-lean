@@ -13,10 +13,17 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 
 ## Active Work Packages
 
-There are currently no active theorem-critical work packages.
+- [work_packages/EQUIDIM_FILE_SPLIT.md](work_packages/EQUIDIM_FILE_SPLIT.md)
+  — split `BEI/Equidim.lean` (8106 lines) into a `BEI/Equidim/` directory
+  with one file per mathematical block. Supersedes
+  `cleanup/EQUIDIM_DECOMPOSITION.md`.
+- [work_packages/LEAN_FILE_REVIEW_QUEUE.md](work_packages/LEAN_FILE_REVIEW_QUEUE.md)
+  — per-file recipe (`/lean4:refactor` then `/lean4:golf`, with
+  heartbeat tightening) for the remaining files in `TODO.md`'s `Lean
+  File Review Queue`.
 
-Use `cleanup/`, `process/`, and `website/` for ongoing maintenance work until a
-new formalization task appears.
+Otherwise, use `cleanup/`, `process/`, and `website/` for ongoing
+maintenance work until a new formalization task appears.
 
 ## Answers And Decision Notes
 
