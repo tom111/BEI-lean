@@ -63,7 +63,7 @@
 - `[x]` `BEI/PrimeDecompositionDimension.lean`
 - `[x]` `BEI/PrimeIdeals.lean`
 - `[x]` `BEI/Proposition1_6.lean`
-- `[ ]` `BEI/Radical.lean`
+- `[x]` `BEI/Radical.lean`
 - `[ ]` `BEI/ReducedHH.lean`
 - `[ ]` `BEI/Scratch.lean`
 
