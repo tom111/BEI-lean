@@ -22,6 +22,8 @@ new formalization task appears.
 
 - [answers/ANSWER_04_HEIGHT_ADDITIVITY_REPAIR.md](answers/ANSWER_04_HEIGHT_ADDITIVITY_REPAIR.md)
   Dormant infrastructure repair; useful reference, not on the critical path.
+- [answers/ANSWER_05_LEAN_PERFORMANCE_RESEARCH.md](answers/ANSWER_05_LEAN_PERFORMANCE_RESEARCH.md)
+  Source-backed note on reducing heartbeat use and improving Lean/build performance.
 
 ## Cleanup And Refactor Packets
 
