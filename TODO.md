@@ -65,7 +65,7 @@
 - `[x]` `BEI/Proposition1_6.lean`
 - `[x]` `BEI/Radical.lean`
 - `[x]` `BEI/ReducedHH.lean`
-- `[ ]` `BEI/Scratch.lean`
+- `[x]` `BEI/Scratch.lean`
 
 #### `Supplement/`
 

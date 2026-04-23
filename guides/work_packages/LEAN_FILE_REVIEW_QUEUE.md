@@ -17,7 +17,8 @@ items are:
   `BEI/HerzogLemmas.lean`, `BEI/MinimalPrimes.lean`,
   `BEI/MonomialOrder.lean`, `BEI/PrimeDecomposition.lean`,
   `BEI/PrimeDecompositionDimension.lean`, `BEI/PrimeIdeals.lean`,
-  `BEI/Proposition1_6.lean`, `BEI/Radical.lean`, `BEI/ReducedHH.lean`.
+  `BEI/Proposition1_6.lean`, `BEI/Radical.lean`, `BEI/ReducedHH.lean`,
+  `BEI/Scratch.lean` (scratchpad with pre-existing errors; not imported).
 
 Everything else under `BEI/`, `Supplement/`, and `toMathlib/` in
 `TODO.md` is still pending.
