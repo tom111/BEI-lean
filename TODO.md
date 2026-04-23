@@ -214,12 +214,13 @@ The minimal-prime transfer assumes a connected union graph, mirroring `corollary
 
 ### Background / dormant
 
-- `toMathlib/HeightAdditivity.lean` is still incomplete, but it is not currently on the
-  critical path.
-- `Supplement/RauhApproach.lean` remains archived and off the main import path.
-- `lake build` succeeds for the whole project; the only remaining `sorry`s are the two
-  dormant ones in `toMathlib/HeightAdditivity.lean` and the two archived ones in
-  `Supplement/RauhApproach.lean`.
+- `Supplement/RauhApproach.lean` remains archived and off the main import path
+  (not part of the `BEI` or `toMathlib` lean libraries in `lakefile.toml`).
+- `lake build` succeeds for the whole project with **zero active sorries**.
+  `toMathlib/HeightAdditivity.lean` was removed on 2026-04-23 — its main
+  theorem was noted by the file's own comments as mathematically false as
+  stated (counterexample: `⟨x²+1, y²+1⟩` in `ℚ[x,y]` is not prime), and no
+  BEI theorem used it.
 
 ---
 
@@ -250,15 +251,15 @@ Some of these splits still need cleanup, but these are the current live location
 | `BEI/PrimeDecompositionDimension.lean` | 0 | direct equidimensional Prop. 1.6 route complete |
 | `BEI/PrimeDecomposition.lean` | 0 | |
 | `toMathlib/CohenMacaulay/Localization.lean` | 0 | completed CM-localization backport |
-| `toMathlib/HeightAdditivity.lean` | 2 | dormant infrastructure |
 | `toMathlib/GradedCM.lean` | 0 | **Case C CLOSED 2026-04-22**: `caseC_CM_transfer` deleted; `isCohenMacaulayLocalRing_atPrime_of_not_isHomogeneous` now routes through the new finite-free Case C assembly + `CM_localize`. `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant` now requires `[Algebra.FiniteType K A]`, auto-inferred downstream. Axiom-clean. |
 | `toMathlib/GradedAssociatedPrime.lean` | 0 | BH 1.5.6 complete (associated primes homogeneous), axioms `{propext, Classical.choice, Quot.sound}` (2026-04-21) |
 | `toMathlib/GradedFiniteFree.lean` | 0 | **Step C fully PROVED 2026-04-22.** All pieces axiom-clean: B1/B2a/B2b/D, `exists_homogeneous_basis_of_finite_graded`, `exists_homogeneous_decomposition_mem_span_range`, `span_aeval_eq_top_of_homogeneous_basis_lift` (surjectivity), `linearIndependent_aeval_fin_zero` + `linearIndependent_aeval_cons_step` + `linearIndependent_aeval_of_basis_lift` (injectivity via d-induction + finSuccEquiv + regularity), main `finiteFree_over_mvPolynomial_of_homogeneous_regular_sop`. |
 | `toMathlib/GradedRegularSop.lean` | 0 | Full Step A iteration 2026-04-21 + Case C combined assembly `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant_finiteFree` added 2026-04-22. Both axiom-clean. |
-| `Supplement/RauhApproach.lean` | 2 | archived, not on main path |
+| `Supplement/RauhApproach.lean` | 2 | archived, off main build (not a Lake library target) |
 | `BEI/GroebnerDeformation.lean` | 0 | R1 framework **fully closed BEI-side**. `groebnerDeformation_cm_transfer`, `tildeJ_quotient_isCohenMacaulay`: axiom-clean `{propext, Classical.choice, Quot.sound}` as of 2026-04-22 (GradedCM Case C closure removed the last transitive sorryAx). |
 | `BEI/Proposition1_6.lean` | 0 | **AXIOM-CLEAN 2026-04-22.** `proposition_1_6`, `binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm`, `pathGraph_binomialEdgeIdeal_isCohenMacaulay` all depend only on `{propext, Classical.choice, Quot.sound}`. |
-| **Active total** | **0** | **Zero active sorries on the paper-critical path. Proposition 1.6 is fully formalized axiom-clean.** Only dormant sorries remain: `toMathlib/HeightAdditivity.lean` (2, dormant infrastructure) and `Supplement/RauhApproach.lean` (2, archived). |
+| `BEI/Corollary3_4.lean` | 0 | **PAPER-FAITHFUL Cor 3.4 + Cor 3.7 CM branch (2026-04-22/23).** `corollary_3_4`, `corollary_3_4_connected`, `isEquidim_of_isCohenMacaulayRing_binomialEdge`, `corollary_3_7_cm_forward`, `corollary_3_7_cm_backward_fin`, `corollary_3_7_cm_fin`: all axiom-clean. |
+| **Active total** | **0** | **Zero active sorries on the whole `BEI` / `toMathlib` build. Every paper endpoint (Sections 1–4) is axiom-clean `{propext, Classical.choice, Quot.sound}`.** Only off-build archival sorries remain in `Supplement/RauhApproach.lean` (2), which is explicitly not part of the Lake library targets. |
 
 ---
 

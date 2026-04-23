@@ -1689,10 +1689,10 @@ open Classical in
 `|S| + |V| - c(S)` elements, and P_S is a minimal prime over it. Krull's height
 theorem gives `height(P_S) ≤ |S| + |V| - c(S)`.
 
-**Lower bound** (`≥`): Requires height additivity for ideals in disjoint variable
-sets (see `toMathlib/HeightAdditivity.lean`), plus the height computations for
-variable ideals (`toMathlib/HeightVariableIdeal.lean`) and determinantal ideals
-(`toMathlib/HeightDeterminantal.lean`).
+**Lower bound** (`≥`): A BEI-specific three-phase chain of strict prime
+inclusions (Segre chain, x-kill chain, y-kill chain), built from the kernels
+of the successive `lbMap` layering maps. Each phase uses
+`Ideal.primeHeight_add_one_le_of_lt` over a `Finset.induction`.
 
 Reference: Herzog et al. (2010), Lemma 3.1.
 -/

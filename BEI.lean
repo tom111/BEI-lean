@@ -20,6 +20,5 @@ import BEI.Corollary3_4
 -- toMathlib: general-purpose lemmas for potential Mathlib upstreaming
 import toMathlib.HeightVariableIdeal
 import toMathlib.HeightDeterminantal
-import toMathlib.HeightAdditivity
 import toMathlib.CohenMacaulay.Localization
 import toMathlib.CohenMacaulay.Polynomial
