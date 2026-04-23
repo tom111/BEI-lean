@@ -52,6 +52,19 @@ open MvPolynomial
 
 /-! ## Single CI statement -/
 
+/-- Any binomial edge generator coming from an edge of `G` lies in `J_G`. -/
+private lemma binomial_mem_binomialEdgeIdeal_of_adj (G : SimpleGraph Ω) {ω ω' : Ω}
+    (hadj : G.Adj ω ω') :
+    (x (K := K) ω * y ω' - x ω' * y ω) ∈ binomialEdgeIdeal G := by
+  rcases lt_or_gt_of_ne (G.ne_of_adj hadj) with h | h
+  · exact Ideal.subset_span ⟨ω, ω', hadj, h, rfl⟩
+  · have hmem : (x (K := K) ω' * y ω - x ω * y ω') ∈ binomialEdgeIdeal G := by
+      exact Ideal.subset_span ⟨ω', ω, hadj.symm, h, rfl⟩
+    have : (x (K := K) ω * y ω' - x ω' * y ω) = -(x ω' * y ω - x ω * y ω') := by
+      ring
+    rw [this]
+    exact neg_mem hmem
+
 /-- The graph associated to a single CI statement `X_0 _|_ X_S | X_T`
 with binary output. Two states `w, w' in Omega` are adjacent iff they
 agree on the conditioning variables (`proj w = proj w'`) and are
@@ -84,19 +97,7 @@ theorem ciIdeal_single_eq_binomialEdgeIdeal (proj : Ω → α) :
   · -- CI generators ⊆ BEI ideal
     apply Ideal.span_le.mpr
     rintro _ ⟨ω, ω', hproj, hne, rfl⟩
-    rcases lt_or_gt_of_ne hne with h | h
-    · -- ω < ω': directly a BEI generator
-      apply Ideal.subset_span
-      exact ⟨ω, ω', ⟨hproj, hne⟩, h, rfl⟩
-    · -- ω' < ω: negative of a BEI generator
-      have hmem : (x ω' : MvPolynomial (BinomialEdgeVars Ω) K) * y ω - x ω * y ω' ∈
-          binomialEdgeIdeal (ciGraph proj) := by
-        apply Ideal.subset_span
-        exact ⟨ω', ω, ⟨hproj.symm, hne.symm⟩, h, rfl⟩
-      have : (x ω : MvPolynomial (BinomialEdgeVars Ω) K) * y ω' - x ω' * y ω =
-          -(x ω' * y ω - x ω * y ω') := by ring
-      rw [this]
-      exact neg_mem hmem
+    exact binomial_mem_binomialEdgeIdeal_of_adj (K := K) (ciGraph proj) ⟨hproj, hne⟩
   · -- BEI generators ⊆ CI ideal
     apply Ideal.span_le.mpr
     rintro _ ⟨i, j, hadj, _, rfl⟩
@@ -145,19 +146,7 @@ theorem ciIdealSpec_eq_binomialEdgeIdeal (stmt : ι → CIStatement Ω) :
   · -- CI generators ⊆ BEI ideal
     apply Ideal.span_le.mpr
     rintro _ ⟨i, ω, ω', hproj, hne, rfl⟩
-    rcases lt_or_gt_of_ne hne with h | h
-    · -- ω < ω': directly a BEI generator
-      apply Ideal.subset_span
-      exact ⟨ω, ω', ⟨i, hproj, hne⟩, h, rfl⟩
-    · -- ω' < ω: negative of a BEI generator
-      have hmem : (x ω' : MvPolynomial (BinomialEdgeVars Ω) K) * y ω - x ω * y ω' ∈
-          binomialEdgeIdeal (ciGraphSpec stmt) := by
-        apply Ideal.subset_span
-        exact ⟨ω', ω, ⟨i, hproj.symm, hne.symm⟩, h, rfl⟩
-      have : (x ω : MvPolynomial (BinomialEdgeVars Ω) K) * y ω' - x ω' * y ω =
-          -(x ω' * y ω - x ω * y ω') := by ring
-      rw [this]
-      exact neg_mem hmem
+    exact binomial_mem_binomialEdgeIdeal_of_adj (K := K) (ciGraphSpec stmt) ⟨i, hproj, hne⟩
   · -- BEI generators ⊆ CI ideal
     apply Ideal.span_le.mpr
     rintro _ ⟨ω, ω', hadj, _, rfl⟩
@@ -171,7 +160,7 @@ theorem ciIdealSpec_eq_binomialEdgeIdeal (stmt : ι → CIStatement Ω) :
 Transferred from Corollary 2.2 via the bridge theorem. -/
 theorem ciIdealSpec_isRadical [Finite Ω] (stmt : ι → CIStatement Ω) :
     (ciIdealSpec stmt : Ideal (MvPolynomial (BinomialEdgeVars Ω) K)).IsRadical := by
-  cases nonempty_fintype Ω
+  letI := Fintype.ofFinite Ω
   rw [ciIdealSpec_eq_binomialEdgeIdeal]
   exact corollary_2_2 (ciGraphSpec stmt)
 
@@ -180,7 +169,7 @@ Transferred from Theorem 3.2 via the bridge theorem. -/
 theorem ciIdealSpec_primeDecomposition [Finite Ω] (stmt : ι → CIStatement Ω) :
     (ciIdealSpec stmt : Ideal (MvPolynomial (BinomialEdgeVars Ω) K)) =
     ⨅ S : Finset Ω, primeComponent (K := K) (ciGraphSpec stmt) S := by
-  cases nonempty_fintype Ω
+  letI := Fintype.ofFinite Ω
   rw [ciIdealSpec_eq_binomialEdgeIdeal]
   exact theorem_3_2 (ciGraphSpec stmt)
 
@@ -195,6 +184,6 @@ theorem ciIdealSpec_minimalPrimes [Finite Ω] (stmt : ι → CIStatement Ω)
     primeComponent (K := K) (ciGraphSpec stmt) S ∈
       (ciIdealSpec (K := K) stmt).minimalPrimes ↔
     S = ∅ ∨ ∀ i ∈ S, IsCutVertexRelative (ciGraphSpec stmt) S i := by
-  cases nonempty_fintype Ω
+  letI := Fintype.ofFinite Ω
   rw [ciIdealSpec_eq_binomialEdgeIdeal]
   exact corollary_3_9 (ciGraphSpec stmt) S hConn
