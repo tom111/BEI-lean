@@ -83,6 +83,23 @@ private lemma prod_X_list_exponent_one {σ : Type*} {R : Type*} [CommSemiring R]
       exact ih ht' hnd' d' hd'
 
 omit [DecidableEq V] [Fintype V] in
+private lemma pathMonomial_eq_monomial_add
+    (i j : V) (π : List V) (dx dy : BinomialEdgeVars V →₀ ℕ)
+    (hdx : ((((internalVertices π).filter (fun w => j < w)).map Sum.inl).map
+      (fun a => (X a : MvPolynomial (BinomialEdgeVars V) K))).prod = monomial dx 1)
+    (hdy : ((((internalVertices π).filter (fun w => w < i)).map Sum.inr).map
+      (fun a => (X a : MvPolynomial (BinomialEdgeVars V) K))).prod = monomial dy 1) :
+    pathMonomial (K := K) i j π = monomial (dx + dy) 1 := by
+  have hdx' : (((internalVertices π).filter (fun v => j < v)).map
+      (fun v => (X (Sum.inl v) : MvPolynomial (BinomialEdgeVars V) K))).prod = monomial dx 1 := by
+    simpa [List.map_map] using hdx
+  have hdy' : (((internalVertices π).filter (fun v => v < i)).map
+      (fun v => (X (Sum.inr v) : MvPolynomial (BinomialEdgeVars V) K))).prod = monomial dy 1 := by
+    simpa [List.map_map] using hdy
+  simp only [pathMonomial, x, y]
+  rw [hdx', hdy', monomial_mul]; congr 1; ring
+
+omit [DecidableEq V] [Fintype V] in
 /-- The pathMonomial exponent at `Sum.inl v` is 0 when `v ∉ internalVertices π` or `¬(j < v)`. -/
 lemma pathMonomial_exponent_inl_zero
     (i j : V) (π : List V) (v : V)
@@ -94,17 +111,8 @@ lemma pathMonomial_exponent_inl_zero
     ((internalVertices π).filter (fun w => j < w) |>.map Sum.inl)
   obtain ⟨dy, hdy⟩ := prod_X_list_eq_monomial' (R := K)
     ((internalVertices π).filter (fun w => w < i) |>.map Sum.inr)
-  have hpm : pathMonomial (K := K) i j π = monomial (dx + dy) 1 := by
-    simp only [pathMonomial, x, y]
-    rw [show ((internalVertices π).filter (fun w => j < w)).map
-        (fun w => (X (Sum.inl w) : MvPolynomial (BinomialEdgeVars V) K)) =
-        (((internalVertices π).filter (fun w => j < w)).map Sum.inl).map X by
-          simp [List.map_map],
-      show ((internalVertices π).filter (fun w => w < i)).map
-        (fun w => (X (Sum.inr w) : MvPolynomial (BinomialEdgeVars V) K)) =
-        (((internalVertices π).filter (fun w => w < i)).map Sum.inr).map X by
-          simp [List.map_map]]
-    rw [hdx, hdy, monomial_mul]; congr 1; ring
+  have hpm : pathMonomial (K := K) i j π = monomial (dx + dy) 1 :=
+    pathMonomial_eq_monomial_add (K := K) i j π dx dy hdx hdy
   have heq : d = dx + dy :=
     monomial_left_injective (one_ne_zero (α := K)) (hd.symm.trans hpm)
   rw [heq, Finsupp.add_apply]
@@ -133,17 +141,8 @@ lemma pathMonomial_exponent_inr_zero
     ((internalVertices π).filter (fun w => j < w) |>.map Sum.inl)
   obtain ⟨dy, hdy⟩ := prod_X_list_eq_monomial' (R := K)
     ((internalVertices π).filter (fun w => w < i) |>.map Sum.inr)
-  have hpm : pathMonomial (K := K) i j π = monomial (dx + dy) 1 := by
-    simp only [pathMonomial, x, y]
-    rw [show ((internalVertices π).filter (fun w => j < w)).map
-        (fun w => (X (Sum.inl w) : MvPolynomial (BinomialEdgeVars V) K)) =
-        (((internalVertices π).filter (fun w => j < w)).map Sum.inl).map X by
-          simp [List.map_map],
-      show ((internalVertices π).filter (fun w => w < i)).map
-        (fun w => (X (Sum.inr w) : MvPolynomial (BinomialEdgeVars V) K)) =
-        (((internalVertices π).filter (fun w => w < i)).map Sum.inr).map X by
-          simp [List.map_map]]
-    rw [hdx, hdy, monomial_mul]; congr 1; ring
+  have hpm : pathMonomial (K := K) i j π = monomial (dx + dy) 1 :=
+    pathMonomial_eq_monomial_add (K := K) i j π dx dy hdx hdy
   have heq : d = dx + dy :=
     monomial_left_injective (one_ne_zero (α := K)) (hd.symm.trans hpm)
   rw [heq, Finsupp.add_apply]
@@ -173,17 +172,8 @@ lemma pathMonomial_exponent_inl_one
     ((internalVertices π).filter (fun w => j < w) |>.map Sum.inl)
   obtain ⟨dy, hdy⟩ := prod_X_list_eq_monomial' (R := K)
     ((internalVertices π).filter (fun w => w < i) |>.map Sum.inr)
-  have hpm : pathMonomial (K := K) i j π = monomial (dx + dy) 1 := by
-    simp only [pathMonomial, x, y]
-    rw [show ((internalVertices π).filter (fun w => j < w)).map
-        (fun w => (X (Sum.inl w) : MvPolynomial (BinomialEdgeVars V) K)) =
-        (((internalVertices π).filter (fun w => j < w)).map Sum.inl).map X by
-          simp [List.map_map],
-      show ((internalVertices π).filter (fun w => w < i)).map
-        (fun w => (X (Sum.inr w) : MvPolynomial (BinomialEdgeVars V) K)) =
-        (((internalVertices π).filter (fun w => w < i)).map Sum.inr).map X by
-          simp [List.map_map]]
-    rw [hdx, hdy, monomial_mul]; congr 1; ring
+  have hpm : pathMonomial (K := K) i j π = monomial (dx + dy) 1 :=
+    pathMonomial_eq_monomial_add (K := K) i j π dx dy hdx hdy
   have heq : d = dx + dy :=
     monomial_left_injective (one_ne_zero (α := K)) (hd.symm.trans hpm)
   rw [heq, Finsupp.add_apply]
@@ -211,17 +201,8 @@ lemma pathMonomial_exponent_inr_one
     ((internalVertices π).filter (fun w => j < w) |>.map Sum.inl)
   obtain ⟨dy, hdy⟩ := prod_X_list_eq_monomial' (R := K)
     ((internalVertices π).filter (fun w => w < i) |>.map Sum.inr)
-  have hpm : pathMonomial (K := K) i j π = monomial (dx + dy) 1 := by
-    simp only [pathMonomial, x, y]
-    rw [show ((internalVertices π).filter (fun w => j < w)).map
-        (fun w => (X (Sum.inl w) : MvPolynomial (BinomialEdgeVars V) K)) =
-        (((internalVertices π).filter (fun w => j < w)).map Sum.inl).map X by
-          simp [List.map_map],
-      show ((internalVertices π).filter (fun w => w < i)).map
-        (fun w => (X (Sum.inr w) : MvPolynomial (BinomialEdgeVars V) K)) =
-        (((internalVertices π).filter (fun w => w < i)).map Sum.inr).map X by
-          simp [List.map_map]]
-    rw [hdx, hdy, monomial_mul]; congr 1; ring
+  have hpm : pathMonomial (K := K) i j π = monomial (dx + dy) 1 :=
+    pathMonomial_eq_monomial_add (K := K) i j π dx dy hdx hdy
   have heq : d = dx + dy :=
     monomial_left_injective (one_ne_zero (α := K)) (hd.symm.trans hpm)
   rw [heq, Finsupp.add_apply]
@@ -354,17 +335,7 @@ lemma pathMonomial_is_monomial (i j : V) (π : List V) :
     ((internalVertices π).filter (fun v => j < v) |>.map Sum.inl)
   obtain ⟨dy, hdy⟩ := prod_X_list_eq_monomial' (R := K)
     ((internalVertices π).filter (fun v => v < i) |>.map Sum.inr)
-  exact ⟨dx + dy, by
-    simp only [pathMonomial, x, y]
-    rw [show ((internalVertices π).filter (fun v => j < v)).map
-        (fun v => (X (Sum.inl v) : MvPolynomial (BinomialEdgeVars V) K)) =
-        (((internalVertices π).filter (fun v => j < v)).map Sum.inl).map X by
-          simp [List.map_map],
-      show ((internalVertices π).filter (fun v => v < i)).map
-        (fun v => (X (Sum.inr v) : MvPolynomial (BinomialEdgeVars V) K)) =
-        (((internalVertices π).filter (fun v => v < i)).map Sum.inr).map X by
-          simp [List.map_map]]
-    rw [hdx, hdy, monomial_mul]; congr 1; ring⟩
+  exact ⟨dx + dy, pathMonomial_eq_monomial_add (K := K) i j π dx dy hdx hdy⟩
 
 /-! ## Sub-walk internal vertex helpers -/
 
