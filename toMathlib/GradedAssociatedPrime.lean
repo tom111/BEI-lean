@@ -270,10 +270,8 @@ private lemma support_mul_homog_lt
     intro n hn
     rw [Finset.mem_coe, DFinsupp.mem_support_iff] at hn
     rw [Finset.mem_coe]
-    have hcoe : (DirectSum.decompose 𝒜 (z * x) n : A) ≠ 0 := by
-      intro h
-      apply hn
-      exact Subtype.ext h
+    have hcoe : (DirectSum.decompose 𝒜 (z * x) n : A) ≠ 0 :=
+      fun h => hn (Subtype.ext h)
     have heq := DirectSum.coe_decompose_mul_of_left_mem 𝒜 (a := z) (b := x) n hz_mem
     by_cases hkn : k ≤ n
     · -- coeff = z * x_{n-k}

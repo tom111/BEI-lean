@@ -80,7 +80,7 @@
 - `[x]` `toMathlib/CohenMacaulay/TensorPolynomialAway.lean`
 - `[x]` `toMathlib/Equidim/Defs.lean`
 - `[x]` `toMathlib/FiniteFreeEquidim.lean`
-- `[ ]` `toMathlib/GradedAssociatedPrime.lean`
+- `[x]` `toMathlib/GradedAssociatedPrime.lean`
 - `[ ]` `toMathlib/GradedCM.lean`
 - `[ ]` `toMathlib/GradedEquidim.lean`
 - `[ ]` `toMathlib/GradedFiniteFree.lean`
