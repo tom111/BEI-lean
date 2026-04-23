@@ -348,8 +348,8 @@ theorem ringKrullDim_quot_primeComponent_ge (G : SimpleGraph V) (S : Finset V) :
       have hnmem : X (Sum.inl a) ∉ (mk F' ∅).asIdeal := by
         rw [RingHom.mem_ker, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]
         exact dimChainMap_inl_ne_zero G S F' ∅ a haNotS haF'
-      have hlt : mk F' ∅ < mk (insert a F') ∅ := by
-        exact lt_of_le_of_ne hle (fun heq => hnmem (heq ▸ hmem))
+      have hlt : mk F' ∅ < mk (insert a F') ∅ :=
+        lt_of_le_of_ne hle (fun heq => hnmem (heq ▸ hmem))
       rw [Finset.card_insert_of_notMem haF']
       calc Order.coheight (mk (insert a F') ∅) + (↑F'.card + 1)
           = (Order.coheight (mk (insert a F') ∅) + 1) + ↑F'.card := by ring
@@ -379,8 +379,8 @@ theorem ringKrullDim_quot_primeComponent_ge (G : SimpleGraph V) (S : Finset V) :
       have hnmem : X (Sum.inr a) ∉ (mk nonReps F').asIdeal := by
         rw [RingHom.mem_ker, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]
         exact dimChainMap_inr_rep_ne_zero G S nonReps F' a haNotS haNotNonReps haF' ha_rep
-      have hlt : mk nonReps F' < mk nonReps (insert a F') := by
-        exact lt_of_le_of_ne hle (fun heq => hnmem (heq ▸ hmem))
+      have hlt : mk nonReps F' < mk nonReps (insert a F') :=
+        lt_of_le_of_ne hle (fun heq => hnmem (heq ▸ hmem))
       rw [Finset.card_insert_of_notMem haF']
       calc Order.coheight (mk nonReps (insert a F')) + (↑nonReps.card + (↑F'.card + 1))
           = (Order.coheight (mk nonReps (insert a F')) + 1) + (↑nonReps.card + ↑F'.card) := by
@@ -418,8 +418,8 @@ theorem ringKrullDim_quot_primeComponent_ge (G : SimpleGraph V) (S : Finset V) :
       have hnmem : X (Sum.inl a) ∉ (mk (nonReps ∪ F') reps).asIdeal := by
         rw [RingHom.mem_ker, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom]
         exact dimChainMap_inl_ne_zero G S (nonReps ∪ F') reps a haNotS haNotUx
-      have hlt : mk (nonReps ∪ F') reps < mk (nonReps ∪ insert a F') reps := by
-        exact lt_of_le_of_ne hle (fun heq => hnmem (heq ▸ hmem))
+      have hlt : mk (nonReps ∪ F') reps < mk (nonReps ∪ insert a F') reps :=
+        lt_of_le_of_ne hle (fun heq => hnmem (heq ▸ hmem))
       rw [Finset.card_insert_of_notMem haF']
       calc Order.coheight (mk (nonReps ∪ insert a F') reps) +
               (↑nonReps.card + ↑reps.card + (↑F'.card + 1))

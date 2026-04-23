@@ -60,7 +60,7 @@
 - `[x]` `BEI/MinimalPrimes.lean`
 - `[x]` `BEI/MonomialOrder.lean`
 - `[x]` `BEI/PrimeDecomposition.lean`
-- `[ ]` `BEI/PrimeDecompositionDimension.lean`
+- `[x]` `BEI/PrimeDecompositionDimension.lean`
 - `[ ]` `BEI/PrimeIdeals.lean`
 - `[ ]` `BEI/Proposition1_6.lean`
 - `[ ]` `BEI/Radical.lean`
