@@ -88,7 +88,7 @@ than theorem-critical formalization.
 
 #### `BEI/`
 
-- `[ ]` `BEI/AdmissiblePaths.lean`
+- `[x]` `BEI/AdmissiblePaths.lean`
 - `[ ]` `BEI/CIIdeals.lean`
 - `[ ]` `BEI/ClosedGraphs.lean`
 - `[ ]` `BEI/Corollary3_4.lean`

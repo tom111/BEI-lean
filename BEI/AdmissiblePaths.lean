@@ -599,8 +599,7 @@ private lemma subwalk_props (G : SimpleGraph V) (π : List V) (v₀ i j : V)
     · exact Or.inr (Or.inr (Or.inr (hij.trans h)))
   · -- α'.Chain'
     change List.IsChain (fun a b => G.Adj a b) ((π.take (k + 1)).reverse)
-    rw [List.isChain_reverse]
-    exact List.IsChain.imp (fun _ _ h => G.symm h) (List.IsChain.take hπW' (k + 1))
+    exact chain'_reverse G (π.take (k + 1)) (List.IsChain.take hπW' (k + 1))
 
 /-- Analogous sub-walk properties for Case B (above-j vertex v₀). -/
 private lemma subwalk_props_above (G : SimpleGraph V) (π : List V) (v₀ i j : V)
@@ -683,8 +682,7 @@ private lemma subwalk_props_above (G : SimpleGraph V) (π : List V) (v₀ i j : 
     List.nodup_reverse.mpr ((List.take_sublist (k + 1) π).nodup hπND)
   have hα'W : α'.IsChain (fun a b => G.Adj a b) := by
     change List.IsChain (fun a b => G.Adj a b) ((π.take (k + 1)).reverse)
-    rw [List.isChain_reverse]
-    exact List.IsChain.imp (fun _ _ h => G.symm h) (List.IsChain.take hπW' (k + 1))
+    exact chain'_reverse G (π.take (k + 1)) (List.IsChain.take hπW' (k + 1))
   -- *** β.reverse properties ***
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · -- β.reverse.head? = some j (= β.getLast?)
