@@ -21,7 +21,8 @@ items are:
   `BEI/Scratch.lean` (scratchpad with pre-existing errors; not imported),
   `Supplement/RauhApproach.lean` (archived alternative; not imported),
   `toMathlib/CohenMacaulay/Basic.lean`, `toMathlib/CohenMacaulay/Defs.lean`,
-  `toMathlib/CohenMacaulay/Localization.lean`.
+  `toMathlib/CohenMacaulay/Localization.lean`,
+  `toMathlib/CohenMacaulay/Polynomial.lean`.
 
 Everything else under `BEI/`, `Supplement/`, and `toMathlib/` in
 `TODO.md` is still pending.

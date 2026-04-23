@@ -76,7 +76,7 @@
 - `[x]` `toMathlib/CohenMacaulay/Basic.lean`
 - `[x]` `toMathlib/CohenMacaulay/Defs.lean`
 - `[x]` `toMathlib/CohenMacaulay/Localization.lean`
-- `[ ]` `toMathlib/CohenMacaulay/Polynomial.lean`
+- `[x]` `toMathlib/CohenMacaulay/Polynomial.lean`
 - `[ ]` `toMathlib/CohenMacaulay/TensorPolynomialAway.lean`
 - `[ ]` `toMathlib/Equidim/Defs.lean`
 - `[ ]` `toMathlib/FiniteFreeEquidim.lean`

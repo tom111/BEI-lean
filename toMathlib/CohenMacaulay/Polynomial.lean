@@ -248,9 +248,6 @@ private lemma evalMap_map_units
     ⟨s.eval 0, (Ideal.mem_primeCompl_iff.mpr (eval_zero_not_mem_comap_of_not_mem hX
       (Ideal.mem_primeCompl_iff.mp hs)))⟩
 
-set_option maxHeartbeats 800000 in
--- Higher heartbeats needed: universe polymorphism + localization + quotient algebra
--- inference for the explicit RingEquiv construction below.
 /-- Ring equiv between `QuotSMulTop aX Rp` and `Localization.AtPrime (P.comap C)`,
 where `Rp = A[X]_P` and `aX` is the image of `X` in `Rp`. -/
 private noncomputable def quotSMulTopPolynomialLocalizationEquiv
@@ -632,11 +629,11 @@ For a Noetherian CM ring `B`, every localization `B[X]_Q` at a prime `Q` of
   handled by a 1-element weakly regular sequence.
 -/
 
-set_option maxHeartbeats 800000 in
--- Higher heartbeats needed: induction over dimension with case-by-case
--- construction of regular sequences and CM transfer lemmas makes unification slow.
+set_option maxHeartbeats 400000 in
 /-- For a CM Noetherian ring `B` and prime `Q` of `B[X]` with
-`Q.primeHeight ≤ d`, the localization `B[X]_Q` is CM local. -/
+`Q.primeHeight ≤ d`, the localization `B[X]_Q` is CM local.
+Raised heartbeats: the induction case elaborates several
+CM-transfer / localization `IsSMulRegular` rewrites. -/
 private lemma cm_localize_polynomial_of_cm_aux (d : ℕ) :
     ∀ (B : Type u) [CommRing B] [IsNoetherianRing B] [IsCohenMacaulayRing B]
       (Q : Ideal (Polynomial B)) [Q.IsPrime],
@@ -1279,9 +1276,6 @@ section MvPolynomial
 
 variable (K : Type u) [Field K]
 
-set_option maxHeartbeats 400000 in
--- Higher heartbeats needed: induction + MvPolynomial.finSuccEquiv transfer
--- triggers nontrivial algebra/ring equivalence inference.
 /-- **Multivariate polynomial rings over fields are Cohen-Macaulay.**
 
 Proof by induction on the number of variables using `MvPolynomial.finSuccEquiv`. -/
@@ -1389,10 +1383,6 @@ private lemma exists_weaklyRegular_length_eq_ringKrullDim_of_isCohenMacaulayLoca
   have hCMeq : ringKrullDim R = ringDepth R := IsCohenMacaulayLocalRing.depth_eq_dim
   rw [hCMeq, ← hlen]
 
-set_option maxHeartbeats 800000 in
--- Increased heartbeat limit: this proof case-splits on X ∈ p vs X ∉ p and
--- builds explicit regular sequences in each branch; each branch does substantial
--- simp/rewrite work on quotient-localization identifications.
 /-- **Core lemma**: if `R` is a CM Noetherian local ring and `p` is a prime of `R[X]`
 whose contraction to `R` is the maximal ideal, then the localization `R[X]_p` is
 Cohen-Macaulay local.
@@ -1560,9 +1550,6 @@ private lemma localization_at_comap_maximal_isCM_isCM_local [IsNoetherianRing R]
       rw [hdimeq, hpheight, hextlen]
     exact isCohenMacaulayLocalRing_of_weaklyRegular_length_eq_dim reg_loc mem'' hdim
 
-set_option maxHeartbeats 800000 in
--- Increased heartbeat limit: constructs the pS prime and the pS.comap C = maxIdeal
--- equation through several IsLocalization comap/map identifications.
 /-- **Polynomial ring over a CM Noetherian ring is CM** (no IsDomain assumption).
 
 This is the translation of upstream `Polynomial.isCM_of_isCM` (mathlib PR #28599)
