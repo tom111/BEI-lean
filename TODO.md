@@ -23,7 +23,7 @@
 | **§3 Lem 3.1** (height formula for `P_S`) | `BEI/PrimeIdeals.lean` | `[x]` proved |
 | **§3 Thm 3.2** (`J_G = ⋂ P_S`) | `BEI/PrimeDecomposition.lean` | `[x]` proved |
 | **§3 Cor 3.3** (dimension formula) | `BEI/PrimeDecompositionDimension.lean` | `[x]` proved |
-| **§3 Cor 3.4** (CM implies `dim = n + c`) | `BEI/PrimeDecompositionDimension.lean` | `[~]` equidimensional surrogate proved; full paper CM statement now achievable via `proposition_1_6_dim_formula` (2026-04-22, axiom-clean) |
+| **§3 Cor 3.4** (CM implies `dim = n + c`) | `BEI/Corollary3_4.lean`, `BEI/PrimeDecompositionDimension.lean` | `[x]` **PAPER-FAITHFUL 2026-04-22** (`corollary_3_4`, axiom-clean): `IsCohenMacaulayRing (R/J_G) → dim(R/J_G) = Fintype.card V + componentCount G ∅`, via standard ℕ-grading + graded-CM-to-finite-free bridge (`toMathlib/GradedEquidim.lean`) + `IsEquidimRing.of_flat_finite` (`toMathlib/FiniteFreeEquidim.lean`) + `corollary_3_4_equidim`. Equidim surrogate still available. |
 | **§3 Prop 3.6** (prime iff components complete) | `BEI/PrimeDecomposition.lean` | `[x]` proved |
 | **§3 Cor 3.7** (cycle equivalences) | `BEI/PrimeDecomposition.lean`, `BEI/MinimalPrimes.lean`, `BEI/PrimeDecompositionDimension.lean` | `[~]` prime/unmixed/equidimensional branches proved; paper CM branch still surrogate-only |
 | **§3 Prop 3.8** (`P_T ⊆ P_S` characterization) | `BEI/MinimalPrimes.lean` | `[x]` proved |
