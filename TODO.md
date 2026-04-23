@@ -93,7 +93,7 @@ than theorem-critical formalization.
 - `[x]` `BEI/ClosedGraphs.lean`
 - `[x]` `BEI/Corollary3_4.lean`
 - `[x]` `BEI/CoveredWalks.lean`
-- `[ ]` `BEI/Definitions.lean`
+- `[x]` `BEI/Definitions.lean`
 - `[ ]` `BEI/Equidim.lean`
 - `[ ]` `BEI/GraphProperties.lean`
 - `[ ]` `BEI/Groebner.lean`
