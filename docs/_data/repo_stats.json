@@ -17,14 +17,14 @@
     "lean_snapshot_end_date": "2026-04-23",
     "lean_snapshot_start_label": "Apr 13, 2026",
     "lean_snapshot_end_label": "Apr 23, 2026",
-    "total_commits": 366,
-    "total_commits_display": "366",
-    "commits_last_30_days": 317,
-    "commits_last_30_days_display": "317",
-    "commits_last_90_days": 366,
-    "commits_last_90_days_display": "366",
-    "commits_last_365_days": 366,
-    "commits_last_365_days_display": "366",
+    "total_commits": 370,
+    "total_commits_display": "370",
+    "commits_last_30_days": 321,
+    "commits_last_30_days_display": "321",
+    "commits_last_90_days": 370,
+    "commits_last_90_days_display": "370",
+    "commits_last_365_days": 370,
+    "commits_last_365_days_display": "370",
     "first_commit_date": "2026-02-17",
     "latest_commit_date": "2026-04-23",
     "active_days": 66,
@@ -189,7 +189,57 @@
     "first_label": "Feb 17, 2026",
     "latest_label": "Apr 23, 2026",
     "point_count": 47,
-    "point_count_display": "47"
+    "point_count_display": "47",
+    "milestones": [
+      {
+        "number": 1,
+        "date": "2026-03-09",
+        "date_label": "Mar 09, 2026",
+        "title": "Theorem 1.1",
+        "description": "Closed graphs characterised by a quadratic Gr\u00f6bner basis.",
+        "x": 227.0,
+        "y": 170.9,
+        "label_y": 156.9,
+        "lean_lines": 6612,
+        "lean_lines_display": "6,612"
+      },
+      {
+        "number": 2,
+        "date": "2026-03-29",
+        "date_label": "Mar 29, 2026",
+        "title": "Theorem 3.2 and Corollary 2.2",
+        "description": "Prime decomposition of J_G and radicality.",
+        "x": 374.8,
+        "y": 139.7,
+        "label_y": 125.7,
+        "lean_lines": 13231,
+        "lean_lines_display": "13,231"
+      },
+      {
+        "number": 3,
+        "date": "2026-04-06",
+        "date_label": "Apr 06, 2026",
+        "title": "Section 4 bridge",
+        "description": "Conditional independence ideals identified with binomial edge ideals.",
+        "x": 493.0,
+        "y": 113.4,
+        "label_y": 99.4,
+        "lean_lines": 18815,
+        "lean_lines_display": "18,815"
+      },
+      {
+        "number": 4,
+        "date": "2026-04-22",
+        "date_label": "Apr 22, 2026",
+        "title": "Proposition 1.6",
+        "description": "Paper-faithful Cohen\u2013Macaulay criterion, axiom-clean.",
+        "x": 685.2,
+        "y": 20.5,
+        "label_y": 14.0,
+        "lean_lines": 38553,
+        "lean_lines_display": "38,553"
+      }
+    ]
   },
   "recent_months": [
     {
@@ -207,15 +257,15 @@
     {
       "month": "2026-04",
       "label": "Apr 2026",
-      "commit_count": 271,
-      "commit_count_display": "271"
+      "commit_count": 275,
+      "commit_count_display": "275"
     }
   ],
   "commits_by_year": [
     {
       "year": "2026",
-      "commit_count": 366,
-      "commit_count_display": "366"
+      "commit_count": 370,
+      "commit_count_display": "370"
     }
   ]
 }

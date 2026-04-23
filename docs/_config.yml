@@ -2,6 +2,8 @@ title: BEI Formalization
 description: Lean formalization of Herzog et al. (2010)
 theme: minima
 markdown: kramdown
+kramdown:
+  math_engine:
 header_pages:
   - overview.md
   - foundations.md

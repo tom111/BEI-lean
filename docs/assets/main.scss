@@ -621,6 +621,71 @@ a.theorem-pane__link {
   stroke-linejoin: round;
 }
 
+.stats-chart__milestone-stem {
+  stroke: var(--ink-muted);
+  stroke-width: 0.8;
+  stroke-dasharray: 2 2;
+}
+
+.stats-chart__milestone-dot {
+  fill: var(--paper);
+  stroke: var(--link);
+  stroke-width: 1.8;
+}
+
+.stats-chart__milestone-label-bg {
+  fill: var(--link);
+  stroke: none;
+}
+
+.stats-chart__milestone-label {
+  fill: var(--paper);
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.stats-chart__legend {
+  margin: 1.2rem 0 0;
+  padding: 0 0 0 0;
+  list-style: none;
+  counter-reset: milestone;
+  font-size: 0.96rem;
+  color: var(--ink);
+}
+
+.stats-chart__legend li {
+  position: relative;
+  padding: 0.35rem 0 0.35rem 2rem;
+  counter-increment: milestone;
+  border-top: 1px solid var(--rule);
+}
+
+.stats-chart__legend li:first-child {
+  border-top: 0;
+}
+
+.stats-chart__legend li::before {
+  content: counter(milestone);
+  position: absolute;
+  left: 0;
+  top: 0.45rem;
+  width: 1.3rem;
+  height: 1.3rem;
+  border-radius: 50%;
+  background: var(--link);
+  color: var(--paper);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.3rem;
+}
+
+.stats-chart__legend-date {
+  color: var(--ink-muted);
+  margin-right: 0.4rem;
+}
+
 .stats-chart__bounds {
   position: absolute;
   inset: 0 auto 1.6rem 0;

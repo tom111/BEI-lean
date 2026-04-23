@@ -19,6 +19,29 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_PATH = REPO_ROOT / "docs" / "_data" / "repo_stats.json"
 LEAN_LINE_CACHE: dict[str, int] = {}
 
+MILESTONES: list[dict[str, str]] = [
+    {
+        "date": "2026-03-09",
+        "title": "Theorem 1.1",
+        "description": "Closed graphs characterised by a quadratic Gröbner basis.",
+    },
+    {
+        "date": "2026-03-29",
+        "title": "Theorem 3.2 and Corollary 2.2",
+        "description": "Prime decomposition of J_G and radicality.",
+    },
+    {
+        "date": "2026-04-06",
+        "title": "Section 4 bridge",
+        "description": "Conditional independence ideals identified with binomial edge ideals.",
+    },
+    {
+        "date": "2026-04-22",
+        "title": "Proposition 1.6",
+        "description": "Paper-faithful Cohen–Macaulay criterion, axiom-clean.",
+    },
+]
+
 
 @dataclass
 class LeanFileStats:
@@ -245,6 +268,7 @@ def summarize_lean_history(
 
 def build_lean_line_chart(
     history_rows: list[dict[str, int | str]],
+    milestones: list[dict[str, str]] | None = None,
     width: int = 720,
     height: int = 220,
     tick_count: int = 5,
@@ -314,6 +338,27 @@ def build_lean_line_chart(
         for index in tick_indices
     ]
 
+    milestone_markers: list[dict[str, int | str | float]] = []
+    if milestones:
+        date_to_index = {str(row["date"]): i for i, row in enumerate(history_rows)}
+        for i, ms in enumerate(milestones, start=1):
+            idx = date_to_index.get(ms["date"])
+            if idx is None:
+                continue
+            mx, my = points[idx]
+            milestone_markers.append({
+                "number": i,
+                "date": ms["date"],
+                "date_label": day_label(ms["date"]),
+                "title": ms.get("title", ""),
+                "description": ms.get("description", ""),
+                "x": round(mx, 1),
+                "y": round(my, 1),
+                "label_y": round(max(my - 14, pad_y - 4), 1),
+                "lean_lines": int(history_rows[idx]["lean_lines"]),
+                "lean_lines_display": str(history_rows[idx]["lean_lines_display"]),
+            })
+
     return {
         "width": width,
         "height": height,
@@ -328,6 +373,7 @@ def build_lean_line_chart(
         "latest_label": str(history_rows[-1]["label"]),
         "point_count": len(history_rows),
         "point_count_display": format_int(len(history_rows)),
+        "milestones": milestone_markers,
     }
 
 
@@ -409,7 +455,7 @@ def main() -> None:
         "summary": {**lean_summary, **lean_history_summary, **git_summary},
         "directory_breakdown": directory_rows,
         "recent_lean_history": lean_history_rows,
-        "lean_line_chart": build_lean_line_chart(full_lean_history_rows),
+        "lean_line_chart": build_lean_line_chart(full_lean_history_rows, MILESTONES),
         "recent_months": recent_month_rows,
         "commits_by_year": yearly_rows,
     }

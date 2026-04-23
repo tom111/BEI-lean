@@ -11,7 +11,7 @@ title: About
 
 <div class="stats-panels">
   <div class="stats-panel">
-    <div class="stats-chart" role="img" aria-label="Total Lean lines across the project history">
+    <div class="stats-chart" role="img" aria-label="Total Lean lines across the project history, with numbered milestones">
       <div class="stats-chart__bounds">
         <span>{{ line_chart.max_lines_display }}</span>
         <span>{{ line_chart.min_lines_display }}</span>
@@ -19,6 +19,14 @@ title: About
       <svg viewBox="0 0 {{ line_chart.width }} {{ line_chart.height }}" aria-hidden="true">
         <polygon class="stats-chart__area" points="{{ line_chart.area_points }}"></polygon>
         <polyline class="stats-chart__line" points="{{ line_chart.polyline_points }}"></polyline>
+        {% for m in line_chart.milestones %}
+        <g class="stats-chart__milestone">
+          <line class="stats-chart__milestone-stem" x1="{{ m.x }}" y1="{{ m.y }}" x2="{{ m.x }}" y2="{{ m.label_y }}"></line>
+          <circle class="stats-chart__milestone-dot" cx="{{ m.x }}" cy="{{ m.y }}" r="4.5"></circle>
+          <circle class="stats-chart__milestone-label-bg" cx="{{ m.x }}" cy="{{ m.label_y }}" r="8"></circle>
+          <text class="stats-chart__milestone-label" x="{{ m.x }}" y="{{ m.label_y }}" text-anchor="middle" dy="0.35em">{{ m.number }}</text>
+        </g>
+        {% endfor %}
       </svg>
       <div class="stats-chart__ticks" aria-hidden="true">
         {% for tick in line_chart.x_ticks %}
@@ -31,6 +39,14 @@ title: About
       from {{ line_chart.first_label }} to {{ line_chart.latest_label }}
       ({{ line_chart.point_count_display }} snapshots).
     </p>
+    <ol class="stats-chart__legend">
+      {% for m in line_chart.milestones %}
+      <li>
+        <span class="stats-chart__legend-date">{{ m.date_label }}</span>
+        <strong>{{ m.title }}</strong> — {{ m.description }}
+      </li>
+      {% endfor %}
+    </ol>
   </div>
 </div>
 
