@@ -33,7 +33,8 @@ items are:
   `toMathlib/IntegralDimension.lean`, `toMathlib/IsPrimeSpanX.lean`,
   `toMathlib/MonomialIdeal.lean`, `toMathlib/PolynomialAwayTensor.lean`,
   `toMathlib/QuotientDimension.lean`,
-  `toMathlib/SquarefreeMonomialPrimes.lean`.
+  `toMathlib/SquarefreeMonomialPrimes.lean`,
+  `toMathlib/TensorLocalisation.lean`.
 
 Everything else under `BEI/`, `Supplement/`, and `toMathlib/` in
 `TODO.md` is still pending.
