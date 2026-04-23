@@ -818,17 +818,11 @@ private lemma fiberEquiv_iff_normExp_eq (G : SimpleGraph V) (S : Finset V)
     · have := h (Sum.inl j : BinomialEdgeVars V); simp only [normExp_apply_inl] at this; exact this
     · have := h (Sum.inr r : BinomialEdgeVars V); simp only [normExp_apply_inr] at this; exact this
 
-set_option maxHeartbeats 2000000 in
--- Large product-rewriting proof with many `Finsupp.prod` / `Finset.prod` steps.
-/-- `φ(monomial d 1) = monomial (normExp d) 1` for monomials with no S-support. -/
-private lemma primeComponentMap_monomial_noSSupport (G : SimpleGraph V) (S : Finset V)
+private lemma primeComponentMap_monomial_support_congr (G : SimpleGraph V) (S : Finset V)
     {d : BinomialEdgeVars V →₀ ℕ}
     (hd : ∀ i ∈ S, d (Sum.inl i : BinomialEdgeVars V) = 0 ∧
                    d (Sum.inr i : BinomialEdgeVars V) = 0) :
-    (primeComponentMap (K := K) G S) (monomial d 1) = monomial (normExp G S d) 1 := by
-  simp only [primeComponentMap, aeval_monomial, map_one, one_mul]
-  -- Step 1: On d.support, i ∉ S, so simplify the if-else branches
-  have hcongr : d.prod (fun i k =>
+    d.prod (fun i k =>
         (match i with
           | Sum.inl i => if i ∈ S then (0 : MvPolynomial (BinomialEdgeVars V) K) else X (Sum.inl i)
           | Sum.inr i =>
@@ -837,14 +831,64 @@ private lemma primeComponentMap_monomial_noSSupport (G : SimpleGraph V) (S : Fin
         (match i with
           | Sum.inl i => (X (Sum.inl i) : MvPolynomial (BinomialEdgeVars V) K)
           | Sum.inr i => X (Sum.inl i) * X (Sum.inr (compRep G S i))) ^ k) := by
-    apply Finsupp.prod_congr
-    intro j hj
-    rcases j with i | i
-    · have hiS : i ∉ S := fun hiS => Finsupp.mem_support_iff.mp hj (hd i hiS).1
-      simp [hiS]
-    · have hiS : i ∉ S := fun hiS => Finsupp.mem_support_iff.mp hj (hd i hiS).2
-      simp [hiS]
-  rw [hcongr]
+  apply Finsupp.prod_congr
+  intro j hj
+  rcases j with i | i
+  · have hiS : i ∉ S := fun hiS => Finsupp.mem_support_iff.mp hj (hd i hiS).1
+    simp [hiS]
+  · have hiS : i ∉ S := fun hiS => Finsupp.mem_support_iff.mp hj (hd i hiS).2
+    simp [hiS]
+
+private lemma normExp_inr_eq_sum_filter_compRep (G : SimpleGraph V) (S : Finset V)
+    {d : BinomialEdgeVars V →₀ ℕ}
+    (hd : ∀ i ∈ S, d (Sum.inl i : BinomialEdgeVars V) = 0 ∧
+                   d (Sum.inr i : BinomialEdgeVars V) = 0)
+    (r : V) :
+    normExp G S d (Sum.inr r : BinomialEdgeVars V) =
+      ∑ i ∈ Finset.univ.filter (fun i => compRep G S i = r),
+        d (Sum.inr i : BinomialEdgeVars V) := by
+  rw [normExp_apply_inr, Finset.sum_filter]
+  apply Finset.sum_congr rfl
+  intro k _
+  by_cases hkr : compRep G S k = r
+  · by_cases hkS : k ∈ S
+    · simp [hkr, hkS, (hd k hkS).2]
+    · simp [hkr, hkS]
+  · simp [hkr]
+
+private lemma primeComponentMap_inr_prod_noSSupport (G : SimpleGraph V) (S : Finset V)
+    {d : BinomialEdgeVars V →₀ ℕ}
+    (hd : ∀ i ∈ S, d (Sum.inl i : BinomialEdgeVars V) = 0 ∧
+                   d (Sum.inr i : BinomialEdgeVars V) = 0) :
+    ((∏ i : V, X (Sum.inr (compRep G S i) : BinomialEdgeVars V) ^
+        d (Sum.inr i : BinomialEdgeVars V)) : MvPolynomial (BinomialEdgeVars V) K) =
+      ∏ r : V, X (Sum.inr r : BinomialEdgeVars V) ^
+        normExp G S d (Sum.inr r : BinomialEdgeVars V) := by
+  rw [← Finset.prod_fiberwise_of_maps_to (g := compRep G S)
+      (f := fun i => X (Sum.inr (compRep G S i) : BinomialEdgeVars V) ^
+        d (Sum.inr i : BinomialEdgeVars V))
+      (fun _ _ => Finset.mem_univ _)]
+  apply Finset.prod_congr rfl
+  intro r _
+  rw [show ∏ i ∈ Finset.univ.filter (fun i => compRep G S i = r),
+        X (Sum.inr (compRep G S i) : BinomialEdgeVars V) ^
+          d (Sum.inr i : BinomialEdgeVars V) =
+      ∏ i ∈ Finset.univ.filter (fun i => compRep G S i = r),
+        X (Sum.inr r : BinomialEdgeVars V) ^ d (Sum.inr i : BinomialEdgeVars V) from
+    Finset.prod_congr rfl (fun i hi => by
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hi
+      rw [hi])]
+  rw [Finset.prod_pow_eq_pow_sum, ← normExp_inr_eq_sum_filter_compRep G S hd r]
+
+-- Large product-rewriting proof with many `Finsupp.prod` / `Finset.prod` steps.
+/-- `φ(monomial d 1) = monomial (normExp d) 1` for monomials with no S-support. -/
+private lemma primeComponentMap_monomial_noSSupport (G : SimpleGraph V) (S : Finset V)
+    {d : BinomialEdgeVars V →₀ ℕ}
+    (hd : ∀ i ∈ S, d (Sum.inl i : BinomialEdgeVars V) = 0 ∧
+                   d (Sum.inr i : BinomialEdgeVars V) = 0) :
+    (primeComponentMap (K := K) G S) (monomial d 1) = monomial (normExp G S d) 1 := by
+  simp only [primeComponentMap, aeval_monomial, map_one, one_mul]
+  rw [primeComponentMap_monomial_support_congr G S hd]
   -- Step 2: Extend LHS product to Finset.univ
   rw [Finsupp.prod_of_support_subset d (Finset.subset_univ _) _
       (fun j _ => by rcases j with i | i <;> simp)]
@@ -865,32 +909,7 @@ private lemma primeComponentMap_monomial_noSSupport (G : SimpleGraph V) (S : Fin
   rw [Finset.prod_mul_distrib, ← mul_assoc, ← Finset.prod_mul_distrib]
   simp_rw [← pow_add, ← normExp_apply_inl G S d]
   congr 1
-  -- Step 6: Prove y-parts match using prod_fiberwise
-  simp_rw [normExp_apply_inr]
-  rw [← Finset.prod_fiberwise_of_maps_to (g := compRep G S)
-      (f := fun i => X (Sum.inr (compRep G S i) : BinomialEdgeVars V) ^
-                     d (Sum.inr i : BinomialEdgeVars V))
-      (fun _ _ => Finset.mem_univ _)]
-  apply Finset.prod_congr rfl
-  intro r _
-  -- Replace compRep G S i with r inside the fiber
-  rw [show ∏ i ∈ Finset.univ.filter (fun i => compRep G S i = r),
-          X (Sum.inr (compRep G S i) : BinomialEdgeVars V) ^ d (Sum.inr i : BinomialEdgeVars V) =
-      ∏ i ∈ Finset.univ.filter (fun i => compRep G S i = r),
-          X (Sum.inr r : BinomialEdgeVars V) ^ d (Sum.inr i : BinomialEdgeVars V) from
-    Finset.prod_congr rfl (fun i hi => by
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hi; rw [hi])]
-  rw [Finset.prod_pow_eq_pow_sum]
-  congr 1
-  -- Sum equality: ∑ i ∈ filter(rep = r), d(inr i) = ∑ k, if rep k = r ∧ k ∉ S then d(inr k) else 0
-  rw [Finset.sum_filter]
-  apply Finset.sum_congr rfl
-  intro k _
-  by_cases hkr : compRep G S k = r
-  · by_cases hkS : k ∈ S
-    · simp [hkr, hkS, (hd k hkS).2]
-    · simp [hkr, hkS]
-  · simp [hkr]
+  exact primeComponentMap_inr_prod_noSSupport G S hd
 
 /-! #### Main proof: ker(φ) ≤ P_S(G) -/
 
@@ -914,7 +933,6 @@ private lemma primeComponentMap_S_support_zero (G : SimpleGraph V) (S : Finset V
     apply Finset.prod_eq_zero (Finsupp.mem_support_iff.mpr (Nat.one_le_iff_ne_zero.mp hi))
     simp [hiS, zero_pow (Nat.one_le_iff_ne_zero.mp hi)]
 
-set_option maxHeartbeats 2000000 in
 -- Induction on T.card with multiple fiber-rewriting sub-cases.
 /-- Helper: fiber sums of no-S-support monomials in kernel are in P_S(G).
     Strong induction on T.card. -/
@@ -1107,7 +1125,6 @@ private lemma no_s_ker_mem (G : SimpleGraph V) (S : Finset V) :
             rw [Finset.sum_congr rfl hconv]
             exact hker e
 
-set_option maxHeartbeats 2000000 in
 -- The hard direction: ker(primeComponentMap) ⊆ P_S(G).
 -- Splits f.support into S-support and no-S-support parts; applies no_s_ker_mem.
 private lemma ker_primeComponentMap_le (G : SimpleGraph V) (S : Finset V) :
