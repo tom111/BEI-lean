@@ -6,8 +6,8 @@ title: Overview
 
 <div class="intro-card">
 The site follows the four main sections of the paper. The goal is not only to
-record where each Lean theorem lives, but to show how the Lean declarations are
-packaged relative to the published statements.
+show where each result from the paper appears in the formalization and point to
+the relevant files.
 </div>
 
 ## Aim
@@ -15,8 +15,8 @@ packaged relative to the published statements.
 The formalization stays close to the statements in
 [BEI.tex](https://github.com/tom111/BEI-lean/blob/master/BEI.tex).
 
-The section pages mark each paper result as either an exact statement match or
-an equivalent reformulation.
+When a formal statement is phrased a little differently from the paper, the
+section pages point that out explicitly.
 
 ## Mathematical roadmap
 
@@ -68,12 +68,12 @@ Supporting generic lemmas intended for possible upstreaming live in:
 Each section page records:
 
 - the paper result;
-- the corresponding Lean declaration(s);
+- the corresponding theorem name(s);
 - the file where the proof lives;
-- whether the Lean statement is exact or equivalent.
+- whether the formal statement follows the paper directly or uses an equivalent formulation.
 
 Here:
 
-- `Exact` means the Lean theorem matches the paper statement closely.
+- `Exact` means the formal theorem follows the paper statement closely.
 - `Equivalent` means the mathematics is the same, but the formal statement is
-  packaged differently.
+  phrased differently.

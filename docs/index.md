@@ -8,9 +8,7 @@ title: Binomial Edge Ideals
     <p class="landing-hero__lede">
       This project formalizes the main algebraic results of
       <em>Binomial edge ideals and conditional independence statements</em> in Lean.
-      The named results from Sections 1 through 4 are represented in Lean.
-      The section pages distinguish exact statement matches from equivalent
-      reformulations.
+      All named results from Sections 1 through 4 of the paper are formalized.
     </p>
     <div class="quick-links quick-links--hero">
       <a href="{{ '/overview.html' | relative_url }}">Overview</a>
@@ -29,18 +27,11 @@ title: Binomial Edge Ideals
   <div class="landing-summary">
     <div class="landing-summary__metric">
       <span class="landing-summary__value">21 / 21</span>
-      <span class="landing-summary__label">named results tracked</span>
+      <span class="landing-summary__label">named results from the paper</span>
     </div>
     <div class="landing-summary__metric">
-      <span class="landing-summary__value">5</span>
-      <span class="landing-summary__label">equivalent reformulations</span>
-    </div>
-    <div class="landing-summary__note">
-      <strong>Scope:</strong> the site covers the paper's Gröbner-basis,
-      radicality, prime-decomposition, dimension, minimal-prime, and
-      conditional-independence results. Equivalent packaging remains for
-      Proposition 1.4, Theorem 2.1, Proposition 3.6, Proposition 3.8, and
-      Corollary 3.9; the remaining named results are listed as exact matches.
+      <span class="landing-summary__value">Done</span>
+      <span class="landing-summary__label">project status</span>
     </div>
   </div>
 </div>
@@ -53,8 +44,8 @@ decomposition reflects the graph, and how they connect to conditional
 independence statements from algebraic statistics.
 
 This site is organized by the paper's four sections. Each section page lists
-the paper results, the corresponding Lean declarations, and how closely the
-formal statement matches the published one.
+the paper results, points to the corresponding files, and notes the few places
+where the formal statement is phrased a little differently.
 
 ## Main Results
 
@@ -90,8 +81,8 @@ formal statement matches the published one.
   <div class="result-item result-item--done">
     <span class="result-item__icon" data-icon="&#10003;"></span>
     <div>
-      <strong>Statement map</strong>
-      <span>The section pages mark each named result as either an exact match to the paper statement or an equivalent reformulation.</span>
+      <strong>Guide to the paper</strong>
+      <span>The section pages show where each result from the paper appears in the formalization and point to the relevant files.</span>
     </div>
   </div>
 </div>
@@ -128,9 +119,8 @@ formal statement matches the published one.
 
 ## Featured Theorems
 
-Each card shows a paper statement and the corresponding Lean theorem. The Lean
-side includes the declaration name and a representative snippet, but the section
-pages give the fuller context.
+Each card below pairs a statement from the paper with the corresponding formal
+theorem. The section pages give the fuller context and the file locations.
 
 <div class="featured-theorems">
   {% assign featured_keys = "theorem_1_1,corollary_2_2,theorem_3_2,corollary_3_4,ci_bridge" | split: "," %}
@@ -140,19 +130,19 @@ pages give the fuller context.
   {% endfor %}
 </div>
 
-## Statement Fidelity
+## Notes For Readers
 
-The section pages record whether each Lean declaration matches the paper
-exactly or is packaged as an equivalent reformulation.
+Most entries on the section pages follow the paper statements closely. A small
+number are phrased differently in the formalization, while proving the same
+mathematics.
 
-- Equivalent packaging is used for Proposition 1.4, Theorem 2.1, Proposition 3.6, Proposition 3.8, and Corollary 3.9.
-- All other named paper results listed on the section pages are formalized exactly.
+- This occurs for Proposition 1.4, Theorem 2.1, Proposition 3.6, Proposition 3.8, and Corollary 3.9.
 
 ## Code And Status
 
 <div class="quick-links">
   <a href="https://github.com/tom111/BEI-lean/tree/master/BEI">Lean files</a>
   <a href="https://github.com/tom111/BEI-lean/tree/master/toMathlib">Supporting library</a>
-  <a href="https://github.com/tom111/BEI-lean/blob/master/FORMALIZATION_MAP.md">Formalization map</a>
+  <a href="https://github.com/tom111/BEI-lean/blob/master/FORMALIZATION_MAP.md">Detailed guide to the paper</a>
   <a href="https://github.com/tom111/BEI-lean/blob/master/TODO.md">Current task list</a>
 </div>
