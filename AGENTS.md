@@ -47,6 +47,8 @@ Within `guides/`, the current subdirectories are:
 - [guides/answers](/home/tom/BEI-lean/guides/answers): preserved answers to questions
 - [guides/cleanup](/home/tom/BEI-lean/guides/cleanup): optional refactor / cleanup packets
 - [guides/process](/home/tom/BEI-lean/guides/process): workflow notes
+- [guides/website](/home/tom/BEI-lean/guides/website): public-site planning notes
+- [guides/archive](/home/tom/BEI-lean/guides/archive): completed or superseded guides
 
 Rules:
 
@@ -98,26 +100,34 @@ Do not blur:
 
 Each guide should make clear which of these jobs it is addressing.
 
-### Do not overclaim on Cohen-Macaulayness
+### Keep Cohen-Macaulay claims precise
 
-The repo now has two separate layers:
+The paper-facing Cohen--Macaulay results are now formalized, including
+Proposition 1.6, Corollary 3.4, and Corollary 3.7.
 
-- the equidimensional surrogate in `toMathlib/Equidim/Defs.lean`;
-- the first real CM foundation files in
-  `toMathlib/CohenMacaulay/Defs.lean` and `toMathlib/CohenMacaulay/Basic.lean`.
+Still, keep the layers separate:
 
-This still does **not** mean the CM part of the paper is finished.
+- the equidimensional surrogate in `toMathlib/Equidim/Defs.lean` is support
+  infrastructure, not a substitute for the paper-facing theorems;
+- the local files in `toMathlib/CohenMacaulay/` and related support files are
+  BEI-specific infrastructure and backports, not a claim that the full
+  commutative-algebra theory has been upstreamed to Mathlib;
+- if a Lean theorem is only an equivalent reformulation of the paper, say so
+  explicitly rather than implying verbatim agreement.
 
-Do not:
 
-- describe Proposition 1.6, Corollary 3.4, or Corollary 3.7 CM as proved when they
-  still contain `sorry`;
-- present either the local equidimensional surrogate or the first real CM foundation
-  file as if the full upstream Mathlib CM theory were already available;
-- blur the distinction between a working BEI-specific CM consequence and the full
-  depth-based theory from commutative algebra.
+## Lean Cleanup Guardrails
 
-Prefer documenting exact blockers and the current honest scope of the local CM branch.
+For any Lean simplification, shortening, refactor, or proof-golf pass:
+
+- use the Lean skill workflow and Lean MCP tools as the default working method;
+- require that the whole project still builds cleanly before considering the pass complete;
+- require that the whole project still builds cleanly again before each commit;
+- do not change theorem, lemma, definition, or API statements unless explicitly asked;
+- do not introduce new axioms;
+- if it is unclear whether a cleanup strategy is correct, stable, or worth pursuing,
+  write the questions into a markdown file under [questions](/home/tom/BEI-lean/questions)
+  before proceeding.
 
 
 ## Preferred Answer Style
@@ -134,6 +144,6 @@ When answering repository questions:
 ## Current High-Level Priorities
 
 1. Keep the formalization aligned with the paper in `BEI.tex`.
-2. Help isolate the real blockers for the remaining Section 3 results.
-3. Prefer BEI-specific direct arguments over proving very general infrastructure too early.
+2. Keep status files, public docs, and instruction files truthful and readable.
+3. Keep paper-facing theorems distinct from support infrastructure and cleanup work.
 4. Keep all guides self-contained and usable by Claude as work plans.

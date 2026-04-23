@@ -27,9 +27,9 @@ lake clean
 ```
 
 There is no test suite. Correctness is enforced by Lean's type checker, so a successful
-`lake build` with no errors is required. At the current repo state the whole project
-builds; the only remaining `sorry`s are in dormant or archived files, and the main
-mathematical goal is the remaining paper-faithful Cohen–Macaulay branch.
+`lake build` with no errors is required. Do not treat this file as a live project-status
+snapshot; current theorem status belongs in `TODO.md`, `FORMALIZATION_MAP.md`, and the
+Lean files themselves.
 
 ## Project Structure
 
@@ -46,14 +46,18 @@ mathematical goal is the remaining paper-faithful Cohen–Macaulay branch.
 - `BEI/PrimeIdeals.lean` — `primeComponent`, `componentCount`; Section 3 prime ideal properties
 - `BEI/MinimalPrimes.lean` — Proposition 3.8, Corollary 3.9; minimal prime characterization
 - `BEI/PrimeDecomposition.lean` — Theorem 3.2 and Proposition 3.6
-- `BEI/PrimeDecompositionDimension.lean` — Corollary 3.3, the equidimensional surrogate version `corollary_3_4_equidim`, `corollary_3_7_equidim`, the path equidimensional example, `prop_1_6_equidim`, plus quotient-dimension / equidimensional support lemmas
+- `BEI/PrimeDecompositionDimension.lean` — Corollary 3.3, quotient-dimension lemmas, and equidimensional support results used by the Section 3 development
+- `BEI/Corollary3_4.lean` — Corollary 3.4, the connected-case wrapper, and the paper-facing Cohen--Macaulay cycle criterion package for Corollary 3.7
 - `BEI/CIIdeals.lean` — Section 4: `CIStatement`, `ciGraph`, `ciIdeal`, `ciGraphSpec`, `ciIdealSpec`, the single-statement and specification bridge theorems, and transferred radicality / prime decomposition / minimal-prime theorems
-- `BEI/Equidim.lean` — HH bipartite graph infrastructure, direct-route helpers, `ringKrullDim_bipartiteEdgeMonomialIdeal` (`dim = n + 1`), `ringKrullDim_quotient_radical_equidim`, and paper-side infrastructure over the local working equidimensional surrogate
+- `BEI/Equidim.lean` — HH bipartite graph infrastructure, direct-route helpers, and equidimensional support material used by the paper-facing Section 1 and Section 3 results
 - `toMathlib/Equidim/Defs.lean` — local backport / working definition for the equidimensional surrogate branch
-- `toMathlib/CohenMacaulay/Defs.lean` — first real Cohen–Macaulay foundation layer: `ringDepth`, `IsCohenMacaulayLocalRing`, `IsCohenMacaulayRing`, and the basic inequality `ringDepth ≤ ringKrullDim`
-- `toMathlib/CohenMacaulay/Basic.lean` — quotient-local-ring setup, the easy depth inequality for regular quotients, and the converse regular-quotient CM transfer
-- `toMathlib/CohenMacaulay/Localization.lean` — forward CM transfer, unmixedness, `CM localizes`, and the local-ring global-CM wrapper; the file is now fully proved
-- `toMathlib/CohenMacaulay/Polynomial.lean` — `isCohenMacaulayRing_of_isField`, `isCohenMacaulayRing_polynomial_of_isCohenMacaulayRing_domain`, `isCohenMacaulayRing_mvPolynomial_field`, and the general (non-domain) polynomial CM backport of Mathlib PR #28599: `isCohenMacaulayRing_polynomial_of_isCohenMacaulayRing` and `isCohenMacaulayRing_mvPolynomial_of_isCohenMacaulayRing`; public `isCohenMacaulayLocalRing_of_ringEquiv'` and `isWeaklyRegular_map_ringEquiv`
+- `toMathlib/CohenMacaulay/Defs.lean` — local Cohen--Macaulay definitions such as `ringDepth`, `IsCohenMacaulayLocalRing`, and `IsCohenMacaulayRing`
+- `toMathlib/CohenMacaulay/Basic.lean` — basic quotient and regular-sequence transfer lemmas for the local CM development
+- `toMathlib/CohenMacaulay/Localization.lean` — localization, unmixedness, and local-to-global CM transfer lemmas used in the BEI proofs
+- `toMathlib/CohenMacaulay/Polynomial.lean` — polynomial-ring Cohen--Macaulay lemmas and backported support used by the Section 1 and Section 3 arguments
+- `toMathlib/IntegralDimension.lean` — integral and finite-extension dimension lemmas
+- `toMathlib/FiniteFreeEquidim.lean` — flat / finite / finite-free equidimensional support lemmas
+- `toMathlib/GradedEquidim.lean` — graded equidimensional and local-to-global support for the Section 3 CM dimension argument
 - `toMathlib/MonomialIdeal.lean` — monomial ideals in `MvPolynomial`, variable-generated prime ideals, the prime classification for monomial ideals, `coeff_pow_lexMax`, `radical_isMonomial`, the full primary monomial ideal characterization (`isPrimary_iff`), and supporting structural lemmas
 - `toMathlib/SquarefreeMonomialPrimes.lean` — variable-pair ideals (edge ideals), vertex covers, and minimal prime ↔ minimal vertex cover classification
 - `toMathlib/HeightVariableIdeal.lean` — quotients by variable ideals, quotient equivalences, and Krull-dimension formulas used in the Proposition 1.6 CM branch
@@ -61,10 +65,12 @@ mathematical goal is the remaining paper-faithful Cohen–Macaulay branch.
 - `BEI.tex` — Reference paper with the mathematical content being formalized
 - `TODO.md` / `FORMALIZATION_MAP.md` — human-facing status docs that must be updated whenever theorem status or file layout changes
 - `guides/` — umbrella directory for self-contained agent guides and workflow notes
-  - `guides/work_packages/` — active Claude-facing work packets
+  - `guides/work_packages/` — active Claude-facing work packets; may be empty when no theorem-critical packet is active
   - `guides/answers/` — preserved answers / decision memos
   - `guides/cleanup/` — optional refactor and proof-cleanup packets
   - `guides/process/` — workflow notes
+  - `guides/website/` — public-site planning notes
+  - `guides/archive/` — completed or superseded guides
 - `questions/` — incoming worker questions; preserve question context in any answer guide before deleting the question file
 
 ## Key Mathematical Concepts
@@ -87,7 +93,7 @@ mathematical goal is the remaining paper-faithful Cohen–Macaulay branch.
 - Treat `BEI.tex` and the Lean files as the source of truth.
 - If a theorem is finished, moved, split across files, or downgraded from an earlier claim, update `TODO.md` and `FORMALIZATION_MAP.md` in the same round.
 - Do **not** put project state snapshots in this file — they go stale immediately. Current state belongs in `TODO.md`, `FORMALIZATION_MAP.md`, and the Lean code itself.
-- The equidimensional surrogate branch does **not** count as the paper's depth-based Cohen–Macaulay statement. Keep the distinction clear in docs.
+- Keep paper-facing theorems such as Proposition 1.6, Corollary 3.4, and Corollary 3.7 distinct from auxiliary equidimensional support lemmas and `toMathlib` infrastructure.
 - `OVERVIEW.md`, `NEXT_STEPS_PLAN.md`, and the public `docs/` pages should stay reader-facing; avoid turning them into internal blocker logs.
 
 ## Worker Routine
@@ -116,8 +122,8 @@ task actually requires that.
 - Guides should be self-contained and should preserve the original question context.
 - If blocked, write a focused question in `questions/` about one exact sublemma or API issue, not a broad project-status note.
 - After a question is answered in a new guide under `guides/answers/`, the corresponding question file should be deleted.
-- If a guide has been fully carried out and is no longer needed, the worker may delete that guide.
-- When removing a completed guide, also update `guides/INDEX.md` so the guide list stays truthful.
+- If a guide has been fully carried out and is no longer needed, move it to `guides/archive/`.
+- When archiving a completed guide, also update `guides/INDEX.md` so the guide list stays truthful.
 
 ## After Finishing A Guide
 
@@ -125,6 +131,7 @@ When a guide-driven task is genuinely finished, the worker should do the associa
 in the same round when appropriate:
 
 1. remove or mark complete the guide that has been fully consumed;
+   Prefer moving it to `guides/archive/` rather than deleting it.
 2. update `guides/INDEX.md`;
 3. update `TODO.md` and `FORMALIZATION_MAP.md` if theorem status or file location changed;
 4. update `CLAUDE.md` only if the standing workflow or file structure changed;
@@ -139,3 +146,12 @@ Do not keep obsolete guides around if they now misrepresent the active work.
 - Do not update status files or public docs in the middle of a proof attempt unless theorem status or file layout has actually changed.
 - Before introducing a broad abstraction, check whether a smaller BEI-specific lemma is enough.
 - Commit secured progress in small honest commits. Do not bundle broken proof attempts, speculative cleanup, or stale status updates into the same commit as finished work.
+
+## Lean Cleanup Guardrails
+
+- Use the Lean skill workflow and Lean MCP tools as the default method for cleanup and proof-golf work.
+- For any simplification, shortening, refactor, or proof-golf pass, require that the whole project still builds cleanly before treating the pass as complete.
+- Before each commit, require that the whole project still builds cleanly.
+- Do not change theorem, lemma, definition, or exported API statements during cleanup work unless explicitly instructed.
+- Do not introduce new axioms during cleanup work.
+- If it is unclear whether a cleanup strategy is sound, stable, or worth pursuing, write the open questions into a markdown file under `questions/` before proceeding.
