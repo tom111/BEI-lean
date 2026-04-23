@@ -5,6 +5,34 @@ title: About
 # About
 
 {% assign repo_stats = site.data.repo_stats %}
+{% assign line_chart = repo_stats.lean_line_chart %}
+
+## Lean Code Over Time
+
+<div class="stats-panels">
+  <div class="stats-panel">
+    <div class="stats-chart" role="img" aria-label="Total Lean lines across the project history">
+      <div class="stats-chart__bounds">
+        <span>{{ line_chart.max_lines_display }}</span>
+        <span>{{ line_chart.min_lines_display }}</span>
+      </div>
+      <svg viewBox="0 0 {{ line_chart.width }} {{ line_chart.height }}" aria-hidden="true">
+        <polygon class="stats-chart__area" points="{{ line_chart.area_points }}"></polygon>
+        <polyline class="stats-chart__line" points="{{ line_chart.polyline_points }}"></polyline>
+      </svg>
+      <div class="stats-chart__ticks" aria-hidden="true">
+        {% for tick in line_chart.x_ticks %}
+        <span class="stats-chart__tick" style="left: {{ tick.x_percent }}%;">{{ tick.label }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    <p class="stats-caption">
+      Total Lean lines at the end of each day with Lean-editing activity,
+      from {{ line_chart.first_label }} to {{ line_chart.latest_label }}
+      ({{ line_chart.point_count_display }} snapshots).
+    </p>
+  </div>
+</div>
 
 ## By The Numbers
 

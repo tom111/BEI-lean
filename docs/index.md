@@ -116,49 +116,6 @@ the right. Click through to open the Lean file and read the full proof.
   {% endfor %}
 </div>
 
-{% assign repo_stats = site.data.repo_stats %}
-{% assign line_chart = repo_stats.lean_line_chart %}
-
-## Growth Of The Formalization
-
-<div class="stats-grid">
-  <div class="stats-card">
-    <span class="stats-card__value">{{ repo_stats.summary.lean_lines_display }}</span>
-    <span class="stats-card__label">Lean lines</span>
-  </div>
-  <div class="stats-card">
-    <span class="stats-card__value stats-delta {% if repo_stats.summary.lean_lines_recent_change > 0 %}stats-delta--up{% elsif repo_stats.summary.lean_lines_recent_change < 0 %}stats-delta--down{% else %}stats-delta--flat{% endif %}">{{ repo_stats.summary.lean_lines_recent_change_display }}</span>
-    <span class="stats-card__label">across the latest {{ repo_stats.summary.lean_snapshot_count_display }} snapshots</span>
-  </div>
-</div>
-
-<div class="stats-panels">
-  <div class="stats-panel">
-    <h3>Recent Lean code over time</h3>
-    <div class="stats-chart" role="img" aria-label="Lean lines over time">
-      <div class="stats-chart__bounds">
-        <span>{{ line_chart.max_lines_display }}</span>
-        <span>{{ line_chart.min_lines_display }}</span>
-      </div>
-      <svg viewBox="0 0 {{ line_chart.width }} {{ line_chart.height }}" aria-hidden="true">
-        <polygon class="stats-chart__area" points="{{ line_chart.area_points }}"></polygon>
-        <polyline class="stats-chart__line" points="{{ line_chart.polyline_points }}"></polyline>
-      </svg>
-      <div class="stats-chart__ticks" aria-hidden="true">
-        {% for tick in line_chart.x_ticks %}
-        <span class="stats-chart__tick" style="left: {{ tick.x_percent }}%;">{{ tick.label }}</span>
-        {% endfor %}
-      </div>
-    </div>
-    <p class="stats-caption">
-      One snapshot from the latest Lean-editing commit on each active day, from
-      {{ repo_stats.summary.lean_snapshot_start_label }} to
-      {{ repo_stats.summary.lean_snapshot_end_label }}.
-      More numbers on the <a href="{{ '/about.html' | relative_url }}">about page</a>.
-    </p>
-  </div>
-</div>
-
 ## Go Deeper
 
 <div class="quick-links">

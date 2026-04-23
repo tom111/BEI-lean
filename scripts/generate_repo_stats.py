@@ -245,8 +245,9 @@ def summarize_lean_history(
 
 def build_lean_line_chart(
     history_rows: list[dict[str, int | str]],
-    width: int = 520,
-    height: int = 180,
+    width: int = 720,
+    height: int = 220,
+    tick_count: int = 5,
 ) -> dict[str, int | str | list[dict[str, int | str | float]]]:
     if not history_rows:
         return {
@@ -288,12 +289,27 @@ def build_lean_line_chart(
         ]
     )
 
-    tick_indices = sorted({0, len(history_rows) // 2, len(history_rows) - 1})
+    start_date = datetime.strptime(str(history_rows[0]["date"]), "%Y-%m-%d")
+    end_date = datetime.strptime(str(history_rows[-1]["date"]), "%Y-%m-%d")
+    use_year_labels = (end_date - start_date).days > 180
+
+    def tick_label(row: dict[str, int | str]) -> str:
+        parsed = datetime.strptime(str(row["date"]), "%Y-%m-%d")
+        return parsed.strftime("%b %Y" if use_year_labels else "%b %d")
+
+    if len(history_rows) <= tick_count:
+        tick_indices = list(range(len(history_rows)))
+    else:
+        tick_indices = sorted({
+            round(i * (len(history_rows) - 1) / (tick_count - 1))
+            for i in range(tick_count)
+        })
+
     x_ticks = [
         {
             "x": round(points[index][0], 1),
             "x_percent": round(points[index][0] * 100 / width, 2),
-            "label": history_rows[index]["short_label"],
+            "label": tick_label(history_rows[index]),
         }
         for index in tick_indices
     ]
@@ -306,6 +322,12 @@ def build_lean_line_chart(
         "min_lines_display": format_int(min_lines),
         "max_lines_display": format_int(max_lines),
         "x_ticks": x_ticks,
+        "first_date": str(history_rows[0]["date"]),
+        "latest_date": str(history_rows[-1]["date"]),
+        "first_label": str(history_rows[0]["label"]),
+        "latest_label": str(history_rows[-1]["label"]),
+        "point_count": len(history_rows),
+        "point_count_display": format_int(len(history_rows)),
     }
 
 
@@ -387,7 +409,7 @@ def main() -> None:
         "summary": {**lean_summary, **lean_history_summary, **git_summary},
         "directory_breakdown": directory_rows,
         "recent_lean_history": lean_history_rows,
-        "lean_line_chart": build_lean_line_chart(lean_history_rows),
+        "lean_line_chart": build_lean_line_chart(full_lean_history_rows),
         "recent_months": recent_month_rows,
         "commits_by_year": yearly_rows,
     }
