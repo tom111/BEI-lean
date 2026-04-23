@@ -1,0 +1,89 @@
+{
+  "generated_on": "2026-04-23",
+  "script_path": "scripts/generate_repo_stats.py",
+  "summary": {
+    "lean_files": 49,
+    "lean_files_display": "49",
+    "lean_lines": 38931,
+    "lean_lines_display": "38,931",
+    "nonblank_lean_lines": 36542,
+    "nonblank_lean_lines_display": "36,542",
+    "total_commits": 343,
+    "total_commits_display": "343",
+    "commits_last_30_days": 294,
+    "commits_last_30_days_display": "294",
+    "commits_last_90_days": 343,
+    "commits_last_90_days_display": "343",
+    "commits_last_365_days": 343,
+    "commits_last_365_days_display": "343",
+    "first_commit_date": "2026-02-17",
+    "latest_commit_date": "2026-04-23",
+    "active_days": 66,
+    "active_days_display": "66"
+  },
+  "directory_breakdown": [
+    {
+      "label": "BEI/",
+      "file_count": 23,
+      "file_count_display": "23",
+      "total_lines": 27164,
+      "total_lines_display": "27,164",
+      "nonblank_lines": 25743,
+      "nonblank_lines_display": "25,743"
+    },
+    {
+      "label": "toMathlib/",
+      "file_count": 24,
+      "file_count_display": "24",
+      "total_lines": 10641,
+      "total_lines_display": "10,641",
+      "nonblank_lines": 9738,
+      "nonblank_lines_display": "9,738"
+    },
+    {
+      "label": "Supplement/",
+      "file_count": 1,
+      "file_count_display": "1",
+      "total_lines": 1102,
+      "total_lines_display": "1,102",
+      "nonblank_lines": 1037,
+      "nonblank_lines_display": "1,037"
+    },
+    {
+      "label": "repo root",
+      "file_count": 1,
+      "file_count_display": "1",
+      "total_lines": 24,
+      "total_lines_display": "24",
+      "nonblank_lines": 24,
+      "nonblank_lines_display": "24"
+    }
+  ],
+  "recent_months": [
+    {
+      "month": "2026-02",
+      "label": "Feb 2026",
+      "commit_count": 12,
+      "commit_count_display": "12"
+    },
+    {
+      "month": "2026-03",
+      "label": "Mar 2026",
+      "commit_count": 83,
+      "commit_count_display": "83"
+    },
+    {
+      "month": "2026-04",
+      "label": "Apr 2026",
+      "commit_count": 248,
+      "commit_count_display": "248"
+    }
+  ],
+  "commits_by_year": [
+    {
+      "year": "2026",
+      "commit_count": 343,
+      "commit_count_display": "343"
+    }
+  ]
+}

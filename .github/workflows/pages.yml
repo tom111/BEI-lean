@@ -23,6 +23,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: false
+          fetch-depth: 0
+
+      - name: Generate repository stats
+        run: python3 scripts/generate_repo_stats.py
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
