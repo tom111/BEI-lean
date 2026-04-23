@@ -39,6 +39,21 @@ omit [DecidableEq V] [Fintype V] in
 theorem generatorSet_span (G : SimpleGraph V) :
     Ideal.span (generatorSet (K := K) G) = binomialEdgeIdeal (K := K) G := rfl
 
+omit [DecidableEq V] [Fintype V] in
+/-- A quadratic generator coming from an edge of `G` belongs to `generatorSet G`. -/
+private lemma fij_mem_generatorSet (G : SimpleGraph V) {a b : V}
+    (hadj : G.Adj a b) (hab : a < b) :
+    fij (K := K) a b ∈ generatorSet (K := K) G :=
+  ⟨a, b, hadj, hab, rfl⟩
+
+omit [DecidableEq V] [Fintype V] in
+/-- Any polynomial multiple of a quadratic generator of an edge of `G` lies in `J_G`. -/
+private lemma mul_fij_mem_binomialEdgeIdeal
+    (G : SimpleGraph V) (q : MvPolynomial (BinomialEdgeVars V) K) {a b : V}
+    (hadj : G.Adj a b) (hab : a < b) :
+    q * fij (K := K) a b ∈ binomialEdgeIdeal (K := K) G := by
+  exact Ideal.mul_mem_left _ _ (Ideal.subset_span ⟨a, b, hadj, hab, rfl⟩)
+
 /-! ## Helper lemmas for the Buchberger case analysis -/
 
 omit [DecidableEq V] in
@@ -403,11 +418,11 @@ theorem closed_implies_groebner (G : SimpleGraph V) (h : IsClosedGraph G) :
     rcases lt_or_gt_of_ne heq_j with hjlt | hjgt
     · -- j₁ < j₂: -(y i₁) * fij j₁ j₂, and fij j₁ j₂ ∈ generatorSet
       have hmem : fij (K := K) j₁ j₂ ∈ generatorSet (K := K) G :=
-        ⟨j₁, j₂, hadj_jj, hjlt, rfl⟩
+        fij_mem_generatorSet (K := K) G hadj_jj hjlt
       exact isRemainder_single_mul (fij j₁ j₂) (-(y i₁)) _ hmem
     · -- j₁ > j₂: fij j₁ j₂ = -(fij j₂ j₁)
       have hmem : fij (K := K) j₂ j₁ ∈ generatorSet (K := K) G :=
-        ⟨j₂, j₁, hadj_jj.symm, hjgt, rfl⟩
+        fij_mem_generatorSet (K := K) G hadj_jj.symm hjgt
       have : -(y (K := K) i₁) * fij j₁ j₂ = y i₁ * fij j₂ j₁ := by
         unfold fij; ring
       rw [this]
@@ -420,11 +435,11 @@ theorem closed_implies_groebner (G : SimpleGraph V) (h : IsClosedGraph G) :
     rcases lt_or_gt_of_ne heq_i with hilt | higt
     · -- i₁ < i₂: x j₁ * fij i₁ i₂, and fij i₁ i₂ ∈ generatorSet
       have hmem : fij (K := K) i₁ i₂ ∈ generatorSet (K := K) G :=
-        ⟨i₁, i₂, hadj_ii, hilt, rfl⟩
+        fij_mem_generatorSet (K := K) G hadj_ii hilt
       exact isRemainder_single_mul (fij i₁ i₂) (x j₁) _ hmem
     · -- i₁ > i₂: fij i₁ i₂ = -(fij i₂ i₁)
       have hmem : fij (K := K) i₂ i₁ ∈ generatorSet (K := K) G :=
-        ⟨i₂, i₁, hadj_ii.symm, higt, rfl⟩
+        fij_mem_generatorSet (K := K) G hadj_ii.symm higt
       have : (x (K := K) j₁) * fij i₁ i₂ = -(x j₁) * fij i₂ i₁ := by
         unfold fij; ring
       rw [this]
@@ -443,9 +458,9 @@ theorem closed_implies_groebner (G : SimpleGraph V) (h : IsClosedGraph G) :
         fun h => heq_i (Sum.inl.inj h).symm
       simp_all
     have hmem₁ : fij (K := K) i₁ j₁ ∈ generatorSet (K := K) G :=
-      ⟨i₁, j₁, hadj₁, hij₁, rfl⟩
+      fij_mem_generatorSet (K := K) G hadj₁ hij₁
     have hmem₂ : fij (K := K) i₂ j₂ ∈ generatorSet (K := K) G :=
-      ⟨i₂, j₂, hadj₂, hij₂, rfl⟩
+      fij_mem_generatorSet (K := K) G hadj₂ hij₂
     -- Degree bounds from coprime_degrees_ne + degree_bounds_of_sub
     have hne := coprime_degrees_ne (K := K) i₁ i₂ j₁ j₂ hij₁ hij₂ heq_i
     obtain ⟨hd₁, hd₂⟩ := degree_bounds_of_sub
@@ -543,13 +558,13 @@ theorem groebner_implies_closed (G : SimpleGraph V)
       -- p ∈ J_G; degree p = e_{inl j} + e_{inr i} + e_{inr k}
       have hp_mem : y j * (x i * y k - x k * y i) - y k * (x i * y j - x j * y i) ∈
           binomialEdgeIdeal (K := K) G := by
-        have h1 : x i * y k - x k * y i ∈ binomialEdgeIdeal (K := K) G :=
-          Ideal.subset_span ⟨i, k, hadj_ik, lt_trans hij hjlt, rfl⟩
-        have h2 : x i * y j - x j * y i ∈ binomialEdgeIdeal (K := K) G :=
-          Ideal.subset_span ⟨i, j, hadj_ij, hij, rfl⟩
+        have h1 : y j * fij (K := K) i k ∈ binomialEdgeIdeal (K := K) G := by
+          exact mul_fij_mem_binomialEdgeIdeal (K := K) G (y j) hadj_ik (lt_trans hij hjlt)
+        have h2 : y k * fij (K := K) i j ∈ binomialEdgeIdeal (K := K) G := by
+          exact mul_fij_mem_binomialEdgeIdeal (K := K) G (y k) hadj_ij hij
         exact Ideal.sub_mem (binomialEdgeIdeal (K := K) G)
-          (Ideal.mul_mem_left _ (y j) h1)
-          (Ideal.mul_mem_left _ (y k) h2)
+          (by simpa [fij] using h1)
+          (by simpa [fij] using h2)
       have hp_eq : y j * (x i * y k - x k * y i) - y k * (x i * y j - x j * y i) =
           (x j * y i * y k - x k * y i * y j : MvPolynomial (BinomialEdgeVars V) K) := by ring
       -- Degree of x j * y i * y k
@@ -664,13 +679,13 @@ theorem groebner_implies_closed (G : SimpleGraph V)
       -- degree p = e_{inl k} + e_{inr i} + e_{inr j}
       have hp_mem : y k * (x i * y j - x j * y i) - y j * (x i * y k - x k * y i) ∈
           binomialEdgeIdeal (K := K) G := by
-        have h1 : x i * y j - x j * y i ∈ binomialEdgeIdeal (K := K) G :=
-          Ideal.subset_span ⟨i, j, hadj_ij, hij, rfl⟩
-        have h2 : x i * y k - x k * y i ∈ binomialEdgeIdeal (K := K) G :=
-          Ideal.subset_span ⟨i, k, hadj_ik, hik, rfl⟩
+        have h1 : y k * fij (K := K) i j ∈ binomialEdgeIdeal (K := K) G := by
+          exact mul_fij_mem_binomialEdgeIdeal (K := K) G (y k) hadj_ij hij
+        have h2 : y j * fij (K := K) i k ∈ binomialEdgeIdeal (K := K) G := by
+          exact mul_fij_mem_binomialEdgeIdeal (K := K) G (y j) hadj_ik hik
         exact Ideal.sub_mem (binomialEdgeIdeal (K := K) G)
-          (Ideal.mul_mem_left _ (y k) h1)
-          (Ideal.mul_mem_left _ (y j) h2)
+          (by simpa [fij] using h1)
+          (by simpa [fij] using h2)
       have hp_eq : y k * (x i * y j - x j * y i) - y j * (x i * y k - x k * y i) =
           (x k * y i * y j - x j * y i * y k : MvPolynomial (BinomialEdgeVars V) K) := by ring
       have hdeg1 : binomialEdgeMonomialOrder.degree
@@ -786,13 +801,13 @@ theorem groebner_implies_closed (G : SimpleGraph V)
       -- degree p = e_{inl i} + e_{inl k} + e_{inr j}
       have hp_mem : x j * (x i * y k - x k * y i) - x i * (x j * y k - x k * y j) ∈
           binomialEdgeIdeal (K := K) G := by
-        have h1 : x i * y k - x k * y i ∈ binomialEdgeIdeal (K := K) G :=
-          Ideal.subset_span ⟨i, k, hadj_ik, lt_trans hilt hjk, rfl⟩
-        have h2 : x j * y k - x k * y j ∈ binomialEdgeIdeal (K := K) G :=
-          Ideal.subset_span ⟨j, k, hadj_jk, hjk, rfl⟩
+        have h1 : x j * fij (K := K) i k ∈ binomialEdgeIdeal (K := K) G := by
+          exact mul_fij_mem_binomialEdgeIdeal (K := K) G (x j) hadj_ik (lt_trans hilt hjk)
+        have h2 : x i * fij (K := K) j k ∈ binomialEdgeIdeal (K := K) G := by
+          exact mul_fij_mem_binomialEdgeIdeal (K := K) G (x i) hadj_jk hjk
         exact Ideal.sub_mem (binomialEdgeIdeal (K := K) G)
-          (Ideal.mul_mem_left _ (x j) h1)
-          (Ideal.mul_mem_left _ (x i) h2)
+          (by simpa [fij] using h1)
+          (by simpa [fij] using h2)
       have hp_eq : x j * (x i * y k - x k * y i) - x i * (x j * y k - x k * y j) =
           (x i * x k * y j - x j * x k * y i : MvPolynomial (BinomialEdgeVars V) K) := by ring
       have hdeg1 : binomialEdgeMonomialOrder.degree
@@ -888,13 +903,13 @@ theorem groebner_implies_closed (G : SimpleGraph V)
       -- degree p = e_{inl j} + e_{inl k} + e_{inr i}
       have hp_mem : x i * (x j * y k - x k * y j) - x j * (x i * y k - x k * y i) ∈
           binomialEdgeIdeal (K := K) G := by
-        have h1 : x j * y k - x k * y j ∈ binomialEdgeIdeal (K := K) G :=
-          Ideal.subset_span ⟨j, k, hadj_jk, lt_trans hjlt hik, rfl⟩
-        have h2 : x i * y k - x k * y i ∈ binomialEdgeIdeal (K := K) G :=
-          Ideal.subset_span ⟨i, k, hadj_ik, hik, rfl⟩
+        have h1 : x i * fij (K := K) j k ∈ binomialEdgeIdeal (K := K) G := by
+          exact mul_fij_mem_binomialEdgeIdeal (K := K) G (x i) hadj_jk (lt_trans hjlt hik)
+        have h2 : x j * fij (K := K) i k ∈ binomialEdgeIdeal (K := K) G := by
+          exact mul_fij_mem_binomialEdgeIdeal (K := K) G (x j) hadj_ik hik
         exact Ideal.sub_mem (binomialEdgeIdeal (K := K) G)
-          (Ideal.mul_mem_left _ (x i) h1)
-          (Ideal.mul_mem_left _ (x j) h2)
+          (by simpa [fij] using h1)
+          (by simpa [fij] using h2)
       have hp_eq : x i * (x j * y k - x k * y j) - x j * (x i * y k - x k * y i) =
           (x j * x k * y i - x i * x k * y j : MvPolynomial (BinomialEdgeVars V) K) := by ring
       have hdeg1 : binomialEdgeMonomialOrder.degree
