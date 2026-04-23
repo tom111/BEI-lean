@@ -95,7 +95,7 @@
 - `[x]` `toMathlib/MonomialIdeal.lean`
 - `[x]` `toMathlib/PolynomialAwayTensor.lean`
 - `[x]` `toMathlib/QuotientDimension.lean`
-- `[ ]` `toMathlib/SquarefreeMonomialPrimes.lean`
+- `[x]` `toMathlib/SquarefreeMonomialPrimes.lean`
 - `[ ]` `toMathlib/TensorLocalisation.lean`
 
 ---
