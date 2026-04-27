@@ -13,10 +13,16 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 
 ## Active Work Packages
 
-- [work_packages/EQUIDIM_FILE_SPLIT.md](work_packages/EQUIDIM_FILE_SPLIT.md)
-  — split `BEI/Equidim.lean` (8106 lines) into a `BEI/Equidim/` directory
-  with one file per mathematical block. Supersedes
-  `cleanup/EQUIDIM_DECOMPOSITION.md`.
+None active. The `EQUIDIM_FILE_SPLIT.md` work package is complete and
+archived (the file split landed in master via the
+`refactor/equidim` branch). Phase 4 of that work package — carving the
+two remaining giant declarations
+(`BEI/Equidim/IteratedRegularity.lean::nilradical_nzd_map_diagSubstHom`,
+~589 LOC, and
+`BEI/Equidim.lean::isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`,
+~290 LOC) into named helpers ≤ 150 LOC — was deliberately deferred to
+preserve byte-identical statements; it is tracked in
+[cleanup/EQUIDIM_GIANT_CARVING.md](cleanup/EQUIDIM_GIANT_CARVING.md).
 
 Otherwise, use `cleanup/`, `process/`, and `website/` for ongoing
 maintenance work until a new formalization task appears.
