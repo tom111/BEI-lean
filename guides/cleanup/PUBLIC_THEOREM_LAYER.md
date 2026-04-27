@@ -129,9 +129,11 @@ Files:
 
 Current state:
 
-- `Proposition1_6.lean` is now the right small public wrapper;
-- `GroebnerDeformation.lean` carries the active paper-faithful algebra track;
-- the public status is: one remaining sorry in the graded local-to-global step.
+- `Proposition1_6.lean` is the right small public wrapper;
+- `GroebnerDeformation.lean` carries the paper-faithful algebra track;
+- as of 2026-04-22 `proposition_1_6` is axiom-clean
+  (`[propext, Classical.choice, Quot.sound]`); the previous "one remaining
+  sorry in the graded local-to-global step" is closed.
 
 Cleanup goal:
 
@@ -142,8 +144,10 @@ Cleanup goal:
   - deformation setup;
   - fiber identifications;
   - Gröbner/flatness support;
-  - final transfer assembly;
-- keep every note exact about what is still open.
+  - final transfer assembly.
+
+The cleanup goal here is now purely presentation; there is no open
+mathematical gap on this branch.
 
 
 ## 6. Corollary 1.3 and other paper-statement mismatches

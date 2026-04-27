@@ -35,11 +35,14 @@ Primary files:
 
 Immediate target:
 
-- make all of them reflect the one-sorry reality of the current
-  `GroebnerDeformation` branch;
-- keep the Prop 1.6 / Corollary 3.4 / Corollary 3.7 CM status honest;
+- make all of them reflect the post-2026-04-22 reality: the active paper
+  path is sorry-free, with `proposition_1_6`, `corollary_3_4`,
+  `corollary_3_4_connected`, and `corollary_3_7_cm_fin` all
+  axiom-clean (`[propext, Classical.choice, Quot.sound]`);
+- the only remaining sorries live in `Supplement/RauhApproach.lean`,
+  which is not built by the default Lake target;
 - avoid reintroducing stale references to removed files like
-  `BEI/CohenMacaulay.lean`.
+  `BEI/CohenMacaulay.lean` or `toMathlib/HeightAdditivity.lean`.
 
 
 ## Work package 2: synchronize guide indexes and archives
@@ -90,12 +93,22 @@ Do not turn this into a giant lint policy before the basic build workflow exists
 
 ## Work package 5: maintain honesty about the CM branch
 
-Every public-facing maintenance pass should preserve:
+Status as of 2026-04-22: `proposition_1_6`, `corollary_3_4`,
+`corollary_3_4_connected`, and `corollary_3_7_cm_fin` are all
+axiom-clean. The historical distinction between the equidimensional
+surrogate branch and the paper's real Cohen-Macaulay branch is no longer
+load-bearing for the active paper path.
 
-- the difference between the equidimensional surrogate branch and the paper's
-  real Cohen-Macaulay branch;
-- the exact location of the remaining sorry;
-- the fact that dormant support files may still contain non-critical `sorry`s.
+What public-facing maintenance passes should still preserve:
+
+- the surrogate-vs-paper distinction in any documentation that
+  pre-dates 2026-04-22 or covers the historical development;
+- the fact that the equidimensional surrogates (e.g. `IsEquidim`,
+  `corollary_3_4_equidim`) are still present in the codebase as
+  intermediate building blocks below the paper-facing CM theorems;
+- the fact that `Supplement/RauhApproach.lean` is the only file that
+  still contains `sorry`, and is intentionally outside the default
+  build target.
 
 This is not optional wording polish. It is part of mathematical correctness for
 the repo metadata.

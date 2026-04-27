@@ -57,25 +57,35 @@ When a theorem is newly proved, moved, split, or rephrased:
 
 Do not collapse `Partial`, `Sorry`, and `Blocked` into one bucket.
 
-## Cohen–Macaulay caution
+## Cohen–Macaulay status
 
-Do not advertise the paper's Cohen–Macaulay results as proved merely because the repo
-now has a local equidimensional surrogate in `BEI/Equidim.lean` and
-`toMathlib/Equidim/Defs.lean`. In particular:
-- Proposition 1.6
-- Corollary 3.4
-- the CM branch of Corollary 3.7
+As of 2026-04-22, the paper's Cohen–Macaulay results are formalized and
+axiom-clean (`[propext, Classical.choice, Quot.sound]`):
+- Proposition 1.6 (`proposition_1_6`)
+- Corollary 3.4 (`corollary_3_4`, `corollary_3_4_connected`)
+- the CM branch of Corollary 3.7 (`corollary_3_7_cm_fin`)
 
-should remain clearly marked as partial at the paper level until the real depth-based
-CM foundations are formalized.
+The depth-based CM foundations now used live in
+`toMathlib/CohenMacaulay/`. The local equidimensional surrogate
+(`IsEquidim` in `BEI/Equidim/MonomialInitial.lean`,
+`IsEquidimRing` in `toMathlib/Equidim/Defs.lean`) remains in the
+codebase as an intermediate building block beneath these CM results,
+not as a stand-in for them. Status docs must distinguish the two when
+the distinction is load-bearing — for example,
+`corollary_3_4_equidim` (surrogate) versus `corollary_3_4` (paper-faithful).
 
 ## Current hotspots
 
 As of the current repo state, the status files most need to track:
+- the equidim file split (2026-04-27): the public surface theorems that
+  used to live in `BEI/Equidim.lean` are now distributed across the
+  files in `BEI/Equidim/`; `FORMALIZATION_MAP.md` entries should point
+  to the current file.
 - the Corollary 3.3 move to `BEI/PrimeDecompositionDimension.lean`
 - the Theorem 2.1 split between `BEI/GroebnerBasisSPolynomial.lean` and `BEI/GroebnerBasis.lean`
-- the fact that the CM-shaped Section 3 results are only partial at the paper level
-- the honest paper-level status of Proposition 1.6 and Corollary 3.4
+- the fact that the active paper path is sorry-free; the only `sorry`s in
+  the repo live in `Supplement/RauhApproach.lean`, which is not built
+  by the default Lake target.
 
 ## Minimum acceptable practice
 

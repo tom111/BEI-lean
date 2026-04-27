@@ -25,41 +25,52 @@ It covers:
 
 It does **not** authorize statement changes or broad theorem repackaging.
 
-## Current repo-level snapshot
+## Current repo-level snapshot (2026-04-27)
 
-From the current heartbeat scan:
+From the current heartbeat scan, after the repo-wide audit that landed on
+`master` 2026-04-27:
 
-- total heartbeat overrides: `37`
-- worst file by count: `BEI/Equidim.lean` with `12`
-- next: `BEI/PrimeIdeals.lean` with `8`
-- next: `BEI/ClosedGraphs.lean` with `5`
-- next: `toMathlib/CohenMacaulay/Polynomial.lean` with `5`
-- next: `BEI/GroebnerDeformation.lean` with `3`
-- worst single raise: `BEI/MinimalPrimes.lean` with `maxHeartbeats 4000000`
+- total heartbeat overrides: `9` (was `37`)
+- worst file by count: `BEI/Equidim.lean` with `4`
+- next: `BEI/Equidim/L1Iso.lean` with `2`
+- next: `BEI/Equidim/AugmentationLocalCM.lean`,
+  `BEI/Corollary3_4.lean`, `toMathlib/CohenMacaulay/Polynomial.lean` with `1` each
+- worst single raise: `BEI/Equidim/L1Iso.lean` at `maxHeartbeats 1300000`
+  (followed by 1100000 in the same file)
 
-Large hotspot files:
+Large hotspot files (post equidim split):
 
-- `BEI/Equidim.lean` — `8489` lines
-- `BEI/GroebnerDeformation.lean` — `2232` lines
-- `BEI/PrimeIdeals.lean` — `2007` lines
-- `toMathlib/CohenMacaulay/Polynomial.lean` — `1652` lines
+- `BEI/CoveredWalks.lean` — `2671` lines
+- `BEI/Equidim/IteratedRegularity.lean` — `2404` lines
+- `BEI/GroebnerDeformation.lean` — `2221` lines
+- `BEI/PrimeIdeals.lean` — `2052` lines
+- `toMathlib/CohenMacaulay/Polynomial.lean` — `1639` lines
+- `BEI/Equidim.lean` (residual hub) — `713` lines
 
 ## Priority order
 
-Work in this order:
+The earlier priority list (`BEI/Equidim.lean`, `BEI/PrimeIdeals.lean`,
+`BEI/ClosedGraphs.lean`, `toMathlib/CohenMacaulay/Polynomial.lean`,
+`BEI/GroebnerDeformation.lean`) has been substantially addressed by the
+2026-04-27 audit and the equidim file split. Remaining work, in order:
 
-1. `BEI/Equidim.lean`
-   Reason: worst file by count and the only hotspot visibly using
-   `synthInstance.maxHeartbeats`.
-2. `BEI/PrimeIdeals.lean`
-   Reason: eight overrides, explicit note that `aeval_X` unfolding is expensive,
-   and likely reusable support lemmas.
-3. `BEI/ClosedGraphs.lean`
-   Reason: multiple local raises in a moderate-size file.
-4. `toMathlib/CohenMacaulay/Polynomial.lean`
-   Reason: repeated raises in a support file that is widely imported.
-5. `BEI/GroebnerDeformation.lean`
-   Reason: fewer raises, but still large and potentially import-heavy.
+1. `BEI/Equidim/IteratedRegularity.lean` — extract the 589-LOC giant
+   `nilradical_nzd_map_diagSubstHom` along its 4-case structure.
+2. `BEI/Equidim.lean` (residual hub) — extract the F2-route branch of
+   the 290-LOC giant
+   `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`.
+3. `BEI/Equidim/L1Iso.lean` — try to drive the two remaining
+   `maxHeartbeats 1300000 / 1100000` raises lower by simplifying the
+   tensor-product extensionality blocks (proof-shape change, not just a cap
+   adjustment).
+4. `BEI/PrimeIdeals.lean` — heartbeats already gone, but the
+   `aeval_X` evaluation-map cleanup is still a structural target;
+   see `EVALUATION_MAP_API.md`.
+5. `BEI/CoveredWalks.lean` and `BEI/PrimeDecompositionDimension.lean` —
+   helper extraction for the path/counting arithmetic.
+
+The two giants in items (1) and (2) are the live targets tracked in
+[EQUIDIM_GIANT_CARVING.md](/home/tom/BEI-lean/guides/cleanup/EQUIDIM_GIANT_CARVING.md).
 
 ## Standard measurement workflow
 
@@ -109,53 +120,58 @@ If the measured hotspot is:
 
 ## File-specific hints
 
-### `BEI/Equidim.lean`
+### `BEI/Equidim/IteratedRegularity.lean` and the residual hub
 
-Primary suspicion:
+Primary target:
 
-- repeated instance synthesis and heavy imported infrastructure
+- the two giant declarations
+  (`nilradical_nzd_map_diagSubstHom`, 589 LOC, and
+  `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`, 290 LOC).
 
 First moves:
 
-- profile only declarations with `synthInstance.maxHeartbeats`;
-- run `trace.Meta.synthInstance`;
-- identify repeated local-ring / quotient / localization instances;
-- bind them explicitly;
-- then look for natural file-splitting seams.
+- carve along the natural case-split boundaries described in
+  [EQUIDIM_GIANT_CARVING.md](/home/tom/BEI-lean/guides/cleanup/EQUIDIM_GIANT_CARVING.md);
+- after each helper extraction, run an axiom check on the paper-facing
+  theorems to confirm `[propext, Classical.choice, Quot.sound]` is unchanged.
+
+### `BEI/Equidim/L1Iso.lean`
+
+Primary suspicion:
+
+- heavy tensor-product extensionality on the L1 monomial-localisation iso
+
+First moves:
+
+- the `maxHeartbeats 1300000 / 1100000` raises were bisected to the smallest
+  stable values; reducing further requires a proof-shape change, not a
+  heartbeat tweak;
+- the natural target is the algHom extensionality on pure tensors
+  in `L1Forward_Backward_left` / `L1Forward_Backward_right`.
 
 ### `BEI/PrimeIdeals.lean`
 
 Primary suspicion:
 
-- expensive unfolding and large algebraic proof blocks
+- expensive unfolding and large algebraic proof blocks (heartbeat raises
+  are gone, but the structural cost remains)
 
 First moves:
 
 - profile declarations near the `aeval_X unfolding is expensive` comment;
 - isolate the evaluation/algebra helpers into their own declarations;
-- reduce repeated unfolding pressure before raising more heartbeats.
-
-### `BEI/ClosedGraphs.lean`
-
-Primary suspicion:
-
-- local proof blocks that are large enough to defeat incremental reuse
-
-First moves:
-
-- identify the exact declarations carrying the five local raises;
-- split long closure/graph-walk arguments into reusable private lemmas;
-- only then test whether further simp pruning is needed.
+- see `EVALUATION_MAP_API.md` for the helper API plan.
 
 ### `toMathlib/CohenMacaulay/Polynomial.lean`
 
 Primary suspicion:
 
 - imported algebraic machinery plus long support proofs in a shared file
+  (heartbeat raises mostly gone; one remains)
 
 First moves:
 
-- profile the five raised declarations individually;
+- profile the single remaining raised declaration;
 - separate stable support lemmas from the most expensive theorem bodies if the imports
   allow it;
 - keep shared API declarations in thinner files where possible.

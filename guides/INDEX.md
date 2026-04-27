@@ -40,7 +40,7 @@ Optional proof-engineering work, not on the theorem-proving critical path.
 - [cleanup/EVALUATION_MAP_API.md](cleanup/EVALUATION_MAP_API.md)
 - [cleanup/PATH_AND_INTERNAL_VERTEX_API.md](cleanup/PATH_AND_INTERNAL_VERTEX_API.md)
 - [cleanup/MONOMIAL_AND_FINSUPP_API.md](cleanup/MONOMIAL_AND_FINSUPP_API.md)
-- [cleanup/EQUIDIM_DECOMPOSITION.md](cleanup/EQUIDIM_DECOMPOSITION.md)
+- [cleanup/EQUIDIM_GIANT_CARVING.md](cleanup/EQUIDIM_GIANT_CARVING.md) — follow-up Phase 4 carving for the two remaining giant declarations after the equidim file split.
 - [cleanup/CM_SUPPORT_REFACTOR.md](cleanup/CM_SUPPORT_REFACTOR.md)
 - [cleanup/FILE_SPLITTING_PLAN.md](cleanup/FILE_SPLITTING_PLAN.md)
 - [cleanup/LEAN_PERFORMANCE_TRIAGE.md](cleanup/LEAN_PERFORMANCE_TRIAGE.md)
@@ -75,6 +75,13 @@ Completed / superseded packets, retained for historical context only. Do not tre
 
 ### Earlier completed packets
 
+- `archive/EQUIDIM_FILE_SPLIT.md` — work package that split
+  `BEI/Equidim.lean` (8106 lines) into a `BEI/Equidim/` directory
+  with one file per mathematical block; landed on `master` 2026-04-27.
+  Phase 4 carving of the two remaining giant declarations is tracked
+  separately in `cleanup/EQUIDIM_GIANT_CARVING.md`.
+- `archive/EQUIDIM_DECOMPOSITION.md` — earlier high-level note for the
+  same split, superseded by the work package above.
 - `archive/LEAN_FILE_REVIEW_QUEUE.md` — per-file cleanup queue, fully
   consumed 2026-04-24; every `BEI/`, `Supplement/`, and `toMathlib/`
   source file has been through the `review → refactor → golf →

@@ -44,7 +44,6 @@ Especially noisy files:
 - [BEI/GroebnerBasisSPolynomial.lean](/home/tom/BEI-lean/BEI/GroebnerBasisSPolynomial.lean)
 - [BEI/MinimalPrimes.lean](/home/tom/BEI-lean/BEI/MinimalPrimes.lean)
 - [BEI/PrimeDecomposition.lean](/home/tom/BEI-lean/BEI/PrimeDecomposition.lean)
-- [toMathlib/HeightAdditivity.lean](/home/tom/BEI-lean/toMathlib/HeightAdditivity.lean)
 
 Recommended pattern:
 
@@ -58,7 +57,9 @@ Recommended pattern:
 
 This is now concentrated in:
 
-- [BEI/Equidim.lean](/home/tom/BEI-lean/BEI/Equidim.lean)
+- the files in [BEI/Equidim/](/home/tom/BEI-lean/BEI/Equidim/) (the pre-split
+  `BEI/Equidim.lean` was the original noisy file; the warnings now live in
+  the split files, especially `IteratedRegularity.lean` and `L1Iso.lean`)
 - [toMathlib/CohenMacaulay/Polynomial.lean](/home/tom/BEI-lean/toMathlib/CohenMacaulay/Polynomial.lean)
 - [BEI/GroebnerDeformation.lean](/home/tom/BEI-lean/BEI/GroebnerDeformation.lean)
 
@@ -72,7 +73,7 @@ This is the easiest high-volume cleanup after unused assumptions.
 
 Especially noisy files:
 
-- [BEI/Equidim.lean](/home/tom/BEI-lean/BEI/Equidim.lean)
+- the files in [BEI/Equidim/](/home/tom/BEI-lean/BEI/Equidim/) (post-split)
 - [BEI/GroebnerBasisSPolynomial.lean](/home/tom/BEI-lean/BEI/GroebnerBasisSPolynomial.lean)
 - [BEI/MinimalPrimes.lean](/home/tom/BEI-lean/BEI/MinimalPrimes.lean)
 - [BEI/GroebnerDeformation.lean](/home/tom/BEI-lean/BEI/GroebnerDeformation.lean)
@@ -143,8 +144,9 @@ Recommended order:
    and [BEI/PrimeDecomposition.lean](/home/tom/BEI-lean/BEI/PrimeDecomposition.lean);
 3. clean [toMathlib/CohenMacaulay/Polynomial.lean](/home/tom/BEI-lean/toMathlib/CohenMacaulay/Polynomial.lean)
    after its API boundary is clearer;
-4. tackle [BEI/Equidim.lean](/home/tom/BEI-lean/BEI/Equidim.lean) only in
-   section-sized batches, ideally alongside the decomposition guide.
+4. tackle the files in [BEI/Equidim/](/home/tom/BEI-lean/BEI/Equidim/) one
+   at a time. The pre-split monolith is gone; each split file is now a
+   reasonable batch on its own.
 
 Do not spend a whole session only on linter cleanup if larger structural cleanup is
 already in progress.

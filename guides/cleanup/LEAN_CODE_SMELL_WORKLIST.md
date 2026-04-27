@@ -20,49 +20,60 @@ The goal is to reduce build cost and proof brittleness by:
 
 ## Immediate queue
 
-### 1. `BEI/Equidim.lean`
+### 1. `BEI/Equidim/IteratedRegularity.lean` and the residual hub
 
 Why first:
 
-- largest file in the repo;
-- highest number of heartbeat raises;
-- only hotspot with repeated `synthInstance.maxHeartbeats`.
+- the equidim file split landed 2026-04-27, and the next pass is the
+  Phase 4 carving of the two remaining giant declarations;
+- the audit-driven heartbeat reductions have already taken every easy
+  win — the next perf gain has to come from proof-shape changes inside
+  these two giants.
 
 Concrete tasks:
 
-1. Profile the declarations around lines `3712`, `3828`, `6539`, `6580`, `8152`, and
-   `8154`.
-2. Identify repeated inferred structures and bind them explicitly with `letI` or named
-   local terms.
-3. Extract any stable helper layer that is reused across the high-heartbeat declarations.
-4. Propose one mathematically coherent file split and validate it with `#min_imports`.
+1. Carve `BEI/Equidim/IteratedRegularity.lean::nilradical_nzd_map_diagSubstHom`
+   (589 LOC) along its 4-case structure (A/B/C/D) into named private helpers
+   ≤ 150 LOC each. Cases B and C are near-mirror; consider a single
+   parameterised helper.
+2. Carve
+   `BEI/Equidim.lean::isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`
+   (290 LOC) by extracting the F2-route branch into a private helper; the
+   in-`augIdeal` branch is short enough to leave inline.
+3. After each carving, run the axiom check on the paper-facing theorems to
+   confirm `[propext, Classical.choice, Quot.sound]` is unchanged.
+
+The full plan and the natural sub-helper boundaries are in
+[EQUIDIM_GIANT_CARVING.md](/home/tom/BEI-lean/guides/cleanup/EQUIDIM_GIANT_CARVING.md).
 
 Done when:
 
-- the file has a documented split seam or a documented reason not to split yet;
-- the instance-search hotspots have measured profiler evidence;
-- at least one raise is removed or reduced for measured reasons.
+- no single declaration in the equidim subtree exceeds ~200 LOC;
+- axiom checks on `proposition_1_6`, `monomialInitialIdeal_isCohenMacaulay`,
+  `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`,
+  `prop_1_6_herzogHibi`, `corollary_3_4`, `corollary_3_4_connected`,
+  `corollary_3_7_cm_fin` are all unchanged.
 
 ### 2. `BEI/PrimeIdeals.lean`
 
 Why second:
 
-- largest single heartbeat caps in the repo;
 - explicit expensive-unfolding note already in the source;
-- overlaps with existing evaluation-map cleanup work.
+- overlaps with existing evaluation-map cleanup work;
+- the heartbeat raises are gone after the 2026-04-27 audit, but the
+  structural cost remains.
 
 Concrete tasks:
 
-1. Profile the declarations at lines `140`, `786`, `882`, and `1075`.
+1. Profile the declarations near the `aeval_X unfolding is expensive` comment.
 2. Extract reusable evaluation-map and kernel-containment helpers.
 3. Extract witness-computation lemmas so the contradiction pattern is not rebuilt inline.
-4. Recheck the declarations at lines `1465`, `1553`, `1590`, and `1626` after the helper
-   layer exists.
 
 Done when:
 
 - the repeated `aeval` pattern appears as named lemmas;
-- the three `2000000` caps have either dropped or have profiler-backed justification.
+- the file's elaboration cost is meaningfully reduced (measure with
+  `#count_heartbeats`).
 
 ### 3. `BEI/CoveredWalks.lean` and `BEI/PrimeDecompositionDimension.lean`
 
@@ -113,25 +124,29 @@ Why before secondary BEI files:
 
 Concrete tasks:
 
-1. Profile the raised declarations at lines `251`, `635`, `1282`, `1392`, and `1563`.
+1. Profile the single remaining raised declaration (was 5 raises before
+   the 2026-04-27 audit).
 2. Separate stable support lemmas from large theorem bodies when imports allow it.
 3. Keep the public support API stable while reducing the rebuild radius.
 
 Done when:
 
-- at least one raised declaration is simplified or moved to a thinner dependency layer.
+- the remaining raised declaration is simplified or moved to a thinner dependency layer.
 
 ## Secondary queue
 
 - `BEI/ClosedGraphs.lean`
-  Treat as a local decomposition pass after the top five items.
+  Heartbeat raises gone after the 2026-04-27 audit; revisit only if a new
+  pressure point appears.
 - `BEI/GroebnerDeformation.lean`
-  Profile the three raised declarations before any larger cleanup plan.
+  Heartbeat raises gone after the 2026-04-27 audit; large file but no
+  immediate pressure point.
 - `BEI/CycleUnmixed.lean`
   The dedicated `MINIMALPRIMES_CYCLE_PERFORMANCE.md` packet is complete and archived;
   route any new performance work through `LEAN_PERFORMANCE_TRIAGE.md` unless a fresh packet is needed.
 - `BEI/Corollary3_4.lean`
-  Low priority unless the single local raise survives broader support cleanup.
+  One local raise survives (around `beQuotientGrading_isGradedRing`); was
+  tested at the default 200k and proved necessary, so leave in place.
 
 ## Working rules
 

@@ -8,17 +8,18 @@ not arbitrary line count.
 
 ## Why this matters
 
-The current large files are:
+The current large files are (post equidim split, 2026-04-27):
 
-- [Equidim.lean](/home/tom/BEI-lean/BEI/Equidim.lean) (~8500 lines)
-- [CoveredWalks.lean](/home/tom/BEI-lean/BEI/CoveredWalks.lean) (~2600 lines)
+- [CoveredWalks.lean](/home/tom/BEI-lean/BEI/CoveredWalks.lean) (~2700 lines)
+- [Equidim/IteratedRegularity.lean](/home/tom/BEI-lean/BEI/Equidim/IteratedRegularity.lean)
+  (~2400 lines, residual heavy block from the equidim split)
+- [GroebnerDeformation.lean](/home/tom/BEI-lean/BEI/GroebnerDeformation.lean)
+  (~2200 lines)
 - [PrimeDecompositionDimension.lean](/home/tom/BEI-lean/BEI/PrimeDecompositionDimension.lean)
   (~2100 lines)
-- [PrimeIdeals.lean](/home/tom/BEI-lean/BEI/PrimeIdeals.lean) (~1900 lines)
+- [PrimeIdeals.lean](/home/tom/BEI-lean/BEI/PrimeIdeals.lean) (~2000 lines)
 - [GroebnerBasisSPolynomial.lean](/home/tom/BEI-lean/BEI/GroebnerBasisSPolynomial.lean)
   (~2000 lines)
-- [GroebnerDeformation.lean](/home/tom/BEI-lean/BEI/GroebnerDeformation.lean)
-  (~1700 lines)
 - [Polynomial.lean](/home/tom/BEI-lean/toMathlib/CohenMacaulay/Polynomial.lean)
   (~1600 lines)
 
@@ -39,27 +40,32 @@ Split by conceptual layer.
 Do not split only to shrink line counts.
 
 
-## Target 1: `Equidim.lean`
+## Target 1: `Equidim.lean` — DONE 2026-04-27
 
-Current roles mixed together:
+The equidim file split landed via the `refactor/equidim` branch and was
+merged to `master` on 2026-04-27. The resulting layout is:
 
-- the local surrogate API;
-- initial-ideal and `y`-shift setup for Proposition 1.6;
-- HH graph conditions;
-- regular-sequence and NZD infrastructure;
-- local and global CM theorems at the augmentation ideal;
-- localization-away / tensor transport;
-- examples and public wrappers.
+- `BEI/Equidim/MonomialInitial.lean` (~200 LOC)
+- `BEI/Equidim/Bipartite.lean` (~360 LOC)
+- `BEI/Equidim/Transport.lean` (~310 LOC)
+- `BEI/Equidim/ClosedGraphIntervals.lean` (~160 LOC)
+- `BEI/Equidim/IteratedRegularity.lean` (~2400 LOC, residual heavy block)
+- `BEI/Equidim/AugmentationLocalCM.lean` (~325 LOC)
+- `BEI/Equidim/GlobalCMSetup.lean` (~460 LOC)
+- `BEI/Equidim/F2Scaffolding.lean` (~450 LOC)
+- `BEI/Equidim/L4Iso.lean` (~940 LOC)
+- `BEI/Equidim/L1Iso.lean` (~1050 LOC)
+- `BEI/Equidim/ReducedHHLocalCM.lean` (~1240 LOC)
+- `BEI/Equidim.lean` (residual hub, ~713 LOC) — Session B + Session C1 +
+  the F2-route main theorem + paper-facing wrappers
 
-Recommended split:
-
-- `InitialIdeal.lean`
-- `HHRegularity.lean`
-- `HHCohenMacaulay.lean`
-- `HHLocalisation.lean`
-- keep `Equidim.lean` as a thin public wrapper or re-export layer
-
-This is now the highest-value structural split in the repository.
+Phase 4 of the plan — carving the two giant declarations
+(`nilradical_nzd_map_diagSubstHom` and the F2-route main theorem) — was
+deliberately deferred to keep the file split to pure verbatim moves.
+That work is tracked in
+[EQUIDIM_GIANT_CARVING.md](/home/tom/BEI-lean/guides/cleanup/EQUIDIM_GIANT_CARVING.md).
+The original work package is in
+[archive/EQUIDIM_FILE_SPLIT.md](/home/tom/BEI-lean/guides/archive/EQUIDIM_FILE_SPLIT.md).
 
 
 ## Target 2: `CoveredWalks.lean`

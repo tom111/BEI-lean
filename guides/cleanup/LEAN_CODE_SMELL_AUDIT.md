@@ -24,38 +24,52 @@ It does **not** authorize:
 - new mathematical claims;
 - broad rewrites without measurement.
 
-## Repo snapshot (2026-04-23)
+## Repo snapshot (2026-04-27)
 
 The following scans were taken across `BEI/`, `toMathlib/`, and `Supplement/`.
 
 ### Heartbeat snapshot
 
-- total heartbeat overrides: `37`
-- affected files: `8`
-- worst file by count: `BEI/Equidim.lean` with `12`
-- next: `BEI/PrimeIdeals.lean` with `8`
-- next: `BEI/ClosedGraphs.lean` and `toMathlib/CohenMacaulay/Polynomial.lean` with `5`
-- largest current single raises: `BEI/PrimeIdeals.lean` at `2000000`
-- current cycle hotspot after the split: `BEI/CycleUnmixed.lean` at `800000`
+- total heartbeat overrides: `9`
+- affected files: `5`
+- worst file by count: `BEI/Equidim.lean` with `4`
+- next: `BEI/Equidim/L1Iso.lean` with `2`
+- next: `BEI/Equidim/AugmentationLocalCM.lean`,
+  `BEI/Corollary3_4.lean`, `toMathlib/CohenMacaulay/Polynomial.lean` with `1` each
+- largest current single raises: `BEI/Equidim/L1Iso.lean` at `1300000` and
+  `1100000` (heavy tensor-product extensionality on the L1 iso)
+
+A repo-wide heartbeat audit landed on `master` 2026-04-27 alongside the
+equidim file split. `BEI/PrimeIdeals.lean` (was 8 raises, including three at
+2M) and `BEI/ClosedGraphs.lean` (was 5 raises) now use the default 200k.
 
 ### Largest Lean files
 
-- `BEI/Equidim.lean` — `8489` lines
 - `BEI/CoveredWalks.lean` — `2671` lines
-- `BEI/GroebnerDeformation.lean` — `2232` lines
-- `BEI/PrimeDecompositionDimension.lean` — `2093` lines
-- `BEI/PrimeIdeals.lean` — `2007` lines
-- `BEI/GroebnerBasisSPolynomial.lean` — `1963` lines
-- `toMathlib/GradedFiniteFree.lean` — `1775` lines
-- `toMathlib/CohenMacaulay/Polynomial.lean` — `1652` lines
+- `BEI/Equidim/IteratedRegularity.lean` — `2404` lines
+- `BEI/GroebnerDeformation.lean` — `2221` lines
+- `BEI/PrimeDecompositionDimension.lean` — `2094` lines
+- `BEI/PrimeIdeals.lean` — `2052` lines
+- `BEI/GroebnerBasisSPolynomial.lean` — `1984` lines
+- `toMathlib/GradedFiniteFree.lean` — `1773` lines
+- `toMathlib/CohenMacaulay/Polynomial.lean` — `1639` lines
+- `BEI/Equidim/ReducedHHLocalCM.lean` — `1236` lines
+- `BEI/GroebnerAPI.lean` — `1193` lines
+- `BEI/Equidim/L1Iso.lean` — `1050` lines
+
+The 8489-line monolith `BEI/Equidim.lean` from the earlier snapshot is gone:
+the equidim file split (2026-04-27) trimmed the residual hub to 713 lines and
+moved the rest into 11 sibling files in `BEI/Equidim/`.
 
 ### Automation-heavy files
 
 The following counts come from searching for
 `omega|linarith|ring_nf|aesop|grind`. These counts are not bugs by themselves,
 but they are a useful signal when combined with file size or heartbeat raises.
+The pre-split `BEI/Equidim.lean` count (212) is now distributed across the
+files in `BEI/Equidim/`; counts below should be re-scanned at the start of
+the next cleanup pass.
 
-- `BEI/Equidim.lean` — `212`
 - `BEI/GroebnerBasisSPolynomial.lean` — `99`
 - `BEI/CoveredWalks.lean` — `79`
 - `BEI/PrimeDecompositionDimension.lean` — `73`
@@ -65,11 +79,13 @@ but they are a useful signal when combined with file size or heartbeat raises.
 
 ### `convert`-heavy files
 
-- `BEI/Equidim.lean` — `7`
 - `BEI/PrimeIdeals.lean` — `4`
 - `BEI/PrimeDecomposition.lean` — `2`
 - `toMathlib/CohenMacaulay/Localization.lean` — `2`
 - `toMathlib/GradedFiniteFree.lean` — `2`
+
+The pre-split `BEI/Equidim.lean` count (7) is also now distributed across
+the files in `BEI/Equidim/`; rescan when starting a `convert` cleanup pass.
 
 ## What the scan says
 
@@ -91,36 +107,60 @@ Instead it has three different cleanup classes:
 
 ### Tier 1: Structural and heartbeat hotspots
 
-#### `BEI/Equidim.lean`
+#### `BEI/Equidim/IteratedRegularity.lean`
 
 Evidence:
 
-- `8489` lines
-- `12` heartbeat overrides
-- `3` `synthInstance.maxHeartbeats` sites
-- `212` heavy-automation hits
-- `7` `convert` hits
+- `2404` lines
+- inherits the heaviest block from the pre-split `BEI/Equidim.lean`
+- contains the 589-LOC giant `nilradical_nzd_map_diagSubstHom`
+  (Phase 4 of the file split, deferred and tracked in
+  [EQUIDIM_GIANT_CARVING.md](/home/tom/BEI-lean/guides/cleanup/EQUIDIM_GIANT_CARVING.md))
 
 Diagnosis:
 
-- This is the strongest sign of a file-boundary problem in the repo.
-- The file is large enough that even correct local proofs are likely paying a rebuild tax.
-- The instance-search raises mean this is not only a tactic-automation issue.
+- File is large because the iterated-regularity infrastructure is big, not because of
+  unrelated material — the equidim split already did the structural cleanup at the
+  top-level seam.
+- Single-declaration size (589 LOC) is the live engineering target.
 
 Concrete next move:
 
-- profile the declarations around lines `3712`, `3828`, `6539`, `6580`, `8152`, and
-  `8154`;
-- bind repeated inferred instances explicitly with `letI` or named local terms;
-- split the file at a mathematically stable seam before doing micro-optimizations.
+- carve `nilradical_nzd_map_diagSubstHom` along its 4-case structure
+  (`A`/`B`/`C`/`D`) per the carving guide.
+
+#### `BEI/Equidim.lean` (residual hub) and the F2-route main theorem
+
+Evidence:
+
+- `713` lines after the file split
+- contains the 290-LOC giant
+  `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`
+  (Phase 4 carving target, see
+  [EQUIDIM_GIANT_CARVING.md](/home/tom/BEI-lean/guides/cleanup/EQUIDIM_GIANT_CARVING.md))
+- 4 heartbeat raises remain after the 2026-04-27 audit:
+  - lines 133 and 260 (400k each, the `E_U_algebraMap_mkI_X_pairedSurvivor_*` traces)
+  - line 377 (500k) and 379 (synth 250k, the F2-route main theorem)
+
+Diagnosis:
+
+- File is now the right size for a public theorem hub; the remaining cost is
+  concentrated in the F2-route assembly.
+- All four raises were bisected to the smallest stable values; further
+  reduction needs proof-shape changes, not heartbeat tweaks.
+
+Concrete next move:
+
+- extract the F2-route branch of
+  `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal` into a
+  private helper (the in-`augIdeal` branch is short enough to leave inline).
 
 #### `BEI/PrimeIdeals.lean`
 
 Evidence:
 
-- `2007` lines
-- `8` heartbeat overrides
-- three `2000000` caps at lines `786`, `882`, and `1075`
+- `2052` lines
+- 0 heartbeat overrides after the 2026-04-27 audit (was 8, including three at 2M)
 - `40` heavy-automation hits
 - `4` `convert` hits
 - explicit comment at line `140`:
@@ -128,32 +168,31 @@ Evidence:
 
 Diagnosis:
 
-- This is the clearest evaluation-map and unfolding hotspot in the repo.
-- The large caps suggest expensive declarations, not just mild local friction.
+- The previous evaluation-map / unfolding hotspot has been substantially
+  addressed at the heartbeat-raise level. The file is still large and a
+  natural target for helper extraction.
 
 Concrete next move:
 
-- profile the declarations at lines `140`, `786`, `882`, and `1075` first;
-- extract evaluation and kernel-containment helpers so the expensive `aeval` pattern is
-  not rebuilt repeatedly;
+- extract reusable evaluation-map and kernel-containment helpers so the
+  expensive `aeval` pattern is not rebuilt repeatedly;
 - normalize witness-computation lemmas before touching theorem statements.
 
 #### `toMathlib/CohenMacaulay/Polynomial.lean`
 
 Evidence:
 
-- `1652` lines
-- `5` heartbeat overrides
+- `1639` lines
+- `1` heartbeat override (was 5; four were dropped in earlier passes)
 - shared support file imported by multiple downstream results
 
 Diagnosis:
 
 - A heavy support file is more expensive than a heavy endpoint file because many rebuilds
-  pay for it.
+  pay for it; the file is no longer a heartbeat hotspot but is still big.
 
 Concrete next move:
 
-- profile the raised declarations at lines `251`, `635`, `1282`, `1392`, and `1563`;
 - separate stable support lemmas from large theorem bodies if imports allow it;
 - keep shared API declarations in the thinnest file that works.
 
@@ -223,24 +262,23 @@ Concrete next move:
 
 Evidence:
 
-- `988` lines
-- `5` heartbeat overrides
+- 0 heartbeat overrides after the 2026-04-27 audit (was 5; all dropped, the
+  proofs build at the default 200k)
 
 Concrete next move:
 
-- treat this as a local theorem-decomposition pass after Tier 1 and Tier 2 work settle.
+- nothing pressing; revisit only if a future change reintroduces a raise.
 
 #### `BEI/GroebnerDeformation.lean`
 
 Evidence:
 
-- `2232` lines
-- `3` heartbeat overrides
+- `2221` lines
+- 0 heartbeat overrides after the 2026-04-27 audit (was 3)
 - `13` heavy-automation hits
 
 Concrete next move:
 
-- keep this below `Equidim` and `PrimeIdeals` in the queue;
 - prefer targeted declaration profiling over premature file splitting.
 
 #### `BEI/CycleUnmixed.lean`
@@ -261,10 +299,12 @@ Concrete next move:
 The following existing guides should be reused rather than duplicated:
 
 - `archive/MINIMALPRIMES_CYCLE_PERFORMANCE.md` for the completed `BEI/CycleUnmixed.lean` pass
+- `archive/EQUIDIM_FILE_SPLIT.md` and `archive/EQUIDIM_DECOMPOSITION.md` for the completed equidim split
+- `EQUIDIM_GIANT_CARVING.md` for the Phase 4 follow-up to the equidim split
 - `LEAN_PERFORMANCE_TRIAGE.md` for repo-wide heartbeat measurement workflow
 - `EVALUATION_MAP_API.md` for `BEI/PrimeIdeals.lean`
 - `PATH_AND_INTERNAL_VERTEX_API.md` for graph/path helper extraction
-- `FILE_SPLITTING_PLAN.md` and `EQUIDIM_DECOMPOSITION.md` for large-file restructuring
+- `FILE_SPLITTING_PLAN.md` for the remaining non-equidim large-file restructuring
 
 ## Concrete acceptance criteria
 
