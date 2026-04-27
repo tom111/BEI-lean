@@ -929,7 +929,7 @@ private theorem L1Forward_Backward_tmul_right_X {n : ℕ}
   rw [L1ForwardGen_of_U hvnW hvU]
 
 -- The `set φL, set φR` pattern plus MvPolynomial/Ideal.Quotient extensionality.
-set_option maxHeartbeats 1600000 in
+set_option maxHeartbeats 1300000 in
 -- heartbeats needed: target type `L1Target` is a heavy tensor product of a quotient
 -- and a localization; algHom extensionality on pure tensors is expensive.
 /-- Forward ∘ Backward on left pure tensors (algHom equality): reduce to generators
@@ -970,7 +970,7 @@ private theorem L1Forward_Backward_left {n : ℕ}
   have := congrArg (fun φ => φ a) hφ
   exact this
 
-set_option maxHeartbeats 1600000 in
+set_option maxHeartbeats 1100000 in
 -- heartbeats needed: heavy tensor-product extensionality; see L1Forward_Backward_left.
 /-- Forward ∘ Backward on right pure tensors (algHom equality). -/
 private theorem L1Forward_Backward_right {n : ℕ}
