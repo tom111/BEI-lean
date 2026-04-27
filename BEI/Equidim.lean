@@ -374,9 +374,9 @@ private theorem E_U_algebraMap_mkI_X_pairedSurvivor_inr
 
 /-! #### Main theorem -/
 
-set_option maxHeartbeats 800000 in
+set_option maxHeartbeats 500000 in
 -- heartbeats + synth budget needed: main graded local-to-global assembly is heavy.
-set_option synthInstance.maxHeartbeats 400000 in
+set_option synthInstance.maxHeartbeats 250000 in
 /-- **Graded local-to-global for the HH quotient**: Under HH conditions, the quotient
 `S ⧸ bipartiteEdgeMonomialIdeal G` is a Cohen–Macaulay ring.
 
