@@ -1095,7 +1095,6 @@ private noncomputable def locAugIdealQuotEquivLocAugIdealReduced
 
 /-! ##### Assembly: `isCohenMacaulayLocalRing_at_augIdealReduced_step` -/
 
-set_option maxHeartbeats 400000 in
 -- heartbeats needed: assembly over iterated quotients + localizations.
 /-- **Inductive case** (`r ≥ 1`): Bridge from L5's CM conclusion
 `IsCohenMacaulayLocalRing (QuotSMulTop mkyL RpQ)` to CM of

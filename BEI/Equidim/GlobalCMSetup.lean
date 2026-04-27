@@ -97,7 +97,6 @@ private theorem isCohenMacaulayLocalRing_idealQuot_lastInl {n : ℕ} (hn : 2 ≤
   exact isCohenMacaulayLocalRing_of_ringEquiv' hCM
     (quotSMulTopRingEquivIdealQuotient _)
 
-set_option synthInstance.maxHeartbeats 400000 in
 -- synth budget needed: iterated quotient-by-regular-element + CM instance search.
 /-- **L5 CM corollary**: the reduced HH ring at its augmentation is Cohen–Macaulay.
 Specifically, `(Rp ⧸ x_last) ⧸ (mk y_last)` is CM local. This is the reduced HH ring

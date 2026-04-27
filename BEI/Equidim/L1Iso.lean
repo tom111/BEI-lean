@@ -50,7 +50,7 @@ used in the F2-route global Cohen-Macaulay proof: the well-definedness of
 `L1ForwardPoly`, the extension of `L1ForwardQuot` over the away
 localisation, the backward hom into the localisation, and the proofs that
 the two compositions are the identity. Hosts both
-`set_option maxHeartbeats 1600000` blocks
+`set_option maxHeartbeats 1300000 / 1100000` blocks
 (`L1Forward_Backward_left`, `L1Forward_Backward_right`).
 
 ## Reference: Herzog et al. (2010), proof of Proposition 1.6

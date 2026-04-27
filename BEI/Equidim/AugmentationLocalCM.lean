@@ -41,7 +41,7 @@ for the HH bipartite edge monomial ideal: the augmentation ideal `augIdeal`,
 its primality / maximality, the last-pair-permutation lemmas
 `isSMulRegular_mk_y_last`, and the local Cohen-Macaulay theorem
 `isCohenMacaulayLocalRing_reducedHH_at_augIdeal`. Hosts the
-`set_option synthInstance.maxHeartbeats 400000` block needed for the
+`set_option synthInstance.maxHeartbeats 250000` block needed for the
 local CM proof.
 
 ## Reference: Herzog et al. (2010), proof of Proposition 1.6
@@ -282,7 +282,7 @@ lemma X_inr_last_mem_maximalIdeal {n : ℕ} (hn : 1 ≤ n)
   rw [← Localization.AtPrime.map_eq_maximalIdeal]
   exact Ideal.mem_map_of_mem _ (mkI_X_mem_augIdeal G _)
 
-set_option synthInstance.maxHeartbeats 400000 in
+set_option synthInstance.maxHeartbeats 250000 in
 -- synth budget needed: nested quotient + localization instance search is heavy.
 /-- `mk y_last` (image of `X(inr last)` in the first quotient) is `IsSMulRegular`
 on `QuotSMulTop x_last Rp`, extracted via the *primed* cons_iff lemma which
