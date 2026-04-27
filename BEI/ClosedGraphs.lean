@@ -139,8 +139,6 @@ private lemma finsupp_ext_shared_inr (i₁ i₂ j : V) (hi : i₁ ≠ i₂) :
 
 /-! ### S-polynomial identities -/
 
-set_option maxHeartbeats 400000 in
--- S-polynomial ring normalization needs extra heartbeats
 omit [DecidableEq V] in
 /-- S-polynomial of generators sharing first endpoint:
 `S(f_{i,j₁}, f_{i,j₂}) = -(y_i) * f_{j₁,j₂}`. -/
@@ -158,8 +156,6 @@ lemma sPolynomial_fij_shared_first (i j₁ j₂ : V) (hij₁ : i < j₁)
     -(y i) * fij j₁ j₂
   unfold fij x y; ring
 
-set_option maxHeartbeats 400000 in
--- S-polynomial ring normalization needs extra heartbeats
 omit [DecidableEq V] in
 /-- S-polynomial of generators sharing last endpoint:
 `S(f_{i₁,j}, f_{i₂,j}) = x_j * f_{i₁,i₂}`. -/
@@ -222,8 +218,6 @@ private lemma monomial_sum_eq_mul (a b : BinomialEdgeVars V) :
   rw [show (1 : K) = 1 * 1 from (mul_one 1).symm, ← monomial_mul]
   rfl
 
-set_option maxHeartbeats 800000 in
--- Coprime case ring normalization needs extra heartbeats
 omit [DecidableEq V] in
 /-- S-polynomial of generators with coprime leading monomials. -/
 lemma sPolynomial_fij_coprime (i₁ i₂ j₁ j₂ : V) (hi₁j₁ : i₁ < j₁)
@@ -365,8 +359,6 @@ lemma degree_bounds_of_sub
 
 /-! ## Theorem 1.1 -/
 
-set_option maxHeartbeats 800000 in
--- Buchberger case analysis requires extra heartbeats for ring normalization
 omit [DecidableEq V] in
 /-- Forward direction of Theorem 1.1: closed graph → Gröbner basis.
 
@@ -455,8 +447,6 @@ theorem closed_implies_groebner (G : SimpleGraph V) (h : IsClosedGraph G) :
       (x j₂ * y i₂) (x j₁ * y i₁) _
       (fij_mem G hadj₁ hij₁) (fij_mem G hadj₂ hij₂) hfij_ne hd₁ hd₂
 
-set_option maxHeartbeats 800000 in
--- Large case analysis needs extra heartbeats
 omit [DecidableEq V] in
 /-- Backward direction of Theorem 1.1: Gröbner basis → closed graph. -/
 theorem groebner_implies_closed (G : SimpleGraph V)
