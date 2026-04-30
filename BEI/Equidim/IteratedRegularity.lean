@@ -852,6 +852,571 @@ private theorem generator_exponent_bound {n : ℕ} {G : SimpleGraph (Fin n)}
         if_false, zero_add]
       split <;> omega
 
+/-- Case B helper for `nilradical_nzd_map_diagSubstHom`: handles the asymmetric
+case where `d₀ (Sum.inl i) ≥ 1` but `d₀ (Sum.inr i) = 0`. -/
+private theorem caseB_nilradical_nzd_map_diagSubstHom_helper
+    {n : ℕ} {G : SimpleGraph (Fin n)} (i : Fin n) (hik : k ≤ i.val)
+    {Iφ : Ideal (MvPolynomial (BinomialEdgeVars (Fin n)) K)}
+    (hIφ_def : Iφ = Ideal.map (diagSubstHom (K := K) k).toRingHom
+      (bipartiteEdgeMonomialIdeal (K := K) G))
+    (hIsM : Iφ.IsMonomial)
+    {c : MvPolynomial (BinomialEdgeVars (Fin n)) K}
+    (hprod : (X (Sum.inl i) + X (Sum.inr i)) * c ∈ Iφ)
+    {d₀ : BinomialEdgeVars (Fin n) →₀ ℕ}
+    (hd₀_not : MvPolynomial.monomial d₀ (1 : K) ∉ Iφ)
+    (hdiv : ∀ e : (BinomialEdgeVars (Fin n)) →₀ ℕ,
+      MvPolynomial.monomial e (1 : K) ∈ Iφ → e ≤ d₀ →
+      MvPolynomial.monomial d₀ (1 : K) ∈ Iφ)
+    (hcoeff_ne : MvPolynomial.coeff d₀ c ≠ 0)
+    (hxi : 0 < d₀ (Sum.inl i)) (hyi0 : d₀ (Sum.inr i) = 0) : False := by
+  -- d' = d₀ + single(inl i) 1 is in support of (x_i + y_i) * c
+  have hxi_single : Finsupp.single (Sum.inl i) 1 ≤ d₀ :=
+    Finsupp.single_le_iff.mpr (by omega)
+  set d' : BinomialEdgeVars (Fin n) →₀ ℕ :=
+    d₀ + (Finsupp.single (Sum.inl i) 1 : BinomialEdgeVars (Fin n) →₀ ℕ)
+  -- Coefficient of d' in (x_i + y_i) * c is coeff d₀ c ≠ 0
+  set xi : MvPolynomial (BinomialEdgeVars (Fin n)) K := X (Sum.inl i) with hxi_def
+  set yi : MvPolynomial (BinomialEdgeVars (Fin n)) K := X (Sum.inr i) with hyi_def
+  have hd'_supp : d' ∈ ((xi + yi) * c).support := by
+    rw [MvPolynomial.mem_support_iff, add_mul, MvPolynomial.coeff_add]
+    have h1 : MvPolynomial.coeff d' (xi * c) = MvPolynomial.coeff d₀ c := by
+      rw [hxi_def, MvPolynomial.coeff_X_mul']
+      have : Sum.inl i ∈ d'.support := by
+        rw [Finsupp.mem_support_iff]
+        simp [d']
+      rw [if_pos this]
+      congr 1
+      ext v
+      simp only [d', Finsupp.coe_tsub, Finsupp.coe_add, Pi.sub_apply,
+        Pi.add_apply, Finsupp.single_apply]
+      split <;> omega
+    have h2 : MvPolynomial.coeff d' (yi * c) = 0 := by
+      rw [hyi_def, MvPolynomial.coeff_X_mul']
+      have : Sum.inr i ∉ d'.support := by
+        rw [Finsupp.mem_support_iff, not_not]
+        change d' (Sum.inr i) = 0
+        simp only [d', Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
+          show (Sum.inl i : BinomialEdgeVars (Fin n)) ≠ Sum.inr i from Sum.inl_ne_inr,
+          if_false, add_zero, hyi0]
+      rw [if_neg this]
+    rw [h1, h2, add_zero]
+    exact hcoeff_ne
+  -- monomial d' 1 ∈ Iφ by IsMonomial
+  have hd'_Iφ : MvPolynomial.monomial d' (1 : K) ∈ Iφ := hIsM _ hprod d' hd'_supp
+  set genSet : Set (MvPolynomial (BinomialEdgeVars (Fin n)) K) :=
+    (diagSubstHom (K := K) k).toRingHom ''
+      { m | ∃ (a b : Fin n) (_ : b.val + 1 < n),
+        G.Adj a ⟨b.val + 1, by omega⟩ ∧ a ≤ b ∧
+        m = X (Sum.inl a) * X (Sum.inr b) }
+  have hIφ_span : Iφ = Ideal.span genSet := by
+    rw [hIφ_def]; unfold bipartiteEdgeMonomialIdeal; rw [Ideal.map_span]
+  have hd'_span : MvPolynomial.monomial d' (1 : K) ∈ Ideal.span genSet :=
+    hIφ_span ▸ hd'_Iφ
+  have hgenS : ∀ s ∈ genSet, ∃ e, s.support ⊆ {e} := by
+    rintro _ ⟨_, ⟨a, b, hb, hadj, hab, rfl⟩, rfl⟩
+    simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
+      MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr]
+    split_ifs with hcond
+    · exact ⟨Finsupp.single (Sum.inl a) 1 + Finsupp.single (Sum.inl b) 1, by
+        rw [show X (Sum.inl a) * -X (Sum.inl b) =
+          -(X (Sum.inl a) * X (Sum.inl b) : MvPolynomial _ K) from by ring]
+        rw [show (X (Sum.inl a) * X (Sum.inl b) : MvPolynomial _ K) =
+          MvPolynomial.monomial (Finsupp.single (Sum.inl a) 1 +
+            Finsupp.single (Sum.inl b) 1) 1 from by
+            simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul]]
+        rw [MvPolynomial.support_neg]
+        exact MvPolynomial.support_monomial_subset⟩
+    · exact ⟨Finsupp.single (Sum.inl a) 1 + Finsupp.single (Sum.inr b) 1, by
+        rw [show (X (Sum.inl a) * X (Sum.inr b) : MvPolynomial _ K) =
+          MvPolynomial.monomial (Finsupp.single (Sum.inl a) 1 +
+            Finsupp.single (Sum.inr b) 1) 1 from by
+            simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul]]
+        exact MvPolynomial.support_monomial_subset⟩
+  have hd'_supp_d' : d' ∈ (MvPolynomial.monomial d' (1 : K)).support := by
+    rw [MvPolynomial.mem_support_iff, MvPolynomial.coeff_monomial, if_pos rfl]; exact one_ne_zero
+  obtain ⟨s, hs_mem, e, hes, hle_d'⟩ :=
+    support_divisible_by_generator (K := K) hgenS hd'_span d' hd'_supp_d'
+  -- e ≤ d' = d₀ + single(inl i) 1, and e(inl i) ≤ 1 (generator bound)
+  have he_bound := generator_exponent_bound (K := K) k i hik (Sum.inl i) (Or.inl rfl) hs_mem hes
+  -- e ≤ d₀: for inl i, e(inl i) ≤ 1 ≤ d₀(inl i); for others, same as d'
+  have hle_d₀ : e ≤ d₀ := by
+    intro w
+    by_cases hw : w = Sum.inl i
+    · rw [hw]; exact le_trans he_bound (by omega)
+    · have := hle_d' w
+      simp only [d', Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
+        show (Sum.inl i : BinomialEdgeVars (Fin n)) = w ↔ w = Sum.inl i from
+          ⟨fun h => h.symm, fun h => h.symm⟩, hw, if_false, add_zero] at this
+      exact this
+  -- monomial e 1 ∈ Iφ (from s ∈ genSet and IsMonomial)
+  have hs_Iφ : s ∈ Iφ := hIφ_span ▸ Ideal.subset_span hs_mem
+  -- s ≠ 0 (it's ±(X_a * X_b))
+  have hs_ne : s ≠ 0 := by
+    obtain ⟨_, ⟨a', b', _, _, _, rfl⟩, rfl⟩ := hs_mem
+    simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
+      MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr, ne_eq]
+    split_ifs
+    · exact mul_ne_zero (MvPolynomial.X_ne_zero _)
+        (neg_ne_zero.mpr (MvPolynomial.X_ne_zero _))
+    · exact mul_ne_zero (MvPolynomial.X_ne_zero _) (MvPolynomial.X_ne_zero _)
+  have he_supp : e ∈ s.support := by
+    obtain ⟨d_wit, hd_wit⟩ := MvPolynomial.support_nonempty.mpr hs_ne
+    have := Finset.mem_singleton.mp (hes hd_wit)
+    rwa [← this]
+  have he_Iφ : MvPolynomial.monomial e (1 : K) ∈ Iφ := hIsM s hs_Iφ e he_supp
+  exact hd₀_not (hdiv e he_Iφ hle_d₀)
+
+/-- Case C helper for `nilradical_nzd_map_diagSubstHom`: handles the asymmetric
+case where `d₀ (Sum.inl i) = 0` but `d₀ (Sum.inr i) ≥ 1`. -/
+private theorem caseC_nilradical_nzd_map_diagSubstHom_helper
+    {n : ℕ} {G : SimpleGraph (Fin n)} (i : Fin n) (hik : k ≤ i.val)
+    {Iφ : Ideal (MvPolynomial (BinomialEdgeVars (Fin n)) K)}
+    (hIφ_def : Iφ = Ideal.map (diagSubstHom (K := K) k).toRingHom
+      (bipartiteEdgeMonomialIdeal (K := K) G))
+    (hIsM : Iφ.IsMonomial)
+    {c : MvPolynomial (BinomialEdgeVars (Fin n)) K}
+    (hprod : (X (Sum.inl i) + X (Sum.inr i)) * c ∈ Iφ)
+    {d₀ : BinomialEdgeVars (Fin n) →₀ ℕ}
+    (hd₀_not : MvPolynomial.monomial d₀ (1 : K) ∉ Iφ)
+    (hdiv : ∀ e : (BinomialEdgeVars (Fin n)) →₀ ℕ,
+      MvPolynomial.monomial e (1 : K) ∈ Iφ → e ≤ d₀ →
+      MvPolynomial.monomial d₀ (1 : K) ∈ Iφ)
+    (hcoeff_ne : MvPolynomial.coeff d₀ c ≠ 0)
+    (hxi0 : d₀ (Sum.inl i) = 0) (hyi : 0 < d₀ (Sum.inr i)) : False := by
+  set d' : BinomialEdgeVars (Fin n) →₀ ℕ :=
+    d₀ + (Finsupp.single (Sum.inr i) 1 : BinomialEdgeVars (Fin n) →₀ ℕ)
+  set xi : MvPolynomial (BinomialEdgeVars (Fin n)) K := X (Sum.inl i) with hxi_def
+  set yi : MvPolynomial (BinomialEdgeVars (Fin n)) K := X (Sum.inr i) with hyi_def
+  have hd'_supp : d' ∈ ((xi + yi) * c).support := by
+    rw [MvPolynomial.mem_support_iff, add_mul, MvPolynomial.coeff_add]
+    have h1 : MvPolynomial.coeff d' (xi * c) = 0 := by
+      rw [hxi_def, MvPolynomial.coeff_X_mul']
+      have : Sum.inl i ∉ d'.support := by
+        rw [Finsupp.mem_support_iff, not_not]; change d' (Sum.inl i) = 0
+        simp only [d', Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
+          show (Sum.inr i : BinomialEdgeVars (Fin n)) ≠ Sum.inl i from Sum.inr_ne_inl,
+          if_false, add_zero, hxi0]
+      rw [if_neg this]
+    have h2 : MvPolynomial.coeff d' (yi * c) = MvPolynomial.coeff d₀ c := by
+      rw [hyi_def, MvPolynomial.coeff_X_mul']
+      have : Sum.inr i ∈ d'.support := by
+        rw [Finsupp.mem_support_iff]; simp [d']
+      rw [if_pos this]; congr 1; ext v
+      simp only [d', Finsupp.coe_tsub, Finsupp.coe_add, Pi.sub_apply,
+        Pi.add_apply, Finsupp.single_apply]; split <;> omega
+    rw [h1, h2, zero_add]; exact hcoeff_ne
+  have hd'_Iφ : MvPolynomial.monomial d' (1 : K) ∈ Iφ := hIsM _ hprod d' hd'_supp
+  set genSet : Set (MvPolynomial (BinomialEdgeVars (Fin n)) K) :=
+    (diagSubstHom (K := K) k).toRingHom ''
+      { m | ∃ (a b : Fin n) (_ : b.val + 1 < n),
+        G.Adj a ⟨b.val + 1, by omega⟩ ∧ a ≤ b ∧
+        m = X (Sum.inl a) * X (Sum.inr b) }
+  have hIφ_span : Iφ = Ideal.span genSet := by
+    rw [hIφ_def]; unfold bipartiteEdgeMonomialIdeal; rw [Ideal.map_span]
+  have hgenS : ∀ s ∈ genSet, ∃ e, s.support ⊆ {e} := by
+    rintro _ ⟨_, ⟨a, b, hb, hadj, hab, rfl⟩, rfl⟩
+    simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
+      MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr]
+    split_ifs with hcond
+    · exact ⟨Finsupp.single (Sum.inl a) 1 + Finsupp.single (Sum.inl b) 1, by
+        rw [show X (Sum.inl a) * -X (Sum.inl b) =
+          -(X (Sum.inl a) * X (Sum.inl b) : MvPolynomial _ K) from by ring,
+          show (X (Sum.inl a) * X (Sum.inl b) : MvPolynomial _ K) =
+            MvPolynomial.monomial (Finsupp.single (Sum.inl a) 1 +
+              Finsupp.single (Sum.inl b) 1) 1 from by
+              simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul],
+          MvPolynomial.support_neg]
+        exact MvPolynomial.support_monomial_subset⟩
+    · exact ⟨Finsupp.single (Sum.inl a) 1 + Finsupp.single (Sum.inr b) 1, by
+        rw [show (X (Sum.inl a) * X (Sum.inr b) : MvPolynomial _ K) =
+            MvPolynomial.monomial (Finsupp.single (Sum.inl a) 1 +
+              Finsupp.single (Sum.inr b) 1) 1 from by
+              simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul]]
+        exact MvPolynomial.support_monomial_subset⟩
+  have hd'_supp_d' : d' ∈ (MvPolynomial.monomial d' (1 : K)).support := by
+    rw [MvPolynomial.mem_support_iff, MvPolynomial.coeff_monomial, if_pos rfl]; exact one_ne_zero
+  obtain ⟨s, hs_mem, e, hes, hle_d'⟩ :=
+    support_divisible_by_generator (K := K) hgenS (hIφ_span ▸ hd'_Iφ) d' hd'_supp_d'
+  have he_bound := generator_exponent_bound (K := K) k i hik (Sum.inr i) (Or.inr rfl) hs_mem hes
+  have hle_d₀ : e ≤ d₀ := by
+    intro w
+    by_cases hw : w = Sum.inr i
+    · rw [hw]; exact le_trans he_bound (by omega)
+    · have := hle_d' w
+      simp only [d', Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
+        show (Sum.inr i : BinomialEdgeVars (Fin n)) = w ↔ w = Sum.inr i from
+          ⟨fun h => h.symm, fun h => h.symm⟩, hw, if_false, add_zero] at this
+      exact this
+  have hs_Iφ : s ∈ Iφ := hIφ_span ▸ Ideal.subset_span hs_mem
+  have hs_ne : s ≠ 0 := by
+    obtain ⟨_, ⟨a', b', _, _, _, rfl⟩, rfl⟩ := hs_mem
+    simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
+      MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr, ne_eq]
+    split_ifs
+    · exact mul_ne_zero (MvPolynomial.X_ne_zero _)
+        (neg_ne_zero.mpr (MvPolynomial.X_ne_zero _))
+    · exact mul_ne_zero (MvPolynomial.X_ne_zero _) (MvPolynomial.X_ne_zero _)
+  have he_supp : e ∈ s.support := by
+    obtain ⟨d_wit, hd_wit⟩ := MvPolynomial.support_nonempty.mpr hs_ne
+    rwa [← Finset.mem_singleton.mp (hes hd_wit)]
+  exact hd₀_not (hdiv e (hIsM s hs_Iφ e he_supp) hle_d₀)
+
+/-- Case D helper for `nilradical_nzd_map_diagSubstHom`: handles the symmetric
+case `d₀ (Sum.inl i) = d₀ (Sum.inr i) = 0`. Combinatorial argument via HH
+transitivity. -/
+private theorem caseD_nilradical_nzd_map_diagSubstHom_helper
+    {n : ℕ} {G : SimpleGraph (Fin n)}
+    (hHH : HerzogHibiConditions n G) (i : Fin n) (hi : i.val + 1 < n)
+    (hik : k ≤ i.val)
+    {Iφ : Ideal (MvPolynomial (BinomialEdgeVars (Fin n)) K)}
+    (hIφ_def : Iφ = Ideal.map (diagSubstHom (K := K) k).toRingHom
+      (bipartiteEdgeMonomialIdeal (K := K) G))
+    (hIsM : Iφ.IsMonomial)
+    {c : MvPolynomial (BinomialEdgeVars (Fin n)) K}
+    (hprod : (X (Sum.inl i) + X (Sum.inr i)) * c ∈ Iφ)
+    {d₀ : BinomialEdgeVars (Fin n) →₀ ℕ}
+    (hd₀_not : MvPolynomial.monomial d₀ (1 : K) ∉ Iφ)
+    (hdiv : ∀ e : (BinomialEdgeVars (Fin n)) →₀ ℕ,
+      MvPolynomial.monomial e (1 : K) ∈ Iφ → e ≤ d₀ →
+      MvPolynomial.monomial d₀ (1 : K) ∈ Iφ)
+    (hcoeff_ne : MvPolynomial.coeff d₀ c ≠ 0)
+    (hxi0 : d₀ (Sum.inl i) = 0) (hyi0 : d₀ (Sum.inr i) = 0) : False := by
+  -- Both x_i * c and y_i * c contribute to (x_i + y_i) * c at separate monomials
+  -- because d₀(inl i) = d₀(inr i) = 0
+  set xi : MvPolynomial (BinomialEdgeVars (Fin n)) K := X (Sum.inl i) with hxi_def
+  set yi : MvPolynomial (BinomialEdgeVars (Fin n)) K := X (Sum.inr i) with hyi_def
+  -- Both d₀ + single(inl i) 1 and d₀ + single(inr i) 1 are in Iφ (via IsMonomial)
+  set dx : BinomialEdgeVars (Fin n) →₀ ℕ :=
+    d₀ + (Finsupp.single (Sum.inl i) 1 : BinomialEdgeVars (Fin n) →₀ ℕ)
+  set dy : BinomialEdgeVars (Fin n) →₀ ℕ :=
+    d₀ + (Finsupp.single (Sum.inr i) 1 : BinomialEdgeVars (Fin n) →₀ ℕ)
+  -- monomial dx 1 ∈ Iφ
+  have hdx_supp : dx ∈ ((xi + yi) * c).support := by
+    rw [MvPolynomial.mem_support_iff, add_mul, MvPolynomial.coeff_add]
+    have h1 : MvPolynomial.coeff dx (xi * c) = MvPolynomial.coeff d₀ c := by
+      rw [hxi_def, MvPolynomial.coeff_X_mul']
+      have : Sum.inl i ∈ dx.support := by rw [Finsupp.mem_support_iff]; simp [dx]
+      rw [if_pos this]; congr 1; ext v
+      simp only [dx, Finsupp.coe_tsub, Finsupp.coe_add, Pi.sub_apply,
+        Pi.add_apply, Finsupp.single_apply]; split <;> omega
+    have h2 : MvPolynomial.coeff dx (yi * c) = 0 := by
+      rw [hyi_def, MvPolynomial.coeff_X_mul']
+      have : Sum.inr i ∉ dx.support := by
+        rw [Finsupp.mem_support_iff, not_not]; change dx (Sum.inr i) = 0
+        simp only [dx, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
+          show (Sum.inl i : BinomialEdgeVars (Fin n)) ≠ Sum.inr i from Sum.inl_ne_inr,
+          if_false, add_zero, hyi0]
+      rw [if_neg this]
+    rw [h1, h2, add_zero]; exact hcoeff_ne
+  have hdx_Iφ : MvPolynomial.monomial dx (1 : K) ∈ Iφ := hIsM _ hprod dx hdx_supp
+  -- monomial dy 1 ∈ Iφ
+  have hdy_supp : dy ∈ ((xi + yi) * c).support := by
+    rw [MvPolynomial.mem_support_iff, add_mul, MvPolynomial.coeff_add]
+    have h1 : MvPolynomial.coeff dy (xi * c) = 0 := by
+      rw [hxi_def, MvPolynomial.coeff_X_mul']
+      have : Sum.inl i ∉ dy.support := by
+        rw [Finsupp.mem_support_iff, not_not]; change dy (Sum.inl i) = 0
+        simp only [dy, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
+          show (Sum.inr i : BinomialEdgeVars (Fin n)) ≠ Sum.inl i from Sum.inr_ne_inl,
+          if_false, add_zero, hxi0]
+      rw [if_neg this]
+    have h2 : MvPolynomial.coeff dy (yi * c) = MvPolynomial.coeff d₀ c := by
+      rw [hyi_def, MvPolynomial.coeff_X_mul']
+      have : Sum.inr i ∈ dy.support := by rw [Finsupp.mem_support_iff]; simp [dy]
+      rw [if_pos this]; congr 1; ext v
+      simp only [dy, Finsupp.coe_tsub, Finsupp.coe_add, Pi.sub_apply,
+        Pi.add_apply, Finsupp.single_apply]; split <;> omega
+    rw [h1, h2, zero_add]; exact hcoeff_ne
+  have hdy_Iφ : MvPolynomial.monomial dy (1 : K) ∈ Iφ := hIsM _ hprod dy hdy_supp
+  -- Generator analysis: both dx and dy give generator info
+  set genSet : Set (MvPolynomial (BinomialEdgeVars (Fin n)) K) :=
+    (diagSubstHom (K := K) k).toRingHom ''
+      { m | ∃ (a b : Fin n) (_ : b.val + 1 < n),
+        G.Adj a ⟨b.val + 1, by omega⟩ ∧ a ≤ b ∧
+        m = X (Sum.inl a) * X (Sum.inr b) }
+  have hIφ_span : Iφ = Ideal.span genSet := by
+    rw [hIφ_def]; unfold bipartiteEdgeMonomialIdeal; rw [Ideal.map_span]
+  have hgenS : ∀ s ∈ genSet, ∃ e, s.support ⊆ {e} := by
+    rintro _ ⟨_, ⟨a, b, hb, hadj, hab, rfl⟩, rfl⟩
+    simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
+      MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr]
+    split_ifs with hcond
+    · exact ⟨Finsupp.single (Sum.inl a) 1 + Finsupp.single (Sum.inl b) 1, by
+        rw [show X (Sum.inl a) * -X (Sum.inl b) =
+          -(X (Sum.inl a) * X (Sum.inl b) : MvPolynomial _ K) from by ring,
+          show (X (Sum.inl a) * X (Sum.inl b) : MvPolynomial _ K) =
+            MvPolynomial.monomial (Finsupp.single (Sum.inl a) 1 +
+              Finsupp.single (Sum.inl b) 1) 1 from by
+              simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul],
+          MvPolynomial.support_neg]
+        exact MvPolynomial.support_monomial_subset⟩
+    · exact ⟨Finsupp.single (Sum.inl a) 1 + Finsupp.single (Sum.inr b) 1, by
+        rw [show (X (Sum.inl a) * X (Sum.inr b) : MvPolynomial _ K) =
+            MvPolynomial.monomial (Finsupp.single (Sum.inl a) 1 +
+              Finsupp.single (Sum.inr b) 1) 1 from by
+              simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul]]
+        exact MvPolynomial.support_monomial_subset⟩
+  have hsupp_mono : ∀ (d : BinomialEdgeVars (Fin n) →₀ ℕ),
+      d ∈ (MvPolynomial.monomial d (1 : K)).support := by
+    intro d; rw [MvPolynomial.mem_support_iff, MvPolynomial.coeff_monomial, if_pos rfl]
+    exact one_ne_zero
+  -- From dx: get generator e_x ≤ dx with e_x(inl i) ≤ 1
+  obtain ⟨sx, hsx_mem, ex, hexs, hlex_dx⟩ :=
+    support_divisible_by_generator (K := K) hgenS (hIφ_span ▸ hdx_Iφ) dx (hsupp_mono dx)
+  -- Since d₀(inl i) = 0, dx(inl i) = 1, and ex(inl i) ≤ 1
+  -- If ex(inl i) = 0, then ex ≤ d₀, contradiction (monomial d₀ 1 ∈ Iφ)
+  -- If ex(inl i) = 1, then ex involves x_a for some a, giving edge info
+  have hex_bound_inl := generator_exponent_bound (K := K) k i hik
+    (Sum.inl i) (Or.inl rfl) hsx_mem hexs
+  -- Similarly from dy: get generator e_y ≤ dy with e_y(inr i) ≤ 1
+  obtain ⟨sy, hsy_mem, ey, heys, hley_dy⟩ :=
+    support_divisible_by_generator (K := K) hgenS (hIφ_span ▸ hdy_Iφ) dy (hsupp_mono dy)
+  have hey_bound_inr := generator_exponent_bound (K := K) k i hik
+    (Sum.inr i) (Or.inr rfl) hsy_mem heys
+  -- Helper: if ex ≤ d₀, get contradiction
+  have hne_sx : sx ≠ 0 := by
+    obtain ⟨_, ⟨a', b', _, _, _, rfl⟩, rfl⟩ := hsx_mem
+    simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
+      MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr, ne_eq]
+    split_ifs
+    · exact mul_ne_zero (MvPolynomial.X_ne_zero _)
+        (neg_ne_zero.mpr (MvPolynomial.X_ne_zero _))
+    · exact mul_ne_zero (MvPolynomial.X_ne_zero _) (MvPolynomial.X_ne_zero _)
+  have hne_sy : sy ≠ 0 := by
+    obtain ⟨_, ⟨a', b', _, _, _, rfl⟩, rfl⟩ := hsy_mem
+    simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
+      MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr, ne_eq]
+    split_ifs
+    · exact mul_ne_zero (MvPolynomial.X_ne_zero _)
+        (neg_ne_zero.mpr (MvPolynomial.X_ne_zero _))
+    · exact mul_ne_zero (MvPolynomial.X_ne_zero _) (MvPolynomial.X_ne_zero _)
+  have hex_Iφ : MvPolynomial.monomial ex (1 : K) ∈ Iφ := by
+    have := MvPolynomial.support_nonempty.mpr hne_sx
+    obtain ⟨d_wit, hd_wit⟩ := this
+    have : ex = d_wit := (Finset.mem_singleton.mp (hexs hd_wit)).symm
+    exact hIsM sx (hIφ_span ▸ Ideal.subset_span hsx_mem) ex (this ▸ hd_wit)
+  have hey_Iφ : MvPolynomial.monomial ey (1 : K) ∈ Iφ := by
+    have := MvPolynomial.support_nonempty.mpr hne_sy
+    obtain ⟨d_wit, hd_wit⟩ := this
+    have : ey = d_wit := (Finset.mem_singleton.mp (heys hd_wit)).symm
+    exact hIsM sy (hIφ_span ▸ Ideal.subset_span hsy_mem) ey (this ▸ hd_wit)
+  -- If ex(inl i) = 0, then ex ≤ d₀, contradiction
+  by_cases hex_case : ex (Sum.inl i) = 0
+  · have hle_d₀ : ex ≤ d₀ := by
+      intro w; by_cases hw : w = Sum.inl i
+      · rw [hw, hex_case, hxi0]
+      · have := hlex_dx w
+        simp only [dx, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
+          show (Sum.inl i : BinomialEdgeVars (Fin n)) = w ↔ w = Sum.inl i from
+            ⟨Eq.symm, Eq.symm⟩, hw, if_false, add_zero] at this
+        exact this
+    exact hd₀_not (hdiv ex hex_Iφ hle_d₀)
+  -- If ey(inr i) = 0, then ey ≤ d₀, contradiction
+  by_cases hey_case : ey (Sum.inr i) = 0
+  · have hle_d₀ : ey ≤ d₀ := by
+      intro w; by_cases hw : w = Sum.inr i
+      · rw [hw, hey_case, hyi0]
+      · have := hley_dy w
+        simp only [dy, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
+          show (Sum.inr i : BinomialEdgeVars (Fin n)) = w ↔ w = Sum.inr i from
+            ⟨Eq.symm, Eq.symm⟩, hw, if_false, add_zero] at this
+        exact this
+    exact hd₀_not (hdiv ey hey_Iφ hle_d₀)
+  -- Both ex(inl i) = 1 and ey(inr i) = 1
+  have hex_inl : ex (Sum.inl i) = 1 := by omega
+  have hey_inr : ey (Sum.inr i) = 1 := by omega
+  -- Extract edge info from generators
+  -- sx has ex(inl i) = 1, so it's a type B generator x_a * y_b with a = i
+  -- (can't be type A since a, b < k ≤ i)
+  -- Similarly sy has ey(inr i) = 1, type B with b = i
+  -- The generator structure gives edges, and HH transitivity gives the final edge
+  -- that divides d₀.
+  -- For sx: ∃ a₁ b₁ with edge (a₁, b₁+1), b₁ ≥ k, and x_{a₁} y_{b₁} ∈ Iφ
+  -- ex(inl i) = 1 means a₁ = i (since for type A, a,b < k, neither = i)
+  -- Also ex(inr i) ≤ 1, and ex(inr i) ≤ d₀(inr i) = 0 (from dx), so b₁ ≠ i
+  -- Wait: ex(inr i) ≤ dx(inr i) = d₀(inr i) + 0 = 0, so ex(inr i) = 0
+  -- So the generator is x_i * y_{b₁} with b₁ ≠ i, hence b₁ > i
+  -- For sy: ey(inr i) = 1 means b₂ = i, and ey(inl i) ≤ d₀(inl i) = 0,
+  -- so a₂ ≠ i, hence a₂ < i
+  -- HH transitivity: edges (a₂, i+1) and (i, b₁+1) with a₂ < i < b₁
+  -- → edge (a₂, b₁+1), so x_{a₂} * y_{b₁} ∈ Iφ
+  -- And x_{a₂} | d₀ (from ey, a₂ contributes) and y_{b₁} | d₀ (from ex, b₁ contributes)
+  -- So x_{a₂} * y_{b₁} | d₀, hence monomial d₀ 1 ∈ Iφ
+  -- Extract edge data from sx and sy
+  obtain ⟨_, ⟨a₁, b₁, hb₁, hadj₁, hab₁, rfl⟩, rfl⟩ := hsx_mem
+  obtain ⟨_, ⟨a₂, b₂, hb₂, hadj₂, hab₂, rfl⟩, rfl⟩ := hsy_mem
+  -- Compute the exponent of the generator image under φ
+  simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
+    MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr] at hexs heys
+  -- Helper: convert singleton support to exponent equality
+  have hmono_supp : ∀ (d : BinomialEdgeVars (Fin n) →₀ ℕ),
+      (MvPolynomial.monomial d (1 : K)).support = {d} := by
+    intro d; exact Finset.Subset.antisymm MvPolynomial.support_monomial_subset
+      (Finset.singleton_subset_iff.mpr (hsupp_mono d))
+  -- Split on whether b₁ < k
+  split_ifs at hexs with hcond₁
+  · -- b₁ < k: generator is -(x_{a₁} * x_{b₁})
+    -- The exponent only involves inl variables, so ex(inl i) = 0 since a₁, b₁ < k ≤ i
+    exfalso; apply hex_case
+    have : ex = Finsupp.single (Sum.inl a₁) 1 + Finsupp.single (Sum.inl b₁) 1 := by
+      have hmem : Finsupp.single (Sum.inl a₁) 1 + Finsupp.single (Sum.inl b₁) 1 ∈
+          (X (Sum.inl a₁) * -X (Sum.inl b₁) :
+            MvPolynomial (BinomialEdgeVars (Fin n)) K).support := by
+        have hprod : (X (Sum.inl a₁) * X (Sum.inl b₁) :
+            MvPolynomial (BinomialEdgeVars (Fin n)) K) =
+            MvPolynomial.monomial
+              (Finsupp.single (Sum.inl a₁) 1 + Finsupp.single (Sum.inl b₁) 1) 1 := by
+          simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul]; rfl
+        have heq : (X (Sum.inl a₁) * -X (Sum.inl b₁) :
+            MvPolynomial (BinomialEdgeVars (Fin n)) K) =
+            -(MvPolynomial.monomial
+              (Finsupp.single (Sum.inl a₁) 1 + Finsupp.single (Sum.inl b₁) 1) 1) := by
+          rw [mul_neg, hprod]
+        rw [heq, MvPolynomial.support_neg]
+        exact hsupp_mono _
+      exact (Finset.mem_singleton.mp (hexs hmem)).symm
+    rw [this]; simp only [Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply]
+    have : a₁.val < i.val := by omega
+    have : b₁.val < i.val := by omega
+    simp [show (Sum.inl a₁ : BinomialEdgeVars (Fin n)) ≠ Sum.inl i from
+            fun h => by exact absurd (Fin.ext_iff.mp (Sum.inl_injective h)) (by omega),
+          show (Sum.inl b₁ : BinomialEdgeVars (Fin n)) ≠ Sum.inl i from
+            fun h => by exact absurd (Fin.ext_iff.mp (Sum.inl_injective h)) (by omega)]
+  · -- b₁ ≥ k: generator is x_{a₁} * y_{b₁}
+    have hex_eq : ex = Finsupp.single (Sum.inl a₁) 1 + Finsupp.single (Sum.inr b₁) 1 := by
+      have hmem : Finsupp.single (Sum.inl a₁) 1 + Finsupp.single (Sum.inr b₁) 1 ∈
+          (X (Sum.inl a₁) * X (Sum.inr b₁) : MvPolynomial _ K).support := by
+        simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul,
+          MvPolynomial.mem_support_iff, MvPolynomial.coeff_monomial]
+        exact one_ne_zero
+      exact (Finset.mem_singleton.mp (hexs hmem)).symm
+    -- ex(inl i) = 1 → a₁ = i (use contrapositive: if a₁ ≠ i then ex(inl i) = 0)
+    have ha₁_eq : a₁ = i := by
+      by_contra h
+      apply hex_case; rw [hex_eq]
+      simp only [Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply]
+      have : (Sum.inl a₁ : BinomialEdgeVars (Fin n)) ≠ Sum.inl i :=
+        fun heq => h (Sum.inl_injective heq)
+      have : (Sum.inr b₁ : BinomialEdgeVars (Fin n)) ≠ Sum.inl i := Sum.inr_ne_inl
+      simp [*]
+    -- b₁ ≠ i (from ex(inr i) ≤ dx(inr i) = d₀(inr i) = 0)
+    have hb₁_ne_i : b₁ ≠ i := by
+      intro hb; apply hex_case
+      -- If b₁ = i, then ex(inr i) = 1, but dx(inr i) = d₀(inr i) = 0
+      have h1 : ex (Sum.inr i) = 1 := by
+        rw [hex_eq, hb]; simp []
+      have h2 : ex (Sum.inr i) ≤ 0 := by
+        have := hlex_dx (Sum.inr i)
+        simp only [dx, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
+          hyi0] at this
+        exact this
+      omega
+    have hb₁_gt_i : i < b₁ := lt_of_le_of_ne (ha₁_eq ▸ hab₁) (Ne.symm hb₁_ne_i)
+    -- y_{b₁} divides d₀
+    have hyb₁ : 1 ≤ d₀ (Sum.inr b₁) := by
+      have := hlex_dx (Sum.inr b₁)
+      rw [hex_eq] at this
+      simp only [dx, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply] at this
+      simp only [
+        if_true] at this
+      exact this
+    -- Split on whether b₂ < k for sy
+    split_ifs at heys with hcond₂
+    · -- b₂ < k: ey only involves inl vars, so ey(inr i) = 0 → contradiction
+      exfalso; apply hey_case
+      have : ey = Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inl b₂) 1 := by
+        have hmem : Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inl b₂) 1 ∈
+            (X (Sum.inl a₂) * -X (Sum.inl b₂) :
+              MvPolynomial (BinomialEdgeVars (Fin n)) K).support := by
+          have hprod : (X (Sum.inl a₂) * X (Sum.inl b₂) :
+              MvPolynomial (BinomialEdgeVars (Fin n)) K) =
+              MvPolynomial.monomial
+                (Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inl b₂) 1) 1 := by
+            simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul]; rfl
+          have heq : (X (Sum.inl a₂) * -X (Sum.inl b₂) :
+              MvPolynomial (BinomialEdgeVars (Fin n)) K) =
+              -(MvPolynomial.monomial
+                (Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inl b₂) 1) 1) := by
+            rw [mul_neg, hprod]
+          rw [heq, MvPolynomial.support_neg]
+          exact hsupp_mono _
+        exact (Finset.mem_singleton.mp (heys hmem)).symm
+      rw [this]; simp []
+    · -- b₂ ≥ k: generator is x_{a₂} * y_{b₂}
+      have hey_eq : ey = Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inr b₂) 1 := by
+        have hmem : Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inr b₂) 1 ∈
+            (X (Sum.inl a₂) * X (Sum.inr b₂) : MvPolynomial _ K).support := by
+          simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul,
+            MvPolynomial.mem_support_iff, MvPolynomial.coeff_monomial]
+          exact one_ne_zero
+        exact (Finset.mem_singleton.mp (heys hmem)).symm
+      -- ey(inr i) = 1 → b₂ = i
+      have hb₂_eq : b₂ = i := by
+        by_contra h
+        apply hey_case; rw [hey_eq]
+        simp only [Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply]
+        have : (Sum.inl a₂ : BinomialEdgeVars (Fin n)) ≠ Sum.inr i := Sum.inl_ne_inr
+        have : (Sum.inr b₂ : BinomialEdgeVars (Fin n)) ≠ Sum.inr i :=
+          fun heq => h (Sum.inr_injective heq)
+        simp [*]
+      -- a₂ ≠ i (from ey(inl i) ≤ dy(inl i) = d₀(inl i) = 0)
+      have ha₂_ne_i : a₂ ≠ i := by
+        intro ha
+        have h1 : ey (Sum.inl i) = 1 := by
+          rw [hey_eq, hb₂_eq, ha]
+          simp []
+        have h2 : ey (Sum.inl i) ≤ 0 := by
+          have := hley_dy (Sum.inl i)
+          simp only [dy, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
+            hxi0] at this
+          exact this
+        omega
+      have ha₂_lt_i : a₂ < i := lt_of_le_of_ne (hb₂_eq ▸ hab₂) ha₂_ne_i
+      -- x_{a₂} divides d₀
+      have hxa₂ : 1 ≤ d₀ (Sum.inl a₂) := by
+        have := hley_dy (Sum.inl a₂)
+        rw [hey_eq] at this
+        simp only [dy, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
+          if_true] at this
+        exact this
+      -- HH transitivity: edges (a₂, i+1) and (i, b₁+1) with a₂ < i < b₁ → edge (a₂, b₁+1)
+      have hadj_trans : G.Adj a₂ ⟨b₁.val + 1, hb₁⟩ :=
+        hHH.transitivity a₂ i b₁ hi hb₁ ha₂_lt_i hb₁_gt_i (hb₂_eq ▸ hadj₂) (ha₁_eq ▸ hadj₁)
+      -- x_{a₂} * y_{b₁} ∈ bipartiteEdgeMonomialIdeal
+      have hgen_mem : X (Sum.inl a₂) * X (Sum.inr b₁) ∈
+          bipartiteEdgeMonomialIdeal (K := K) G :=
+        Ideal.subset_span ⟨a₂, b₁, hb₁, hadj_trans,
+          le_of_lt (lt_trans ha₂_lt_i hb₁_gt_i), rfl⟩
+      -- Its image under φ is itself (since b₁ ≥ k)
+      have hgen_Iφ : MvPolynomial.monomial
+          (Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inr b₁) 1) (1 : K) ∈ Iφ := by
+        have heq : (X (Sum.inl a₂) * X (Sum.inr b₁) : MvPolynomial _ K) =
+            MvPolynomial.monomial
+              (Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inr b₁) 1) 1 := by
+          simp [MvPolynomial.X, MvPolynomial.monomial_mul]
+        have himg := Ideal.mem_map_of_mem (diagSubstHom (K := K) k).toRingHom hgen_mem
+        rw [hIφ_def]
+        simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
+          MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr] at himg
+        simp only [show ¬(b₁.val < k ∧ b₁.val + 1 < n) from fun ⟨h, _⟩ => hcond₁ ⟨h, hb₁⟩,
+          if_false] at himg
+        rwa [heq] at himg
+      -- single(inl a₂) 1 + single(inr b₁) 1 ≤ d₀
+      have hle_d₀ : Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inr b₁) 1 ≤ d₀ := by
+        intro w
+        simp only [Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply]
+        have hdisjoint : w = Sum.inl a₂ → w ≠ Sum.inr b₁ := fun h₁ h₂ =>
+          absurd (h₁.symm.trans h₂) Sum.inl_ne_inr
+        rcases Classical.em (w = Sum.inl a₂) with h₁ | h₁
+        · subst h₁
+          have h₂ : Sum.inl a₂ ≠ Sum.inr b₁ := Sum.inl_ne_inr
+          rw [if_pos rfl, if_neg (Ne.symm h₂), add_zero]; exact hxa₂
+        · rw [if_neg (Ne.symm h₁), zero_add]
+          split_ifs with h₂
+          · subst h₂; exact hyb₁
+          · exact Nat.zero_le _
+      exact hd₀_not (hdiv _ hgen_Iφ hle_d₀)
+
 /-- NZD on the nilradical module of the monomial image ideal:
 if `c ∈ √(I.map φ)` and `ℓ * c ∈ I.map φ`, then `c ∈ I.map φ`.
 This uses the monomial structure: `I.map φ` is a monomial ideal and `ℓ = x_i + y_i`
@@ -921,529 +1486,16 @@ private theorem nilradical_nzd_map_diagSubstHom {n : ℕ} {G : SimpleGraph (Fin 
     exact hd₀_not (hdiv _ hdiag_mono hle)
   · -- Case B: d₀(inl i) ≥ 1, d₀(inr i) = 0
     push_neg at hyi
-    have hyi0 : d₀ (Sum.inr i) = 0 := Nat.eq_zero_of_le_zero hyi
-    -- d' = d₀ + single(inl i) 1 is in support of (x_i + y_i) * c
-    have hxi_single : Finsupp.single (Sum.inl i) 1 ≤ d₀ :=
-      Finsupp.single_le_iff.mpr (by omega)
-    set d' : BinomialEdgeVars (Fin n) →₀ ℕ :=
-      d₀ + (Finsupp.single (Sum.inl i) 1 : BinomialEdgeVars (Fin n) →₀ ℕ)
-    -- Coefficient of d' in (x_i + y_i) * c is coeff d₀ c ≠ 0
-    set xi : MvPolynomial (BinomialEdgeVars (Fin n)) K := X (Sum.inl i) with hxi_def
-    set yi : MvPolynomial (BinomialEdgeVars (Fin n)) K := X (Sum.inr i) with hyi_def
-    have hd'_supp : d' ∈ ((xi + yi) * c).support := by
-      rw [MvPolynomial.mem_support_iff, add_mul, MvPolynomial.coeff_add]
-      have h1 : MvPolynomial.coeff d' (xi * c) = MvPolynomial.coeff d₀ c := by
-        rw [hxi_def, MvPolynomial.coeff_X_mul']
-        have : Sum.inl i ∈ d'.support := by
-          rw [Finsupp.mem_support_iff]
-          simp [d']
-        rw [if_pos this]
-        congr 1
-        ext v
-        simp only [d', Finsupp.coe_tsub, Finsupp.coe_add, Pi.sub_apply,
-          Pi.add_apply, Finsupp.single_apply]
-        split <;> omega
-      have h2 : MvPolynomial.coeff d' (yi * c) = 0 := by
-        rw [hyi_def, MvPolynomial.coeff_X_mul']
-        have : Sum.inr i ∉ d'.support := by
-          rw [Finsupp.mem_support_iff, not_not]
-          change d' (Sum.inr i) = 0
-          simp only [d', Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
-            show (Sum.inl i : BinomialEdgeVars (Fin n)) ≠ Sum.inr i from Sum.inl_ne_inr,
-            if_false, add_zero, hyi0]
-        rw [if_neg this]
-      rw [h1, h2, add_zero]
-      exact hcoeff_ne
-    -- monomial d' 1 ∈ Iφ by IsMonomial
-    have hd'_Iφ : MvPolynomial.monomial d' (1 : K) ∈ Iφ := hIsM _ hprod d' hd'_supp
-    -- Use hdiv: show monomial d₀ 1 ∈ Iφ by finding e ≤ d₀ with monomial e 1 ∈ Iφ
-    -- monomial d' 1 ∈ Iφ, and d' = d₀ + single(inl i) 1
-    -- Every generator has exponent ≤ 1 at inl i, and d₀(inl i) ≥ 1
-    -- So by generator divisibility, monomial d₀ 1 ∈ Iφ
-    -- Strategy: use the map_span form and support_divisible_by_generator
-    set genSet : Set (MvPolynomial (BinomialEdgeVars (Fin n)) K) :=
-      (diagSubstHom (K := K) k).toRingHom ''
-        { m | ∃ (a b : Fin n) (_ : b.val + 1 < n),
-          G.Adj a ⟨b.val + 1, by omega⟩ ∧ a ≤ b ∧
-          m = X (Sum.inl a) * X (Sum.inr b) }
-    have hIφ_span : Iφ = Ideal.span genSet := by
-      rw [hIφ_def]; unfold bipartiteEdgeMonomialIdeal; rw [Ideal.map_span]
-    have hd'_span : MvPolynomial.monomial d' (1 : K) ∈ Ideal.span genSet :=
-      hIφ_span ▸ hd'_Iφ
-    have hgenS : ∀ s ∈ genSet, ∃ e, s.support ⊆ {e} := by
-      rintro _ ⟨_, ⟨a, b, hb, hadj, hab, rfl⟩, rfl⟩
-      simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
-        MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr]
-      split_ifs with hcond
-      · exact ⟨Finsupp.single (Sum.inl a) 1 + Finsupp.single (Sum.inl b) 1, by
-          rw [show X (Sum.inl a) * -X (Sum.inl b) =
-            -(X (Sum.inl a) * X (Sum.inl b) : MvPolynomial _ K) from by ring]
-          rw [show (X (Sum.inl a) * X (Sum.inl b) : MvPolynomial _ K) =
-            MvPolynomial.monomial (Finsupp.single (Sum.inl a) 1 +
-              Finsupp.single (Sum.inl b) 1) 1 from by
-              simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul]]
-          rw [MvPolynomial.support_neg]
-          exact MvPolynomial.support_monomial_subset⟩
-      · exact ⟨Finsupp.single (Sum.inl a) 1 + Finsupp.single (Sum.inr b) 1, by
-          rw [show (X (Sum.inl a) * X (Sum.inr b) : MvPolynomial _ K) =
-            MvPolynomial.monomial (Finsupp.single (Sum.inl a) 1 +
-              Finsupp.single (Sum.inr b) 1) 1 from by
-              simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul]]
-          exact MvPolynomial.support_monomial_subset⟩
-    have hd'_supp_d' : d' ∈ (MvPolynomial.monomial d' (1 : K)).support := by
-      rw [MvPolynomial.mem_support_iff, MvPolynomial.coeff_monomial, if_pos rfl]; exact one_ne_zero
-    obtain ⟨s, hs_mem, e, hes, hle_d'⟩ :=
-      support_divisible_by_generator (K := K) hgenS hd'_span d' hd'_supp_d'
-    -- e ≤ d' = d₀ + single(inl i) 1, and e(inl i) ≤ 1 (generator bound)
-    have he_bound := generator_exponent_bound (K := K) k i hik (Sum.inl i) (Or.inl rfl) hs_mem hes
-    -- e ≤ d₀: for inl i, e(inl i) ≤ 1 ≤ d₀(inl i); for others, same as d'
-    have hle_d₀ : e ≤ d₀ := by
-      intro w
-      by_cases hw : w = Sum.inl i
-      · rw [hw]; exact le_trans he_bound (by omega)
-      · have := hle_d' w
-        simp only [d', Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
-          show (Sum.inl i : BinomialEdgeVars (Fin n)) = w ↔ w = Sum.inl i from
-            ⟨fun h => h.symm, fun h => h.symm⟩, hw, if_false, add_zero] at this
-        exact this
-    -- monomial e 1 ∈ Iφ (from s ∈ genSet and IsMonomial)
-    have hs_Iφ : s ∈ Iφ := hIφ_span ▸ Ideal.subset_span hs_mem
-    -- s ≠ 0 (it's ±(X_a * X_b))
-    have hs_ne : s ≠ 0 := by
-      obtain ⟨_, ⟨a', b', _, _, _, rfl⟩, rfl⟩ := hs_mem
-      simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
-        MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr, ne_eq]
-      split_ifs
-      · exact mul_ne_zero (MvPolynomial.X_ne_zero _)
-          (neg_ne_zero.mpr (MvPolynomial.X_ne_zero _))
-      · exact mul_ne_zero (MvPolynomial.X_ne_zero _) (MvPolynomial.X_ne_zero _)
-    have he_supp : e ∈ s.support := by
-      obtain ⟨d_wit, hd_wit⟩ := MvPolynomial.support_nonempty.mpr hs_ne
-      have := Finset.mem_singleton.mp (hes hd_wit)
-      rwa [← this]
-    have he_Iφ : MvPolynomial.monomial e (1 : K) ∈ Iφ := hIsM s hs_Iφ e he_supp
-    exact hd₀_not (hdiv e he_Iφ hle_d₀)
+    exact caseB_nilradical_nzd_map_diagSubstHom_helper (K := K) i hik hIφ_def hIsM
+      hprod hd₀_not hdiv hcoeff_ne hxi (Nat.eq_zero_of_le_zero hyi)
   · -- Case C: d₀(inl i) = 0, d₀(inr i) ≥ 1 — symmetric to case B
     push_neg at hxi
-    have hxi0 : d₀ (Sum.inl i) = 0 := Nat.eq_zero_of_le_zero hxi
-    set d' : BinomialEdgeVars (Fin n) →₀ ℕ :=
-      d₀ + (Finsupp.single (Sum.inr i) 1 : BinomialEdgeVars (Fin n) →₀ ℕ)
-    set xi : MvPolynomial (BinomialEdgeVars (Fin n)) K := X (Sum.inl i) with hxi_def
-    set yi : MvPolynomial (BinomialEdgeVars (Fin n)) K := X (Sum.inr i) with hyi_def
-    have hd'_supp : d' ∈ ((xi + yi) * c).support := by
-      rw [MvPolynomial.mem_support_iff, add_mul, MvPolynomial.coeff_add]
-      have h1 : MvPolynomial.coeff d' (xi * c) = 0 := by
-        rw [hxi_def, MvPolynomial.coeff_X_mul']
-        have : Sum.inl i ∉ d'.support := by
-          rw [Finsupp.mem_support_iff, not_not]; change d' (Sum.inl i) = 0
-          simp only [d', Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
-            show (Sum.inr i : BinomialEdgeVars (Fin n)) ≠ Sum.inl i from Sum.inr_ne_inl,
-            if_false, add_zero, hxi0]
-        rw [if_neg this]
-      have h2 : MvPolynomial.coeff d' (yi * c) = MvPolynomial.coeff d₀ c := by
-        rw [hyi_def, MvPolynomial.coeff_X_mul']
-        have : Sum.inr i ∈ d'.support := by
-          rw [Finsupp.mem_support_iff]; simp [d']
-        rw [if_pos this]; congr 1; ext v
-        simp only [d', Finsupp.coe_tsub, Finsupp.coe_add, Pi.sub_apply,
-          Pi.add_apply, Finsupp.single_apply]; split <;> omega
-      rw [h1, h2, zero_add]; exact hcoeff_ne
-    have hd'_Iφ : MvPolynomial.monomial d' (1 : K) ∈ Iφ := hIsM _ hprod d' hd'_supp
-    set genSet : Set (MvPolynomial (BinomialEdgeVars (Fin n)) K) :=
-      (diagSubstHom (K := K) k).toRingHom ''
-        { m | ∃ (a b : Fin n) (_ : b.val + 1 < n),
-          G.Adj a ⟨b.val + 1, by omega⟩ ∧ a ≤ b ∧
-          m = X (Sum.inl a) * X (Sum.inr b) }
-    have hIφ_span : Iφ = Ideal.span genSet := by
-      rw [hIφ_def]; unfold bipartiteEdgeMonomialIdeal; rw [Ideal.map_span]
-    have hgenS : ∀ s ∈ genSet, ∃ e, s.support ⊆ {e} := by
-      rintro _ ⟨_, ⟨a, b, hb, hadj, hab, rfl⟩, rfl⟩
-      simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
-        MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr]
-      split_ifs with hcond
-      · exact ⟨Finsupp.single (Sum.inl a) 1 + Finsupp.single (Sum.inl b) 1, by
-          rw [show X (Sum.inl a) * -X (Sum.inl b) =
-            -(X (Sum.inl a) * X (Sum.inl b) : MvPolynomial _ K) from by ring,
-            show (X (Sum.inl a) * X (Sum.inl b) : MvPolynomial _ K) =
-              MvPolynomial.monomial (Finsupp.single (Sum.inl a) 1 +
-                Finsupp.single (Sum.inl b) 1) 1 from by
-                simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul],
-            MvPolynomial.support_neg]
-          exact MvPolynomial.support_monomial_subset⟩
-      · exact ⟨Finsupp.single (Sum.inl a) 1 + Finsupp.single (Sum.inr b) 1, by
-          rw [show (X (Sum.inl a) * X (Sum.inr b) : MvPolynomial _ K) =
-              MvPolynomial.monomial (Finsupp.single (Sum.inl a) 1 +
-                Finsupp.single (Sum.inr b) 1) 1 from by
-                simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul]]
-          exact MvPolynomial.support_monomial_subset⟩
-    have hd'_supp_d' : d' ∈ (MvPolynomial.monomial d' (1 : K)).support := by
-      rw [MvPolynomial.mem_support_iff, MvPolynomial.coeff_monomial, if_pos rfl]; exact one_ne_zero
-    obtain ⟨s, hs_mem, e, hes, hle_d'⟩ :=
-      support_divisible_by_generator (K := K) hgenS (hIφ_span ▸ hd'_Iφ) d' hd'_supp_d'
-    have he_bound := generator_exponent_bound (K := K) k i hik (Sum.inr i) (Or.inr rfl) hs_mem hes
-    have hle_d₀ : e ≤ d₀ := by
-      intro w
-      by_cases hw : w = Sum.inr i
-      · rw [hw]; exact le_trans he_bound (by omega)
-      · have := hle_d' w
-        simp only [d', Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
-          show (Sum.inr i : BinomialEdgeVars (Fin n)) = w ↔ w = Sum.inr i from
-            ⟨fun h => h.symm, fun h => h.symm⟩, hw, if_false, add_zero] at this
-        exact this
-    have hs_Iφ : s ∈ Iφ := hIφ_span ▸ Ideal.subset_span hs_mem
-    have hs_ne : s ≠ 0 := by
-      obtain ⟨_, ⟨a', b', _, _, _, rfl⟩, rfl⟩ := hs_mem
-      simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
-        MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr, ne_eq]
-      split_ifs
-      · exact mul_ne_zero (MvPolynomial.X_ne_zero _)
-          (neg_ne_zero.mpr (MvPolynomial.X_ne_zero _))
-      · exact mul_ne_zero (MvPolynomial.X_ne_zero _) (MvPolynomial.X_ne_zero _)
-    have he_supp : e ∈ s.support := by
-      obtain ⟨d_wit, hd_wit⟩ := MvPolynomial.support_nonempty.mpr hs_ne
-      rwa [← Finset.mem_singleton.mp (hes hd_wit)]
-    exact hd₀_not (hdiv e (hIsM s hs_Iφ e he_supp) hle_d₀)
+    exact caseC_nilradical_nzd_map_diagSubstHom_helper (K := K) i hik hIφ_def hIsM
+      hprod hd₀_not hdiv hcoeff_ne (Nat.eq_zero_of_le_zero hxi) hyi
   · -- Case D: both = 0 — use HH transitivity
     push_neg at hxi hyi
-    have hxi0 : d₀ (Sum.inl i) = 0 := Nat.eq_zero_of_le_zero hxi
-    have hyi0 : d₀ (Sum.inr i) = 0 := Nat.eq_zero_of_le_zero hyi
-    -- Both x_i * c and y_i * c contribute to (x_i + y_i) * c at separate monomials
-    -- because d₀(inl i) = d₀(inr i) = 0
-    set xi : MvPolynomial (BinomialEdgeVars (Fin n)) K := X (Sum.inl i) with hxi_def
-    set yi : MvPolynomial (BinomialEdgeVars (Fin n)) K := X (Sum.inr i) with hyi_def
-    -- Both d₀ + single(inl i) 1 and d₀ + single(inr i) 1 are in Iφ (via IsMonomial)
-    set dx : BinomialEdgeVars (Fin n) →₀ ℕ :=
-      d₀ + (Finsupp.single (Sum.inl i) 1 : BinomialEdgeVars (Fin n) →₀ ℕ)
-    set dy : BinomialEdgeVars (Fin n) →₀ ℕ :=
-      d₀ + (Finsupp.single (Sum.inr i) 1 : BinomialEdgeVars (Fin n) →₀ ℕ)
-    -- monomial dx 1 ∈ Iφ
-    have hdx_supp : dx ∈ ((xi + yi) * c).support := by
-      rw [MvPolynomial.mem_support_iff, add_mul, MvPolynomial.coeff_add]
-      have h1 : MvPolynomial.coeff dx (xi * c) = MvPolynomial.coeff d₀ c := by
-        rw [hxi_def, MvPolynomial.coeff_X_mul']
-        have : Sum.inl i ∈ dx.support := by rw [Finsupp.mem_support_iff]; simp [dx]
-        rw [if_pos this]; congr 1; ext v
-        simp only [dx, Finsupp.coe_tsub, Finsupp.coe_add, Pi.sub_apply,
-          Pi.add_apply, Finsupp.single_apply]; split <;> omega
-      have h2 : MvPolynomial.coeff dx (yi * c) = 0 := by
-        rw [hyi_def, MvPolynomial.coeff_X_mul']
-        have : Sum.inr i ∉ dx.support := by
-          rw [Finsupp.mem_support_iff, not_not]; change dx (Sum.inr i) = 0
-          simp only [dx, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
-            show (Sum.inl i : BinomialEdgeVars (Fin n)) ≠ Sum.inr i from Sum.inl_ne_inr,
-            if_false, add_zero, hyi0]
-        rw [if_neg this]
-      rw [h1, h2, add_zero]; exact hcoeff_ne
-    have hdx_Iφ : MvPolynomial.monomial dx (1 : K) ∈ Iφ := hIsM _ hprod dx hdx_supp
-    -- monomial dy 1 ∈ Iφ
-    have hdy_supp : dy ∈ ((xi + yi) * c).support := by
-      rw [MvPolynomial.mem_support_iff, add_mul, MvPolynomial.coeff_add]
-      have h1 : MvPolynomial.coeff dy (xi * c) = 0 := by
-        rw [hxi_def, MvPolynomial.coeff_X_mul']
-        have : Sum.inl i ∉ dy.support := by
-          rw [Finsupp.mem_support_iff, not_not]; change dy (Sum.inl i) = 0
-          simp only [dy, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
-            show (Sum.inr i : BinomialEdgeVars (Fin n)) ≠ Sum.inl i from Sum.inr_ne_inl,
-            if_false, add_zero, hxi0]
-        rw [if_neg this]
-      have h2 : MvPolynomial.coeff dy (yi * c) = MvPolynomial.coeff d₀ c := by
-        rw [hyi_def, MvPolynomial.coeff_X_mul']
-        have : Sum.inr i ∈ dy.support := by rw [Finsupp.mem_support_iff]; simp [dy]
-        rw [if_pos this]; congr 1; ext v
-        simp only [dy, Finsupp.coe_tsub, Finsupp.coe_add, Pi.sub_apply,
-          Pi.add_apply, Finsupp.single_apply]; split <;> omega
-      rw [h1, h2, zero_add]; exact hcoeff_ne
-    have hdy_Iφ : MvPolynomial.monomial dy (1 : K) ∈ Iφ := hIsM _ hprod dy hdy_supp
-    -- Generator analysis: both dx and dy give generator info
-    set genSet : Set (MvPolynomial (BinomialEdgeVars (Fin n)) K) :=
-      (diagSubstHom (K := K) k).toRingHom ''
-        { m | ∃ (a b : Fin n) (_ : b.val + 1 < n),
-          G.Adj a ⟨b.val + 1, by omega⟩ ∧ a ≤ b ∧
-          m = X (Sum.inl a) * X (Sum.inr b) }
-    have hIφ_span : Iφ = Ideal.span genSet := by
-      rw [hIφ_def]; unfold bipartiteEdgeMonomialIdeal; rw [Ideal.map_span]
-    have hgenS : ∀ s ∈ genSet, ∃ e, s.support ⊆ {e} := by
-      rintro _ ⟨_, ⟨a, b, hb, hadj, hab, rfl⟩, rfl⟩
-      simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
-        MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr]
-      split_ifs with hcond
-      · exact ⟨Finsupp.single (Sum.inl a) 1 + Finsupp.single (Sum.inl b) 1, by
-          rw [show X (Sum.inl a) * -X (Sum.inl b) =
-            -(X (Sum.inl a) * X (Sum.inl b) : MvPolynomial _ K) from by ring,
-            show (X (Sum.inl a) * X (Sum.inl b) : MvPolynomial _ K) =
-              MvPolynomial.monomial (Finsupp.single (Sum.inl a) 1 +
-                Finsupp.single (Sum.inl b) 1) 1 from by
-                simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul],
-            MvPolynomial.support_neg]
-          exact MvPolynomial.support_monomial_subset⟩
-      · exact ⟨Finsupp.single (Sum.inl a) 1 + Finsupp.single (Sum.inr b) 1, by
-          rw [show (X (Sum.inl a) * X (Sum.inr b) : MvPolynomial _ K) =
-              MvPolynomial.monomial (Finsupp.single (Sum.inl a) 1 +
-                Finsupp.single (Sum.inr b) 1) 1 from by
-                simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul]]
-          exact MvPolynomial.support_monomial_subset⟩
-    have hsupp_mono : ∀ (d : BinomialEdgeVars (Fin n) →₀ ℕ),
-        d ∈ (MvPolynomial.monomial d (1 : K)).support := by
-      intro d; rw [MvPolynomial.mem_support_iff, MvPolynomial.coeff_monomial, if_pos rfl]
-      exact one_ne_zero
-    -- From dx: get generator e_x ≤ dx with e_x(inl i) ≤ 1
-    obtain ⟨sx, hsx_mem, ex, hexs, hlex_dx⟩ :=
-      support_divisible_by_generator (K := K) hgenS (hIφ_span ▸ hdx_Iφ) dx (hsupp_mono dx)
-    -- Since d₀(inl i) = 0, dx(inl i) = 1, and ex(inl i) ≤ 1
-    -- If ex(inl i) = 0, then ex ≤ d₀, contradiction (monomial d₀ 1 ∈ Iφ)
-    -- If ex(inl i) = 1, then ex involves x_a for some a, giving edge info
-    have hex_bound_inl := generator_exponent_bound (K := K) k i hik
-      (Sum.inl i) (Or.inl rfl) hsx_mem hexs
-    -- Similarly from dy: get generator e_y ≤ dy with e_y(inr i) ≤ 1
-    obtain ⟨sy, hsy_mem, ey, heys, hley_dy⟩ :=
-      support_divisible_by_generator (K := K) hgenS (hIφ_span ▸ hdy_Iφ) dy (hsupp_mono dy)
-    have hey_bound_inr := generator_exponent_bound (K := K) k i hik
-      (Sum.inr i) (Or.inr rfl) hsy_mem heys
-    -- Helper: if ex ≤ d₀, get contradiction
-    have hne_sx : sx ≠ 0 := by
-      obtain ⟨_, ⟨a', b', _, _, _, rfl⟩, rfl⟩ := hsx_mem
-      simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
-        MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr, ne_eq]
-      split_ifs
-      · exact mul_ne_zero (MvPolynomial.X_ne_zero _)
-          (neg_ne_zero.mpr (MvPolynomial.X_ne_zero _))
-      · exact mul_ne_zero (MvPolynomial.X_ne_zero _) (MvPolynomial.X_ne_zero _)
-    have hne_sy : sy ≠ 0 := by
-      obtain ⟨_, ⟨a', b', _, _, _, rfl⟩, rfl⟩ := hsy_mem
-      simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
-        MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr, ne_eq]
-      split_ifs
-      · exact mul_ne_zero (MvPolynomial.X_ne_zero _)
-          (neg_ne_zero.mpr (MvPolynomial.X_ne_zero _))
-      · exact mul_ne_zero (MvPolynomial.X_ne_zero _) (MvPolynomial.X_ne_zero _)
-    have hex_Iφ : MvPolynomial.monomial ex (1 : K) ∈ Iφ := by
-      have := MvPolynomial.support_nonempty.mpr hne_sx
-      obtain ⟨d_wit, hd_wit⟩ := this
-      have : ex = d_wit := (Finset.mem_singleton.mp (hexs hd_wit)).symm
-      exact hIsM sx (hIφ_span ▸ Ideal.subset_span hsx_mem) ex (this ▸ hd_wit)
-    have hey_Iφ : MvPolynomial.monomial ey (1 : K) ∈ Iφ := by
-      have := MvPolynomial.support_nonempty.mpr hne_sy
-      obtain ⟨d_wit, hd_wit⟩ := this
-      have : ey = d_wit := (Finset.mem_singleton.mp (heys hd_wit)).symm
-      exact hIsM sy (hIφ_span ▸ Ideal.subset_span hsy_mem) ey (this ▸ hd_wit)
-    -- If ex(inl i) = 0, then ex ≤ d₀, contradiction
-    by_cases hex_case : ex (Sum.inl i) = 0
-    · have hle_d₀ : ex ≤ d₀ := by
-        intro w; by_cases hw : w = Sum.inl i
-        · rw [hw, hex_case, hxi0]
-        · have := hlex_dx w
-          simp only [dx, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
-            show (Sum.inl i : BinomialEdgeVars (Fin n)) = w ↔ w = Sum.inl i from
-              ⟨Eq.symm, Eq.symm⟩, hw, if_false, add_zero] at this
-          exact this
-      exact hd₀_not (hdiv ex hex_Iφ hle_d₀)
-    -- If ey(inr i) = 0, then ey ≤ d₀, contradiction
-    by_cases hey_case : ey (Sum.inr i) = 0
-    · have hle_d₀ : ey ≤ d₀ := by
-        intro w; by_cases hw : w = Sum.inr i
-        · rw [hw, hey_case, hyi0]
-        · have := hley_dy w
-          simp only [dy, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
-            show (Sum.inr i : BinomialEdgeVars (Fin n)) = w ↔ w = Sum.inr i from
-              ⟨Eq.symm, Eq.symm⟩, hw, if_false, add_zero] at this
-          exact this
-      exact hd₀_not (hdiv ey hey_Iφ hle_d₀)
-    -- Both ex(inl i) = 1 and ey(inr i) = 1
-    have hex_inl : ex (Sum.inl i) = 1 := by omega
-    have hey_inr : ey (Sum.inr i) = 1 := by omega
-    -- Extract edge info from generators
-    -- sx has ex(inl i) = 1, so it's a type B generator x_a * y_b with a = i
-    -- (can't be type A since a, b < k ≤ i)
-    -- Similarly sy has ey(inr i) = 1, type B with b = i
-    -- The generator structure gives edges, and HH transitivity gives the final edge
-    -- that divides d₀.
-    -- For sx: ∃ a₁ b₁ with edge (a₁, b₁+1), b₁ ≥ k, and x_{a₁} y_{b₁} ∈ Iφ
-    -- ex(inl i) = 1 means a₁ = i (since for type A, a,b < k, neither = i)
-    -- Also ex(inr i) ≤ 1, and ex(inr i) ≤ d₀(inr i) = 0 (from dx), so b₁ ≠ i
-    -- Wait: ex(inr i) ≤ dx(inr i) = d₀(inr i) + 0 = 0, so ex(inr i) = 0
-    -- So the generator is x_i * y_{b₁} with b₁ ≠ i, hence b₁ > i
-    -- For sy: ey(inr i) = 1 means b₂ = i, and ey(inl i) ≤ d₀(inl i) = 0,
-    -- so a₂ ≠ i, hence a₂ < i
-    -- HH transitivity: edges (a₂, i+1) and (i, b₁+1) with a₂ < i < b₁
-    -- → edge (a₂, b₁+1), so x_{a₂} * y_{b₁} ∈ Iφ
-    -- And x_{a₂} | d₀ (from ey, a₂ contributes) and y_{b₁} | d₀ (from ex, b₁ contributes)
-    -- So x_{a₂} * y_{b₁} | d₀, hence monomial d₀ 1 ∈ Iφ
-    -- Extract edge data from sx and sy
-    obtain ⟨_, ⟨a₁, b₁, hb₁, hadj₁, hab₁, rfl⟩, rfl⟩ := hsx_mem
-    obtain ⟨_, ⟨a₂, b₂, hb₂, hadj₂, hab₂, rfl⟩, rfl⟩ := hsy_mem
-    -- Compute the exponent of the generator image under φ
-    simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
-      MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr] at hexs heys
-    -- Helper: convert singleton support to exponent equality
-    have hmono_supp : ∀ (d : BinomialEdgeVars (Fin n) →₀ ℕ),
-        (MvPolynomial.monomial d (1 : K)).support = {d} := by
-      intro d; exact Finset.Subset.antisymm MvPolynomial.support_monomial_subset
-        (Finset.singleton_subset_iff.mpr (hsupp_mono d))
-    -- Split on whether b₁ < k
-    split_ifs at hexs with hcond₁
-    · -- b₁ < k: generator is -(x_{a₁} * x_{b₁})
-      -- The exponent only involves inl variables, so ex(inl i) = 0 since a₁, b₁ < k ≤ i
-      exfalso; apply hex_case
-      have : ex = Finsupp.single (Sum.inl a₁) 1 + Finsupp.single (Sum.inl b₁) 1 := by
-        have hmem : Finsupp.single (Sum.inl a₁) 1 + Finsupp.single (Sum.inl b₁) 1 ∈
-            (X (Sum.inl a₁) * -X (Sum.inl b₁) :
-              MvPolynomial (BinomialEdgeVars (Fin n)) K).support := by
-          have hprod : (X (Sum.inl a₁) * X (Sum.inl b₁) :
-              MvPolynomial (BinomialEdgeVars (Fin n)) K) =
-              MvPolynomial.monomial
-                (Finsupp.single (Sum.inl a₁) 1 + Finsupp.single (Sum.inl b₁) 1) 1 := by
-            simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul]; rfl
-          have heq : (X (Sum.inl a₁) * -X (Sum.inl b₁) :
-              MvPolynomial (BinomialEdgeVars (Fin n)) K) =
-              -(MvPolynomial.monomial
-                (Finsupp.single (Sum.inl a₁) 1 + Finsupp.single (Sum.inl b₁) 1) 1) := by
-            rw [mul_neg, hprod]
-          rw [heq, MvPolynomial.support_neg]
-          exact hsupp_mono _
-        exact (Finset.mem_singleton.mp (hexs hmem)).symm
-      rw [this]; simp only [Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply]
-      have : a₁.val < i.val := by omega
-      have : b₁.val < i.val := by omega
-      simp [show (Sum.inl a₁ : BinomialEdgeVars (Fin n)) ≠ Sum.inl i from
-              fun h => by exact absurd (Fin.ext_iff.mp (Sum.inl_injective h)) (by omega),
-            show (Sum.inl b₁ : BinomialEdgeVars (Fin n)) ≠ Sum.inl i from
-              fun h => by exact absurd (Fin.ext_iff.mp (Sum.inl_injective h)) (by omega)]
-    · -- b₁ ≥ k: generator is x_{a₁} * y_{b₁}
-      have hex_eq : ex = Finsupp.single (Sum.inl a₁) 1 + Finsupp.single (Sum.inr b₁) 1 := by
-        have hmem : Finsupp.single (Sum.inl a₁) 1 + Finsupp.single (Sum.inr b₁) 1 ∈
-            (X (Sum.inl a₁) * X (Sum.inr b₁) : MvPolynomial _ K).support := by
-          simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul,
-            MvPolynomial.mem_support_iff, MvPolynomial.coeff_monomial]
-          exact one_ne_zero
-        exact (Finset.mem_singleton.mp (hexs hmem)).symm
-      -- ex(inl i) = 1 → a₁ = i (use contrapositive: if a₁ ≠ i then ex(inl i) = 0)
-      have ha₁_eq : a₁ = i := by
-        by_contra h
-        apply hex_case; rw [hex_eq]
-        simp only [Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply]
-        have : (Sum.inl a₁ : BinomialEdgeVars (Fin n)) ≠ Sum.inl i :=
-          fun heq => h (Sum.inl_injective heq)
-        have : (Sum.inr b₁ : BinomialEdgeVars (Fin n)) ≠ Sum.inl i := Sum.inr_ne_inl
-        simp [*]
-      -- b₁ ≠ i (from ex(inr i) ≤ dx(inr i) = d₀(inr i) = 0)
-      have hb₁_ne_i : b₁ ≠ i := by
-        intro hb; apply hex_case
-        -- If b₁ = i, then ex(inr i) = 1, but dx(inr i) = d₀(inr i) = 0
-        have h1 : ex (Sum.inr i) = 1 := by
-          rw [hex_eq, hb]; simp []
-        have h2 : ex (Sum.inr i) ≤ 0 := by
-          have := hlex_dx (Sum.inr i)
-          simp only [dx, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
-            hyi0] at this
-          exact this
-        omega
-      have hb₁_gt_i : i < b₁ := lt_of_le_of_ne (ha₁_eq ▸ hab₁) (Ne.symm hb₁_ne_i)
-      -- y_{b₁} divides d₀
-      have hyb₁ : 1 ≤ d₀ (Sum.inr b₁) := by
-        have := hlex_dx (Sum.inr b₁)
-        rw [hex_eq] at this
-        simp only [dx, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply] at this
-        simp only [
-          if_true] at this
-        exact this
-      -- Split on whether b₂ < k for sy
-      split_ifs at heys with hcond₂
-      · -- b₂ < k: ey only involves inl vars, so ey(inr i) = 0 → contradiction
-        exfalso; apply hey_case
-        have : ey = Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inl b₂) 1 := by
-          have hmem : Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inl b₂) 1 ∈
-              (X (Sum.inl a₂) * -X (Sum.inl b₂) :
-                MvPolynomial (BinomialEdgeVars (Fin n)) K).support := by
-            have hprod : (X (Sum.inl a₂) * X (Sum.inl b₂) :
-                MvPolynomial (BinomialEdgeVars (Fin n)) K) =
-                MvPolynomial.monomial
-                  (Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inl b₂) 1) 1 := by
-              simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul]; rfl
-            have heq : (X (Sum.inl a₂) * -X (Sum.inl b₂) :
-                MvPolynomial (BinomialEdgeVars (Fin n)) K) =
-                -(MvPolynomial.monomial
-                  (Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inl b₂) 1) 1) := by
-              rw [mul_neg, hprod]
-            rw [heq, MvPolynomial.support_neg]
-            exact hsupp_mono _
-          exact (Finset.mem_singleton.mp (heys hmem)).symm
-        rw [this]; simp []
-      · -- b₂ ≥ k: generator is x_{a₂} * y_{b₂}
-        have hey_eq : ey = Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inr b₂) 1 := by
-          have hmem : Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inr b₂) 1 ∈
-              (X (Sum.inl a₂) * X (Sum.inr b₂) : MvPolynomial _ K).support := by
-            simp only [MvPolynomial.X, MvPolynomial.monomial_mul, one_mul,
-              MvPolynomial.mem_support_iff, MvPolynomial.coeff_monomial]
-            exact one_ne_zero
-          exact (Finset.mem_singleton.mp (heys hmem)).symm
-        -- ey(inr i) = 1 → b₂ = i
-        have hb₂_eq : b₂ = i := by
-          by_contra h
-          apply hey_case; rw [hey_eq]
-          simp only [Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply]
-          have : (Sum.inl a₂ : BinomialEdgeVars (Fin n)) ≠ Sum.inr i := Sum.inl_ne_inr
-          have : (Sum.inr b₂ : BinomialEdgeVars (Fin n)) ≠ Sum.inr i :=
-            fun heq => h (Sum.inr_injective heq)
-          simp [*]
-        -- a₂ ≠ i (from ey(inl i) ≤ dy(inl i) = d₀(inl i) = 0)
-        have ha₂_ne_i : a₂ ≠ i := by
-          intro ha
-          have h1 : ey (Sum.inl i) = 1 := by
-            rw [hey_eq, hb₂_eq, ha]
-            simp []
-          have h2 : ey (Sum.inl i) ≤ 0 := by
-            have := hley_dy (Sum.inl i)
-            simp only [dy, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
-              
-              hxi0] at this
-            exact this
-          omega
-        have ha₂_lt_i : a₂ < i := lt_of_le_of_ne (hb₂_eq ▸ hab₂) ha₂_ne_i
-        -- x_{a₂} divides d₀
-        have hxa₂ : 1 ≤ d₀ (Sum.inl a₂) := by
-          have := hley_dy (Sum.inl a₂)
-          rw [hey_eq] at this
-          simp only [dy, Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply,
-            
-            
-            if_true] at this
-          exact this
-        -- HH transitivity: edges (a₂, i+1) and (i, b₁+1) with a₂ < i < b₁ → edge (a₂, b₁+1)
-        have hadj_trans : G.Adj a₂ ⟨b₁.val + 1, hb₁⟩ :=
-          hHH.transitivity a₂ i b₁ hi hb₁ ha₂_lt_i hb₁_gt_i (hb₂_eq ▸ hadj₂) (ha₁_eq ▸ hadj₁)
-        -- x_{a₂} * y_{b₁} ∈ bipartiteEdgeMonomialIdeal
-        have hgen_mem : X (Sum.inl a₂) * X (Sum.inr b₁) ∈
-            bipartiteEdgeMonomialIdeal (K := K) G :=
-          Ideal.subset_span ⟨a₂, b₁, hb₁, hadj_trans,
-            le_of_lt (lt_trans ha₂_lt_i hb₁_gt_i), rfl⟩
-        -- Its image under φ is itself (since b₁ ≥ k)
-        have hgen_Iφ : MvPolynomial.monomial
-            (Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inr b₁) 1) (1 : K) ∈ Iφ := by
-          have heq : (X (Sum.inl a₂) * X (Sum.inr b₁) : MvPolynomial _ K) =
-              MvPolynomial.monomial
-                (Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inr b₁) 1) 1 := by
-            simp [MvPolynomial.X, MvPolynomial.monomial_mul]
-          have himg := Ideal.mem_map_of_mem (diagSubstHom (K := K) k).toRingHom hgen_mem
-          simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom, diagSubstHom,
-            MvPolynomial.aeval_X, diagSubstFun, Sum.elim_inl, Sum.elim_inr] at himg
-          simp only [show ¬(b₁.val < k ∧ b₁.val + 1 < n) from fun ⟨h, _⟩ => hcond₁ ⟨h, hb₁⟩,
-            if_false] at himg
-          rwa [heq] at himg
-        -- single(inl a₂) 1 + single(inr b₁) 1 ≤ d₀
-        have hle_d₀ : Finsupp.single (Sum.inl a₂) 1 + Finsupp.single (Sum.inr b₁) 1 ≤ d₀ := by
-          intro w
-          simp only [Finsupp.coe_add, Pi.add_apply, Finsupp.single_apply]
-          have hdisjoint : w = Sum.inl a₂ → w ≠ Sum.inr b₁ := fun h₁ h₂ =>
-            absurd (h₁.symm.trans h₂) Sum.inl_ne_inr
-          rcases Classical.em (w = Sum.inl a₂) with h₁ | h₁
-          · subst h₁
-            have h₂ : Sum.inl a₂ ≠ Sum.inr b₁ := Sum.inl_ne_inr
-            rw [if_pos rfl, if_neg (Ne.symm h₂), add_zero]; exact hxa₂
-          · rw [if_neg (Ne.symm h₁), zero_add]
-            split_ifs with h₂
-            · subst h₂; exact hyb₁
-            · exact Nat.zero_le _
-        exact hd₀_not (hdiv _ hgen_Iφ hle_d₀)
+    exact caseD_nilradical_nzd_map_diagSubstHom_helper (K := K) hHH i hi hik hIφ_def hIsM
+      hprod hd₀_not hdiv hcoeff_ne (Nat.eq_zero_of_le_zero hxi) (Nat.eq_zero_of_le_zero hyi)
 
 private theorem isSMulRegular_map_diagSubstHom {n : ℕ} {G : SimpleGraph (Fin n)}
     (hHH : HerzogHibiConditions n G) (i : Fin n) (hi : i.val + 1 < n)
