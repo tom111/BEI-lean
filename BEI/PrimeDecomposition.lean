@@ -231,6 +231,39 @@ theorem minimalPrimes_characterization (G : SimpleGraph V) :
         ≤ primeComponent (K := K) G T := hSmin T hT_le_S
       _ ≤ Q := hT_le_Q
 
+/-! ## Evaluation-map helpers for Proposition 3.6 -/
+
+/-- Witness for the prop_3_6 evaluation-map contradiction:
+sends `x_u ↦ 1`, `y_w ↦ 1`, all other variables to `0`. -/
+private def evalNonAdjWitness (u w : V) : BinomialEdgeVars V → K :=
+  Sum.elim (fun i => if i = u then (1 : K) else 0)
+           (fun i => if i = w then (1 : K) else 0)
+
+/-- Under the no-adjacency assumption `¬ G.Adj u w`, every generator of `J_G`
+maps to `0` under `MvPolynomial.eval (evalNonAdjWitness u w)`. -/
+private lemma binomialEdgeIdeal_le_ker_evalNonAdjWitness
+    (G : SimpleGraph V) (u w : V) (hnadj : ¬ G.Adj u w) :
+    binomialEdgeIdeal (K := K) G ≤
+      RingHom.ker (MvPolynomial.eval (evalNonAdjWitness (K := K) u w)) := by
+  classical
+  rw [binomialEdgeIdeal]; apply Ideal.span_le.mpr
+  rintro _ ⟨a, b, hadj_ab, _, rfl⟩
+  simp only [SetLike.mem_coe, RingHom.mem_ker, map_sub, map_mul, x, y,
+    MvPolynomial.eval_X, evalNonAdjWitness, Sum.elim_inl, Sum.elim_inr]
+  have h1 : ¬(a = u ∧ b = w) := fun ⟨ha, hb⟩ => hnadj (ha ▸ hb ▸ hadj_ab)
+  have h2 : ¬(b = u ∧ a = w) := fun ⟨hb, ha⟩ => hnadj (ha ▸ hb ▸ hadj_ab.symm)
+  split_ifs <;> simp_all
+
+/-- The "off-diagonal" binomial `x_u y_w - x_w y_u` evaluates to `1` under
+`evalNonAdjWitness u w` whenever `u ≠ w`. -/
+private lemma evalNonAdjWitness_cross_eq_one (u w : V) (heq : u ≠ w) :
+    MvPolynomial.eval (evalNonAdjWitness (K := K) u w) (x u * y w - x w * y u) = 1 := by
+  simp only [x, y, map_sub, map_mul, MvPolynomial.eval_X, evalNonAdjWitness,
+    Sum.elim_inl, Sum.elim_inr,
+    if_pos (rfl : u = u), if_pos (rfl : w = w),
+    if_neg heq, if_neg (Ne.symm heq), one_mul, mul_zero, sub_zero,
+    if_true]
+
 /-! ## Proposition 3.6: J_G is prime iff components are complete -/
 
 omit [DecidableEq V] in
@@ -281,26 +314,10 @@ theorem prop_3_6 (G : SimpleGraph V) :
         · convert (binomialEdgeIdeal (K := K) G).neg_mem (hP0_le
             (Ideal.subset_span (Set.mem_union_right _ ⟨w, u, hgt, hsc.symm, rfl⟩))) using 1
           ring
-      -- Evaluation map: x_i ↦ δ_{i,u}, y_j ↦ δ_{j,w}
-      let φ : MvPolynomial (BinomialEdgeVars V) K →ₐ[K] K :=
-        MvPolynomial.aeval (Sum.elim (fun i => if i = u then (1 : K) else 0)
-                                     (fun i => if i = w then (1 : K) else 0))
-      -- φ kills all of J_G
-      have hφ_kill : binomialEdgeIdeal (K := K) G ≤ RingHom.ker φ.toRingHom := by
-        rw [binomialEdgeIdeal]; apply Ideal.span_le.mpr
-        rintro _ ⟨a, b, hadj_ab, _, rfl⟩
-        simp only [SetLike.mem_coe, RingHom.mem_ker, AlgHom.toRingHom_eq_coe,
-                   AlgHom.coe_toRingHom, map_sub, map_mul, x, y, φ, MvPolynomial.aeval_X,
-                   Sum.elim_inl, Sum.elim_inr]
-        have : ¬(a = u ∧ b = w) := fun ⟨ha, hb⟩ => hnadj (ha ▸ hb ▸ hadj_ab)
-        have : ¬(b = u ∧ a = w) := fun ⟨hb, ha⟩ => hnadj (ha ▸ hb ▸ hadj_ab.symm)
-        split_ifs <;> simp_all
-      -- φ(x_u y_w − x_w y_u) = 1 ≠ 0, contradicting hmem ∈ ker φ
-      have hmem_ker := hφ_kill hmem
-      rw [RingHom.mem_ker, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom] at hmem_ker
-      simp only [map_sub, map_mul, x, y, φ, MvPolynomial.aeval_X, Sum.elim_inl, Sum.elim_inr,
-                 heq, Ne.symm heq, ite_true, ite_false, one_mul, mul_zero, sub_zero,
-                 one_ne_zero] at hmem_ker
+      -- Evaluation-map contradiction: kill J_G but send `x_u y_w − x_w y_u` to 1.
+      have hker := binomialEdgeIdeal_le_ker_evalNonAdjWitness (K := K) G u w hnadj
+      have hcross := evalNonAdjWitness_cross_eq_one (K := K) u w heq
+      exact one_ne_zero (hcross.symm.trans (RingHom.mem_ker.mp (hker hmem)))
   · -- Forward: all components complete → J_G prime
     intro hComplete
     have hP0_le : primeComponent (K := K) G ∅ ≤ binomialEdgeIdeal (K := K) G := by
