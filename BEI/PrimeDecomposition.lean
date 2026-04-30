@@ -239,6 +239,7 @@ private def evalNonAdjWitness (u w : V) : BinomialEdgeVars V → K :=
   Sum.elim (fun i => if i = u then (1 : K) else 0)
            (fun i => if i = w then (1 : K) else 0)
 
+omit [Fintype V] in
 /-- Under the no-adjacency assumption `¬ G.Adj u w`, every generator of `J_G`
 maps to `0` under `MvPolynomial.eval (evalNonAdjWitness u w)`. -/
 private lemma binomialEdgeIdeal_le_ker_evalNonAdjWitness
@@ -254,13 +255,13 @@ private lemma binomialEdgeIdeal_le_ker_evalNonAdjWitness
   have h2 : ¬(b = u ∧ a = w) := fun ⟨hb, ha⟩ => hnadj (ha ▸ hb ▸ hadj_ab.symm)
   split_ifs <;> simp_all
 
+omit [LinearOrder V] [Fintype V] in
 /-- The "off-diagonal" binomial `x_u y_w - x_w y_u` evaluates to `1` under
 `evalNonAdjWitness u w` whenever `u ≠ w`. -/
 private lemma evalNonAdjWitness_cross_eq_one (u w : V) (heq : u ≠ w) :
     MvPolynomial.eval (evalNonAdjWitness (K := K) u w) (x u * y w - x w * y u) = 1 := by
   simp only [x, y, map_sub, map_mul, MvPolynomial.eval_X, evalNonAdjWitness,
     Sum.elim_inl, Sum.elim_inr,
-    if_pos (rfl : u = u), if_pos (rfl : w = w),
     if_neg heq, if_neg (Ne.symm heq), one_mul, mul_zero, sub_zero,
     if_true]
 
