@@ -13,16 +13,14 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 
 ## Active Work Packages
 
-None active. The `EQUIDIM_FILE_SPLIT.md` work package is complete and
-archived (the file split landed in master via the
-`refactor/equidim` branch). Phase 4 of that work package — carving the
-two remaining giant declarations
-(`BEI/Equidim/IteratedRegularity.lean::nilradical_nzd_map_diagSubstHom`,
-~589 LOC, and
-`BEI/Equidim.lean::isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`,
-~290 LOC) into named helpers ≤ 150 LOC — was deliberately deferred to
-preserve byte-identical statements; it is tracked in
-[cleanup/EQUIDIM_GIANT_CARVING.md](cleanup/EQUIDIM_GIANT_CARVING.md).
+None active. Both the `EQUIDIM_FILE_SPLIT.md` work package and its
+follow-up `EQUIDIM_GIANT_CARVING.md` packet are complete and archived.
+The two giant declarations
+(`isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal` in
+`BEI/Equidim.lean` and `nilradical_nzd_map_diagSubstHom` in
+`BEI/Equidim/IteratedRegularity.lean`) have been carved into thin
+dispatchers plus private case helpers; statements are byte-identical
+and axiom checks remain clean.
 
 Otherwise, use `cleanup/`, `process/`, and `website/` for ongoing
 maintenance work until a new formalization task appears.
@@ -40,7 +38,6 @@ Optional proof-engineering work, not on the theorem-proving critical path.
 - [cleanup/EVALUATION_MAP_API.md](cleanup/EVALUATION_MAP_API.md)
 - [cleanup/PATH_AND_INTERNAL_VERTEX_API.md](cleanup/PATH_AND_INTERNAL_VERTEX_API.md)
 - [cleanup/MONOMIAL_AND_FINSUPP_API.md](cleanup/MONOMIAL_AND_FINSUPP_API.md)
-- [cleanup/EQUIDIM_GIANT_CARVING.md](cleanup/EQUIDIM_GIANT_CARVING.md) — follow-up Phase 4 carving for the two remaining giant declarations after the equidim file split.
 - [cleanup/CM_SUPPORT_REFACTOR.md](cleanup/CM_SUPPORT_REFACTOR.md)
 - [cleanup/FILE_SPLITTING_PLAN.md](cleanup/FILE_SPLITTING_PLAN.md)
 - [cleanup/LEAN_PERFORMANCE_TRIAGE.md](cleanup/LEAN_PERFORMANCE_TRIAGE.md)
@@ -78,8 +75,9 @@ Completed / superseded packets, retained for historical context only. Do not tre
 - `archive/EQUIDIM_FILE_SPLIT.md` — work package that split
   `BEI/Equidim.lean` (8106 lines) into a `BEI/Equidim/` directory
   with one file per mathematical block; landed on `master` 2026-04-27.
-  Phase 4 carving of the two remaining giant declarations is tracked
-  separately in `cleanup/EQUIDIM_GIANT_CARVING.md`.
+- `archive/EQUIDIM_GIANT_CARVING.md` — follow-up packet that carved
+  the two remaining giant declarations into thin dispatchers plus
+  private case helpers; landed on `master` 2026-04-30.
 - `archive/EQUIDIM_DECOMPOSITION.md` — earlier high-level note for the
   same split, superseded by the work package above.
 - `archive/LEAN_FILE_REVIEW_QUEUE.md` — per-file cleanup queue, fully

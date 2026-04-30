@@ -9,9 +9,11 @@ These guides are for refactoring the existing formalization so that proofs becom
 Current live hotspots from the 2026-04-27 repo state:
 
 - `BEI/CoveredWalks.lean` (2671 LOC) is now the largest single file in the repo.
-- `BEI/Equidim/IteratedRegularity.lean` (2404 LOC) inherits the heavy iterated-regularity
-  block from the equidim split and still hosts the 589-LOC giant
-  `nilradical_nzd_map_diagSubstHom`.
+- `BEI/Equidim/IteratedRegularity.lean` (2456 LOC) inherits the heavy iterated-regularity
+  block from the equidim split. The 589-LOC giant
+  `nilradical_nzd_map_diagSubstHom` was carved into a thin dispatcher
+  (~66 LOC body) plus three private case helpers; the Case D helper
+  (~354 LOC) is the remaining largest block in the file.
 - `BEI/GroebnerDeformation.lean` (2221 LOC) and
   `BEI/PrimeDecompositionDimension.lean` (2094 LOC) remain large active files.
 - `BEI/PrimeIdeals.lean` (2052 LOC) and
@@ -23,9 +25,13 @@ Current live hotspots from the 2026-04-27 repo state:
   not just background support code.
 
 The equidim split (8106 → 713 LOC residual + 11 split files in `BEI/Equidim/`)
-has landed; the follow-up Phase 4 carving of the two giant declarations is
-tracked separately in
-[EQUIDIM_GIANT_CARVING.md](/home/tom/BEI-lean/guides/cleanup/EQUIDIM_GIANT_CARVING.md).
+has landed. The follow-up giant-carving work
+([archive/EQUIDIM_GIANT_CARVING.md](/home/tom/BEI-lean/guides/archive/EQUIDIM_GIANT_CARVING.md))
+also landed: `cm_F2_route` was extracted from
+`isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`
+(`BEI/Equidim.lean`), and `caseB/C/D_nilradical_nzd_map_diagSubstHom_helper`
+were extracted from `nilradical_nzd_map_diagSubstHom`
+(`BEI/Equidim/IteratedRegularity.lean`).
 
 Recommended order:
 
@@ -36,11 +42,10 @@ Recommended order:
 5. [PATH_AND_INTERNAL_VERTEX_API.md](/home/tom/BEI-lean/guides/cleanup/PATH_AND_INTERNAL_VERTEX_API.md)
 6. [MONOMIAL_AND_FINSUPP_API.md](/home/tom/BEI-lean/guides/cleanup/MONOMIAL_AND_FINSUPP_API.md)
 7. [EVALUATION_MAP_API.md](/home/tom/BEI-lean/guides/cleanup/EVALUATION_MAP_API.md)
-8. [EQUIDIM_GIANT_CARVING.md](/home/tom/BEI-lean/guides/cleanup/EQUIDIM_GIANT_CARVING.md)
-9. [CM_SUPPORT_REFACTOR.md](/home/tom/BEI-lean/guides/cleanup/CM_SUPPORT_REFACTOR.md)
-10. [FILE_SPLITTING_PLAN.md](/home/tom/BEI-lean/guides/cleanup/FILE_SPLITTING_PLAN.md)
-11. [LINTER_AND_STYLE_CLEANUP.md](/home/tom/BEI-lean/guides/cleanup/LINTER_AND_STYLE_CLEANUP.md)
-12. [STATUS_AND_CI_HYGIENE.md](/home/tom/BEI-lean/guides/cleanup/STATUS_AND_CI_HYGIENE.md)
+8. [CM_SUPPORT_REFACTOR.md](/home/tom/BEI-lean/guides/cleanup/CM_SUPPORT_REFACTOR.md)
+9. [FILE_SPLITTING_PLAN.md](/home/tom/BEI-lean/guides/cleanup/FILE_SPLITTING_PLAN.md)
+10. [LINTER_AND_STYLE_CLEANUP.md](/home/tom/BEI-lean/guides/cleanup/LINTER_AND_STYLE_CLEANUP.md)
+11. [STATUS_AND_CI_HYGIENE.md](/home/tom/BEI-lean/guides/cleanup/STATUS_AND_CI_HYGIENE.md)
 
 Completed:
 
@@ -48,8 +53,12 @@ Completed:
   Split `CycleUnmixed`, decomposed the cycle component-count proof, removed the heartbeat overrides, and trimmed `MinimalPrimes` imports.
 - [archive/EQUIDIM_FILE_SPLIT.md](/home/tom/BEI-lean/guides/archive/EQUIDIM_FILE_SPLIT.md)
   Split `BEI/Equidim.lean` (8106 lines) into `BEI/Equidim/` directory with 11
-  files; landed 2026-04-27. Phase 4 follow-up tracked in
-  [EQUIDIM_GIANT_CARVING.md](/home/tom/BEI-lean/guides/cleanup/EQUIDIM_GIANT_CARVING.md).
+  files; landed 2026-04-27.
+- [archive/EQUIDIM_GIANT_CARVING.md](/home/tom/BEI-lean/guides/archive/EQUIDIM_GIANT_CARVING.md)
+  Carved the two remaining giants: extracted `cm_F2_route` from
+  `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal` and
+  `caseB/C/D_nilradical_nzd_map_diagSubstHom_helper` from
+  `nilradical_nzd_map_diagSubstHom`. Landed 2026-04-30.
 - [archive/EQUIDIM_DECOMPOSITION.md](/home/tom/BEI-lean/guides/archive/EQUIDIM_DECOMPOSITION.md)
   Earlier high-level note for the same split.
 
