@@ -41,11 +41,10 @@ Recommended order:
 4. [PUBLIC_THEOREM_LAYER.md](/home/tom/BEI-lean/guides/cleanup/PUBLIC_THEOREM_LAYER.md)
 5. [PATH_AND_INTERNAL_VERTEX_API.md](/home/tom/BEI-lean/guides/cleanup/PATH_AND_INTERNAL_VERTEX_API.md)
 6. [MONOMIAL_AND_FINSUPP_API.md](/home/tom/BEI-lean/guides/cleanup/MONOMIAL_AND_FINSUPP_API.md)
-7. [EVALUATION_MAP_API.md](/home/tom/BEI-lean/guides/cleanup/EVALUATION_MAP_API.md)
-8. [CM_SUPPORT_REFACTOR.md](/home/tom/BEI-lean/guides/cleanup/CM_SUPPORT_REFACTOR.md)
-9. [FILE_SPLITTING_PLAN.md](/home/tom/BEI-lean/guides/cleanup/FILE_SPLITTING_PLAN.md)
-10. [LINTER_AND_STYLE_CLEANUP.md](/home/tom/BEI-lean/guides/cleanup/LINTER_AND_STYLE_CLEANUP.md)
-11. [STATUS_AND_CI_HYGIENE.md](/home/tom/BEI-lean/guides/cleanup/STATUS_AND_CI_HYGIENE.md)
+7. [CM_SUPPORT_REFACTOR.md](/home/tom/BEI-lean/guides/cleanup/CM_SUPPORT_REFACTOR.md)
+8. [FILE_SPLITTING_PLAN.md](/home/tom/BEI-lean/guides/cleanup/FILE_SPLITTING_PLAN.md)
+9. [LINTER_AND_STYLE_CLEANUP.md](/home/tom/BEI-lean/guides/cleanup/LINTER_AND_STYLE_CLEANUP.md)
+10. [STATUS_AND_CI_HYGIENE.md](/home/tom/BEI-lean/guides/cleanup/STATUS_AND_CI_HYGIENE.md)
 
 Completed:
 
@@ -59,6 +58,12 @@ Completed:
   `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal` and
   `caseB/C/D_nilradical_nzd_map_diagSubstHom_helper` from
   `nilradical_nzd_map_diagSubstHom`. Landed 2026-04-30.
+- [archive/EVALUATION_MAP_API.md](/home/tom/BEI-lean/guides/archive/EVALUATION_MAP_API.md)
+  Eval-map contradiction API for ideal-containment proofs. The
+  `MinimalPrimes` API (`primeComponent_le_ker_evalInlWitness` /
+  `_evalPairWitness`, `evalPairWitness_cross_eq_one`) was already
+  in place; the residual inline block in `prop_3_6` was extracted
+  on 2026-04-30 into `evalNonAdjWitness` plus two named lemmas.
 - [archive/EQUIDIM_DECOMPOSITION.md](/home/tom/BEI-lean/guides/archive/EQUIDIM_DECOMPOSITION.md)
   Earlier high-level note for the same split.
 

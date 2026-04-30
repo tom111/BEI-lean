@@ -35,7 +35,6 @@ Optional proof-engineering work, not on the theorem-proving critical path.
 
 - [cleanup/PROOF_CLEANUP_INDEX.md](cleanup/PROOF_CLEANUP_INDEX.md) — index of the other cleanup packets.
 - [cleanup/PUBLIC_THEOREM_LAYER.md](cleanup/PUBLIC_THEOREM_LAYER.md)
-- [cleanup/EVALUATION_MAP_API.md](cleanup/EVALUATION_MAP_API.md)
 - [cleanup/PATH_AND_INTERNAL_VERTEX_API.md](cleanup/PATH_AND_INTERNAL_VERTEX_API.md)
 - [cleanup/MONOMIAL_AND_FINSUPP_API.md](cleanup/MONOMIAL_AND_FINSUPP_API.md)
 - [cleanup/CM_SUPPORT_REFACTOR.md](cleanup/CM_SUPPORT_REFACTOR.md)
@@ -78,6 +77,11 @@ Completed / superseded packets, retained for historical context only. Do not tre
 - `archive/EQUIDIM_GIANT_CARVING.md` — follow-up packet that carved
   the two remaining giant declarations into thin dispatchers plus
   private case helpers; landed on `master` 2026-04-30.
+- `archive/EVALUATION_MAP_API.md` — eval-map contradiction API for
+  ideal-containment proofs; the `MinimalPrimes` chain (prop_3_8 and
+  prop_3_8_sameComponent_preserved) was already on the named API and
+  the residual inline block in `prop_3_6` was extracted on
+  2026-04-30 into `evalNonAdjWitness` plus two named lemmas.
 - `archive/EQUIDIM_DECOMPOSITION.md` — earlier high-level note for the
   same split, superseded by the work package above.
 - `archive/LEAN_FILE_REVIEW_QUEUE.md` — per-file cleanup queue, fully
