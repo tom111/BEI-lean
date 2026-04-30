@@ -41,9 +41,17 @@
   Phase 1 of the giant-carving deferred this; natural sub-splits documented
   in the archived guide. Targets clarity plus a smaller per-helper rebuild
   cost.
-- `[ ]` **Drop unused `[Fintype V]` hypotheses** that the linter is currently
-  flagging on `prop_3_6` and several `BEI/Corollary3_4.lean` declarations.
-  Pure cleanup — no proof changes.
+- `[~]` **Drop unused `[Fintype V]` hypotheses.** The two helpers added on
+  2026-04-30 in `BEI/PrimeDecomposition.lean` were cleared. The remaining
+  ~17 warnings (across `Radical`, `PrimeDecomposition`, `MinimalPrimes`,
+  `Corollary3_4`, `PrimeDecompositionDimension`, `CycleUnmixed`,
+  `toMathlib/HeightVariableIdeal`) are not "pure cleanup" — the proof
+  bodies need `[Fintype V]` for `IsNoetherianRing` /
+  `Algebra.FiniteType` / similar instance synthesis even when the type
+  signature does not. The proper fix is to change the file-level
+  `variable {V : Type*} … [Fintype V]` to `[Finite V]` and recover
+  `Fintype V` locally via `Fintype.ofFinite` only where actually
+  needed; that's a broader refactor than this bullet implied.
 - `[ ]` **Extract walk and path arithmetic helpers from `BEI/CoveredWalks.lean`.**
   Largest file in the repo (2671 LOC, 79 automation hits). Pairs with
   [`guides/cleanup/PATH_AND_INTERNAL_VERTEX_API.md`](guides/cleanup/PATH_AND_INTERNAL_VERTEX_API.md).
