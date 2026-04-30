@@ -111,49 +111,54 @@ Instead it has three different cleanup classes:
 
 Evidence:
 
-- `2404` lines
+- `2456` lines (post-2026-04-30 carving)
 - inherits the heaviest block from the pre-split `BEI/Equidim.lean`
-- contains the 589-LOC giant `nilradical_nzd_map_diagSubstHom`
-  (Phase 4 of the file split, deferred and tracked in
-  [EQUIDIM_GIANT_CARVING.md](/home/tom/BEI-lean/guides/cleanup/EQUIDIM_GIANT_CARVING.md))
+- the 589-LOC giant `nilradical_nzd_map_diagSubstHom` was carved on
+  2026-04-30 into a thin dispatcher plus three private case helpers
+  (`caseB`/`caseC`/`caseD_nilradical_nzd_map_diagSubstHom_helper`); the
+  Case D helper at ~354 LOC is the largest residual block.
 
 Diagnosis:
 
 - File is large because the iterated-regularity infrastructure is big, not because of
   unrelated material — the equidim split already did the structural cleanup at the
   top-level seam.
-- Single-declaration size (589 LOC) is the live engineering target.
+- The Case D helper could still be sub-decomposed; deferred at carving
+  time because the signature-plumbing cost outweighed the marginal
+  clarity gain.
 
 Concrete next move:
 
-- carve `nilradical_nzd_map_diagSubstHom` along its 4-case structure
-  (`A`/`B`/`C`/`D`) per the carving guide.
+- if a future change exposes Case D as a real bottleneck, sub-decompose
+  it along the natural seams (Finsupp coefficient bookkeeping, generator
+  analysis, HH transitivity contradiction) noted in the archived
+  carving guide.
 
 #### `BEI/Equidim.lean` (residual hub) and the F2-route main theorem
 
 Evidence:
 
-- `713` lines after the file split
-- contains the 290-LOC giant
-  `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`
-  (Phase 4 carving target, see
-  [EQUIDIM_GIANT_CARVING.md](/home/tom/BEI-lean/guides/cleanup/EQUIDIM_GIANT_CARVING.md))
-- 4 heartbeat raises remain after the 2026-04-27 audit:
-  - lines 133 and 260 (400k each, the `E_U_algebraMap_mkI_X_pairedSurvivor_*` traces)
-  - line 377 (500k) and 379 (synth 250k, the F2-route main theorem)
+- `731` lines after the file split and the 2026-04-30 F2-route carving.
+- the 290-LOC giant
+  `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal` was
+  carved into a thin dispatcher (~52 LOC) plus the private helper
+  `cm_F2_route` (~250 LOC).
+- the previously listed heartbeat raises moved with the heavy work onto
+  `cm_F2_route`; the `E_U_algebraMap_mkI_X_pairedSurvivor_*` traces
+  remain at 400k each and were tested at the default 200k and proved
+  necessary.
 
 Diagnosis:
 
 - File is now the right size for a public theorem hub; the remaining cost is
   concentrated in the F2-route assembly.
-- All four raises were bisected to the smallest stable values; further
+- All raises were bisected to the smallest stable values; further
   reduction needs proof-shape changes, not heartbeat tweaks.
 
 Concrete next move:
 
-- extract the F2-route branch of
-  `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal` into a
-  private helper (the in-`augIdeal` branch is short enough to leave inline).
+- nothing pressing here; revisit only if a future change reintroduces
+  pressure.
 
 #### `BEI/PrimeIdeals.lean`
 
@@ -300,9 +305,9 @@ The following existing guides should be reused rather than duplicated:
 
 - `archive/MINIMALPRIMES_CYCLE_PERFORMANCE.md` for the completed `BEI/CycleUnmixed.lean` pass
 - `archive/EQUIDIM_FILE_SPLIT.md` and `archive/EQUIDIM_DECOMPOSITION.md` for the completed equidim split
-- `EQUIDIM_GIANT_CARVING.md` for the Phase 4 follow-up to the equidim split
+- `archive/EQUIDIM_GIANT_CARVING.md` for the (now-completed) carving of the two giants
 - `LEAN_PERFORMANCE_TRIAGE.md` for repo-wide heartbeat measurement workflow
-- `EVALUATION_MAP_API.md` for `BEI/PrimeIdeals.lean`
+- `archive/EVALUATION_MAP_API.md` for the (now-completed) eval-map contradiction API
 - `PATH_AND_INTERNAL_VERTEX_API.md` for graph/path helper extraction
 - `FILE_SPLITTING_PLAN.md` for the remaining non-equidim large-file restructuring
 

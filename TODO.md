@@ -23,10 +23,36 @@
 - `[ ]` Keep non-critical infrastructure issues separate from the completed
   paper-result status.
 - `[ ]` Public theorem layer cleanup where the exported declarations can be
-  presented more cleanly.
+  presented more cleanly. Dedicated guide:
+  [`guides/cleanup/PUBLIC_THEOREM_LAYER.md`](guides/cleanup/PUBLIC_THEOREM_LAYER.md).
 - `[ ]` File-splitting cleanup if current theorem locations are still awkward
-  for readers or maintainers.
+  for readers or maintainers. Dedicated guide:
+  [`guides/cleanup/FILE_SPLITTING_PLAN.md`](guides/cleanup/FILE_SPLITTING_PLAN.md).
 - `[ ]` Proof cleanup and linter cleanup from `guides/cleanup/`.
+
+### Speed And Clarity Backlog (added 2026-04-30)
+
+- `[ ]` **Profile and drop the remaining heartbeat overrides.** 8 overrides
+  remain across 4 files after the 2026-04-27 audit. Re-profile each with
+  `lean_profile_proof` after recent refactors and remove any that are no
+  longer load-bearing. Pairs with
+  [`guides/cleanup/LEAN_PERFORMANCE_TRIAGE.md`](guides/cleanup/LEAN_PERFORMANCE_TRIAGE.md).
+- `[ ]` **Sub-decompose the 354-LOC `caseD_nilradical_nzd_map_diagSubstHom_helper`.**
+  Phase 1 of the giant-carving deferred this; natural sub-splits documented
+  in the archived guide. Targets clarity plus a smaller per-helper rebuild
+  cost.
+- `[ ]` **Drop unused `[Fintype V]` hypotheses** that the linter is currently
+  flagging on `prop_3_6` and several `BEI/Corollary3_4.lean` declarations.
+  Pure cleanup — no proof changes.
+- `[ ]` **Extract walk and path arithmetic helpers from `BEI/CoveredWalks.lean`.**
+  Largest file in the repo (2671 LOC, 79 automation hits). Pairs with
+  [`guides/cleanup/PATH_AND_INTERNAL_VERTEX_API.md`](guides/cleanup/PATH_AND_INTERNAL_VERTEX_API.md).
+- `[ ]` **Add `BEI/AxiomCheck.lean`.** Permanent file with `#print axioms` on
+  the seven flagship paper-facing theorems so axiom regressions are caught
+  at build time instead of via ad-hoc scratch files.
+- `[ ]` **CI heartbeat ratchet.** Fail CI when a new `set_option maxHeartbeats`
+  raise is introduced without justification. Tracked in
+  [`guides/cleanup/STATUS_AND_CI_HYGIENE.md`](guides/cleanup/STATUS_AND_CI_HYGIENE.md).
 
 ### Lean File Review Queue
 

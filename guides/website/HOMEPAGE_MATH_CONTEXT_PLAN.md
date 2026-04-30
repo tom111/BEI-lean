@@ -32,8 +32,18 @@ Current key files:
 - `docs/toMathlib.md`
 - `docs/assets/main.scss`
 
-The site is currently hand-written and status-oriented.  It does not yet have a
-structured theorem data layer or rendered paper statements.
+**Phase 1 infrastructure landed (date unrecorded):** the structured
+theorem data layer is partially in place:
+
+- `docs/_data/section1.yml`
+- `docs/_data/homepage_featured.yml`
+- `docs/_includes/theorem_compare.html`
+- `docs/_includes/theorem_highlight.html`
+
+The Section 1 pilot uses these. Sections 2–4 still ship hand-written
+status prose. The remaining scope of this guide is therefore narrowed
+to: extend the data model and `_includes` partials to Sections 2–4
+(Phase 3 below) and the homepage redesign (Phase 4).
 
 
 ## Main goal

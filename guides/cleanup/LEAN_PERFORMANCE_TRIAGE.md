@@ -25,52 +25,57 @@ It covers:
 
 It does **not** authorize statement changes or broad theorem repackaging.
 
-## Current repo-level snapshot (2026-04-27)
+## Current repo-level snapshot (2026-04-30)
 
-From the current heartbeat scan, after the repo-wide audit that landed on
-`master` 2026-04-27:
+From the current heartbeat scan, after the 2026-04-27 audit and the
+2026-04-30 giant carving:
 
-- total heartbeat overrides: `9` (was `37`)
-- worst file by count: `BEI/Equidim.lean` with `4`
-- next: `BEI/Equidim/L1Iso.lean` with `2`
-- next: `BEI/Equidim/AugmentationLocalCM.lean`,
-  `BEI/Corollary3_4.lean`, `toMathlib/CohenMacaulay/Polynomial.lean` with `1` each
-- worst single raise: `BEI/Equidim/L1Iso.lean` at `maxHeartbeats 1300000`
-  (followed by 1100000 in the same file)
+- total heartbeat overrides: `8` (was `37`, then `9`).
+- distribution by file:
+  - `BEI/Equidim.lean` (now hosts `cm_F2_route`) — count unchanged after
+    carving; the heavy `E_U_algebraMap_mkI_X_pairedSurvivor_*` traces
+    moved with the proof onto the helper.
+  - `BEI/Equidim/L1Iso.lean` — `2` (1300000 + 1100000, the
+    tensor-product extensionality blocks).
+  - `BEI/Equidim/AugmentationLocalCM.lean`, `BEI/Corollary3_4.lean`,
+    `toMathlib/CohenMacaulay/Polynomial.lean` — `1` each.
 
-Large hotspot files (post equidim split):
+Large hotspot files (post equidim split + 2026-04-30 carving):
 
 - `BEI/CoveredWalks.lean` — `2671` lines
-- `BEI/Equidim/IteratedRegularity.lean` — `2404` lines
+- `BEI/Equidim/IteratedRegularity.lean` — `2456` lines (post-carving)
 - `BEI/GroebnerDeformation.lean` — `2221` lines
 - `BEI/PrimeIdeals.lean` — `2052` lines
 - `toMathlib/CohenMacaulay/Polynomial.lean` — `1639` lines
-- `BEI/Equidim.lean` (residual hub) — `713` lines
+- `BEI/Equidim.lean` (residual hub) — `731` lines (post-carving)
 
 ## Priority order
 
 The earlier priority list (`BEI/Equidim.lean`, `BEI/PrimeIdeals.lean`,
 `BEI/ClosedGraphs.lean`, `toMathlib/CohenMacaulay/Polynomial.lean`,
 `BEI/GroebnerDeformation.lean`) has been substantially addressed by the
-2026-04-27 audit and the equidim file split. Remaining work, in order:
+2026-04-27 audit, the equidim file split, and the 2026-04-30 carving
+of the two giants
+(`isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`,
+`nilradical_nzd_map_diagSubstHom`). Remaining work, in order:
 
-1. `BEI/Equidim/IteratedRegularity.lean` — extract the 589-LOC giant
-   `nilradical_nzd_map_diagSubstHom` along its 4-case structure.
-2. `BEI/Equidim.lean` (residual hub) — extract the F2-route branch of
-   the 290-LOC giant
-   `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`.
-3. `BEI/Equidim/L1Iso.lean` — try to drive the two remaining
+1. `BEI/Equidim/L1Iso.lean` — drive the two remaining
    `maxHeartbeats 1300000 / 1100000` raises lower by simplifying the
-   tensor-product extensionality blocks (proof-shape change, not just a cap
-   adjustment).
-4. `BEI/PrimeIdeals.lean` — heartbeats already gone, but the
-   `aeval_X` evaluation-map cleanup is still a structural target;
-   see `EVALUATION_MAP_API.md`.
-5. `BEI/CoveredWalks.lean` and `BEI/PrimeDecompositionDimension.lean` —
-   helper extraction for the path/counting arithmetic.
+   tensor-product extensionality blocks (proof-shape change, not just
+   a cap adjustment).
+2. `BEI/PrimeIdeals.lean` — heartbeats already gone; the structural
+   `aeval_X` evaluation-map work is now substantially done — see the
+   archived `archive/EVALUATION_MAP_API.md`. Remaining: API extraction
+   for the `lbMap` / `killStep` / `segreStep` family if appetite is
+   there.
+3. `BEI/CoveredWalks.lean` and `BEI/PrimeDecompositionDimension.lean` —
+   helper extraction for the path/counting arithmetic; see
+   [`PATH_AND_INTERNAL_VERTEX_API.md`](/home/tom/BEI-lean/guides/cleanup/PATH_AND_INTERNAL_VERTEX_API.md).
+4. Re-profile the remaining 8 heartbeat overrides; some may be droppable
+   after recent refactors. Tracked in `TODO.md`.
 
-The two giants in items (1) and (2) are the live targets tracked in
-[EQUIDIM_GIANT_CARVING.md](/home/tom/BEI-lean/guides/cleanup/EQUIDIM_GIANT_CARVING.md).
+The two giants are now tracked as a completed packet in
+[archive/EQUIDIM_GIANT_CARVING.md](/home/tom/BEI-lean/guides/archive/EQUIDIM_GIANT_CARVING.md).
 
 ## Standard measurement workflow
 

@@ -49,7 +49,7 @@ merged to `master` on 2026-04-27. The resulting layout is:
 - `BEI/Equidim/Bipartite.lean` (~360 LOC)
 - `BEI/Equidim/Transport.lean` (~310 LOC)
 - `BEI/Equidim/ClosedGraphIntervals.lean` (~160 LOC)
-- `BEI/Equidim/IteratedRegularity.lean` (~2400 LOC, residual heavy block)
+- `BEI/Equidim/IteratedRegularity.lean` (~2456 LOC, post-2026-04-30 carving of `nilradical_nzd_map_diagSubstHom`)
 - `BEI/Equidim/AugmentationLocalCM.lean` (~325 LOC)
 - `BEI/Equidim/GlobalCMSetup.lean` (~460 LOC)
 - `BEI/Equidim/F2Scaffolding.lean` (~450 LOC)
@@ -60,10 +60,9 @@ merged to `master` on 2026-04-27. The resulting layout is:
   the F2-route main theorem + paper-facing wrappers
 
 Phase 4 of the plan — carving the two giant declarations
-(`nilradical_nzd_map_diagSubstHom` and the F2-route main theorem) — was
-deliberately deferred to keep the file split to pure verbatim moves.
-That work is tracked in
-[EQUIDIM_GIANT_CARVING.md](/home/tom/BEI-lean/guides/cleanup/EQUIDIM_GIANT_CARVING.md).
+(`nilradical_nzd_map_diagSubstHom` and the F2-route main theorem) —
+landed on `master` 2026-04-30 and is recorded in
+[archive/EQUIDIM_GIANT_CARVING.md](/home/tom/BEI-lean/guides/archive/EQUIDIM_GIANT_CARVING.md).
 The original work package is in
 [archive/EQUIDIM_FILE_SPLIT.md](/home/tom/BEI-lean/guides/archive/EQUIDIM_FILE_SPLIT.md).
 

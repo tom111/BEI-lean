@@ -13,16 +13,18 @@ That has two bad effects:
 1. real regressions are harder to spot;
 2. Claude gets less signal about what actually needs attention.
 
-At the 2026-04-20 repo state, the default build emits roughly:
+At the 2026-04-30 repo state, the default build emits roughly **46
+warnings total** (down from 399 on 2026-04-20). The remaining
+warning classes are dominated by:
 
-- `399` warnings total;
-- `101` "hypothesis not used in the remainder of the type" warnings;
-- `104` `show`-vs-`change` warnings;
-- `77` unused `simp` argument warnings;
-- `26` unused section-variable warnings;
-- `20` missing `maxHeartbeats` comment warnings;
-- `43` long-line warnings;
-- `14` unused local-variable warnings.
+- "hypothesis not used in the remainder of the type"
+  (linter.unusedFintypeInType) — most of the remaining warnings;
+- long-line warnings in `BEI/GroebnerBasis.lean`;
+- a handful of flexible-tactic and missing-`maxHeartbeats`-comment
+  hits in `toMathlib/CohenMacaulay/`.
+
+Re-scan with `lake build 2>&1 | grep -c '^warning:'` before starting
+a new pass — the absolute counts shift quickly under cleanup.
 
 The biggest warning hotspots are:
 

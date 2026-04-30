@@ -24,25 +24,14 @@ That creates two predictable failure modes:
 This is now large enough to deserve its own work package.
 
 
-## Work package 1: synchronize theorem-status docs
+## Work package 1: synchronize theorem-status docs — DONE 2026-04-30
 
-Primary files:
-
-- [TODO.md](/home/tom/BEI-lean/TODO.md)
-- [FORMALIZATION_MAP.md](/home/tom/BEI-lean/FORMALIZATION_MAP.md)
-- [README.md](/home/tom/BEI-lean/README.md)
-- [OVERVIEW.md](/home/tom/BEI-lean/OVERVIEW.md)
-
-Immediate target:
-
-- make all of them reflect the post-2026-04-22 reality: the active paper
-  path is sorry-free, with `proposition_1_6`, `corollary_3_4`,
-  `corollary_3_4_connected`, and `corollary_3_7_cm_fin` all
-  axiom-clean (`[propext, Classical.choice, Quot.sound]`);
-- the only remaining sorries live in `Supplement/RauhApproach.lean`,
-  which is not built by the default Lake target;
-- avoid reintroducing stale references to removed files like
-  `BEI/CohenMacaulay.lean` or `toMathlib/HeightAdditivity.lean`.
+`TODO.md`, `FORMALIZATION_MAP.md`, `README.md`, and `OVERVIEW.md` now
+reflect the post-2026-04-22 reality: the active paper path is sorry-free
+with `proposition_1_6`, `corollary_3_4`, `corollary_3_4_connected`, and
+`corollary_3_7_cm_fin` all axiom-clean. The only remaining sorries live
+in `Supplement/RauhApproach.lean`, which is not built by the default Lake
+target. Maintain this state on each landed pass.
 
 
 ## Work package 2: synchronize guide indexes and archives
@@ -58,9 +47,6 @@ Tasks:
 - move superseded guides to `archive/` rather than leaving them half-live;
 - retire or rewrite stale planning files instead of letting them linger as if
   current policy.
-
-[NEXT_STEPS_PLAN.md](/home/tom/BEI-lean/NEXT_STEPS_PLAN.md) is the main current
-example of a file that now needs archival or a substantial rewrite.
 
 
 ## Work package 3: add a real Lean CI workflow

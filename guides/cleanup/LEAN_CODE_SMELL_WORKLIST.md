@@ -20,39 +20,26 @@ The goal is to reduce build cost and proof brittleness by:
 
 ## Immediate queue
 
-### 1. `BEI/Equidim/IteratedRegularity.lean` and the residual hub
+### 1. `BEI/Equidim/IteratedRegularity.lean` and the residual hub — DONE 2026-04-30
 
-Why first:
+The two giant declarations have been carved:
 
-- the equidim file split landed 2026-04-27, and the next pass is the
-  Phase 4 carving of the two remaining giant declarations;
-- the audit-driven heartbeat reductions have already taken every easy
-  win — the next perf gain has to come from proof-shape changes inside
-  these two giants.
+- `nilradical_nzd_map_diagSubstHom` (was 589 LOC) → thin dispatcher
+  (~66 LOC) plus three private case helpers
+  (`caseB`/`caseC`/`caseD_nilradical_nzd_map_diagSubstHom_helper`).
+- `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`
+  (was 290 LOC) → thin dispatcher (~52 LOC) plus `cm_F2_route` (~250 LOC).
 
-Concrete tasks:
+All seven flagship axiom checks remain
+`[propext, Classical.choice, Quot.sound]`. Full record in
+[archive/EQUIDIM_GIANT_CARVING.md](/home/tom/BEI-lean/guides/archive/EQUIDIM_GIANT_CARVING.md).
 
-1. Carve `BEI/Equidim/IteratedRegularity.lean::nilradical_nzd_map_diagSubstHom`
-   (589 LOC) along its 4-case structure (A/B/C/D) into named private helpers
-   ≤ 150 LOC each. Cases B and C are near-mirror; consider a single
-   parameterised helper.
-2. Carve
-   `BEI/Equidim.lean::isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`
-   (290 LOC) by extracting the F2-route branch into a private helper; the
-   in-`augIdeal` branch is short enough to leave inline.
-3. After each carving, run the axiom check on the paper-facing theorems to
-   confirm `[propext, Classical.choice, Quot.sound]` is unchanged.
-
-The full plan and the natural sub-helper boundaries are in
-[EQUIDIM_GIANT_CARVING.md](/home/tom/BEI-lean/guides/cleanup/EQUIDIM_GIANT_CARVING.md).
-
-Done when:
-
-- no single declaration in the equidim subtree exceeds ~200 LOC;
-- axiom checks on `proposition_1_6`, `monomialInitialIdeal_isCohenMacaulay`,
-  `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal`,
-  `prop_1_6_herzogHibi`, `corollary_3_4`, `corollary_3_4_connected`,
-  `corollary_3_7_cm_fin` are all unchanged.
+The remaining residual structural item is the ~354-LOC Case D helper.
+It can be sub-decomposed along the natural seams (Finsupp coefficient
+bookkeeping, generator analysis, HH transitivity contradiction) but
+the signature-plumbing cost was judged not worth the marginal clarity
+gain at carving time. Tracked as a stand-alone bullet in
+[`TODO.md`](/home/tom/BEI-lean/TODO.md).
 
 ### 2. `BEI/PrimeIdeals.lean`
 
