@@ -17,10 +17,9 @@
   $P_4$ plate, before the Sections grid). Shows the four core declarations —
   `BinomialEdgeVars`, `binomialEdgeIdeal`, `IsClosedGraph`, and
   `binomialEdgeMonomialOrder` — in actual Lean, with file links.
-- `[ ]` Add a small file map (one-line gloss per Lean file under `BEI/` and
-  `toMathlib/`) somewhere reader-facing — either as a section on the homepage
-  or a dedicated page linked from `Project Links`. Keep it shorter and more
-  navigational than `OVERVIEW.md` or `FORMALIZATION_MAP.md`.
+- `[x]` Add a small file map (one-line gloss per Lean file under `BEI/` and
+  `toMathlib/`). Lives at [`docs/code-map.md`](docs/code-map.md), linked from
+  the homepage `Project Links` and the site nav.
 
 ### Cleanup And Maintenance Backlog
 
