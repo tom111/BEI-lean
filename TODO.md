@@ -30,8 +30,12 @@
   sorry-free after the finite-free Case C route landed); `BEI/` and
   `toMathlib/` are sorry-free. The bloated archive enumeration in
   `guides/INDEX.md` was collapsed to a one-paragraph pointer.
-- `[ ]` Keep non-critical infrastructure issues separate from the completed
-  paper-result status.
+- `[x]` Keep non-critical infrastructure issues separate from the completed
+  paper-result status. Done 2026-05-01: TODO.md already separates the
+  "Cleanup And Maintenance Backlog" / "Speed And Clarity Backlog" / "Lean
+  File Review Queue" sections from the "Current Status Snapshot" /
+  "Paper Map Snapshot" sections, and FORMALIZATION_MAP.md is paper-vs-Lean
+  only. Treated as an evergreen organizational rule, not a discrete task.
 - `[ ]` Public theorem layer cleanup where the exported declarations can be
   presented more cleanly. Dedicated guide:
   [`guides/cleanup/PUBLIC_THEOREM_LAYER.md`](guides/cleanup/PUBLIC_THEOREM_LAYER.md).
