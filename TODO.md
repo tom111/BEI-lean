@@ -13,12 +13,10 @@
 
 ### Homepage And Public Docs
 
-- `[ ]` Inline a compact "Definitions in Lean" block on the homepage (after the
-  $P_4$ plate, before the Sections grid). Show the four core declarations —
+- `[x]` Inline a compact "Definitions in Lean" block on the homepage (after the
+  $P_4$ plate, before the Sections grid). Shows the four core declarations —
   `BinomialEdgeVars`, `binomialEdgeIdeal`, `IsClosedGraph`, and
-  `binomialEdgeMonomialOrder` — in actual Lean, each linking to its source file.
-  Goal: a reader can see the formal counterpart of $J_G$ alongside the
-  mathematical definition, without leaving the homepage.
+  `binomialEdgeMonomialOrder` — in actual Lean, with file links.
 - `[ ]` Add a small file map (one-line gloss per Lean file under `BEI/` and
   `toMathlib/`) somewhere reader-facing — either as a section on the homepage
   or a dedicated page linked from `Project Links`. Keep it shorter and more

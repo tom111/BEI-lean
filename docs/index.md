@@ -67,6 +67,39 @@ verifies it.
   </figcaption>
 </figure>
 
+## Definitions In Lean
+
+These are the formal counterparts of the objects above. The first three live in
+[BEI/Definitions.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/Definitions.lean)
+and the last in
+[BEI/MonomialOrder.lean](https://github.com/tom111/BEI-lean/blob/master/BEI/MonomialOrder.lean).
+The [Foundations](./foundations.html) page tabulates the supporting
+infrastructure (generators $f_{ij}$, leading-term lemmas, the closure
+construction).
+
+```lean
+variable {K : Type*} [Field K] {V : Type*} [LinearOrder V]
+
+def BinomialEdgeVars (V : Type*) := V ⊕ V
+
+def binomialEdgeIdeal (G : SimpleGraph V) :
+    Ideal (MvPolynomial (BinomialEdgeVars V) K) :=
+  Ideal.span { f | ∃ i j, G.Adj i j ∧ i < j ∧ f = x i * y j - x j * y i }
+
+def IsClosedGraph (G : SimpleGraph V) : Prop :=
+  (∀ {i j k : V}, i < j → i < k → j ≠ k → G.Adj i j → G.Adj i k → G.Adj j k) ∧
+  (∀ {i j k : V}, i < k → j < k → i ≠ j → G.Adj i k → G.Adj j k → G.Adj i j)
+
+noncomputable def binomialEdgeMonomialOrder :
+    MonomialOrder (BinomialEdgeVars V) := MonomialOrder.lex
+```
+
+In order: the index type for the two copies of variables $x_i$, $y_i$ (encoded
+as $V \oplus V$); the ideal $J_G$; the closed-graph condition that
+characterizes when the quadratic generators form a Gröbner basis (Theorem 1.1);
+and the lexicographic monomial order from the paper,
+$x_1 > \cdots > x_n > y_1 > \cdots > y_n$.
+
 ## Sections
 
 <div class="section-grid">
