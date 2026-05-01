@@ -197,7 +197,7 @@ theorem corollary_3_4 (G : SimpleGraph V)
       (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G)) :
     ringKrullDim
       (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) =
-    ↑(Fintype.card V + componentCount G ∅) :=
+    ↑(Fintype.card V + numConnectedComponents G) :=
   corollary_3_4_equidim (K := K) G (isEquidim_of_isCohenMacaulayRing_binomialEdge G hCM)
 
 omit [DecidableEq V] in
@@ -209,7 +209,8 @@ theorem corollary_3_4_connected (G : SimpleGraph V) (hConn : G.Connected)
     ringKrullDim
       (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) =
     ↑(Fintype.card V + 1) := by
-  have hc : componentCount G ∅ = 1 := by
+  have hc : numConnectedComponents G = 1 := by
+    change componentCount G ∅ = 1
     rw [componentCount_empty]
     haveI := hConn.preconnected.subsingleton_connectedComponent
     exact Nat.card_of_subsingleton (G.connectedComponentMk hConn.nonempty.some)

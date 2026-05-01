@@ -53,6 +53,15 @@ theorem componentCount_empty (G : SimpleGraph V) :
   rw [hset]
   exact Nat.card_congr G.induceUnivIso.connectedComponentEquiv
 
+/-- The number of connected components of `G`, written `c(G)` in the paper.
+Definitionally equal to `componentCount G ∅`. -/
+noncomputable def numConnectedComponents (G : SimpleGraph V) : ℕ :=
+  componentCount G ∅
+
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
+theorem numConnectedComponents_eq_componentCount_empty (G : SimpleGraph V) :
+    numConnectedComponents G = componentCount G ∅ := rfl
+
 /-! ## The prime ideal P_S(G) -/
 
 /--
