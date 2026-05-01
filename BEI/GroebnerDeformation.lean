@@ -721,14 +721,11 @@ coefficient `1`). These are the structural inputs to the Gröbner-basis
 argument for `tildeJ_polyT_colon_eq`. The proof pattern mirrors
 `fij_leadingCoeff` / `fij_degree` in `BEI/MonomialOrder.lean`.
 
-**Status (partial)**: The orientation of `defLE` is correctly arranged so
-that `t = Sum.inr ()` is LARGEST in the defLE order (making it LEAST
-significant in `MonomialOrder.lex`, per the convention
-`toLex (single 0 2) > toLex (single 0 1 + single 1 1)` in
-`Mathlib.Data.Finsupp.MonomialOrder`, where the smallest-in-α variable
-is most significant). The three lemmas below are stated but carry a
-`sorry`; their proofs require careful universe alignment for
-`Sum.inl_injective` / `Sum.inr_ne_inl` on `DefVars n` and are deferred. -/
+The orientation of `defLE` is arranged so that `t = Sum.inr ()` is LARGEST
+in the defLE order (making it LEAST significant in `MonomialOrder.lex`, per
+the convention `toLex (single 0 2) > toLex (single 0 1 + single 1 1)` in
+`Mathlib.Data.Finsupp.MonomialOrder`, where the smallest-in-α variable is
+most significant). -/
 
 /-- Key lex inequality: under `deformationMonomialOrder`, the support of
     `t^(j-i) x_j y_i` is strictly less than the support of `x_i y_j`. The

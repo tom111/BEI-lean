@@ -23,8 +23,13 @@
 
 ### Cleanup And Maintenance Backlog
 
-- `[ ]` Review archived and dormant support material and decide what still
-  deserves explicit status tracking.
+- `[x]` Review archived and dormant support material and decide what still
+  deserves explicit status tracking. Done 2026-05-01: the previously-tracked
+  dormant sorries in `toMathlib/HeightAdditivity.lean` and
+  `toMathlib/GradedCM.lean` are gone (the file no longer exists or is
+  sorry-free after the finite-free Case C route landed); `BEI/` and
+  `toMathlib/` are sorry-free. The bloated archive enumeration in
+  `guides/INDEX.md` was collapsed to a one-paragraph pointer.
 - `[ ]` Keep non-critical infrastructure issues separate from the completed
   paper-result status.
 - `[ ]` Public theorem layer cleanup where the exported declarations can be

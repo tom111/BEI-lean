@@ -1,7 +1,6 @@
 # Guide: Decompose `BEI/Equidim.lean` by Mathematical Role
 
-**Superseded by [`work_packages/EQUIDIM_FILE_SPLIT.md`](../work_packages/EQUIDIM_FILE_SPLIT.md)**
-(2026-04-23).
+**Superseded by [`EQUIDIM_FILE_SPLIT.md`](EQUIDIM_FILE_SPLIT.md)** (2026-04-23).
 
 This high-level note is kept only as a historical pointer. The active plan
 is the work package, which carries:

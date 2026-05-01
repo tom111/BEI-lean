@@ -55,57 +55,17 @@ Optional proof-engineering work, not on the theorem-proving critical path.
 
 ## Archive
 
-Completed / superseded packets, retained for historical context only. Do not treat as current policy.
-
-### Prop 1.6 work packages (all fully consumed, 2026-04-22)
-
-- `archive/FULL_PROP_1_6_PLAN.md` — 3-step plan for paper-exact Proposition 1.6; all steps landed.
-- `archive/PROP_1_6_CM_TRANSFER.md` — higher-level strategic context; consumed.
-- `archive/GROEBNER_CM_TRANSFER.md` — Gröbner deformation CM transfer (Eisenbud 15.17); R1 closed.
-- `archive/GRADED_CM_CASE_C_PLAN.md` — plan for closing `caseC_CM_transfer`; closed via finite-free route.
-- `archive/ROUTE_B_OBSTACLE_PLAN.md` — abandoned Route B (generic-linear-form induction); Case C closed via finite-free route instead.
-- `archive/CASE_C_MATH_QUESTION.md` — math question for deep-thinking model; answered in `ANSWER_CASE_C_FINITE_FREE_ROUTE.md`.
-- `archive/ANSWER_CASE_C_FINITE_FREE_ROUTE.md` — strategic answer adopting the finite-free parameter-subring route; strategy fully realized.
-- `archive/ANSWER_PROP_1_6_CM_WHAT_IS_NEEDED.md` — decision note identifying the HH and Gröbner gaps; both gaps now closed.
-- `archive/ANSWER_CLEANUP_WORK_PACKAGE_REFRESH.md` — cleanup packet refresh; consumed.
-
-### Earlier completed packets
-
-- `archive/EQUIDIM_FILE_SPLIT.md` — work package that split
-  `BEI/Equidim.lean` (8106 lines) into a `BEI/Equidim/` directory
-  with one file per mathematical block; landed on `master` 2026-04-27.
-- `archive/EQUIDIM_GIANT_CARVING.md` — follow-up packet that carved
-  the two remaining giant declarations into thin dispatchers plus
-  private case helpers; landed on `master` 2026-04-30.
-- `archive/EVALUATION_MAP_API.md` — eval-map contradiction API for
-  ideal-containment proofs; the `MinimalPrimes` chain (prop_3_8 and
-  prop_3_8_sameComponent_preserved) was already on the named API and
-  the residual inline block in `prop_3_6` was extracted on
-  2026-04-30 into `evalNonAdjWitness` plus two named lemmas.
-- `archive/EQUIDIM_DECOMPOSITION.md` — earlier high-level note for the
-  same split, superseded by the work package above.
-- `archive/LEAN_FILE_REVIEW_QUEUE.md` — per-file cleanup queue, fully
-  consumed 2026-04-24; every `BEI/`, `Supplement/`, and `toMathlib/`
-  source file has been through the `review → refactor → golf →
-  heartbeat → verify → checkpoint` recipe.
-- `archive/MINIMALPRIMES_CYCLE_PERFORMANCE.md` — completed cycle/unmixed performance packet; split landed, helper decomposition finished, heartbeat overrides removed.
-- `archive/ANSWER_05_LEAN_PERFORMANCE_RESEARCH.md` — source-backed Lean performance note; now superseded by the concrete cleanup packets.
-- `archive/NEXT_SESSION_PROMPT.md` — retired follow-up memo from the Prop 1.6 / Corollary 3.4 phase.
-- `archive/COROLLARY_3_4_IMPLEMENTATION.md` — consumed implementation packet for Corollaries 3.4 and 3.7.
-- `archive/CM_LOCALIZES.md` — CM-localizes theorem packet (landed).
-- `archive/CM_PARAMETER_PREFIX_UNMIXED.md` — superseded route.
-- `archive/DEHOMOGENIZATION_CM_LOCAL_TO_GLOBAL.md` — superseded route.
-- `archive/GRADED_CM_INDUCTION.md` — superseded graded-induction branch.
-- `archive/GRADED_CM_LOCAL_TO_GLOBAL.md` — broader theorem-context memo, now consumed.
-- `archive/GRADED_CONTRACTION_NZD.md` — completed support packet.
-- `archive/HH_BIPARTITE_CM_PACKAGING.md` — superseded by `HH_GLOBAL_CM_FROM_AUGIDEAL.md`.
-- `archive/HH_CM_BRIDGE_LEMMAS.md` — bridge lemmas landed; step C tracked in `HH_GLOBAL_CM_FROM_AUGIDEAL.md`.
-- `archive/HH_CM_TO_GLOBAL.md` — consumed; remaining work moved to `HH_GLOBAL_CM_FROM_AUGIDEAL.md`.
-- `archive/POLYNOMIAL_RING_CM_BASE_CASE.md` — polynomial CM extension landed.
-- `archive/cm_pr_26218/` — Cohen–Macaulay backport from Mathlib PR #26218, landed.
-- `archive/cm_pr_28599/` — CM-localization backport from Mathlib PR #28599, landed.
-- `archive/SESSION_A2_HANDOFF.md` — Session A′.2 handoff brief, consumed.
-- `archive/SESSION_C3_HANDOFF.md` — Session C3 handoff; consumed 2026-04-20.
-- `archive/FINAL_CHAIN_PLAN.md` — F2-chain sequencing plan; fully consumed.
-- `archive/HH_GLOBAL_CM_FROM_AUGIDEAL.md` — F2-route narrative; consumed 2026-04-20.
-- `archive/ANSWER_HH_QUOTIENT_CM_AT_NON_AUGIDEAL.md` — validated F2 strategy; consumed.
+Completed / superseded packets, retained for historical context only. Do not
+treat any archived guide as current policy. See `guides/archive/` for the
+full historical packet list — Proposition 1.6 (FULL_PROP_1_6_PLAN,
+PROP_1_6_CM_TRANSFER, GROEBNER_CM_TRANSFER, GRADED_CM_*, CASE_C_*,
+ROUTE_B_*, ANSWER_*); the `BEI/Equidim.lean` file split and giant
+carving (EQUIDIM_FILE_SPLIT, EQUIDIM_GIANT_CARVING,
+EQUIDIM_DECOMPOSITION); the F2 / HH bipartite chain (HH_*,
+FINAL_CHAIN_PLAN, SESSION_*); the per-file Lean cleanup queue
+(LEAN_FILE_REVIEW_QUEUE); the Cohen–Macaulay backports
+(`cm_pr_26218/`, `cm_pr_28599/`, POLYNOMIAL_RING_CM_BASE_CASE,
+CM_LOCALIZES, CM_PARAMETER_PREFIX_UNMIXED, DEHOMOGENIZATION_*); and
+miscellaneous landed packets (EVALUATION_MAP_API,
+MINIMALPRIMES_CYCLE_PERFORMANCE, COROLLARY_3_4_IMPLEMENTATION,
+ANSWER_05_LEAN_PERFORMANCE_RESEARCH, NEXT_SESSION_PROMPT).
