@@ -13,8 +13,16 @@
 
 ### Homepage And Public Docs
 
-- `[ ]` Expose the main definitions and setup more clearly on the homepage so
-  readers can inspect the codebase structure more effectively.
+- `[ ]` Inline a compact "Definitions in Lean" block on the homepage (after the
+  $P_4$ plate, before the Sections grid). Show the four core declarations —
+  `BinomialEdgeVars`, `binomialEdgeIdeal`, `IsClosedGraph`, and
+  `binomialEdgeMonomialOrder` — in actual Lean, each linking to its source file.
+  Goal: a reader can see the formal counterpart of $J_G$ alongside the
+  mathematical definition, without leaving the homepage.
+- `[ ]` Add a small file map (one-line gloss per Lean file under `BEI/` and
+  `toMathlib/`) somewhere reader-facing — either as a section on the homepage
+  or a dedicated page linked from `Project Links`. Keep it shorter and more
+  navigational than `OVERVIEW.md` or `FORMALIZATION_MAP.md`.
 
 ### Cleanup And Maintenance Backlog
 

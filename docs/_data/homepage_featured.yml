@@ -65,7 +65,7 @@ corollary_3_4:
           (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G)) :
         ringKrullDim
           (MvPolynomial (BinomialEdgeVars V) K ⧸ binomialEdgeIdeal (K := K) G) =
-          ↑(Fintype.card V + componentCount G ∅)
+          ↑(Fintype.card V + numConnectedComponents G)
   lean_file_label: "Corollary3_4.lean"
   lean_url: "https://github.com/tom111/BEI-lean/blob/master/BEI/Corollary3_4.lean"
 

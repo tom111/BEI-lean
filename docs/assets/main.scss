@@ -791,6 +791,14 @@ a.theorem-pane__link {
   border-bottom-color: var(--link-hover);
 }
 
+.mastodon-icon {
+  width: 1em;
+  height: 1em;
+  margin-right: 0.35em;
+  vertical-align: -0.13em;
+  fill: currentColor;
+}
+
 .reference-strip { display: none; }
 
 // ──────────────────────────────────────────────────────────────

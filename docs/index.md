@@ -33,8 +33,8 @@ $$
 The paper approaches these ideals from three sides: when the given generators
 already form a Gröbner basis, how the prime decomposition is controlled by the
 graph, and how the same ideals arise from conditional independence statements
-in algebraic statistics. This site is organized around the paper's four
-sections — every result links to the Lean file that verifies it.
+in algebraic statistics. Every result on this site links to the Lean file that
+verifies it.
 
 <figure class="masthead__plate">
   <div class="masthead__plate-graph">
@@ -67,7 +67,7 @@ sections — every result links to the Lean file that verifies it.
   </figcaption>
 </figure>
 
-## Explore By Section
+## Sections
 
 <div class="section-grid">
   <a class="section-card" href="{{ '/foundations.html' | relative_url }}">
@@ -110,12 +110,10 @@ the right. Click through to open the Lean file and read the full proof.
   {% endfor %}
 </div>
 
-## Go Deeper
+## Project Links
 
 <div class="quick-links">
   <a href="https://github.com/tom111/BEI-lean/tree/master/BEI">Lean files</a>
   <a href="https://github.com/tom111/BEI-lean/tree/master/toMathlib">Supporting library</a>
-  <a href="https://github.com/tom111/BEI-lean/blob/master/FORMALIZATION_MAP.md">Paper-to-Lean map</a>
-  <a href="https://doi.org/10.1016/j.aam.2010.01.003">Published paper</a>
-  <a href="https://arxiv.org/abs/0909.4717">arXiv preprint</a>
+  <a href="https://machteburch.social/@tomkalei" rel="me"><svg class="mastodon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21.58 13.913c-.29 1.469-2.592 3.121-5.238 3.426-1.379.16-2.738.307-4.187.241-2.371-.105-4.244-.555-4.244-.555 0 .226.014.441.042.643.308 2.353 2.348 2.494 4.281 2.559 1.952.066 3.69-.479 3.69-.479l.08 1.747s-1.366.726-3.797.86c-1.341.073-3.005-.033-4.943-.541C3.078 20.71.36 16.245.018 11.736c-.087-1.142-.118-2.249-.04-3.371C.337 3.866 2.86 1.146 6.388.978c1.75-.083 3.25.224 4.49.808 1.231-.584 2.731-.891 4.479-.808 3.529.168 6.052 2.888 6.41 7.387.078 1.122.05 2.229-.04 3.371-.106.95-.234 1.65-.146 2.177h-.001zm-3.354-5.756c0-1.117-.272-2.005-.819-2.665-.566-.659-1.31-.998-2.232-.998-1.066 0-1.875.412-2.42 1.235l-.527.886-.527-.886c-.546-.823-1.355-1.235-2.421-1.235-.922 0-1.665.339-2.231.998-.547.66-.819 1.548-.819 2.665v5.483h2.171V8.295c0-1.119.471-1.687 1.413-1.687 1.041 0 1.563.674 1.563 2.005v2.905h2.157V8.613c0-1.331.521-2.005 1.563-2.005.942 0 1.413.568 1.413 1.687v5.345h2.171V8.157z"/></svg>Mastodon</a>
 </div>
