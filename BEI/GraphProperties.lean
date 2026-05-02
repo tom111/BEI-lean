@@ -19,6 +19,31 @@ Herzog et al. (2010):
 - The closure G̅ of a graph (minimal closed supergraph, Proposition 1.5)
 - Admissible paths (Section 2, before Theorem 2.1)
 
+## Public paper-facing endpoints (with fidelity to Herzog et al. 2010)
+
+- `prop_1_2`: every closed graph is chordal and claw-free.
+  **Fidelity: Exact.**
+- `prop_1_4`: closed graphs are exactly those for which all shortest walks
+  between any pair `i < j` are directed in `G*`. **Fidelity: Equivalent**
+  (the paper quantifies over all `i ≠ j`; we use `i < j`, equivalent by
+  symmetry of undirected adjacency).
+- `prop_1_5`: every graph has a unique minimal closed supergraph.
+  **Fidelity: Exact.**
+- `cor_1_3`: bipartite + closed implies acyclic and max degree ≤ 2.
+  **Fidelity: Weaker** than the paper's full iff with "is a line"; the
+  forward direction only.
+- `cor_1_3_connected_forward` + `pathGraph_isClosedGraph`: the
+  paper-faithful pair (forward packaged as `IsPathGraph`; converse for
+  the canonically-labelled `pathGraph n`). **Fidelity: Exact** modulo
+  labeling, which the paper also assumes implicitly.
+
+The bipartite forward / converse pair is intentionally split into two
+theorems rather than a single iff: the forward direction works on any
+linearly-ordered finite vertex type, but the converse depends on a
+specific vertex labeling (closedness is not invariant under graph
+isomorphism), so any combined iff would have to fix the labeling on
+both sides.
+
 ## References: Herzog et al. (2010), Sections 1–2
 -/
 
@@ -104,7 +129,17 @@ theorem graphClosure_minimal (G H : SimpleGraph V)
     (hGH : G ≤ H) (hH : IsClosedGraph H) : graphClosure G ≤ H :=
   sInf_le ⟨hGH, hH⟩
 
-/-- Proposition 1.5: The closure is the unique minimal closed supergraph. -/
+/--
+**Proposition 1.5** (Herzog et al. 2010): The closure is the unique minimal
+closed supergraph.
+
+Phrased as a `∃!` over the explicit minimality condition (every other closed
+supergraph dominates it), which is equivalent to the paper's "minimal closed
+supergraph" formulation.
+
+**Fidelity: Exact.**
+
+Reference: Herzog et al. (2010), Proposition 1.5. -/
 theorem prop_1_5 (G : SimpleGraph V) :
     ∃! H : SimpleGraph V,
       G ≤ H ∧ IsClosedGraph H ∧
@@ -250,7 +285,16 @@ theorem closedGraph_isClawFree (G : SimpleGraph V) (h : IsClosedGraph G) :
   · -- c < a, c < b, c < d
     exact Or.inl (h.1 ha hb hab cadj_a cadj_b)
 
-/-- Proposition 1.2: Every closed graph is chordal and claw-free. -/
+/--
+**Proposition 1.2** (Herzog et al. 2010): Every closed graph is chordal and
+claw-free.
+
+Packaged as the conjunction of `closedGraph_isChordal` (Prop 1.2(1)) and
+`closedGraph_isClawFree` (Prop 1.2(2)).
+
+**Fidelity: Exact.**
+
+Reference: Herzog et al. (2010), Proposition 1.2. -/
 theorem prop_1_2 (G : SimpleGraph V) (h : IsClosedGraph G) :
     IsChordal G ∧ IsClawFree G :=
   ⟨closedGraph_isChordal G h, closedGraph_isClawFree G h⟩
