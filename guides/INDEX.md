@@ -13,13 +13,13 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 
 ## Active Work Packages
 
-- [work_packages/BUCHBERGER_DECOMPOSITION_REFACTOR.md](work_packages/BUCHBERGER_DECOMPOSITION_REFACTOR.md)
-  — Replace the manual k-induction inside the 1066-LOC
-  `isGroebnerBasis_iff_sPolynomial_isRemainder` (`BEI/GroebnerAPI.lean:127`)
-  with a direct application of Mathlib's `MonomialOrder.sPolynomial_decomposition'`.
-  Single biggest available LOC win in the repo (estimated 1066 → ~250
-  LOC); load-bearing for `theorem_2_1`, multi-hour, requires careful
-  staging and axiom verification.
+There are currently no live work packages. The Buchberger decomposition
+refactor finished on 2026-05-02; the guide is archived at
+[archive/BUCHBERGER_DECOMPOSITION_REFACTOR.md](archive/BUCHBERGER_DECOMPOSITION_REFACTOR.md).
+Stage 0 split the iff into two private helpers and Stage 1 replaced the
+manual k-induction with `MonomialOrder.sPolynomial_decomposition'`,
+dropping `BEI/GroebnerAPI.lean` from 1209 → 850 LOC with no axiom or
+statement change.
 
 The earlier giant-decl carves (`EQUIDIM_FILE_SPLIT.md`,
 `EQUIDIM_GIANT_CARVING.md`) are complete and archived. The two giant
