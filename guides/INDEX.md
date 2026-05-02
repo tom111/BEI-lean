@@ -13,9 +13,17 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 
 ## Active Work Packages
 
-None active. Both the `EQUIDIM_FILE_SPLIT.md` work package and its
-follow-up `EQUIDIM_GIANT_CARVING.md` packet are complete and archived.
-The two giant declarations
+- [work_packages/BUCHBERGER_DECOMPOSITION_REFACTOR.md](work_packages/BUCHBERGER_DECOMPOSITION_REFACTOR.md)
+  — Replace the manual k-induction inside the 1066-LOC
+  `isGroebnerBasis_iff_sPolynomial_isRemainder` (`BEI/GroebnerAPI.lean:127`)
+  with a direct application of Mathlib's `MonomialOrder.sPolynomial_decomposition'`.
+  Single biggest available LOC win in the repo (estimated 1066 → ~250
+  LOC); load-bearing for `theorem_2_1`, multi-hour, requires careful
+  staging and axiom verification.
+
+The earlier giant-decl carves (`EQUIDIM_FILE_SPLIT.md`,
+`EQUIDIM_GIANT_CARVING.md`) are complete and archived. The two giant
+declarations
 (`isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_augIdeal` in
 `BEI/Equidim.lean` and `nilradical_nzd_map_diagSubstHom` in
 `BEI/Equidim/IteratedRegularity.lean`) have been carved into thin
