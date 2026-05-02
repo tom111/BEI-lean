@@ -45,49 +45,58 @@
   endpoints; ~46 internal scaffolding declarations privatized after
   reference audits; fidelity-vs-paper notes added where the Lean statement
   differs from Herzog et al. 2010.
-- `[ ]` File-splitting cleanup if current theorem locations are still awkward
-  for readers or maintainers. Dedicated guide:
-  [`guides/cleanup/FILE_SPLITTING_PLAN.md`](guides/cleanup/FILE_SPLITTING_PLAN.md).
-- `[ ]` Proof cleanup and linter cleanup from `guides/cleanup/`.
+- `[x]` File-splitting cleanup. Target 3
+  (`PrimeDecompositionDimension.lean`) split into Core / residual /
+  `Prop1_6Equidim.lean` on 2026-05-02. Targets 2, 4, 5, 6 of
+  [`guides/cleanup/FILE_SPLITTING_PLAN.md`](guides/cleanup/FILE_SPLITTING_PLAN.md)
+  were dropped on 2026-05-02 as cosmetic — the LOC live inside a few
+  monolithic proofs, so renaming files without carving those proofs first
+  just relabels the bulk. Target 7 (`GroebnerDeformation.lean`) remains
+  deferred per the guide.
 
-### Speed And Clarity Backlog (added 2026-04-30)
+### Fat Single-Proof Refactor (added 2026-05-02)
+
+The real navigation pain in the largest files comes from a small number of
+monolithic proofs. Carve each into named private sub-lemmas, verify
+`lake build` is clean, and check `#print axioms` for any flagship theorem
+on the consumer side after each carve. Order is rough — easiest / lowest
+risk first, the load-bearing Section 2 monolith last.
+
+| # | LOC | File:line | Declaration |
+|---|---|---|---|
+| `[ ]` 1 | 188 | `BEI/Prop1_6Equidim.lean:272` | `path_cutVertex_of_erase` (warmup) |
+| `[ ]` 2 | 357 | `BEI/Equidim/IteratedRegularity.lean:1067` | `caseD_nilradical_nzd_map_diagSubstHom_helper` (sub-splits already documented in `guides/archive/EQUIDIM_GIANT_CARVING.md`) |
+| `[ ]` 3 | 612 | `BEI/Prop1_6Equidim.lean:740` | `closedGraph_cutVertex_preserved_of_erase` |
+| `[ ]` 4 | 384 | `BEI/CoveredWalks.lean:460` | `isRemainder_fij_of_covered_walk` |
+| `[ ]` 5 | 362 | `BEI/CoveredWalks.lean:844` | `isRemainder_fij_of_covered_walk_y` (likely mirrors carve #4) |
+| `[ ]` 6 | 263 | `BEI/Equidim.lean:391` | `cm_F2_route` |
+| `[ ]` 7 | 263 | `BEI/Equidim/IteratedRegularity.lean:447` | `ell_not_mem_minimalPrime_map_diagSubstHom` |
+| `[ ]` 8 | 281 | `BEI/PrimeIdeals.lean:1753` | `lemma_3_1` |
+| `[ ]` 9 | 532 | `toMathlib/CohenMacaulay/Polynomial.lean:637` | `cm_localize_polynomial_of_cm_aux` (toMathlib-side; isolated from BEI fixes) |
+| `[ ]` 10 | 1087 | `BEI/CoveredWalks.lean:1366` | `isRemainder_fij_of_mixed_walk` (the largest non-Section-2 monolith) |
+| `[ ]` 11 | 1848 | `BEI/GroebnerBasisSPolynomial.lean:143` | `theorem_2_1` (load-bearing public Buchberger proof; refactor last, with extra care) |
+
+Smaller fat proofs to fold into adjacent carves only when they sit inside
+the same file: `walk_from_shared_first_aux` (203, `CoveredWalks:2453`),
+`killLastPairEquiv_map_augIdealQuot` (205,
+`Equidim/ReducedHHLocalCM.lean:576`), `no_s_ker_mem` (191,
+`PrimeIdeals.lean:949`), `swapExp_fiberEquiv` (185, `PrimeIdeals.lean:470`),
+`localization_at_comap_maximal_isCM_isCM_local` (165,
+`toMathlib/CohenMacaulay/Polynomial.lean:1392`).
+
+### Defensive Infrastructure
 
 - `[ ]` **Profile and drop the remaining heartbeat overrides.** 8 overrides
   remain across 4 files after the 2026-04-27 audit. Re-profile each with
   `lean_profile_proof` after recent refactors and remove any that are no
   longer load-bearing. Pairs with
   [`guides/cleanup/LEAN_PERFORMANCE_TRIAGE.md`](guides/cleanup/LEAN_PERFORMANCE_TRIAGE.md).
-- `[ ]` **Sub-decompose the 354-LOC `caseD_nilradical_nzd_map_diagSubstHom_helper`.**
-  Phase 1 of the giant-carving deferred this; natural sub-splits documented
-  in the archived guide. Targets clarity plus a smaller per-helper rebuild
-  cost.
-- `[~]` **Drop unused `[Fintype V]` hypotheses.** The two helpers added on
-  2026-04-30 in `BEI/PrimeDecomposition.lean` were cleared. The remaining
-  ~17 warnings (across `Radical`, `PrimeDecomposition`, `MinimalPrimes`,
-  `Corollary3_4`, `PrimeDecompositionDimension`, `CycleUnmixed`,
-  `toMathlib/HeightVariableIdeal`) are not "pure cleanup" — the proof
-  bodies need `[Fintype V]` for `IsNoetherianRing` /
-  `Algebra.FiniteType` / similar instance synthesis even when the type
-  signature does not. The proper fix is to change the file-level
-  `variable {V : Type*} … [Fintype V]` to `[Finite V]` and recover
-  `Fintype V` locally via `Fintype.ofFinite` only where actually
-  needed; that's a broader refactor than this bullet implied.
-- `[ ]` **Extract walk and path arithmetic helpers from `BEI/CoveredWalks.lean`.**
-  Largest file in the repo (2671 LOC, 79 automation hits). Pairs with
-  [`guides/cleanup/PATH_AND_INTERNAL_VERTEX_API.md`](guides/cleanup/PATH_AND_INTERNAL_VERTEX_API.md).
 - `[ ]` **Add `BEI/AxiomCheck.lean`.** Permanent file with `#print axioms` on
   the seven flagship paper-facing theorems so axiom regressions are caught
   at build time instead of via ad-hoc scratch files.
 - `[ ]` **CI heartbeat ratchet.** Fail CI when a new `set_option maxHeartbeats`
   raise is introduced without justification. Tracked in
   [`guides/cleanup/STATUS_AND_CI_HYGIENE.md`](guides/cleanup/STATUS_AND_CI_HYGIENE.md).
-
-### Lean File Review Queue
-
-- `[x]` Run a file-by-file Lean cleanup pass for simplification, shortening,
-  proof golf, and presentation improvements where appropriate. Queue
-  completed 2026-04-24; the per-file recipe packet is archived at
-  [`guides/archive/LEAN_FILE_REVIEW_QUEUE.md`](guides/archive/LEAN_FILE_REVIEW_QUEUE.md).
 
 ---
 
