@@ -114,23 +114,16 @@ private lemma sPolynomial_toSyn_lt_lcm {σ : Type*} (m : MonomialOrder σ)
   have hlt := sPolynomial_lt_of_degree_ne_zero_of_degree_eq heq (by rwa [hSrel])
   rwa [hSrel, hdeg_f₁] at hlt
 
-/-- **Buchberger's criterion**: `G` is a Gröbner basis of `Ideal.span G` if and only if
-for every pair of elements `g₁, g₂ ∈ G`, the S-polynomial `S(g₁, g₂)` reduces to 0 modulo `G`.
+/-! ### Buchberger's criterion: forward and backward directions -/
 
-Hypotheses:
-- `R` is a field (needed for the backward direction via `sPolynomial_decomposition'`)
-- All elements of `G` have invertible (unit) leading coefficients
-
-Source: WuProver/groebner_proj `Groebner.lean`,
-`isGroebnerBasis_iff_isRemainder_sPolynomial_zero`.
--/
-theorem isGroebnerBasis_iff_sPolynomial_isRemainder {R : Type*} [Field R]
-    {G : Set (MvPolynomial σ R)} (hG : ∀ g ∈ G, IsUnit (m.leadingCoeff g)) :
-    m.IsGroebnerBasis G (Ideal.span G) ↔
-    ∀ (g₁ g₂ : G), m.IsRemainder (m.sPolynomial g₁.val g₂.val : MvPolynomial σ R) G 0 := by
-  constructor
-  · -- (→) If G is a Gröbner basis, every S-polynomial reduces to 0 mod G.
-    intro ⟨_, hInitIdeal⟩ g₁ g₂
+/-- Forward direction of Buchberger's criterion: if `G` is a Gröbner basis, every
+S-polynomial of pairs from `G` reduces to `0` modulo `G`. -/
+private theorem sPolynomial_isRemainder_of_isGroebnerBasis {R : Type*} [Field R]
+    {G : Set (MvPolynomial σ R)} (hG : ∀ g ∈ G, IsUnit (m.leadingCoeff g))
+    (hGB : m.IsGroebnerBasis G (Ideal.span G))
+    (g₁ g₂ : G) :
+    m.IsRemainder (m.sPolynomial g₁.val g₂.val : MvPolynomial σ R) G 0 := by
+    obtain ⟨_, hInitIdeal⟩ := hGB
     -- S(g₁, g₂) ∈ Ideal.span G since g₁, g₂ ∈ span G
     have hSP_mem : m.sPolynomial g₁.val g₂.val ∈ Ideal.span G :=
       sPolynomial_mem_ideal (Ideal.subset_span g₁.prop) (Ideal.subset_span g₂.prop)
@@ -164,8 +157,14 @@ theorem isGroebnerBasis_iff_sPolynomial_isRemainder {R : Type*} [Field R]
       exact Finset.mem_singleton_self _
     obtain ⟨deg_g, ⟨g, hg_mem, rfl⟩, hg_deg⟩ := hlt_mem (m.degree r) hlt_support
     exact hirr (m.degree r) hdeg_r g hg_mem hg_deg
-  · -- (←) If all S-polynomials reduce to 0, then G is a Gröbner basis.
-    intro hSP
+
+/-- Backward direction of Buchberger's criterion: if every S-polynomial of pairs
+from `G` reduces to `0` modulo `G`, then `G` is a Gröbner basis. -/
+private theorem isGroebnerBasis_of_sPolynomial_isRemainder {R : Type*} [Field R]
+    {G : Set (MvPolynomial σ R)} (hG : ∀ g ∈ G, IsUnit (m.leadingCoeff g))
+    (hSP : ∀ (g₁ g₂ : G),
+      m.IsRemainder (m.sPolynomial g₁.val g₂.val : MvPolynomial σ R) G 0) :
+    m.IsGroebnerBasis G (Ideal.span G) := by
     refine ⟨Ideal.subset_span, ?_⟩
     -- Need: span(lt(span G)) = span(lt(G))
     apply le_antisymm
@@ -1187,6 +1186,23 @@ theorem isGroebnerBasis_iff_sPolynomial_isRemainder {R : Type*} [Field R]
                        ⟨hadj_b2_bound, hh12_bound⟩⟩
     · -- span(lt(G)) ⊆ span(lt(span G)) — easy direction
       exact Ideal.span_mono (Set.image_mono Ideal.subset_span)
+
+/-- **Buchberger's criterion**: `G` is a Gröbner basis of `Ideal.span G` if and only if
+for every pair of elements `g₁, g₂ ∈ G`, the S-polynomial `S(g₁, g₂)` reduces to 0 modulo `G`.
+
+Hypotheses:
+- `R` is a field (needed for the backward direction via `sPolynomial_decomposition'`)
+- All elements of `G` have invertible (unit) leading coefficients
+
+Source: WuProver/groebner_proj `Groebner.lean`,
+`isGroebnerBasis_iff_isRemainder_sPolynomial_zero`.
+-/
+theorem isGroebnerBasis_iff_sPolynomial_isRemainder {R : Type*} [Field R]
+    {G : Set (MvPolynomial σ R)} (hG : ∀ g ∈ G, IsUnit (m.leadingCoeff g)) :
+    m.IsGroebnerBasis G (Ideal.span G) ↔
+    ∀ (g₁ g₂ : G), m.IsRemainder (m.sPolynomial g₁.val g₂.val : MvPolynomial σ R) G 0 :=
+  ⟨m.sPolynomial_isRemainder_of_isGroebnerBasis hG,
+    m.isGroebnerBasis_of_sPolynomial_isRemainder hG⟩
 
 end MonomialOrder
 
