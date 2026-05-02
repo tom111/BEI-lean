@@ -512,19 +512,6 @@ theorem groebner_implies_closed (G : SimpleGraph V)
     rw [show (x a * y b - x b * y a : MvPolynomial (BinomialEdgeVars V) K) =
         fij (K := K) a b from rfl, fij_degree a b hab, hp_deg] at hs_le
     exact hno_gen a b hadj_ab hab hs_le
-  -- Helper: extract b = j from e_{inl a} + e_{inr b} ≤ ... + e_{inr j} + ...
-  -- (when j is the only inr component in the RHS)
-  have extract_b : ∀ (a b j : V) (D : BinomialEdgeVars V →₀ ℕ),
-      Finsupp.single (Sum.inl a) 1 + Finsupp.single (Sum.inr b) 1 ≤ D →
-      D (Sum.inr b) = (if b = j then 1 else 0) + 0 →
-      b = j := fun a b j D hs hD => by
-    by_contra hbj
-    have h1 : (Finsupp.single (Sum.inl a) 1 +
-        Finsupp.single (Sum.inr b) 1 : BinomialEdgeVars V →₀ ℕ)
-        (Sum.inr b) = 1 := by
-      simp [Finsupp.add_apply]
-    have h2 : D (Sum.inr b) = 0 := by simp [hD, hbj]
-    linarith [hs (Sum.inr b), h1.symm ▸ h2.symm ▸ (hs (Sum.inr b))]
   constructor
   · -- Condition 1: ∀ i j k, i<j → i<k → j≠k → adj(i,j) → adj(i,k) → adj(j,k)
     intro i j k hij hik hjk hadj_ij hadj_ik
