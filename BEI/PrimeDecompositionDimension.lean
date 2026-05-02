@@ -10,18 +10,34 @@ variable {K : Type*} [Field K]
 variable {V : Type*} [LinearOrder V] [DecidableEq V] [Fintype V]
 
 /-!
-# Dimension of quotients by prime components (Corollary 3.3)
+# Section 3 dimension and equidimensional surrogate package
 
-This file computes `ringKrullDim (R ⧸ P_S(G))` and derives the dimension formula:
-  `dim(K[x,y]/J_G) = max_{S ⊆ V} (|V| - |S| + c(S))`
+This file collects the dimension formula of Corollary 3.3 together with the
+equidimensional surrogate forms of the Section 3 corollaries that are used
+downstream to assemble the paper-faithful theorems in
+`BEI/Corollary3_4.lean`, `BEI/Proposition1_6.lean`, and
+`BEI/Equidim/MonomialInitial.lean`.
 
-## Main results
+## Public paper-facing endpoints
 
-- `ringKrullDim_quot_primeComponent`: `dim(R/P_S) = |V| - |S| + c(S)`
+- `ringKrullDim_quot_primeComponent`: `dim(R/P_S) = |V| - |S| + c(S)`.
 - `corollary_3_3`: the dimension formula
-- `corollary_3_3_lower_bound`: `dim ≥ |V| + c(G)`
+  `dim(K[x,y]/J_G) = max_{S ⊆ V} (|V| - |S| + c(S))`.
+- `corollary_3_3_lower_bound`: the lower bound `dim(K[x,y]/J_G) ≥ |V| + c(G)`.
+- `corollary_3_4_equidim`: equidimensional surrogate of Corollary 3.4.
+- `path_isEquidim`: Example 1.7(b), the path graph at the equidimensional
+  surrogate level.
+- `prop_1_6_equidim`: equidimensional surrogate of Proposition 1.6.
+- `corollary_3_7_equidim`: equidimensional surrogate of Corollary 3.7
+  (cycle case).
 
-## Reference: Herzog et al. (2010), Corollary 3.3
+All other declarations in this file are internal scaffolding (chain maps,
+strict-inclusion witnesses, third-isomorphism dimension lemmas, path /
+closed-graph minimal-prime arithmetic, and cycle-pair support) and are
+marked `private` accordingly.
+
+## Reference: Herzog et al. (2010), Corollary 3.3, Corollary 3.4,
+Proposition 1.6, Corollary 3.7, Example 1.7.
 -/
 
 noncomputable section
@@ -51,7 +67,7 @@ Reference: Herzog et al. (2010), Corollary 3.3.
 omit [DecidableEq V] in
 /-- Upper bound: `dim(R/P_S) ≤ |V| - |S| + c(S)`.
 Any chain of primes above P_S has length ≤ dim(R) - height(P_S). -/
-theorem ringKrullDim_quot_primeComponent_le (G : SimpleGraph V) (S : Finset V) :
+private theorem ringKrullDim_quot_primeComponent_le (G : SimpleGraph V) (S : Finset V) :
     ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ primeComponent (K := K) G S) ≤
     (Fintype.card V - S.card + componentCount G S : ℕ) := by
   haveI hP := primeComponent_isPrime (K := K) G S
@@ -112,7 +128,7 @@ theorem ringKrullDim_quot_primeComponent_le (G : SimpleGraph V) (S : Finset V) :
 /-- Kill selected variables: compose `primeComponentMap` with an evaluation that
 sends `X(inl v) ↦ 0` for `v ∈ Ux` and `X(inr v) ↦ 0` for `v ∈ Uy`.
 The kernel is prime (codomain is `MvPolynomial`, a domain) and contains `P_S`. -/
-noncomputable def dimChainMap (G : SimpleGraph V) (S : Finset V)
+private noncomputable def dimChainMap (G : SimpleGraph V) (S : Finset V)
     (Ux Uy : Finset V) :
     MvPolynomial (BinomialEdgeVars V) K →ₐ[K]
     MvPolynomial (BinomialEdgeVars V) K :=
@@ -123,13 +139,13 @@ noncomputable def dimChainMap (G : SimpleGraph V) (S : Finset V)
   (primeComponentMap G S)
 
 /-- The kernel of `dimChainMap` is a prime ideal (codomain is a domain). -/
-theorem dimChainMap_ker_isPrime (G : SimpleGraph V) (S : Finset V)
+private theorem dimChainMap_ker_isPrime (G : SimpleGraph V) (S : Finset V)
     (Ux Uy : Finset V) :
     (RingHom.ker (dimChainMap (K := K) G S Ux Uy).toRingHom).IsPrime :=
   RingHom.ker_isPrime _
 
 /-- `P_S ≤ ker(dimChainMap)`: the kernel contains the prime component. -/
-theorem primeComponent_le_dimChainMap_ker (G : SimpleGraph V) (S : Finset V)
+private theorem primeComponent_le_dimChainMap_ker (G : SimpleGraph V) (S : Finset V)
     (Ux Uy : Finset V) :
     primeComponent (K := K) G S ≤
     RingHom.ker (dimChainMap (K := K) G S Ux Uy).toRingHom := by
@@ -175,7 +191,7 @@ private theorem pureKill_absorb {Ux Ux' Uy Uy' : Finset V}
 /-- Monotonicity: enlarging `Ux` or `Uy` grows the kernel of `dimChainMap`.
 Uses: `dimChainMap(Ux',Uy') = pureKill(Ux',Uy') ∘ pcm = pureKill(Ux',Uy') ∘ pureKill(Ux,Uy) ∘ pcm
 = pureKill(Ux',Uy') ∘ dimChainMap(Ux,Uy)`, then `f(x)=0 → g(f(x))=g(0)=0`. -/
-theorem dimChainMap_ker_mono (G : SimpleGraph V) (S : Finset V)
+private theorem dimChainMap_ker_mono (G : SimpleGraph V) (S : Finset V)
     {Ux Ux' Uy Uy' : Finset V} (hx : Ux ⊆ Ux') (hy : Uy ⊆ Uy') :
     RingHom.ker (dimChainMap (K := K) G S Ux Uy).toRingHom ≤
     RingHom.ker (dimChainMap (K := K) G S Ux' Uy').toRingHom := by
@@ -195,14 +211,14 @@ theorem dimChainMap_ker_mono (G : SimpleGraph V) (S : Finset V)
 /-! ### Strict inclusion witnesses for the chain -/
 
 /-- Phase 1/3 witness: `X(inl v)` maps to 0 when `v ∉ S` and `v ∈ Ux`. -/
-theorem dimChainMap_inl_eq_zero (G : SimpleGraph V) (S : Finset V)
+private theorem dimChainMap_inl_eq_zero (G : SimpleGraph V) (S : Finset V)
     (Ux Uy : Finset V) (v : V) (hvS : v ∉ S) (hvUx : v ∈ Ux) :
     (dimChainMap (K := K) G S Ux Uy) (X (Sum.inl v)) = 0 := by
   simp only [dimChainMap, AlgHom.comp_apply, primeComponentMap, MvPolynomial.aeval_X,
     hvS, ↓reduceIte, hvUx]
 
 /-- Phase 1/3 witness: `X(inl v)` maps to nonzero when `v ∉ S` and `v ∉ Ux`. -/
-theorem dimChainMap_inl_ne_zero (G : SimpleGraph V) (S : Finset V)
+private theorem dimChainMap_inl_ne_zero (G : SimpleGraph V) (S : Finset V)
     (Ux Uy : Finset V) (v : V) (hvS : v ∉ S) (hvUx : v ∉ Ux) :
     (dimChainMap (K := K) G S Ux Uy) (X (Sum.inl v)) ≠ 0 := by
   simp only [dimChainMap, AlgHom.comp_apply, primeComponentMap, MvPolynomial.aeval_X,
@@ -210,7 +226,7 @@ theorem dimChainMap_inl_ne_zero (G : SimpleGraph V) (S : Finset V)
   exact MvPolynomial.X_ne_zero _
 
 /-- Phase 2 witness: `X(inr v)` maps to 0 when `v ∉ S`, `compRep v = v`, and `v ∈ Uy`. -/
-theorem dimChainMap_inr_rep_eq_zero (G : SimpleGraph V) (S : Finset V)
+private theorem dimChainMap_inr_rep_eq_zero (G : SimpleGraph V) (S : Finset V)
     (Ux Uy : Finset V) (v : V) (hvS : v ∉ S) (hvUy : v ∈ Uy)
     (hrep : compRep G S v = v) :
     (dimChainMap (K := K) G S Ux Uy) (X (Sum.inr v)) = 0 := by
@@ -219,7 +235,7 @@ theorem dimChainMap_inr_rep_eq_zero (G : SimpleGraph V) (S : Finset V)
 
 /-- Phase 2 witness: `X(inr v)` maps to nonzero when `v ∉ S`, `compRep v = v`,
 `v ∉ Ux`, and `v ∉ Uy`. -/
-theorem dimChainMap_inr_rep_ne_zero (G : SimpleGraph V) (S : Finset V)
+private theorem dimChainMap_inr_rep_ne_zero (G : SimpleGraph V) (S : Finset V)
     (Ux Uy : Finset V) (v : V) (hvS : v ∉ S) (hvUx : v ∉ Ux) (hvUy : v ∉ Uy)
     (hrep : compRep G S v = v) :
     (dimChainMap (K := K) G S Ux Uy) (X (Sum.inr v)) ≠ 0 := by
@@ -231,7 +247,7 @@ omit [DecidableEq V] in
 /-- Lower bound: `dim(R/P_S) ≥ |V| - |S| + c(S)`.
 Uses an explicit chain of primes (kernels of `dimChainMap` with increasing
 variable kills) above P_S. See ANSWER_08 for the full strategy. -/
-theorem ringKrullDim_quot_primeComponent_ge (G : SimpleGraph V) (S : Finset V) :
+private theorem ringKrullDim_quot_primeComponent_ge (G : SimpleGraph V) (S : Finset V) :
     (Fintype.card V - S.card + componentCount G S : ℕ) ≤
     ringKrullDim (MvPolynomial (BinomialEdgeVars V) K ⧸ primeComponent (K := K) G S) := by
   -- Strategy: build a chain of prime ideals above P_S of length n - s + c.
@@ -500,7 +516,7 @@ omit [DecidableEq V] [Fintype V] in
 `J_G` is contained in the ideal generated by all `x`-variables.
 This holds because each generator `x_i y_j - x_j y_i ∈ (x_1,...,x_n)`.
 -/
-theorem binomialEdgeIdeal_le_span_inl (G : SimpleGraph V) :
+private theorem binomialEdgeIdeal_le_span_inl (G : SimpleGraph V) :
     binomialEdgeIdeal (K := K) G ≤
     Ideal.span (Set.range
       (fun v : V => X (Sum.inl v) : V → MvPolynomial (BinomialEdgeVars V) K)) := by
@@ -617,7 +633,7 @@ theorem corollary_3_4_equidim (G : SimpleGraph V)
 omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- If all `Ideal.minimalPrimes` of `J` have the same quotient dimension, then `R ⧸ J`
 is equidimensional in the local surrogate sense. -/
-theorem isEquidim_of_equidim_minimalPrimes
+private theorem isEquidim_of_equidim_minimalPrimes
     (J : Ideal (MvPolynomial (BinomialEdgeVars V) K))
     (hequal : ∀ P Q : Ideal (MvPolynomial (BinomialEdgeVars V) K),
       P ∈ J.minimalPrimes → Q ∈ J.minimalPrimes →
