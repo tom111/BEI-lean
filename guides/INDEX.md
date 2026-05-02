@@ -13,8 +13,18 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 
 ## Active Work Packages
 
-There are currently no live work packages. The Buchberger decomposition
-refactor finished on 2026-05-02; the guide is archived at
+- [work_packages/GROEBNER_IMPLIES_CLOSED_REFACTOR.md](work_packages/GROEBNER_IMPLIES_CLOSED_REFACTOR.md)
+  — Deduplicate the 4 sister branches inside the 513-LOC
+  `groebner_implies_closed` (`BEI/ClosedGraphs.lean:452`). The four
+  branches share the same skeleton (`hp_mem` / `hp_eq` / `hdeg₁₂` /
+  `lex_lt` / `contra` / `extract a,b`) up to index permutation. Three
+  helpers proposed (`cubic_degree`, `cubic_witness`,
+  `extract_ab_from_le`); estimated 513 → 280–320 LOC, medium risk,
+  multi-stage. The Buchberger refactor's stage / verify / commit
+  playbook applies.
+
+The Buchberger decomposition refactor finished on 2026-05-02; the guide
+is archived at
 [archive/BUCHBERGER_DECOMPOSITION_REFACTOR.md](archive/BUCHBERGER_DECOMPOSITION_REFACTOR.md).
 Stage 0 split the iff into two private helpers and Stage 1 replaced the
 manual k-induction with `MonomialOrder.sPolynomial_decomposition'`,
