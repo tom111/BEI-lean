@@ -13,15 +13,20 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 
 ## Active Work Packages
 
-- [work_packages/GROEBNER_IMPLIES_CLOSED_REFACTOR.md](work_packages/GROEBNER_IMPLIES_CLOSED_REFACTOR.md)
-  — Deduplicate the 4 sister branches inside the 513-LOC
-  `groebner_implies_closed` (`BEI/ClosedGraphs.lean:452`). The four
-  branches share the same skeleton (`hp_mem` / `hp_eq` / `hdeg₁₂` /
-  `lex_lt` / `contra` / `extract a,b`) up to index permutation. Three
-  helpers proposed (`cubic_degree`, `cubic_witness`,
-  `extract_ab_from_le`); estimated 513 → 280–320 LOC, medium risk,
-  multi-stage. The Buchberger refactor's stage / verify / commit
-  playbook applies.
+There are currently no active work packages. Recently-completed packets
+live in `guides/archive/`.
+
+The `groebner_implies_closed` deduplication finished on 2026-05-02; the
+guide is archived at
+[archive/GROEBNER_IMPLIES_CLOSED_REFACTOR.md](archive/GROEBNER_IMPLIES_CLOSED_REFACTOR.md).
+Stages 0–2 dropped the unused `extract_b` helper, extracted
+`cubic_degree` (one private lemma replacing 8 inline 9-line `degree_mul`
+blocks) and `extract_cond1` / `extract_cond2` (private Finsupp lemmas
+replacing the four 30-LOC `(a, b)`-extraction epilogues). Stage 3
+(`cubic_witness`) was deliberately skipped: the parameterisation would
+have grown rather than shrunk the proof. The four-branch proof body
+shrank from 513 LOC to ~281 LOC (file 978 → 862) with no axiom or
+statement change.
 
 The Buchberger decomposition refactor finished on 2026-05-02; the guide
 is archived at
