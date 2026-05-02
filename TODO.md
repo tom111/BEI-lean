@@ -77,12 +77,30 @@ risk first, the load-bearing Section 2 monolith last.
 | `[!]` 11 | 1848 | `BEI/GroebnerBasisSPolynomial.lean:143` | `theorem_2_1` (load-bearing public Buchberger proof). Investigated 2026-05-02. Structure: Cases 1 (12 LOC, trivial), 4 (200 LOC, shared first endpoint), 5 (216 LOC, shared last endpoint), and Cases 2 & 3 combined (~1400 LOC, "disjoint or cross-matched" with i<k and k<i sister branches at ~552 + ~597 LOC each). The biggest opportunity is the i<k / k<i sister symmetry inside Cases 2 & 3, which would extract into a parameterized helper. **Not attempted** — this is the load-bearing public Buchberger theorem, the user explicitly flagged "with extra care", and a clean refactor here is a multi-day project with serious build-break risk for marginal LOC win on a one-time theorem. Skipped. |
 
 Smaller fat proofs to fold into adjacent carves only when they sit inside
-the same file: `walk_from_shared_first_aux` (203, `CoveredWalks:2453`),
+the same file: `walk_from_shared_first_aux` (203, `CoveredWalks:2172`),
 `killLastPairEquiv_map_augIdealQuot` (205,
 `Equidim/ReducedHHLocalCM.lean:576`), `no_s_ker_mem` (191,
 `PrimeIdeals.lean:949`), `swapExp_fiberEquiv` (185, `PrimeIdeals.lean:470`),
 `localization_at_comap_maximal_isCM_isCM_local` (165,
 `toMathlib/CohenMacaulay/Polynomial.lean:1392`).
+
+### Newly-discovered fat proofs (2026-05-02 broader scan)
+
+A re-scan of *all* repo files (not just the originally-curated set) surfaced
+9 more proofs ≥ 150 LOC that were never on the original list:
+
+| LOC | File:line | Declaration | Notes |
+|---|---|---|---|
+| **1066** | `BEI/GroebnerAPI.lean:127` | `isGroebnerBasis_iff_sPolynomial_isRemainder` | **Major refactor opportunity.** The forward direction is ~36 LOC; the backward direction is a ~900-LOC manual k-induction that re-derives `MonomialOrder.sPolynomial_decomposition'` — a Mathlib lemma the proof's own comments reference but never call. Replacing the inner k-induction with a direct application of Mathlib's `sPolynomial_decomposition'` could shrink the proof from 1066 → ~250 LOC. High-value, multi-hour, build-break risk. |
+| **520** | `BEI/ClosedGraphs.lean:452` | `groebner_implies_closed` | Not yet investigated. |
+| **274** | `BEI/GroebnerBasis.lean:229` | `groebnerElement_reduced_same_endpoints` | Not yet investigated. |
+| **216** | `BEI/PrimeDecompositionDimensionCore.lean:237` | `ringKrullDim_quot_primeComponent_ge` | The 3-phase chain proof of the dimension lower bound. Structurally similar to `lemma_3_1` (#8); same "intrinsic" classification likely. |
+| **205** | `toMathlib/MonomialIdeal.lean:817` | `IsMonomial.isPrimary_of_criterion` | Not yet investigated. |
+| **195** | `toMathlib/CohenMacaulay/Localization.lean:407` | `unmixedness_of_dim_le` | Not yet investigated. |
+| **182** | `BEI/AdmissiblePaths.lean:605` | `subwalk_props_above` | Not yet investigated. |
+| **177** | `BEI/AdmissiblePaths.lean:787` | `groebnerElem_mem_aux` | Not yet investigated. |
+| **162** | `BEI/GraphProperties.lean:376` | `prop_1_4` | Not yet investigated. |
+| **152** | `BEI/AdmissiblePaths.lean:453` | `subwalk_props` | Not yet investigated. |
 
 ### Defensive Infrastructure
 
