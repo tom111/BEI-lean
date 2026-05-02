@@ -73,7 +73,7 @@ risk first, the load-bearing Section 2 monolith last.
 | `[ ]` 7 | 263 | `BEI/Equidim/IteratedRegularity.lean:447` | `ell_not_mem_minimalPrime_map_diagSubstHom` |
 | `[ ]` 8 | 281 | `BEI/PrimeIdeals.lean:1753` | `lemma_3_1` |
 | `[ ]` 9 | 532 | `toMathlib/CohenMacaulay/Polynomial.lean:637` | `cm_localize_polynomial_of_cm_aux` (toMathlib-side; isolated from BEI fixes) |
-| `[ ]` 10 | 1087 | `BEI/CoveredWalks.lean:1366` | `isRemainder_fij_of_mixed_walk` (the largest non-Section-2 monolith) |
+| `[x]` 10 | 1087 → 835 | `BEI/CoveredWalks.lean` | `isRemainder_fij_of_mixed_walk` (done 2026-05-02). Capitalized on the `subWalk_drop` / `subWalk_take` helpers extracted in #4/#5. The mixed-walk proof has **6** sub-walk extractions (3 pairs in 3 different code branches), all textually identical to the patterns in the x/y siblings. Generalized the helpers' preconditions from `a < v₀` / `v₀ < b` to `v₀ ≠ a` / `v₀ ≠ b` so the third branch (which has `v₀ < a` and `v₀ < b`) could reuse them. `theorem_2_1` axiom-clean. File-level: `BEI/CoveredWalks.lean` shrunk from 2671 → 2390 LOC across #4/#5/#10. |
 | `[ ]` 11 | 1848 | `BEI/GroebnerBasisSPolynomial.lean:143` | `theorem_2_1` (load-bearing public Buchberger proof; refactor last, with extra care) |
 
 Smaller fat proofs to fold into adjacent carves only when they sit inside
