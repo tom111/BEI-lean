@@ -6,6 +6,11 @@ variable {V : Type*} [LinearOrder V] [DecidableEq V] [Fintype V]
 /-!
 # Reduced Groebner basis (Theorem 2.1) and squarefree leading monomials
 
+The paper-facing public endpoint is
+`theorem_2_1_isReducedGroebnerBasis`, which assembles the Buchberger
+half (`theorem_2_1` in `BEI/GroebnerBasisSPolynomial.lean`) with the
+reducedness half proved here.
+
 This file contains:
 - Degree computation helpers for `groebnerElement`.
 - `theorem_2_1_reduced`: no leading monomial of one basis element divides another.

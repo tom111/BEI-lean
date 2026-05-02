@@ -8,9 +8,16 @@ variable {V : Type*} [LinearOrder V] [DecidableEq V] [Fintype V]
 /-!
 # S-polynomial case analysis for Theorem 2.1
 
+This file carries the Buchberger half of Theorem 2.1.
+
+The paper-facing public endpoint is `theorem_2_1_isReducedGroebnerBasis`
+in `BEI/GroebnerBasis.lean`; everything in this file is part of the
+implementation track for that wrapper.
+
 This file contains:
 - `groebnerBasisSet_span`: the Groebner basis set spans `J_G`.
-- `groebnerElement_leadingCoeff` / `groebnerElement_leadingCoeff_isUnit`: leading coefficients.
+- `groebnerElement_leadingCoeff_isUnit`: each leading coefficient is a unit
+  (the `= 1` form is a private support lemma).
 - `theorem_2_1`: the full Buchberger S-polynomial case analysis proving the
   admissible-path set is a Groebner basis.
 
@@ -24,7 +31,7 @@ noncomputable section
 
 open MvPolynomial MonomialOrder
 
-/-! ## Theorem 2.1: Reduced Gröbner basis -/
+/-! ## Span of the Gröbner basis set -/
 
 omit [DecidableEq V] [Fintype V] in
 /-- The Gröbner basis set spans `J_G`: every generator `f_{ij}` is in the span
@@ -48,7 +55,7 @@ omit [DecidableEq V] in
 /-- The leading coefficient of `groebnerElement i j π` is 1 (a unit).
 Since `groebnerElement i j π = pathMonomial i j π * fij i j`, the leading coefficient
 is `leadingCoeff(pathMonomial) * leadingCoeff(fij) = 1 * 1 = 1`. -/
-theorem groebnerElement_leadingCoeff (i j : V) (π : List V) (hij : i < j) :
+private theorem groebnerElement_leadingCoeff (i j : V) (π : List V) (hij : i < j) :
     binomialEdgeMonomialOrder.leadingCoeff (groebnerElement (K := K) i j π) = 1 := by
   change binomialEdgeMonomialOrder.leadingCoeff
       (pathMonomial (K := K) i j π * fij (K := K) i j) = 1
