@@ -445,6 +445,96 @@ private lemma internal_of_take (τ : List V) (k : ℕ) (a b : V)
     exact Option.some.inj
       ((List.getLast?_eq_some_getLast (List.cons_ne_nil w rest)).symm.trans hLast)
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
+/-- Sub-walk extraction at an internal vertex (drop side):
+given a nodup walk `τ` from `a` to `b` and an internal vertex `v₀` of `τ` with
+`a < v₀`, the suffix `τ.drop k` (where `k = τ.idxOf v₀`) is a strictly shorter
+nodup walk from `v₀` to `b` whose internal vertices are internal to `τ`.
+
+Used 4× across `isRemainder_fij_of_covered_walk` and its `_y` sibling. -/
+private lemma subWalk_drop {V : Type*} [DecidableEq V] [LinearOrder V]
+    {G : SimpleGraph V} {a b v₀ : V} {τ : List V}
+    (hHead : τ.head? = some a) (hLast : τ.getLast? = some b)
+    (hND : τ.Nodup) (hWalk : τ.IsChain (fun u v => G.Adj u v))
+    (hv₀_int : v₀ ∈ internalVertices τ)
+    (hav₀ : a < v₀) :
+    ∃ τ₂ : List V, τ₂.length < τ.length ∧
+      τ₂.head? = some v₀ ∧ τ₂.getLast? = some b ∧ τ₂.Nodup ∧
+      τ₂.IsChain (fun u v => G.Adj u v) ∧
+      ∀ u ∈ internalVertices τ₂, u ∈ internalVertices τ := by
+  have hne : τ ≠ [] := by intro h; simp [h, internalVertices] at hv₀_int
+  have hv₀_mem : v₀ ∈ τ :=
+    (List.tail_sublist τ).mem ((List.dropLast_sublist _).mem hv₀_int)
+  set k := τ.idxOf v₀
+  have hk_lt : k < τ.length := List.idxOf_lt_length_of_mem hv₀_mem
+  have hπk : τ[k]'hk_lt = v₀ := List.getElem_idxOf hk_lt
+  have hk_pos : 0 < k := by
+    by_contra h; push_neg at h
+    have h0 : τ.idxOf v₀ = 0 := Nat.le_zero.mp h
+    cases τ with
+    | nil => exact absurd rfl hne
+    | cons w rest =>
+      simp only [List.head?_cons, Option.some.injEq] at hHead
+      have : w = v₀ := by
+        have hlt : (w :: rest).idxOf v₀ < (w :: rest).length :=
+          List.idxOf_lt_length_of_mem hv₀_mem
+        have := List.getElem_idxOf hlt
+        simp only [h0, List.getElem_cons_zero] at this; exact this
+      exact absurd (this.symm.trans hHead) (ne_of_gt hav₀)
+  refine ⟨τ.drop k, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · simp [List.length_drop]; omega
+  · rw [List.head?_drop, List.getElem?_eq_getElem hk_lt, hπk]
+  · rw [List.getLast?_drop, if_neg (by omega), hLast]
+  · exact (List.drop_sublist k τ).nodup hND
+  · exact List.IsChain.drop hWalk k
+  · exact fun u hu => internal_of_drop τ k a b hne hND hHead hLast hk_pos hk_lt u hu
+
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
+/-- Sub-walk extraction at an internal vertex (take side):
+given a nodup walk `τ` from `a` to `b` and an internal vertex `v₀` of `τ` with
+`v₀ < b`, the prefix `τ.take (k+1)` (where `k = τ.idxOf v₀`) is a strictly
+shorter nodup walk from `a` to `v₀` whose internal vertices are internal to `τ`.
+
+Used 4× across `isRemainder_fij_of_covered_walk` and its `_y` sibling. -/
+private lemma subWalk_take {V : Type*} [DecidableEq V] [LinearOrder V]
+    {G : SimpleGraph V} {a b v₀ : V} {τ : List V}
+    (hHead : τ.head? = some a) (hLast : τ.getLast? = some b)
+    (hND : τ.Nodup) (hWalk : τ.IsChain (fun u v => G.Adj u v))
+    (hv₀_int : v₀ ∈ internalVertices τ)
+    (hv₀b : v₀ < b) :
+    ∃ τ₁ : List V, τ₁.length < τ.length ∧
+      τ₁.head? = some a ∧ τ₁.getLast? = some v₀ ∧ τ₁.Nodup ∧
+      τ₁.IsChain (fun u v => G.Adj u v) ∧
+      ∀ u ∈ internalVertices τ₁, u ∈ internalVertices τ := by
+  have hne : τ ≠ [] := by intro h; simp [h, internalVertices] at hv₀_int
+  have hv₀_mem : v₀ ∈ τ :=
+    (List.tail_sublist τ).mem ((List.dropLast_sublist _).mem hv₀_int)
+  set k := τ.idxOf v₀
+  have hk_lt : k < τ.length := List.idxOf_lt_length_of_mem hv₀_mem
+  have hπk : τ[k]'hk_lt = v₀ := List.getElem_idxOf hk_lt
+  have hk_lt_pred : k < τ.length - 1 := by
+    rcases Nat.lt_or_ge k (τ.length - 1) with h | h
+    · exact h
+    · exfalso
+      have hk_eq : k = τ.length - 1 := Nat.le_antisymm (by omega) h
+      have hv₀_last : v₀ = τ.getLast hne := by
+        rw [List.getLast_eq_getElem]
+        exact (show τ[τ.length - 1] = τ[k] from by congr 1; omega).trans hπk |>.symm
+      exact (ne_of_lt hv₀b) (hv₀_last.trans
+        (Option.some.inj ((List.getLast?_eq_some_getLast hne).symm.trans hLast)))
+  refine ⟨τ.take (k + 1), ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · simp [List.length_take]; omega
+  · rw [List.head?_take, if_neg (by omega), hHead]
+  · have : (τ.take (k + 1)).getLast? = some v₀ := by
+      rw [List.getLast?_take, if_neg (by omega)]
+      have : τ[k]? = some v₀ := by
+        rw [List.getElem?_eq_getElem (show k < τ.length by omega)]; exact congrArg some hπk
+      simp [this]
+    exact this
+  · exact (List.take_sublist (k + 1) τ).nodup hND
+  · exact List.IsChain.take hWalk (k + 1)
+  · exact fun u hu => internal_of_take τ k a b hne hND hHead hLast hk_lt_pred u hu
+
 /-! ## General IsRemainder lemma for fij via walk decomposition -/
 
 omit [DecidableEq V] in
@@ -517,75 +607,13 @@ theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
       set eb : BinomialEdgeVars V →₀ ℕ := Finsupp.single (Sum.inl b) 1 with heb_def
       set d₁ := d_q - ev₀ + ea with hd₁_def
       set d₂ := d_q - ev₀ + eb with hd₂_def
-      -- Sub-walk from v₀ to b (via τ.drop)
-      have ⟨τ₂, hτ₂_len, hτ₂_head, hτ₂_last, hτ₂_nd, hτ₂_walk, hτ₂_int⟩ :
-          ∃ τ₂ : List V,
-          τ₂.length ≤ n ∧
-          τ₂.head? = some v₀ ∧ τ₂.getLast? = some b ∧ τ₂.Nodup ∧
-          τ₂.IsChain (fun u v => G.Adj u v) ∧
-          ∀ u ∈ internalVertices τ₂, u ∈ internalVertices τ := by
-        have hne : τ ≠ [] := by intro h; simp [h, internalVertices] at hv₀_int
-        have hv₀_mem : v₀ ∈ τ :=
-          (List.tail_sublist τ).mem ((List.dropLast_sublist _).mem hv₀_int)
-        set k := τ.idxOf v₀
-        have hk_lt : k < τ.length := List.idxOf_lt_length_of_mem hv₀_mem
-        have hπk : τ[k]'hk_lt = v₀ := List.getElem_idxOf hk_lt
-        have hk_pos : 0 < k := by
-          by_contra h; push_neg at h
-          have h0 : τ.idxOf v₀ = 0 := Nat.le_zero.mp h
-          cases τ with
-          | nil => exact absurd rfl hne
-          | cons w rest =>
-            simp only [List.head?_cons, Option.some.injEq] at hHead
-            have : w = v₀ := by
-              have hlt : (w :: rest).idxOf v₀ < (w :: rest).length :=
-                List.idxOf_lt_length_of_mem hv₀_mem
-              have := List.getElem_idxOf hlt
-              simp only [h0, List.getElem_cons_zero] at this; exact this
-            exact absurd (this.symm.trans hHead) (ne_of_gt hav₀)
-        refine ⟨τ.drop k, ?_, ?_, ?_, ?_, ?_, ?_⟩
-        · simp [List.length_drop]; omega
-        · rw [List.head?_drop, List.getElem?_eq_getElem hk_lt, hπk]
-        · rw [List.getLast?_drop, if_neg (by omega), hLast]
-        · exact (List.drop_sublist k τ).nodup hND
-        · exact List.IsChain.drop hWalk k
-        · exact fun u hu => internal_of_drop τ k a b hne hND hHead hLast hk_pos hk_lt u hu
-      -- Sub-walk from a to v₀ (via τ.take)
-      have ⟨τ₁, hτ₁_len, hτ₁_head, hτ₁_last, hτ₁_nd, hτ₁_walk, hτ₁_int⟩ :
-          ∃ τ₁ : List V,
-          τ₁.length ≤ n ∧
-          τ₁.head? = some a ∧ τ₁.getLast? = some v₀ ∧ τ₁.Nodup ∧
-          τ₁.IsChain (fun u v => G.Adj u v) ∧
-          ∀ u ∈ internalVertices τ₁, u ∈ internalVertices τ := by
-        have hne : τ ≠ [] := by intro h; simp [h, internalVertices] at hv₀_int
-        have hv₀_mem : v₀ ∈ τ :=
-          (List.tail_sublist τ).mem ((List.dropLast_sublist _).mem hv₀_int)
-        set k := τ.idxOf v₀
-        have hk_lt : k < τ.length := List.idxOf_lt_length_of_mem hv₀_mem
-        have hπk : τ[k]'hk_lt = v₀ := List.getElem_idxOf hk_lt
-        have hk_lt_pred : k < τ.length - 1 := by
-          rcases Nat.lt_or_ge k (τ.length - 1) with h | h
-          · exact h
-          · exfalso
-            have hk_eq : k = τ.length - 1 := Nat.le_antisymm (by omega) h
-            have hv₀_last : v₀ = τ.getLast hne := by
-              rw [List.getLast_eq_getElem]
-              exact (show τ[τ.length - 1] = τ[k] from by congr 1; omega).trans hπk |>.symm
-            exact (ne_of_lt hv₀b) (hv₀_last.trans
-              (Option.some.inj ((List.getLast?_eq_some_getLast hne).symm.trans hLast)))
-        refine ⟨τ.take (k + 1), ?_, ?_, ?_, ?_, ?_, ?_⟩
-        · simp [List.length_take]; omega
-        · rw [List.head?_take, if_neg (by omega), hHead]
-        · -- getLast? of take (k+1)
-          have : (τ.take (k + 1)).getLast? = some v₀ := by
-            rw [List.getLast?_take, if_neg (by omega)]
-            have : τ[k]? = some v₀ := by
-              rw [List.getElem?_eq_getElem (show k < τ.length by omega)]; exact congrArg some hπk
-            simp [this]
-          exact this
-        · exact (List.take_sublist (k + 1) τ).nodup hND
-        · exact List.IsChain.take hWalk (k + 1)
-        · exact fun u hu => internal_of_take τ k a b hne hND hHead hLast hk_lt_pred u hu
+      -- Sub-walk extractions via shared helpers
+      obtain ⟨τ₂, hτ₂_lt, hτ₂_head, hτ₂_last, hτ₂_nd, hτ₂_walk, hτ₂_int⟩ :=
+        subWalk_drop hHead hLast hND hWalk hv₀_int hav₀
+      obtain ⟨τ₁, hτ₁_lt, hτ₁_head, hτ₁_last, hτ₁_nd, hτ₁_walk, hτ₁_int⟩ :=
+        subWalk_take hHead hLast hND hWalk hv₀_int hv₀b
+      have hτ₂_len : τ₂.length ≤ n := by omega
+      have hτ₁_len : τ₁.length ≤ n := by omega
       -- Coverage for sub-walks
       have hCov₂ : ∀ v ∈ internalVertices τ₂,
           (v < v₀ → d₁ (Sum.inr v) ≥ 1) ∧
@@ -905,74 +933,13 @@ theorem isRemainder_fij_of_covered_walk_y (G : SimpleGraph V) :
       set eya : BinomialEdgeVars V →₀ ℕ := Finsupp.single (Sum.inr a) 1 with heya_def
       set d₁ := d_q - eyv₀ + eyb with hd₁_def
       set d₂ := d_q - eyv₀ + eya with hd₂_def
-      -- Sub-walk from v₀ to b
-      have ⟨τ₂, hτ₂_len, hτ₂_head, hτ₂_last, hτ₂_nd, hτ₂_walk, hτ₂_int⟩ :
-          ∃ τ₂ : List V,
-          τ₂.length ≤ n ∧
-          τ₂.head? = some v₀ ∧ τ₂.getLast? = some b ∧ τ₂.Nodup ∧
-          τ₂.IsChain (fun u v => G.Adj u v) ∧
-          ∀ u ∈ internalVertices τ₂, u ∈ internalVertices τ := by
-        have hne : τ ≠ [] := by intro h; simp [h, internalVertices] at hv₀_int
-        have hv₀_mem : v₀ ∈ τ :=
-          (List.tail_sublist τ).mem ((List.dropLast_sublist _).mem hv₀_int)
-        set k := τ.idxOf v₀
-        have hk_lt : k < τ.length := List.idxOf_lt_length_of_mem hv₀_mem
-        have hπk : τ[k]'hk_lt = v₀ := List.getElem_idxOf hk_lt
-        have hk_pos : 0 < k := by
-          by_contra h; push_neg at h
-          have h0 : τ.idxOf v₀ = 0 := Nat.le_zero.mp h
-          cases τ with
-          | nil => exact absurd rfl hne
-          | cons w rest =>
-            simp only [List.head?_cons, Option.some.injEq] at hHead
-            have : w = v₀ := by
-              have hlt : (w :: rest).idxOf v₀ < (w :: rest).length :=
-                List.idxOf_lt_length_of_mem hv₀_mem
-              have := List.getElem_idxOf hlt
-              simp only [h0, List.getElem_cons_zero] at this; exact this
-            exact absurd (this.symm.trans hHead) (ne_of_gt hav₀)
-        refine ⟨τ.drop k, ?_, ?_, ?_, ?_, ?_, ?_⟩
-        · simp [List.length_drop]; omega
-        · rw [List.head?_drop, List.getElem?_eq_getElem hk_lt, hπk]
-        · rw [List.getLast?_drop, if_neg (by omega), hLast]
-        · exact (List.drop_sublist k τ).nodup hND
-        · exact List.IsChain.drop hWalk k
-        · exact fun u hu => internal_of_drop τ k a b hne hND hHead hLast hk_pos hk_lt u hu
-      -- Sub-walk from a to v₀
-      have ⟨τ₁, hτ₁_len, hτ₁_head, hτ₁_last, hτ₁_nd, hτ₁_walk, hτ₁_int⟩ :
-          ∃ τ₁ : List V,
-          τ₁.length ≤ n ∧
-          τ₁.head? = some a ∧ τ₁.getLast? = some v₀ ∧ τ₁.Nodup ∧
-          τ₁.IsChain (fun u v => G.Adj u v) ∧
-          ∀ u ∈ internalVertices τ₁, u ∈ internalVertices τ := by
-        have hne : τ ≠ [] := by intro h; simp [h, internalVertices] at hv₀_int
-        have hv₀_mem : v₀ ∈ τ :=
-          (List.tail_sublist τ).mem ((List.dropLast_sublist _).mem hv₀_int)
-        set k := τ.idxOf v₀
-        have hk_lt : k < τ.length := List.idxOf_lt_length_of_mem hv₀_mem
-        have hπk : τ[k]'hk_lt = v₀ := List.getElem_idxOf hk_lt
-        have hk_lt_pred : k < τ.length - 1 := by
-          rcases Nat.lt_or_ge k (τ.length - 1) with h | h
-          · exact h
-          · exfalso
-            have hk_eq : k = τ.length - 1 := Nat.le_antisymm (by omega) h
-            have hv₀_last : v₀ = τ.getLast hne := by
-              rw [List.getLast_eq_getElem]
-              exact (show τ[τ.length - 1] = τ[k] from by congr 1; omega).trans hπk |>.symm
-            exact (ne_of_lt hv₀b) (hv₀_last.trans
-              (Option.some.inj ((List.getLast?_eq_some_getLast hne).symm.trans hLast)))
-        refine ⟨τ.take (k + 1), ?_, ?_, ?_, ?_, ?_, ?_⟩
-        · simp [List.length_take]; omega
-        · rw [List.head?_take, if_neg (by omega), hHead]
-        · have : (τ.take (k + 1)).getLast? = some v₀ := by
-            rw [List.getLast?_take, if_neg (by omega)]
-            have : τ[k]? = some v₀ := by
-              rw [List.getElem?_eq_getElem (show k < τ.length by omega)]; exact congrArg some hπk
-            simp [this]
-          exact this
-        · exact (List.take_sublist (k + 1) τ).nodup hND
-        · exact List.IsChain.take hWalk (k + 1)
-        · exact fun u hu => internal_of_take τ k a b hne hND hHead hLast hk_lt_pred u hu
+      -- Sub-walk extractions via shared helpers
+      obtain ⟨τ₂, hτ₂_lt, hτ₂_head, hτ₂_last, hτ₂_nd, hτ₂_walk, hτ₂_int⟩ :=
+        subWalk_drop hHead hLast hND hWalk hv₀_int hav₀
+      obtain ⟨τ₁, hτ₁_lt, hτ₁_head, hτ₁_last, hτ₁_nd, hτ₁_walk, hτ₁_int⟩ :=
+        subWalk_take hHead hLast hND hWalk hv₀_int hv₀b
+      have hτ₂_len : τ₂.length ≤ n := by omega
+      have hτ₁_len : τ₁.length ≤ n := by omega
       -- Coverage for sub-walks (y-variant: bad vertices tracked by Sum.inr)
       have hCov₁ : ∀ v ∈ internalVertices τ₁,
           (v < a → d₁ (Sum.inr v) ≥ 1) ∧
