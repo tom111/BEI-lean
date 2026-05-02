@@ -36,9 +36,15 @@
   File Review Queue" sections from the "Current Status Snapshot" /
   "Paper Map Snapshot" sections, and FORMALIZATION_MAP.md is paper-vs-Lean
   only. Treated as an evergreen organizational rule, not a discrete task.
-- `[ ]` Public theorem layer cleanup where the exported declarations can be
-  presented more cleanly. Dedicated guide:
-  [`guides/cleanup/PUBLIC_THEOREM_LAYER.md`](guides/cleanup/PUBLIC_THEOREM_LAYER.md).
+- `[x]` Public theorem layer cleanup where the exported declarations can be
+  presented more cleanly. Done 2026-05-02: all 6 targets of
+  [`guides/archive/PUBLIC_THEOREM_LAYER.md`](guides/archive/PUBLIC_THEOREM_LAYER.md)
+  consumed (Theorem 2.1 packaging, Section 3 dimension/surrogate, Theorem 3.2
+  narrative, Prop 3.8 / Cor 3.9 packaging, Prop 1.6 transfer surface, Cor 1.3
+  + paper-statement fidelity notes). Module headers now list paper-facing
+  endpoints; ~46 internal scaffolding declarations privatized after
+  reference audits; fidelity-vs-paper notes added where the Lean statement
+  differs from Herzog et al. 2010.
 - `[ ]` File-splitting cleanup if current theorem locations are still awkward
   for readers or maintainers. Dedicated guide:
   [`guides/cleanup/FILE_SPLITTING_PLAN.md`](guides/cleanup/FILE_SPLITTING_PLAN.md).

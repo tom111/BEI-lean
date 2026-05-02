@@ -38,13 +38,12 @@ Recommended order:
 1. [LEAN_CODE_SMELL_AUDIT.md](/home/tom/BEI-lean/guides/cleanup/LEAN_CODE_SMELL_AUDIT.md)
 2. [LEAN_CODE_SMELL_WORKLIST.md](/home/tom/BEI-lean/guides/cleanup/LEAN_CODE_SMELL_WORKLIST.md)
 3. [LEAN_PERFORMANCE_TRIAGE.md](/home/tom/BEI-lean/guides/cleanup/LEAN_PERFORMANCE_TRIAGE.md)
-4. [PUBLIC_THEOREM_LAYER.md](/home/tom/BEI-lean/guides/cleanup/PUBLIC_THEOREM_LAYER.md)
-5. [PATH_AND_INTERNAL_VERTEX_API.md](/home/tom/BEI-lean/guides/cleanup/PATH_AND_INTERNAL_VERTEX_API.md)
-6. [MONOMIAL_AND_FINSUPP_API.md](/home/tom/BEI-lean/guides/cleanup/MONOMIAL_AND_FINSUPP_API.md)
-7. [CM_SUPPORT_REFACTOR.md](/home/tom/BEI-lean/guides/cleanup/CM_SUPPORT_REFACTOR.md)
-8. [FILE_SPLITTING_PLAN.md](/home/tom/BEI-lean/guides/cleanup/FILE_SPLITTING_PLAN.md)
-9. [LINTER_AND_STYLE_CLEANUP.md](/home/tom/BEI-lean/guides/cleanup/LINTER_AND_STYLE_CLEANUP.md)
-10. [STATUS_AND_CI_HYGIENE.md](/home/tom/BEI-lean/guides/cleanup/STATUS_AND_CI_HYGIENE.md)
+4. [PATH_AND_INTERNAL_VERTEX_API.md](/home/tom/BEI-lean/guides/cleanup/PATH_AND_INTERNAL_VERTEX_API.md)
+5. [MONOMIAL_AND_FINSUPP_API.md](/home/tom/BEI-lean/guides/cleanup/MONOMIAL_AND_FINSUPP_API.md)
+6. [CM_SUPPORT_REFACTOR.md](/home/tom/BEI-lean/guides/cleanup/CM_SUPPORT_REFACTOR.md)
+7. [FILE_SPLITTING_PLAN.md](/home/tom/BEI-lean/guides/cleanup/FILE_SPLITTING_PLAN.md)
+8. [LINTER_AND_STYLE_CLEANUP.md](/home/tom/BEI-lean/guides/cleanup/LINTER_AND_STYLE_CLEANUP.md)
+9. [STATUS_AND_CI_HYGIENE.md](/home/tom/BEI-lean/guides/cleanup/STATUS_AND_CI_HYGIENE.md)
 
 Completed:
 
@@ -66,6 +65,11 @@ Completed:
   on 2026-04-30 into `evalNonAdjWitness` plus two named lemmas.
 - [archive/EQUIDIM_DECOMPOSITION.md](/home/tom/BEI-lean/guides/archive/EQUIDIM_DECOMPOSITION.md)
   Earlier high-level note for the same split.
+- [archive/PUBLIC_THEOREM_LAYER.md](/home/tom/BEI-lean/guides/archive/PUBLIC_THEOREM_LAYER.md)
+  Public theorem layer cleanup; consumed 2026-05-02 across all 6 targets
+  (Theorem 2.1 packaging, Section 3 dimension/surrogate, Theorem 3.2
+  narrative, Prop 3.8 / Cor 3.9 packaging, Prop 1.6 transfer surface,
+  Cor 1.3 + paper-statement fidelity notes).
 
 General rule:
 
