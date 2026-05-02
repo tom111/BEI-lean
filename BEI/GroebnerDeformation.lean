@@ -7,19 +7,18 @@ import toMathlib.GradedQuotient
 import toMathlib.GradedCM
 
 /-!
-# Gröbner deformation of the binomial edge ideal (Route R1, framework)
+# Gröbner deformation of the binomial edge ideal (Route R1)
 
-This file lays down the structural framework for proving Eisenbud 15.17 in
-the BEI setting. The classical Gröbner deformation of `J_G` to its monomial
-initial ideal is realized as a one-parameter family `S[t] ⧸ Ĩ` over `K[t]`
-with:
+This file proves Eisenbud 15.17 in the BEI setting. The classical Gröbner
+deformation of `J_G` to its monomial initial ideal is realized as a
+one-parameter family `S[t] ⧸ Ĩ` over `K[t]` with:
 
 - generic fiber (`t = 1`): `S ⧸ J_G`;
 - special fiber (`t = 0`): `S ⧸ monomialInitialIdeal G`.
 
 Under a positive-weight grading on `S[t]` that makes each deformed generator
 weighted-homogeneous, `S[t] ⧸ Ĩ` is a connected ℕ-graded `K`-algebra. The
-classical proof of CM transfer is then a four-arrow chain:
+classical CM transfer is then the four-arrow chain:
 
 ```text
 S ⧸ in_<(J_G) CM   ──(regular-quotient lift)──▶  S[t] ⧸ Ĩ CM at irrelevant
@@ -28,18 +27,35 @@ S ⧸ in_<(J_G) CM   ──(regular-quotient lift)──▶  S[t] ⧸ Ĩ CM at i
                    ──(regular-quotient descent)─▶ S ⧸ J_G CM
 ```
 
-This file builds the framework of the chain. The two paper-faithful sub-sorries
-are isolated:
+## Public paper-facing endpoint
 
-- `tildeJ_isFlat_over_polyT`: flatness of the deformation over `K[t]`.
-- `tildeJ_isCohenMacaulayLocalRing_at_irrelevant`: local CM at the irrelevant
-  ideal of `S[t] ⧸ Ĩ`. (Follows from Step 1 + the regular-quotient lift, but
-  needs the homogeneous-prime branch of `toMathlib/GradedCM.lean` to descend
-  to global CM, with one Case-C dependency.)
+- `groebnerDeformation_cm_transfer`: the assembled four-arrow theorem,
+  consumed by `BEI/Proposition1_6.lean` to discharge the "Step 2" of
+  the Proposition 1.6 proof. This is the **only** public symbol of
+  this file; every other declaration is internal scaffolding for the
+  chain and is marked `private` accordingly.
 
-The high-level theorem `binomialEdgeIdeal_cm_of_monomialInitialIdeal_cm`
-(originally a single sorry in `BEI/Proposition1_6.lean`) is now factored
-through these two sub-sorries via the chain.
+## File outline (four-stage narrative)
+
+1. **Deformation setup** (lines 53–199): the variable type `DefVars n`,
+   the deformation ring `DefRing n K`, the deformed generator
+   `fijTilde i j` and ideal `tildeJ G`, and the specialization maps
+   `specZero` (`t = 0`) / `specOne` (`t = 1`).
+2. **Fiber identifications** (lines 201–602):
+   - `t = 1` quotient `≃+* S ⧸ J_G` via `baseQuotEquiv`;
+   - `t = 0` quotient `≃+* S ⧸ monomialInitialIdeal G` via
+     `specZeroQuotEquiv`.
+3. **Gröbner/flatness support** (lines 604–2070): the `K[t]`-algebra
+   structure and weighted grading on `DefRing`, the deformation
+   monomial order with leading-term lemmas for `fijTilde`, the
+   Buchberger / S-polynomial calculations proving
+   `tildeJ_isGroebnerBasis`, the colon-ideal computation
+   `tildeJ_polyT_colon_eq`, and the consequent
+   `tildeJ_flat_over_polyT` plus the regularity of `t` and `t - 1`.
+4. **Final transfer assembly** (lines 2071–end): the local and global
+   CM properties of `DefRing n K ⧸ tildeJ G` at the irrelevant ideal
+   (R1.f.1), and the four-arrow assembly delivering
+   `groebnerDeformation_cm_transfer`.
 
 ## Reference: Herzog et al. (2010), Proposition 1.6; Eisenbud (1995), Thm 15.17.
 -/
@@ -134,7 +150,7 @@ def tildeJ {n : ℕ} (G : SimpleGraph (Fin n)) : Ideal (DefRing n K) :=
 
 /-! ## Specialization of the deformed generator -/
 
-lemma specOne_fijTilde {n : ℕ} (i j : Fin n) :
+private lemma specOne_fijTilde {n : ℕ} (i j : Fin n) :
     specOne (K := K) n (fijTilde i j) = x (K := K) i * y j - x j * y i := by
   change specOne (K := K) n (X (Sum.inl (Sum.inl i)) * X (Sum.inl (Sum.inr j)) -
     X (Sum.inr ()) ^ (j.val - i.val) *
@@ -143,7 +159,7 @@ lemma specOne_fijTilde {n : ℕ} (i j : Fin n) :
     specOne_X_inl, specOne_X_inl, specOne_X_inl, specOne_X_inl, specOne_X_inr]
   simp [x, y]
 
-lemma specZero_fijTilde {n : ℕ} (i j : Fin n) (hij : i < j) :
+private lemma specZero_fijTilde {n : ℕ} (i j : Fin n) (hij : i < j) :
     specZero (K := K) n (fijTilde i j) =
       (x (K := K) i * y j : MvPolynomial (BinomialEdgeVars (Fin n)) K) := by
   have hpos : 0 < j.val - i.val := by
@@ -162,7 +178,7 @@ lemma specZero_fijTilde {n : ℕ} (i j : Fin n) (hij : i < j) :
 /-! ## Fiber identification (R1.e) -/
 
 /-- The `t = 1` fiber: pushing `Ĩ` forward along `specOne` gives `J_G`. -/
-theorem tildeJ_specOne_eq {n : ℕ} (G : SimpleGraph (Fin n)) :
+private theorem tildeJ_specOne_eq {n : ℕ} (G : SimpleGraph (Fin n)) :
     Ideal.map (specOne (K := K) n).toRingHom (tildeJ G) = binomialEdgeIdeal G := by
   unfold tildeJ binomialEdgeIdeal
   rw [Ideal.map_span]
@@ -180,7 +196,7 @@ theorem tildeJ_specOne_eq {n : ℕ} (G : SimpleGraph (Fin n)) :
 
 /-- The `t = 0` fiber: pushing `Ĩ` forward along `specZero` gives the
     monomial initial ideal. -/
-theorem tildeJ_specZero_eq {n : ℕ} (G : SimpleGraph (Fin n)) :
+private theorem tildeJ_specZero_eq {n : ℕ} (G : SimpleGraph (Fin n)) :
     Ideal.map (specZero (K := K) n).toRingHom (tildeJ G) = monomialInitialIdeal G := by
   unfold tildeJ monomialInitialIdeal
   rw [Ideal.map_span]
@@ -202,7 +218,7 @@ theorem tildeJ_specZero_eq {n : ℕ} (G : SimpleGraph (Fin n)) :
 
 /-- The base inclusion `S → S[t]` followed by `mk_{Ĩ ⊔ (t-1)}` factors through
     `binomialEdgeIdeal G`. -/
-lemma binomialEdgeIdeal_le_baseInclude_comap_sup
+private lemma binomialEdgeIdeal_le_baseInclude_comap_sup
     {n : ℕ} (G : SimpleGraph (Fin n)) :
     binomialEdgeIdeal (K := K) G ≤
       Ideal.comap (baseInclude (K := K) n).toRingHom
@@ -427,7 +443,7 @@ private abbrev zeroSumIdeal : Ideal (DefRing n K) :=
 
 The first summand lies in `tildeJ G`; the second (with `j - i ≥ 1`) lies in
 `span{tDef n}`. -/
-lemma monomialInitialIdeal_le_baseInclude_comap_zeroSum :
+private lemma monomialInitialIdeal_le_baseInclude_comap_zeroSum :
     monomialInitialIdeal (K := K) G ≤
       Ideal.comap (baseInclude (K := K) n).toRingHom (zeroSumIdeal (K := K) G) := by
   rw [monomialInitialIdeal, Ideal.span_le]
@@ -792,7 +808,7 @@ private lemma fijTilde_lex_lt {n : ℕ} (i j : Fin n) (hij : i < j) :
 
 /-- The leading monomial of `f̃_{i,j}` (with `i < j`) under
     `deformationMonomialOrder` is `x_i y_j`: no `t` factor. -/
-theorem degree_fijTilde {n : ℕ} {i j : Fin n} (hij : i < j) :
+private theorem degree_fijTilde {n : ℕ} {i j : Fin n} (hij : i < j) :
     (deformationMonomialOrder n).degree (fijTilde (K := K) i j) =
       (Finsupp.single (Sum.inl (Sum.inl i)) 1 +
         Finsupp.single (Sum.inl (Sum.inr j)) 1 :
@@ -841,7 +857,7 @@ theorem degree_fijTilde {n : ℕ} {i j : Fin n} (hij : i < j) :
   rw [MonomialOrder.degree_sub_of_lt hlt, hdeg1]
 
 /-- The leading coefficient of `f̃_{i,j}` (with `i < j`) is `1`. -/
-theorem leadingCoeff_fijTilde {n : ℕ} {i j : Fin n} (hij : i < j) :
+private theorem leadingCoeff_fijTilde {n : ℕ} {i j : Fin n} (hij : i < j) :
     (deformationMonomialOrder n).leadingCoeff (fijTilde (K := K) i j) = 1 := by
   set xi : DefRing n K := X (Sum.inl (Sum.inl i) : DefVars n) with hxi_def
   set yj : DefRing n K := X (Sum.inl (Sum.inr j) : DefVars n) with hyj_def
@@ -890,7 +906,7 @@ theorem leadingCoeff_fijTilde {n : ℕ} {i j : Fin n} (hij : i < j) :
 
 /-- The image of `t - 1 ∈ K[t]` under the `K[t]`-algebra map into `S[t] ⧸ Ĩ`
     is the class of `tDef n - 1`. -/
-lemma algebraMap_polyT_tMinusOne {n : ℕ} (G : SimpleGraph (Fin n)) :
+private lemma algebraMap_polyT_tMinusOne {n : ℕ} (G : SimpleGraph (Fin n)) :
     algebraMap (PolyT K) (DefRing n K ⧸ tildeJ (K := K) G) (X () - 1) =
       Ideal.Quotient.mk (tildeJ (K := K) G) (tDef (K := K) n - 1) := by
   rw [← Ideal.Quotient.mk_comp_algebraMap]
@@ -900,7 +916,7 @@ lemma algebraMap_polyT_tMinusOne {n : ℕ} (G : SimpleGraph (Fin n)) :
 
 /-- The image of `t ∈ K[t]` under the `K[t]`-algebra map into `S[t] ⧸ Ĩ`
     is the class of `tDef n`. -/
-lemma algebraMap_polyT_t {n : ℕ} (G : SimpleGraph (Fin n)) :
+private lemma algebraMap_polyT_t {n : ℕ} (G : SimpleGraph (Fin n)) :
     algebraMap (PolyT K) (DefRing n K ⧸ tildeJ (K := K) G) (X ()) =
       Ideal.Quotient.mk (tildeJ (K := K) G) (tDef (K := K) n) := by
   rw [← Ideal.Quotient.mk_comp_algebraMap]
@@ -957,7 +973,7 @@ def fijTildeDeg (n : ℕ) (i j : Fin n) : ℕ :=
 degree `fijTildeDeg n i j = 2(n+1-i) + (n+1-j)` under `defWeight n`. Key
 check: the two monomials `x_i y_j` and `t^(j-i) · x_j y_i` carry the same
 total weight. -/
-theorem isWeightedHomogeneous_fijTilde {n : ℕ} {i j : Fin n} (hij : i < j) :
+private theorem isWeightedHomogeneous_fijTilde {n : ℕ} {i j : Fin n} (hij : i < j) :
     IsWeightedHomogeneous (defWeight n) (fijTilde (K := K) i j)
       (fijTildeDeg n i j) := by
   have hij_val : i.val < j.val := hij
@@ -1018,14 +1034,14 @@ noncomputable instance defGrading_isGradedAlgebra (n : ℕ) :
 
 /-- Each deformed generator `f̃_{i,j}` (for `i < j`) is a homogeneous element of
 `DefRing n K` under the weight grading. -/
-lemma fijTilde_isHomogeneousElem {n : ℕ} {i j : Fin n} (hij : i < j) :
+private lemma fijTilde_isHomogeneousElem {n : ℕ} {i j : Fin n} (hij : i < j) :
     SetLike.IsHomogeneousElem (defGrading (K := K) n) (fijTilde i j) :=
   ⟨fijTildeDeg n i j, isWeightedHomogeneous_fijTilde hij⟩
 
 /-- The deformation ideal `tildeJ G` is homogeneous w.r.t. the weight grading on
 `DefRing n K`, because it is spanned by weighted-homogeneous generators
 `f̃_{i,j}`. -/
-theorem tildeJ_isHomogeneous {n : ℕ} (G : SimpleGraph (Fin n)) :
+private theorem tildeJ_isHomogeneous {n : ℕ} (G : SimpleGraph (Fin n)) :
     (tildeJ (K := K) G).IsHomogeneous (defGrading (K := K) n) := by
   apply Ideal.homogeneous_span
   rintro p ⟨i, j, _, hij, rfl⟩
@@ -1048,14 +1064,14 @@ noncomputable instance tildeJQuotient_GradedRing {n : ℕ} (G : SimpleGraph (Fin
 
 /-- The weight function `defWeight n` is non-torsion: no positive multiple of any
 variable's weight is zero (because every weight is strictly positive in ℕ). -/
-lemma defWeight_nonTorsionWeight (n : ℕ) : NonTorsionWeight (defWeight n) := by
+private lemma defWeight_nonTorsionWeight (n : ℕ) : NonTorsionWeight (defWeight n) := by
   apply nonTorsionWeight_of
   intro v
   exact Nat.pos_iff_ne_zero.mp (defWeight_pos v)
 
 /-- A weighted-homogeneous polynomial of degree 0 over `defWeight n` is a
 constant, because every monomial of positive total weight is ruled out. -/
-lemma eq_C_coeff_zero_of_isWeightedHomogeneous_zero
+private lemma eq_C_coeff_zero_of_isWeightedHomogeneous_zero
     {n : ℕ} {p : DefRing n K}
     (hp : IsWeightedHomogeneous (defWeight n) p 0) :
     p = C (p.coeff 0) := by
@@ -1078,7 +1094,7 @@ lemma eq_C_coeff_zero_of_isWeightedHomogeneous_zero
 
 /-- **Connected grading** on `DefRing n K ⧸ tildeJ G`: every element of
 degree 0 in the weight grading is the image of a scalar from `K`. -/
-theorem tildeJQuotGrading_connectedGraded
+private theorem tildeJQuotGrading_connectedGraded
     {n : ℕ} (G : SimpleGraph (Fin n)) :
     GradedIrrelevant.ConnectedGraded (tildeJQuotGrading (K := K) G) := by
   intro x hx
@@ -1106,14 +1122,14 @@ positive degree, so `tildeJ G` is contained in the irrelevant ideal of
 `DefRing n K` under the weight grading. In particular `1 ∉ tildeJ G`, so the
 quotient ring is nontrivial. -/
 
-lemma fijTildeDeg_pos {n : ℕ} {i j : Fin n} (_hij : i < j) : 0 < fijTildeDeg n i j := by
+private lemma fijTildeDeg_pos {n : ℕ} {i j : Fin n} (_hij : i < j) : 0 < fijTildeDeg n i j := by
   have := i.isLt
   simp only [fijTildeDeg]
   omega
 
 /-- The deformation ideal `tildeJ G` is contained in the irrelevant ideal of
 `DefRing n K` under the weight grading. -/
-lemma tildeJ_le_irrelevant {n : ℕ} (G : SimpleGraph (Fin n)) :
+private lemma tildeJ_le_irrelevant {n : ℕ} (G : SimpleGraph (Fin n)) :
     tildeJ (K := K) G ≤
       (HomogeneousIdeal.irrelevant (defGrading (K := K) n)).toIdeal := by
   rw [tildeJ]
@@ -1124,7 +1140,7 @@ lemma tildeJ_le_irrelevant {n : ℕ} (G : SimpleGraph (Fin n)) :
 
 /-- The deformation ideal `tildeJ G` is a proper ideal (i.e. `1 ∉ tildeJ G`).
 Proved via `tildeJ G ⊆ irrelevant` and `irrelevant ≠ ⊤`. -/
-theorem tildeJ_ne_top {n : ℕ} (G : SimpleGraph (Fin n)) :
+private theorem tildeJ_ne_top {n : ℕ} (G : SimpleGraph (Fin n)) :
     tildeJ (K := K) G ≠ ⊤ := by
   intro h
   have h1 : (1 : DefRing n K) ∈ tildeJ (K := K) G := h ▸ Submodule.mem_top
@@ -1148,14 +1164,14 @@ instance tildeJ_quotient_nontrivial {n : ℕ} (G : SimpleGraph (Fin n)) :
 
 /-- `tDef n = X (Sum.inr ())` is weighted-homogeneous of degree `1` under
 `defWeight n`. -/
-lemma isWeightedHomogeneous_tDef (n : ℕ) :
+private lemma isWeightedHomogeneous_tDef (n : ℕ) :
     IsWeightedHomogeneous (defWeight n) (tDef (K := K) n) 1 := by
   change IsWeightedHomogeneous (defWeight n) (X (Sum.inr () : DefVars n) : DefRing n K) 1
   exact isWeightedHomogeneous_X (R := K) (defWeight n) (Sum.inr () : DefVars n)
 
 /-- The class of `tDef n` in `DefRing n K ⧸ tildeJ G` lies in the irrelevant
 ideal under the quotient-grading. -/
-lemma tDefClass_mem_irrelevant {n : ℕ} (G : SimpleGraph (Fin n)) :
+private lemma tDefClass_mem_irrelevant {n : ℕ} (G : SimpleGraph (Fin n)) :
     Ideal.Quotient.mk (tildeJ (K := K) G) (tDef n) ∈
     (HomogeneousIdeal.irrelevant (tildeJQuotGrading (K := K) G)).toIdeal := by
   refine HomogeneousIdeal.mem_irrelevant_of_mem _ Nat.zero_lt_one ?_
@@ -1170,10 +1186,10 @@ lemma tDefClass_mem_irrelevant {n : ℕ} (G : SimpleGraph (Fin n)) :
 def tildeJGenerators {n : ℕ} (G : SimpleGraph (Fin n)) : Set (DefRing n K) :=
   { p | ∃ i j : Fin n, G.Adj i j ∧ i < j ∧ p = fijTilde i j }
 
-lemma tildeJ_eq_span_generators {n : ℕ} (G : SimpleGraph (Fin n)) :
+private lemma tildeJ_eq_span_generators {n : ℕ} (G : SimpleGraph (Fin n)) :
     tildeJ (K := K) G = Ideal.span (tildeJGenerators G) := rfl
 
-lemma tildeJGenerators_leadingCoeff_isUnit {n : ℕ} (G : SimpleGraph (Fin n))
+private lemma tildeJGenerators_leadingCoeff_isUnit {n : ℕ} (G : SimpleGraph (Fin n))
     (b : DefRing n K) (hb : b ∈ tildeJGenerators (K := K) G) :
     IsUnit ((deformationMonomialOrder n).leadingCoeff b) := by
   obtain ⟨i, j, _, hij, rfl⟩ := hb
@@ -1185,7 +1201,7 @@ lemma tildeJGenerators_leadingCoeff_isUnit {n : ℕ} (G : SimpleGraph (Fin n))
     of `Ĩ`, such that `r`'s support avoids divisibility by any
     `degree (fijTilde i j)` for an edge `{i, j}` with `i < j`. The Σ-part
     lies in `tildeJ G`. -/
-theorem tildeJ_div {n : ℕ} (G : SimpleGraph (Fin n)) (c : DefRing n K) :
+private theorem tildeJ_div {n : ℕ} (G : SimpleGraph (Fin n)) (c : DefRing n K) :
     ∃ (g : ↑(tildeJGenerators (K := K) G) →₀ DefRing n K) (r : DefRing n K),
       c = (Finsupp.linearCombination (DefRing n K)
           (Subtype.val : ↑(tildeJGenerators G) → DefRing n K)) g + r ∧
@@ -1719,7 +1735,7 @@ private lemma coprime_twisted_degrees_ne {n : ℕ}
 /-- **R1.d Gröbner basis structure** (for closed graphs): `{f̃_{i,j}}` is
     a Gröbner basis of `Ĩ` for closed graphs — the deformed analogue of
     `closed_implies_groebner` in `BEI/ClosedGraphs.lean`. -/
-theorem tildeJ_isGroebnerBasis {n : ℕ} {G : SimpleGraph (Fin n)}
+private theorem tildeJ_isGroebnerBasis {n : ℕ} {G : SimpleGraph (Fin n)}
     (hClosed : IsClosedGraph G) :
     (deformationMonomialOrder n).IsGroebnerBasis (tildeJGenerators (K := K) G)
       (tildeJ (K := K) G) := by
@@ -1823,7 +1839,7 @@ theorem tildeJ_isGroebnerBasis {n : ℕ} {G : SimpleGraph (Fin n)}
     Step 2, `degree(f̃_{i,j}) = x_i y_j`. But `degree(p) ∈ p.support` (the
     leading-term position), and the hypothesis says this position is not
     `x_i y_j`-divisible. Contradiction. -/
-theorem tildeJ_gbProperty {n : ℕ} {G : SimpleGraph (Fin n)}
+private theorem tildeJ_gbProperty {n : ℕ} {G : SimpleGraph (Fin n)}
     (hClosed : IsClosedGraph G) (p : DefRing n K)
     (hp : p ∈ tildeJ (K := K) G)
     (hsupp : ∀ α ∈ p.support, ∀ (i j : Fin n), G.Adj i j → i < j →
@@ -1846,7 +1862,7 @@ theorem tildeJ_gbProperty {n : ℕ} {G : SimpleGraph (Fin n)}
 /-- Support of `polyTInclude q * r` inherits the "avoids `x_i y_j`
     divisibility" property from `r`, because `polyTInclude q` only carries
     `t`-content, leaving the `x/y` part of each monomial unchanged. -/
-lemma polyTInclude_mul_support_avoids {n : ℕ} {G : SimpleGraph (Fin n)}
+private lemma polyTInclude_mul_support_avoids {n : ℕ} {G : SimpleGraph (Fin n)}
     (q : PolyT K) (r : DefRing n K)
     (hrSupp : ∀ α ∈ r.support, ∀ (i j : Fin n), G.Adj i j → i < j →
       ¬ ((deformationMonomialOrder n).degree (fijTilde (K := K) i j) ≤ α)) :
@@ -1905,7 +1921,7 @@ lemma polyTInclude_mul_support_avoids {n : ℕ} {G : SimpleGraph (Fin n)}
     then `polyTInclude q * r ∈ tildeJ G` has standard support, so
     `tildeJ_gbProperty` gives `polyTInclude q * r = 0`; `DefRing` is a domain
     and `polyTInclude q ≠ 0`, so `r = 0` and `c ∈ tildeJ G`. -/
-theorem tildeJ_polyT_colon_eq
+private theorem tildeJ_polyT_colon_eq
     {n : ℕ} {G : SimpleGraph (Fin n)} (hClosed : IsClosedGraph G)
     (q : PolyT K) (hq : q ≠ 0)
     (c : DefRing n K) (hmul : polyTInclude (K := K) n q * c ∈ tildeJ (K := K) G) :
@@ -1966,7 +1982,7 @@ theorem tildeJ_polyT_colon_eq
     For `R = PolyT K` a domain, `IsRegular r ↔ r ≠ 0`, and `IsSMulRegular` of
     `r` on `DefRing n K ⧸ Ĩ` unfolds (via the algebra structure and quotient
     laws) to exactly the statement `tildeJ_polyT_colon_eq`. -/
-theorem tildeJ_flat_over_polyT
+private theorem tildeJ_flat_over_polyT
     {n : ℕ} {G : SimpleGraph (Fin n)} (hClosed : IsClosedGraph G) :
     Module.Flat (PolyT K) (DefRing n K ⧸ tildeJ (K := K) G) := by
   -- It suffices to show torsion-freeness over the Dedekind domain `PolyT K`.
@@ -2024,7 +2040,7 @@ private lemma polyT_t_smul_eq {n : ℕ} (G : SimpleGraph (Fin n))
 
     The proof transfers the regularity of `t - 1 ∈ K[t]` to the quotient via
     the flatness lemma `tildeJ_flat_over_polyT`. -/
-theorem tildeJ_tMinusOne_isSMulRegular {n : ℕ} {G : SimpleGraph (Fin n)}
+private theorem tildeJ_tMinusOne_isSMulRegular {n : ℕ} {G : SimpleGraph (Fin n)}
     (hClosed : IsClosedGraph G) :
     IsSMulRegular (DefRing n K ⧸ tildeJ (K := K) G)
       (Ideal.Quotient.mk (tildeJ (K := K) G) (tDef (K := K) n - 1)) := by
@@ -2051,7 +2067,7 @@ theorem tildeJ_tMinusOne_isSMulRegular {n : ℕ} {G : SimpleGraph (Fin n)}
     `tildeJ_tMinusOne_isSMulRegular` and is proved uniformly from flatness
     of `S[t] ⧸ Ĩ` over `K[t]`: `t ∈ K[t]` is nonzero (hence regular), and
     flat modules are torsion-free. -/
-theorem tildeJ_t_isSMulRegular {n : ℕ} {G : SimpleGraph (Fin n)}
+private theorem tildeJ_t_isSMulRegular {n : ℕ} {G : SimpleGraph (Fin n)}
     (hClosed : IsClosedGraph G) :
     IsSMulRegular (DefRing n K ⧸ tildeJ (K := K) G)
       (Ideal.Quotient.mk (tildeJ (K := K) G) (tDef (K := K) n)) := by
@@ -2081,7 +2097,7 @@ monomialInitialIdeal G` (via `DoubleQuot.quotQuotEquivQuotSup` +
 `specZeroQuotEquiv`), which is CM globally by Step 1. Localising at the
 irrelevant ideal and applying `isCohenMacaulayLocalRing_of_regular_quotient`
 closes this step. -/
-theorem tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant
+private theorem tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant
     {n : ℕ} {G : SimpleGraph (Fin n)} (hClosed : IsClosedGraph G)
     (hCM : IsCohenMacaulayRing
       (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G)) :
@@ -2163,12 +2179,12 @@ theorem tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant
 Classical chain (graded local-to-global): the weight grading
 `w(x_i) = 2(n+1-i)`, `w(y_j) = (n+1-j)`, `w(t) = 1` makes `Ĩ` weighted-
 homogeneous, so `S[t] ⧸ Ĩ` is a connected ℕ-graded `K`-algebra. Local CM
-at the irrelevant ideal (via `tildeJ_quotient_isCohenMacaulayLocal_at_irrelevant`)
+at the irrelevant ideal (via the local-at-irrelevant lemma)
 combined with the graded local-to-global theorem
 `isCohenMacaulayRing_of_isCohenMacaulayLocalRing_at_irrelevant` from
 `toMathlib/GradedCM.lean`
 yields global CM. -/
-theorem tildeJ_quotient_isCohenMacaulay
+private theorem tildeJ_quotient_isCohenMacaulay
     {n : ℕ} {G : SimpleGraph (Fin n)} (hClosed : IsClosedGraph G)
     (hCM : IsCohenMacaulayRing
       (MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G)) :
