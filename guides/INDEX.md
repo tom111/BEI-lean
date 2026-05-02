@@ -13,8 +13,15 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 
 ## Active Work Packages
 
-There are currently no active work packages. Recently-completed packets
-live in `guides/archive/`.
+- [work_packages/GROEBNER_REDUCED_SAME_ENDPOINTS_REFACTOR.md](work_packages/GROEBNER_REDUCED_SAME_ENDPOINTS_REFACTOR.md)
+  — Refactor `groebnerElement_reduced_same_endpoints` (274 LOC,
+  `BEI/GroebnerBasis.lean:229`) by replacing inline reinventions of
+  `mem_internalVertices_of_ne` and `internal_ne_getLast` (already in
+  `BEI/CoveredWalks.lean`) and extracting a small
+  `endpoint_notMem_internalVertices_admissible` helper that also kills
+  ~27 LOC of duplication in the sister
+  `groebnerElement_leadingMonomial_squarefree`. Estimated 274 → ~190
+  LOC, low risk, 3-stage plan with optional bonus Stage 4.
 
 The `groebner_implies_closed` deduplication finished on 2026-05-02; the
 guide is archived at
