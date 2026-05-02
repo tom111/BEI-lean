@@ -64,8 +64,8 @@ risk first, the load-bearing Section 2 monolith last.
 
 | # | LOC | File:line | Declaration |
 |---|---|---|---|
-| `[ ]` 1 | 188 | `BEI/Prop1_6Equidim.lean:272` | `path_cutVertex_of_erase` (warmup) |
-| `[ ]` 2 | 357 | `BEI/Equidim/IteratedRegularity.lean:1067` | `caseD_nilradical_nzd_map_diagSubstHom_helper` (sub-splits already documented in `guides/archive/EQUIDIM_GIANT_CARVING.md`) |
+| `[x]` 1 | 188 → 27 | `BEI/Prop1_6Equidim.lean:434` | `path_cutVertex_of_erase` (warmup, done 2026-05-02). Reused the existing `componentCount_lt_of_merged` (moved up in file) instead of reproving the pigeonhole inline; extracted the path-graph opposite-sides argument as `path_witnesses_opposite_sides`. Net file shrinkage: ~98 LOC. `path_isEquidim` and `prop_1_6_equidim` remain axiom-clean. |
+| `[x]` 2 | 357 → 231 | `BEI/Equidim/IteratedRegularity.lean` | `caseD_nilradical_nzd_map_diagSubstHom_helper` (done 2026-05-02). Mathematical content is intrinsic (no shorter proof exists), but the proof had heavy sx/sy duplication. Extracted four private helpers: `caseD_both_monomials_in_image` (~50 LOC, both `dx` and `dy` lie in `Iφ`), `caseD_typeA_exponent_zero` (~45 LOC, type-A image at `Sum.inl i` / `Sum.inr i` is zero — replaces 28-LOC duplicate twice), `caseD_typeB_exponent_eq` (~10 LOC, type-B singleton support extraction — replaces 7-LOC duplicate twice), and `caseD_HH_contradiction` (~50 LOC, HH transitivity tail). `proposition_1_6` axiom-clean. |
 | `[ ]` 3 | 612 | `BEI/Prop1_6Equidim.lean:740` | `closedGraph_cutVertex_preserved_of_erase` |
 | `[ ]` 4 | 384 | `BEI/CoveredWalks.lean:460` | `isRemainder_fij_of_covered_walk` |
 | `[ ]` 5 | 362 | `BEI/CoveredWalks.lean:844` | `isRemainder_fij_of_covered_walk_y` (likely mirrors carve #4) |
