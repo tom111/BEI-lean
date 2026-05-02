@@ -460,6 +460,67 @@ private lemma cubic_degree (u v w : BinomialEdgeVars V) :
       MonomialOrder.degree_mul (X_ne_zero _) (X_ne_zero _),
       MonomialOrder.degree_X, MonomialOrder.degree_X, MonomialOrder.degree_X]
 
+omit [DecidableEq V] [Fintype V] in
+/-- Epilogue of the two Condition 1 branches in `groebner_implies_closed`:
+from a Finsupp inequality whose RHS has a single `inl` slot at `μ` and two
+`inr` slots at `α, β`, with `α < μ` and `a < b`, deduce `a = μ ∧ b = β`. -/
+private lemma extract_cond1 (μ α β a b : V) (hαμ : α < μ) (hab : a < b)
+    (h : Finsupp.single (Sum.inl a) 1 + Finsupp.single (Sum.inr b) 1 ≤
+        (Finsupp.single (Sum.inl μ) 1 + Finsupp.single (Sum.inr α) 1 +
+          Finsupp.single (Sum.inr β) 1 : BinomialEdgeVars V →₀ ℕ)) :
+    a = μ ∧ b = β := by
+  classical
+  have ha : a = μ := by
+    have hle_inl := h (Sum.inl a)
+    simp only [Finsupp.add_apply, Finsupp.single_apply] at hle_inl
+    by_contra haμ
+    have hne_μa : (Sum.inl μ : BinomialEdgeVars V) ≠ Sum.inl a :=
+      fun heq => haμ (Sum.inl.inj (α := V) (β := V) heq).symm
+    simp [hne_μa] at hle_inl
+  refine ⟨ha, ?_⟩
+  subst ha
+  have hle_inr := h (Sum.inr b)
+  simp only [Finsupp.add_apply, Finsupp.single_apply] at hle_inr
+  by_contra hbβ
+  have hne_βb : (Sum.inr β : BinomialEdgeVars V) ≠ Sum.inr b :=
+    fun heq => hbβ (Sum.inr.inj (α := V) heq).symm
+  by_cases hbα : b = α
+  · subst hbα
+    exact absurd (lt_trans hab hαμ) (lt_irrefl a)
+  · have hne_αb : (Sum.inr α : BinomialEdgeVars V) ≠ Sum.inr b :=
+      fun heq => hbα (Sum.inr.inj (α := V) heq).symm
+    simp [hne_αb, hne_βb] at hle_inr
+
+omit [DecidableEq V] [Fintype V] in
+/-- Epilogue of the two Condition 2 branches in `groebner_implies_closed`:
+from a Finsupp inequality whose RHS has two `inl` slots at `α, β` and a single
+`inr` slot at `μ`, deduce `b = μ ∧ (a = α ∨ a = β)`. The disjunction is left
+to the call site, which rules out the wrong disjunct from `hab : a < b` and
+the remaining order data. -/
+private lemma extract_cond2 (μ α β a b : V)
+    (h : Finsupp.single (Sum.inl a) 1 + Finsupp.single (Sum.inr b) 1 ≤
+        (Finsupp.single (Sum.inl α) 1 + Finsupp.single (Sum.inl β) 1 +
+          Finsupp.single (Sum.inr μ) 1 : BinomialEdgeVars V →₀ ℕ)) :
+    b = μ ∧ (a = α ∨ a = β) := by
+  classical
+  have hb : b = μ := by
+    have hle_inr := h (Sum.inr b)
+    simp only [Finsupp.add_apply, Finsupp.single_apply] at hle_inr
+    by_contra hbμ
+    have hne_μb : (Sum.inr μ : BinomialEdgeVars V) ≠ Sum.inr b :=
+      fun heq => hbμ (Sum.inr.inj (α := V) heq).symm
+    simp [hne_μb] at hle_inr
+  refine ⟨hb, ?_⟩
+  have hle_inl := h (Sum.inl a)
+  simp only [Finsupp.add_apply, Finsupp.single_apply] at hle_inl
+  by_contra hh
+  push_neg at hh
+  have hne_αa : (Sum.inl α : BinomialEdgeVars V) ≠ Sum.inl a :=
+    fun heq => hh.1 (Sum.inl.inj (α := V) (β := V) heq).symm
+  have hne_βa : (Sum.inl β : BinomialEdgeVars V) ≠ Sum.inl a :=
+    fun heq => hh.2 (Sum.inl.inj (α := V) (β := V) heq).symm
+  simp [hne_αa, hne_βa] at hle_inl
+
 omit [DecidableEq V] in
 /-- Backward direction of Theorem 1.1: Gröbner basis → closed graph. -/
 theorem groebner_implies_closed (G : SimpleGraph V)
@@ -592,46 +653,7 @@ theorem groebner_implies_closed (G : SimpleGraph V)
         have := Finsupp.ext_iff.mp heq (Sum.inl j)
         simp [Finsupp.add_apply] at this
       · intro a b hadj_ab hab hs_le
-        -- Determine b: from hs_le at inr b, b ∈ {i, k};
-        -- rule out b = i via inl
-        have hb : b = k := by
-          have hle_inr := hs_le (Sum.inr b)
-          simp only [Finsupp.add_apply,
-            Finsupp.single_apply] at hle_inr
-          by_cases hbi : b = i
-          · -- b = i: then from inl constraint a = j,
-            -- but a < b = i < j contradicts a = j
-            subst hbi
-            exfalso
-            have hle_inl := hs_le (Sum.inl a)
-            simp only [Finsupp.add_apply,
-              Finsupp.single_apply] at hle_inl
-            have haj : a = j := by
-              by_contra h
-              have hne_ja : Sum.inl j ≠ Sum.inl a :=
-                fun heq => h (Sum.inl.inj
-                  (α := V) (β := V) heq).symm
-              simp [hne_ja] at hle_inl
-            subst haj
-            exact absurd (lt_trans hab hij) (lt_irrefl a)
-          · -- b ≠ i: from hle_inr, b = k
-            by_contra hbk
-            have hne_ib : Sum.inr i ≠ Sum.inr b :=
-              fun h => hbi (Sum.inr.inj (α := V) h).symm
-            have hne_kb : Sum.inr k ≠ Sum.inr b :=
-              fun h => hbk (Sum.inr.inj (α := V) h).symm
-            simp [hne_ib, hne_kb] at hle_inr
-        have ha : a = j := by
-          subst hb
-          have hle_inl := hs_le (Sum.inl a)
-          simp only [Finsupp.add_apply,
-            Finsupp.single_apply] at hle_inl
-          by_contra haj
-          have hne_ja : Sum.inl j ≠ Sum.inl a :=
-            fun heq => haj (Sum.inl.inj
-              (α := V) (β := V) heq).symm
-          simp [hne_ja] at hle_inl
-        subst hb ha
+        obtain ⟨rfl, rfl⟩ := extract_cond1 j i k a b hij hab hs_le
         exact hnotadj hadj_ab
     · -- Case k < j (so i < k < j):
       -- degree p = e_{inl k} + e_{inr i} + e_{inr j}
@@ -695,43 +717,7 @@ theorem groebner_implies_closed (G : SimpleGraph V)
         have := Finsupp.ext_iff.mp heq (Sum.inl k)
         simp [Finsupp.add_apply] at this
       · intro a b hadj_ab hab hs_le
-        have hb : b = j := by
-          have hle_inr := hs_le (Sum.inr b)
-          simp only [Finsupp.add_apply,
-            Finsupp.single_apply] at hle_inr
-          by_cases hbi : b = i
-          · -- b = i: then from inl constraint a = k,
-            -- but a < b = i < k contradicts a = k
-            subst hbi
-            exfalso
-            have hle_inl := hs_le (Sum.inl a)
-            simp only [Finsupp.add_apply,
-              Finsupp.single_apply] at hle_inl
-            have hak : a = k := by
-              by_contra h
-              have hne_ka : Sum.inl k ≠ Sum.inl a :=
-                fun heq => h (Sum.inl.inj
-                  (α := V) (β := V) heq).symm
-              simp [hne_ka] at hle_inl
-            subst hak
-            exact absurd (lt_trans hab hik) (lt_irrefl a)
-          · by_contra hbj
-            have hne_ib : Sum.inr i ≠ Sum.inr b :=
-              fun h => hbi (Sum.inr.inj (α := V) h).symm
-            have hne_jb : Sum.inr j ≠ Sum.inr b :=
-              fun h => hbj (Sum.inr.inj (α := V) h).symm
-            simp [hne_ib, hne_jb] at hle_inr
-        have ha : a = k := by
-          subst hb
-          have hle_inl := hs_le (Sum.inl a)
-          simp only [Finsupp.add_apply,
-            Finsupp.single_apply] at hle_inl
-          by_contra hak
-          have hne_ka : Sum.inl k ≠ Sum.inl a :=
-            fun heq => hak (Sum.inl.inj
-              (α := V) (β := V) heq).symm
-          simp [hne_ka] at hle_inl
-        subst hb ha
+        obtain ⟨rfl, rfl⟩ := extract_cond1 k i j a b hik hab hs_le
         exact hnotadj hadj_ab.symm
   · -- Condition 2:
     intro i j k hik hjk hij hadj_ik hadj_jk
@@ -795,30 +781,7 @@ theorem groebner_implies_closed (G : SimpleGraph V)
         have := Finsupp.ext_iff.mp heq (Sum.inl i)
         simp [Finsupp.add_apply] at this
       · intro a b hadj_ab hab hs_le
-        -- b = j (D has only inr j)
-        have hb : b = j := by
-          have hle_inr := hs_le (Sum.inr b)
-          simp only [Finsupp.add_apply,
-            Finsupp.single_apply] at hle_inr
-          by_contra hbj
-          have hne_jb : Sum.inr j ≠ Sum.inr b :=
-            fun h => hbj (Sum.inr.inj (α := V) h).symm
-          simp [hne_jb] at hle_inr
-        -- a = i or a = k (D has inl i and inl k)
-        have ha : a = i ∨ a = k := by
-          have hle_inl := hs_le (Sum.inl a)
-          simp only [Finsupp.add_apply,
-            Finsupp.single_apply] at hle_inl
-          by_contra hh; push_neg at hh
-          have hne_ia : Sum.inl i ≠ Sum.inl a :=
-            fun heq => hh.1 (Sum.inl.inj
-              (α := V) (β := V) heq).symm
-          have hne_ka : Sum.inl k ≠ Sum.inl a :=
-            fun heq => hh.2 (Sum.inl.inj
-              (α := V) (β := V) heq).symm
-          simp [hne_ia, hne_ka] at hle_inl
-        subst hb
-        rcases ha with rfl | rfl
+        obtain ⟨rfl, rfl | rfl⟩ := extract_cond2 j i k a b hs_le
         · exact hnotadj hadj_ab
         · exact absurd hab (not_lt.mpr hjk.le)
     · -- Case j < i (so j < i < k): p = x i * fij j k - x j * fij i k = x k * fij j i
@@ -879,30 +842,7 @@ theorem groebner_implies_closed (G : SimpleGraph V)
         have := Finsupp.ext_iff.mp heq (Sum.inl j)
         simp [Finsupp.add_apply] at this
       · intro a b hadj_ab hab hs_le
-        -- b = i (D has only inr i)
-        have hb : b = i := by
-          have hle_inr := hs_le (Sum.inr b)
-          simp only [Finsupp.add_apply,
-            Finsupp.single_apply] at hle_inr
-          by_contra hbi
-          have hne_ib : Sum.inr i ≠ Sum.inr b :=
-            fun h => hbi (Sum.inr.inj (α := V) h).symm
-          simp [hne_ib] at hle_inr
-        -- a = j or a = k (D has inl j and inl k)
-        have ha : a = j ∨ a = k := by
-          have hle_inl := hs_le (Sum.inl a)
-          simp only [Finsupp.add_apply,
-            Finsupp.single_apply] at hle_inl
-          by_contra hh; push_neg at hh
-          have hne_ja : Sum.inl j ≠ Sum.inl a :=
-            fun heq => hh.1 (Sum.inl.inj
-              (α := V) (β := V) heq).symm
-          have hne_ka : Sum.inl k ≠ Sum.inl a :=
-            fun heq => hh.2 (Sum.inl.inj
-              (α := V) (β := V) heq).symm
-          simp [hne_ja, hne_ka] at hle_inl
-        subst hb
-        rcases ha with rfl | rfl
+        obtain ⟨rfl, rfl | rfl⟩ := extract_cond2 i j k a b hs_le
         · exact hnotadj hadj_ab.symm
         · exact absurd hab (not_lt.mpr hik.le)
 
