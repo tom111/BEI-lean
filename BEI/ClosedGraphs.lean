@@ -448,6 +448,19 @@ theorem closed_implies_groebner (G : SimpleGraph V) (h : IsClosedGraph G) :
       (fij_mem G hadj₁ hij₁) (fij_mem G hadj₂ hij₂) hfij_ne hd₁ hd₂
 
 omit [DecidableEq V] in
+/-- Lex degree of a cubic monomial `X u * X v * X w`. Each of the four branches
+of `groebner_implies_closed` builds two such cubics whose degrees control the
+lex comparison. -/
+private lemma cubic_degree (u v w : BinomialEdgeVars V) :
+    binomialEdgeMonomialOrder.degree
+      (X u * X v * X w : MvPolynomial (BinomialEdgeVars V) K) =
+    Finsupp.single u 1 + Finsupp.single v 1 + Finsupp.single w 1 := by
+  rw [MonomialOrder.degree_mul
+        (mul_ne_zero (X_ne_zero _) (X_ne_zero _)) (X_ne_zero _),
+      MonomialOrder.degree_mul (X_ne_zero _) (X_ne_zero _),
+      MonomialOrder.degree_X, MonomialOrder.degree_X, MonomialOrder.degree_X]
+
+omit [DecidableEq V] in
 /-- Backward direction of Theorem 1.1: Gröbner basis → closed graph. -/
 theorem groebner_implies_closed (G : SimpleGraph V)
     (h : binomialEdgeMonomialOrder.IsGroebnerBasis (generatorSet (K := K) G)
@@ -533,28 +546,14 @@ theorem groebner_implies_closed (G : SimpleGraph V)
           Finsupp.single (Sum.inl j) 1 +
             Finsupp.single (Sum.inr i) 1 +
             Finsupp.single (Sum.inr k) 1 := by
-        simp only [x, y]
-        rw [MonomialOrder.degree_mul
-              (mul_ne_zero (X_ne_zero _) (X_ne_zero _))
-              (X_ne_zero _),
-            MonomialOrder.degree_mul (X_ne_zero _)
-              (X_ne_zero _),
-            MonomialOrder.degree_X,
-            MonomialOrder.degree_X, MonomialOrder.degree_X]
+        simp only [x, y]; exact cubic_degree _ _ _
       have hdeg2 : binomialEdgeMonomialOrder.degree
           (x k * y i * y j :
             MvPolynomial (BinomialEdgeVars V) K) =
           Finsupp.single (Sum.inl k) 1 +
             Finsupp.single (Sum.inr i) 1 +
             Finsupp.single (Sum.inr j) 1 := by
-        simp only [x, y]
-        rw [MonomialOrder.degree_mul
-              (mul_ne_zero (X_ne_zero _) (X_ne_zero _))
-              (X_ne_zero _),
-            MonomialOrder.degree_mul (X_ne_zero _)
-              (X_ne_zero _),
-            MonomialOrder.degree_X,
-            MonomialOrder.degree_X, MonomialOrder.degree_X]
+        simp only [x, y]; exact cubic_degree _ _ _
       -- M2 <lex M1: discriminator = Sum.inr k (since k > j > i, inr k is lowest-ranked)
       have hne_ik : ¬(Sum.inr i = Sum.inr k) :=
         fun h => (lt_trans hij hjlt).ne (Sum.inr.inj (α := V) h)
@@ -649,28 +648,14 @@ theorem groebner_implies_closed (G : SimpleGraph V)
           Finsupp.single (Sum.inl k) 1 +
             Finsupp.single (Sum.inr i) 1 +
             Finsupp.single (Sum.inr j) 1 := by
-        simp only [x, y]
-        rw [MonomialOrder.degree_mul
-              (mul_ne_zero (X_ne_zero _) (X_ne_zero _))
-              (X_ne_zero _),
-            MonomialOrder.degree_mul (X_ne_zero _)
-              (X_ne_zero _),
-            MonomialOrder.degree_X,
-            MonomialOrder.degree_X, MonomialOrder.degree_X]
+        simp only [x, y]; exact cubic_degree _ _ _
       have hdeg2 : binomialEdgeMonomialOrder.degree
           (x j * y i * y k :
             MvPolynomial (BinomialEdgeVars V) K) =
           Finsupp.single (Sum.inl j) 1 +
             Finsupp.single (Sum.inr i) 1 +
             Finsupp.single (Sum.inr k) 1 := by
-        simp only [x, y]
-        rw [MonomialOrder.degree_mul
-              (mul_ne_zero (X_ne_zero _) (X_ne_zero _))
-              (X_ne_zero _),
-            MonomialOrder.degree_mul (X_ne_zero _)
-              (X_ne_zero _),
-            MonomialOrder.degree_X,
-            MonomialOrder.degree_X, MonomialOrder.degree_X]
+        simp only [x, y]; exact cubic_degree _ _ _
       -- Discriminator = Sum.inr j
       -- (j > k, so inr j has lower rank than inr k)
       have hne_ij : ¬(Sum.inr i = Sum.inr j) :=
@@ -767,28 +752,14 @@ theorem groebner_implies_closed (G : SimpleGraph V)
           Finsupp.single (Sum.inl i) 1 +
             Finsupp.single (Sum.inl k) 1 +
             Finsupp.single (Sum.inr j) 1 := by
-        simp only [x, y]
-        rw [MonomialOrder.degree_mul
-              (mul_ne_zero (X_ne_zero _) (X_ne_zero _))
-              (X_ne_zero _),
-            MonomialOrder.degree_mul (X_ne_zero _)
-              (X_ne_zero _),
-            MonomialOrder.degree_X,
-            MonomialOrder.degree_X, MonomialOrder.degree_X]
+        simp only [x, y]; exact cubic_degree _ _ _
       have hdeg2 : binomialEdgeMonomialOrder.degree
           (x j * x k * y i :
             MvPolynomial (BinomialEdgeVars V) K) =
           Finsupp.single (Sum.inl j) 1 +
             Finsupp.single (Sum.inl k) 1 +
             Finsupp.single (Sum.inr i) 1 := by
-        simp only [x, y]
-        rw [MonomialOrder.degree_mul
-              (mul_ne_zero (X_ne_zero _) (X_ne_zero _))
-              (X_ne_zero _),
-            MonomialOrder.degree_mul (X_ne_zero _)
-              (X_ne_zero _),
-            MonomialOrder.degree_X,
-            MonomialOrder.degree_X, MonomialOrder.degree_X]
+        simp only [x, y]; exact cubic_degree _ _ _
       -- Discriminator = Sum.inr j;
       -- M2 = e_{inl j}+e_{inl k}+e_{inr i},
       -- M1 = e_{inl i}+e_{inl k}+e_{inr j}
@@ -865,28 +836,14 @@ theorem groebner_implies_closed (G : SimpleGraph V)
           Finsupp.single (Sum.inl j) 1 +
             Finsupp.single (Sum.inl k) 1 +
             Finsupp.single (Sum.inr i) 1 := by
-        simp only [x, y]
-        rw [MonomialOrder.degree_mul
-              (mul_ne_zero (X_ne_zero _) (X_ne_zero _))
-              (X_ne_zero _),
-            MonomialOrder.degree_mul (X_ne_zero _)
-              (X_ne_zero _),
-            MonomialOrder.degree_X,
-            MonomialOrder.degree_X, MonomialOrder.degree_X]
+        simp only [x, y]; exact cubic_degree _ _ _
       have hdeg2 : binomialEdgeMonomialOrder.degree
           (x i * x k * y j :
             MvPolynomial (BinomialEdgeVars V) K) =
           Finsupp.single (Sum.inl i) 1 +
             Finsupp.single (Sum.inl k) 1 +
             Finsupp.single (Sum.inr j) 1 := by
-        simp only [x, y]
-        rw [MonomialOrder.degree_mul
-              (mul_ne_zero (X_ne_zero _) (X_ne_zero _))
-              (X_ne_zero _),
-            MonomialOrder.degree_mul (X_ne_zero _)
-              (X_ne_zero _),
-            MonomialOrder.degree_X,
-            MonomialOrder.degree_X, MonomialOrder.degree_X]
+        simp only [x, y]; exact cubic_degree _ _ _
       -- Discriminator = Sum.inr i;
       -- M2 = e_{inl i}+e_{inl k}+e_{inr j},
       -- M1 = e_{inl j}+e_{inl k}+e_{inr i}
