@@ -219,6 +219,16 @@ private lemma groebnerElement_degree_at_inr_j (G : SimpleGraph V)
     binomialEdgeMonomialOrder.degree (groebnerElement (K := K) i j π) (Sum.inr j) = 1 := by
   rw [groebnerElement_degree_inr G i j π hπ]; simp
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
+/-- The two endpoints of a `Nodup` list `l` whose `head?` is `some i` and
+`getLast?` is `some j` are not in `internalVertices l`. -/
+private lemma endpoints_notMem_internalVertices {l : List V} {i j : V}
+    (hHead : l.head? = some i) (hLast : l.getLast? = some j) (hNodup : l.Nodup) :
+    i ∉ internalVertices l ∧ j ∉ internalVertices l := by
+  have hne : l ≠ [] := fun h => by simp [h] at hHead
+  exact ⟨fun h => internal_ne_head hNodup h hne (head_of_head? hHead).symm,
+         fun h => internal_ne_getLast hNodup h hne (getLast_of_getLast? hLast).symm⟩
+
 omit [DecidableEq V] in
 /-- If two groebnerElements with the same endpoints (i, j) but different paths have
 the degree of the first ≤ degree of the second, we reach a contradiction.
@@ -236,78 +246,15 @@ private lemma groebnerElement_reduced_same_endpoints (G : SimpleGraph V)
   obtain ⟨_, hπ₂_head, hπ₂_last, hπ₂_nd, hπ₂_vert, hπ₂_chain, hπ₂_min⟩ := hπ₂
   have hπ₁_ne : π₁ ≠ [] := fun h => by simp [h] at hπ₁_head
   have hπ₂_ne : π₂ ≠ [] := fun h => by simp [h] at hπ₂_head
-  -- Helper: v ∈ l ∧ v ≠ head ∧ v ≠ getLast → v ∈ internalVertices l
-  have mem_int : ∀ (l : List V) (v : V) (hhead : l.head? = some i)
-      (hlast : l.getLast? = some j) (hnd : l.Nodup) (hmem : v ∈ l)
-      (hvi : v ≠ i) (hvj : v ≠ j), v ∈ internalVertices l := by
-    intro l v hhead hlast hnd hmem hvi hvj
-    have hne : l ≠ [] := fun h => by simp [h] at hhead
-    simp only [internalVertices]
-    have htail_ne : l.tail ≠ [] := by
-      cases l with
-      | nil => exact absurd rfl hne
-      | cons a rest =>
-        simp only [List.head?_cons, Option.some.injEq] at hhead; subst hhead
-        intro h; simp only [List.tail_cons] at h
-        cases rest with
-        | nil => simp only [List.getLast?_singleton, Option.some.injEq] at hlast
-                 exact absurd hlast (ne_of_lt hij)
-        | cons _ _ => exact absurd h (List.cons_ne_nil _ _)
-    have hv_in_tail : v ∈ l.tail := by
-      cases l with
-      | nil => exact absurd rfl hne
-      | cons a rest =>
-        simp only [List.head?_cons, Option.some.injEq] at hhead; subst hhead
-        exact List.mem_of_ne_of_mem hvi hmem
-    have htail_last : l.tail.getLast? = some j := by
-      rw [List.getLast?_tail]
-      have hlen_ne : l.length ≠ 1 := by
-        cases l with
-        | nil => exact absurd rfl hne
-        | cons a rest =>
-          simp only [List.head?_cons, Option.some.injEq] at hhead; subst hhead
-          simp only [List.tail_cons] at htail_ne
-          cases rest with
-          | nil => exact absurd rfl htail_ne
-          | cons _ _ => simp only [List.length_cons]; omega
-      simp [hlen_ne, hlast]
-    have hv_ne_last : v ≠ l.tail.getLast htail_ne := fun h =>
-      hvj (Option.some.inj (h ▸ (List.getLast?_eq_some_getLast htail_ne).symm.trans htail_last))
-    exact List.mem_dropLast_of_mem_of_ne_getLast hv_in_tail hv_ne_last
-  -- j ∉ internalVertices l for admissible l ending at j
-  have j_not_int : ∀ (l : List V), l ≠ [] → l.Nodup → l.getLast? = some j →
-      j ∉ internalVertices l := by
-    intro l hne hnd hlast
-    have hj_not_drop : j ∉ l.dropLast := by
-      have hj_last : l.getLast hne = j :=
-        Option.some.inj ((List.getLast?_eq_some_getLast hne).symm.trans hlast)
-      rw [← List.dropLast_append_getLast hne, hj_last] at hnd
-      exact fun hd => (List.nodup_append.mp hnd).2.2 j hd j (List.mem_singleton_self j) rfl
-    have hsublist : (internalVertices l).Sublist l.dropLast := by
-      simp only [internalVertices]
-      cases l with
-      | nil => exact absurd rfl hne
-      | cons a rest =>
-        simp only [List.tail_cons]
-        cases rest with
-        | nil => simp
-        | cons b rest2 =>
-          simp only [List.dropLast_cons_of_ne_nil (List.cons_ne_nil _ _)]
-          exact List.sublist_cons_self _ _
-    exact fun hmem => hj_not_drop (hsublist.subset hmem)
+  obtain ⟨hi_not_int_π₁, hj_not_int_π₁⟩ :=
+    endpoints_notMem_internalVertices hπ₁_head hπ₁_last hπ₁_nd
   -- Step 1: int(π₁) ⊆ int(π₂) using degree bound
   have hint_sub : ∀ v ∈ internalVertices π₁, v ∈ internalVertices π₂ := by
     intro v hv
     have hv_in_π₁ : v ∈ π₁ :=
       (List.tail_sublist π₁).subset ((List.dropLast_sublist π₁.tail).subset hv)
-    have hv_ne_i : v ≠ i := by
-      intro heq; subst heq
-      cases π₁ with
-      | nil => exact absurd rfl hπ₁_ne
-      | cons a rest =>
-        simp only [List.head?_cons, Option.some.injEq] at hπ₁_head; subst hπ₁_head
-        exact (List.nodup_cons.mp hπ₁_nd).1 ((List.dropLast_sublist _).subset hv)
-    have hv_ne_j : v ≠ j := fun heq => j_not_int π₁ hπ₁_ne hπ₁_nd hπ₁_last (heq ▸ hv)
+    have hv_ne_i : v ≠ i := fun heq => hi_not_int_π₁ (heq ▸ hv)
+    have hv_ne_j : v ≠ j := fun heq => hj_not_int_π₁ (heq ▸ hv)
     rcases hπ₁_vert v hv_in_π₁ with rfl | rfl | hlt | hgt
     · exact absurd rfl hv_ne_i
     · exact absurd rfl hv_ne_j
@@ -352,11 +299,13 @@ private lemma groebnerElement_reduced_same_endpoints (G : SimpleGraph V)
     · exact List.mem_of_head? hπ₂_head
     · exact List.mem_of_getLast? hπ₂_last
     · exact (List.tail_sublist π₂).subset ((List.dropLast_sublist π₂.tail).subset
-        (hint_sub v (mem_int π₁ v hπ₁_head hπ₁_last hπ₁_nd hv
-          (ne_of_lt hlt) (ne_of_lt (lt_trans hlt hij)))))
+        (hint_sub v (mem_internalVertices_of_ne hπ₁_nd hv hπ₁_ne
+          (by rw [head_of_head? hπ₁_head]; exact ne_of_lt hlt)
+          (by rw [getLast_of_getLast? hπ₁_last]; exact ne_of_lt (lt_trans hlt hij)))))
     · exact (List.tail_sublist π₂).subset ((List.dropLast_sublist π₂.tail).subset
-        (hint_sub v (mem_int π₁ v hπ₁_head hπ₁_last hπ₁_nd hv
-          (ne_of_gt (lt_trans hij hgt)) (ne_of_gt hgt))))
+        (hint_sub v (mem_internalVertices_of_ne hπ₁_nd hv hπ₁_ne
+          (by rw [head_of_head? hπ₁_head]; exact ne_of_gt (lt_trans hij hgt))
+          (by rw [getLast_of_getLast? hπ₁_last]; exact ne_of_gt hgt))))
   -- Step 3: find first difference position k (using Nat.find)
   have hex : ∃ m, (π₁[m]? : Option V) ≠ π₂[m]? :=
     not_forall.mp (hπ_ne ∘ List.ext_getElem?)
@@ -612,33 +561,8 @@ theorem groebnerElement_leadingMonomial_squarefree
   have hne : π ≠ [] := by intro h; simp [h] at hHead
   have hint_nd : (internalVertices π).Nodup :=
     (hNodup.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
-  have hi_not_int : i ∉ internalVertices π := by
-    simp only [internalVertices]; intro h
-    cases π with
-    | nil => exact absurd rfl hne
-    | cons a rest =>
-      simp only [List.head?_cons, Option.some.injEq] at hHead; subst hHead
-      exact (List.nodup_cons.mp hNodup).1 ((List.dropLast_sublist _).subset h)
-  have hj_not_int : j ∉ internalVertices π := by
-    simp only [internalVertices]; intro h
-    have hj_last : π.getLast hne = j :=
-      Option.some.inj ((List.getLast?_eq_some_getLast hne).symm.trans hLast)
-    have hmem_dl : j ∈ π.dropLast := by
-      cases π with
-      | nil => exact absurd rfl hne
-      | cons a rest =>
-        simp only [List.tail_cons] at h; cases rest with
-        | nil => simp at h
-        | cons b rest2 =>
-          rw [List.dropLast_cons_of_ne_nil (List.cons_ne_nil b rest2)]
-          exact List.mem_cons_of_mem a h
-    have hj_count : π.count j = 1 :=
-      Nat.le_antisymm (List.nodup_iff_count_le_one.mp hNodup _)
-        (List.count_pos_iff.mpr (hj_last ▸ List.getLast_mem hne))
-    have hpos : 0 < π.dropLast.count j := List.count_pos_iff.mpr hmem_dl
-    have heq := congrArg (List.count j) (List.dropLast_append_getLast hne)
-    simp only [List.count_append, hj_last, List.count_singleton_self] at heq
-    omega
+  obtain ⟨hi_not_int, hj_not_int⟩ :=
+    endpoints_notMem_internalVertices hHead hLast hNodup
   have hpm_ne : pathMonomial (K := K) i j π ≠ 0 := by
     simp only [pathMonomial]
     exact mul_ne_zero

@@ -1269,7 +1269,7 @@ private lemma getLast_not_mem_dropLast (l : List V) (hnd : l.Nodup) (hne : l ≠
   intro h; exact absurd rfl (hnd.2.2 _ h _ (List.Mem.head []))
 
 omit [LinearOrder V] [DecidableEq V] [Fintype V] in
-private lemma internal_ne_head {l : List V} (hnd : l.Nodup)
+lemma internal_ne_head {l : List V} (hnd : l.Nodup)
     {v : V} (hv : v ∈ internalVertices l) (hne : l ≠ []) : v ≠ l.head hne := by
   simp only [internalVertices] at hv
   cases l with
@@ -1281,7 +1281,7 @@ private lemma internal_ne_head {l : List V} (hnd : l.Nodup)
     exact hnd.1 (List.dropLast_subset rest hv)
 
 omit [LinearOrder V] [DecidableEq V] [Fintype V] in
-private lemma internal_ne_getLast {l : List V} (hnd : l.Nodup)
+lemma internal_ne_getLast {l : List V} (hnd : l.Nodup)
     {v : V} (hv : v ∈ internalVertices l) (hne : l ≠ []) : v ≠ l.getLast hne := by
   simp only [internalVertices] at hv
   cases l with
