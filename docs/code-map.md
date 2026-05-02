@@ -45,7 +45,9 @@ for an editorial overview, see
 |---|---|
 | [`PrimeIdeals.lean`](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeIdeals.lean) | `primeComponent`, `componentCount`, `numConnectedComponents`. |
 | [`PrimeDecomposition.lean`](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecomposition.lean) | **Theorem 3.2** and **Proposition 3.6**. |
-| [`PrimeDecompositionDimension.lean`](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecompositionDimension.lean) | **Corollary 3.3**, quotient-dimension and equidim support lemmas. |
+| [`PrimeDecompositionDimensionCore.lean`](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecompositionDimensionCore.lean) | **Corollary 3.3**, quotient-dimension chain machinery, third-isomorphism dimension helper. |
+| [`PrimeDecompositionDimension.lean`](https://github.com/tom111/BEI-lean/blob/master/BEI/PrimeDecompositionDimension.lean) | Equidimensional surrogate variants of **Corollaries 3.4 and 3.7**. |
+| [`Prop1_6Equidim.lean`](https://github.com/tom111/BEI-lean/blob/master/BEI/Prop1_6Equidim.lean) | Path-graph (Example 1.7b) and **Proposition 1.6** equidimensional surrogate. |
 | [`Corollary3_4.lean`](https://github.com/tom111/BEI-lean/blob/master/BEI/Corollary3_4.lean) | **Corollary 3.4**, the connected-case wrapper, **Corollary 3.7** CM branch. |
 | [`MinimalPrimes.lean`](https://github.com/tom111/BEI-lean/blob/master/BEI/MinimalPrimes.lean) | **Propositions 3.8 / 3.9**, minimal-prime classification. |
 | [`CycleUnmixed.lean`](https://github.com/tom111/BEI-lean/blob/master/BEI/CycleUnmixed.lean) | Cycle component-count lemmas; unmixed branch of Corollary 3.7. |

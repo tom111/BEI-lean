@@ -1,6 +1,7 @@
 import BEI.Equidim
 import BEI.GroebnerDeformation
 import BEI.PrimeDecompositionDimension
+import BEI.Prop1_6Equidim
 
 /-!
 # Proposition 1.6 (Herzog et al. 2010) — paper-faithful Cohen–Macaulay statement

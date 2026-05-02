@@ -8,20 +8,20 @@ not arbitrary line count.
 
 ## Why this matters
 
-The current large files are (post equidim split, 2026-04-27):
+The current large files are (post 2026-05-02 PrimeDecompositionDimension split):
 
 - [CoveredWalks.lean](/home/tom/BEI-lean/BEI/CoveredWalks.lean) (~2700 lines)
 - [Equidim/IteratedRegularity.lean](/home/tom/BEI-lean/BEI/Equidim/IteratedRegularity.lean)
   (~2400 lines, residual heavy block from the equidim split)
 - [GroebnerDeformation.lean](/home/tom/BEI-lean/BEI/GroebnerDeformation.lean)
   (~2200 lines)
-- [PrimeDecompositionDimension.lean](/home/tom/BEI-lean/BEI/PrimeDecompositionDimension.lean)
-  (~2100 lines)
 - [PrimeIdeals.lean](/home/tom/BEI-lean/BEI/PrimeIdeals.lean) (~2000 lines)
 - [GroebnerBasisSPolynomial.lean](/home/tom/BEI-lean/BEI/GroebnerBasisSPolynomial.lean)
   (~2000 lines)
 - [Polynomial.lean](/home/tom/BEI-lean/toMathlib/CohenMacaulay/Polynomial.lean)
   (~1600 lines)
+- [Prop1_6Equidim.lean](/home/tom/BEI-lean/BEI/Prop1_6Equidim.lean)
+  (~1430 lines, residual block from the PrimeDecompositionDimension split)
 
 These files are doing multiple jobs at once.
 
@@ -83,25 +83,24 @@ Recommended split:
 - keep `CoveredWalks.lean` as a thin re-export if desired.
 
 
-## Target 3: `PrimeDecompositionDimension.lean`
+## Target 3: `PrimeDecompositionDimension.lean` — DONE 2026-05-02
 
-Current roles mixed together:
+Three-way split landed on `master` 2026-05-02. The resulting layout is:
 
-- Corollary 3.3 and related quotient-dimension lemmas;
-- equidimensional surrogate consequences for Corollaries 3.4 and 3.7;
-- the direct equidimensional route to Proposition 1.6;
-- supporting equidimensionality lemmas and examples.
+- `BEI/PrimeDecompositionDimensionCore.lean` (~570 LOC) — Corollary 3.3
+  family (`ringKrullDim_quot_primeComponent`, `corollary_3_3`,
+  `corollary_3_3_lower_bound`), the `dimChainMap` chain machinery, and the
+  generic third-isomorphism dimension helper `ringKrullDim_quotQuot_eq`.
+- `BEI/PrimeDecompositionDimension.lean` (~160 LOC, residual) — equidimensional
+  surrogate variants `corollary_3_4_equidim` and `corollary_3_7_equidim` (with
+  the cycle-pair minimal-prime helper).
+- `BEI/Prop1_6Equidim.lean` (~1430 LOC) — Example 1.7(b) path-graph
+  surrogate (`path_isEquidim`), Proposition 1.6 surrogate
+  (`prop_1_6_equidim`), and the shared `isEquidim_of_equidim_minimalPrimes`
+  helper.
 
-Recommended split:
-
-- `PrimeDecompositionDimensionCore.lean` for Corollary 3.3 and dimension lemmas;
-- `PrimeDecompositionEquidim.lean` for `corollary_3_4_equidim`,
-  `corollary_3_7_equidim`, and related equidimensional consequences;
-- `Prop1_6Equidim.lean` for the direct surrogate route if the support layer is
-  still too large after the first split.
-
-This split matters because the file currently mixes paper Section 3 dimension
-results with the Proposition 1.6 surrogate branch.
+`Proposition1_6.lean` now imports `BEI.Prop1_6Equidim` directly;
+`Corollary3_4.lean` keeps its single import of `BEI.PrimeDecompositionDimension`.
 
 
 ## Target 4: `PrimeIdeals.lean`

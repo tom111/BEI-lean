@@ -59,7 +59,9 @@ Do not edit `lean4-skills/` as part of normal BEI work unless explicitly asked.
 - `BEI/PrimeIdeals.lean` — `primeComponent`, `componentCount`; Section 3 prime ideal properties
 - `BEI/MinimalPrimes.lean` — Proposition 3.8, Corollary 3.9; minimal prime characterization
 - `BEI/PrimeDecomposition.lean` — Theorem 3.2 and Proposition 3.6
-- `BEI/PrimeDecompositionDimension.lean` — Corollary 3.3, quotient-dimension lemmas, and equidimensional support results used by the Section 3 development
+- `BEI/PrimeDecompositionDimensionCore.lean` — Corollary 3.3, quotient-dimension lemmas, and the third-isomorphism dimension helper used by every equidimensional surrogate downstream
+- `BEI/PrimeDecompositionDimension.lean` — equidimensional surrogate variants of Corollaries 3.4 and 3.7
+- `BEI/Prop1_6Equidim.lean` — Example 1.7(b) (path graph) and Proposition 1.6 equidimensional surrogate, plus the shared `isEquidim_of_equidim_minimalPrimes` helper
 - `BEI/Corollary3_4.lean` — Corollary 3.4, the connected-case wrapper, and the paper-facing Cohen--Macaulay cycle criterion package for Corollary 3.7
 - `BEI/CIIdeals.lean` — Section 4: `CIStatement`, `ciGraph`, `ciIdeal`, `ciGraphSpec`, `ciIdealSpec`, the single-statement and specification bridge theorems, and transferred radicality / prime decomposition / minimal-prime theorems
 - `BEI/Equidim.lean` — HH bipartite graph infrastructure, direct-route helpers, and equidimensional support material used by the paper-facing Section 1 and Section 3 results
