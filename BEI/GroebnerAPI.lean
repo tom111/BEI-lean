@@ -314,32 +314,23 @@ private theorem isGroebnerBasis_of_sPolynomial_isRemainder {R : Type*} [Field R]
               (fun b hb => Finset.le_sup'
                 (fun b => m.toSyn (m.degree (c' b * b))) hb)
             rwa [hc'sum] at hgoal
-          -- We prove by nested strong induction on the count of top-degree terms n.
-          -- The outer WFI on D is already set up. Here we show we can reduce n,
-          -- eventually reaching n = 0 (which means all terms < D, giving c' = c).
+          -- New strategy (Mathlib `sPolynomial_decomposition'` direct application).
           --
-          -- Key steps:
-          -- 1. n = 0 is impossible (hall_lt gives at least one top-degree term)
-          -- 2. n = 1 is impossible (single top-degree term can't cancel)
-          -- 3. n ≥ 2: split leading term, use sPolynomial_decomposition' +
-          --    sPolynomial_monomial_mul + hSP to reduce n
-          --
-          -- We generalize over c to allow the inner induction.
-          suffices ∀ (k : ℕ) (c : MvPolynomial σ R →₀ MvPolynomial σ R),
-              ↑c.support ⊆ G →
-              (c.sum fun b q => q • b) = f →
-              (∀ b ∈ c.support, m.toSyn (m.degree (c b * b)) ≤ D) →
-              (c.support.filter (fun b => m.toSyn (m.degree (c b * b)) = D)).card = k →
-              ∃ (c' : MvPolynomial σ R →₀ MvPolynomial σ R),
-                ↑c'.support ⊆ G ∧
-                (c'.sum fun b q => q • b) = f ∧
-                ∀ b ∈ c'.support, m.toSyn (m.degree (c' b * b)) < D by
-            exact this _ c hcG (by simp [hf_def, Finsupp.sum, smul_eq_mul])
-              hdeg rfl
-          intro k
-          induction k using Nat.strongRecOn with | ind k ihk => ?_
-          intro c0 hc0G hc0f hc0deg hc0card
-          -- If G contains a unit (degree 0 element), simple representation exists.
+          -- 1. Handle the unit case (`G` contains a constant) separately.
+          -- 2. Otherwise every `g ∈ G` has `m.degree g ≠ 0`.
+          -- 3. Let `B_hi := { b ∈ c.support | toSyn(deg(c b * b)) = D }` and
+          --    `g_top b := leadingTerm (c b) * b` (the "top" parts).
+          -- 4. By `sPolynomial_decomposition'`, the top sum decomposes as
+          --    a scalar combination of S-polynomials of the `g_top b`s.
+          -- 5. By `sPolynomial_leadingTerm_mul`, each `S(g_top b₁, g_top b₂)`
+          --    is `monomial * S(b₁, b₂)`.
+          -- 6. By `hSP`, each `S(b₁, b₂)` has a representation over `G` with
+          --    each term of degree `≤ deg(b₁) ⊔ deg(b₂)` (strict, when
+          --    combined with `sPolynomial_toSyn_lt_lcm` and the fact that
+          --    each `g ∈ G` has positive degree).
+          -- 7. Combine: `f` decomposes as low-part `+` lifted S-poly part,
+          --    each summand of toSyn-degree `< D`.
+          -- Unit case: G contains a constant `u`.  Then `f * u⁻¹ * u = f`.
           by_cases hG_unit : ∃ u ∈ G, m.degree u = 0
           · obtain ⟨u, hu_G, hu_deg⟩ := hG_unit
             have hu_ne : u ≠ 0 := isUnit_leadingCoeff.mp (hG u hu_G)
@@ -370,820 +361,470 @@ private theorem isGroebnerBasis_of_sPolynomial_isRemainder {R : Type*} [Field R]
                   _ < D := hf_lt_D
               · exfalso; apply hb
                 exact Finsupp.single_eq_of_ne hbu
-          -- If k = 0, all terms have degree < D. Take c' = c0.
-          by_cases hk0 : k = 0
-          · exact ⟨c0, hc0G, hc0f, fun b hb => by
-              have hcard_zero :
-                  (c0.support.filter (fun b => m.toSyn (m.degree (c0 b * b)) = D)).card = 0 :=
-                hc0card ▸ hk0
-              have : b ∉ c0.support.filter (fun b => m.toSyn (m.degree (c0 b * b)) = D) := by
-                rw [Finset.card_eq_zero.mp hcard_zero]
-                exact Finset.notMem_empty b
-              rw [Finset.mem_filter, not_and] at this
-              exact lt_of_le_of_ne (hc0deg b hb) (this hb)⟩
-          -- k ≥ 1: there exists at least one top-degree term
-          have hk_pos : k ≥ 1 := Nat.one_le_iff_ne_zero.mpr hk0
-          have hBhi_nonempty : (c0.support.filter (fun b =>
-              m.toSyn (m.degree (c0 b * b)) = D)).Nonempty := by
-            rw [Finset.nonempty_iff_ne_empty]
-            intro hempty
-            rw [Finset.card_eq_zero.mpr hempty] at hc0card
-            exact hk0 hc0card.symm
-          -- k = 1 is impossible: a single top-degree term can't cancel to give deg f < D
-          by_cases hk1 : k = 1
-          · exfalso
-            obtain ⟨b0, hb0⟩ := hBhi_nonempty
-            rw [Finset.mem_filter] at hb0
-            have hb0_only : c0.support.filter
-                (fun b => m.toSyn (m.degree (c0 b * b)) = D) = {b0} := by
-              have hcard1 : (c0.support.filter
-                  (fun b => m.toSyn (m.degree (c0 b * b)) = D)).card = 1 :=
-                hc0card ▸ hk1
-              rw [Finset.card_eq_one] at hcard1
-              obtain ⟨a, ha⟩ := hcard1
-              have hb0_filt : b0 ∈ c0.support.filter
-                  (fun b => m.toSyn (m.degree (c0 b * b)) = D) :=
-                Finset.mem_filter.mpr hb0
-              rw [ha, Finset.mem_singleton] at hb0_filt
-              rw [hb0_filt, ha]
-            -- f = c0(b0)*b0 + sum_{b ≠ b0} c0(b)*b
-            -- The sum over b ≠ b0 has all terms with toSyn(degree) < D
-            -- So deg(f) = deg(c0(b0)*b0) = D (the top term dominates)
-            -- But this contradicts hf_lt_D.
-            have hcb0_ne : c0 b0 ≠ 0 := Finsupp.mem_support_iff.mp hb0.1
-            have hb0_ne : b0 ≠ 0 :=
-              isUnit_leadingCoeff.mp (hG b0 (hc0G (Finset.mem_coe.mpr hb0.1)))
-            have hcb0_deg : m.toSyn (m.degree (c0 b0 * b0)) = D := hb0.2
-            -- All other terms have degree < D
-            have hothers : ∀ b ∈ c0.support, b ≠ b0 →
-                m.toSyn (m.degree (c0 b * b)) < D := by
-              intro b hb hne
-              have : b ∉ c0.support.filter (fun b =>
-                  m.toSyn (m.degree (c0 b * b)) = D) := by
-                rw [hb0_only]; simp [hne]
-              rw [Finset.mem_filter, not_and] at this
-              exact lt_of_le_of_ne (hc0deg b hb) (this hb)
-            -- f = c0(b0)*b0 + rest, where deg(rest) < D
-            have hfsum : f = c0 b0 * b0 + (Finsupp.erase b0 c0).sum (fun b q => q • b) := by
-              rw [← hc0f, ← smul_eq_mul]
-              exact (Finsupp.add_sum_erase' c0 b0 (fun b q => q • b) (fun _ => by simp)).symm
-            have hrest_deg : m.toSyn (m.degree ((Finsupp.erase b0 c0).sum
-                (fun b q => q • b))) < D := by
-              -- The sum = ∑ b ∈ erase_support, (erase c0)(b) * b
-              simp only [Finsupp.sum, smul_eq_mul]
-              -- Each term has degree < D
-              apply lt_of_le_of_lt MonomialOrder.degree_sum_le
-              apply (Finset.sup_lt_iff (lt_of_le_of_lt bot_le hf_lt_D)).mpr
-              intro b hb
-              have hb_erase : b ∈ (Finsupp.erase b0 c0).support := hb
-              rw [Finsupp.support_erase] at hb_erase
-              have hb_supp : b ∈ c0.support := Finset.mem_of_mem_erase hb_erase
-              have hb_ne : b ≠ b0 := Finset.ne_of_mem_erase hb_erase
-              rw [Finsupp.erase_ne hb_ne]
-              exact hothers b hb_supp hb_ne
-            -- Now: f = (degree D term) + (degree < D rest)
-            -- The degree D term is nonzero (c0 b0 ≠ 0 and b0 ≠ 0, NoZeroDivisors)
-            have hprod_ne : c0 b0 * b0 ≠ 0 := mul_ne_zero hcb0_ne hb0_ne
-            -- So deg(c0 b0 * b0) = toSyn⁻¹(D), and the rest has lower degree
-            -- Therefore deg(f) = deg(c0 b0 * b0), so toSyn(deg f) = D
-            have : m.toSyn (m.degree f) = D := by
-              rw [hfsum]
-              rw [MonomialOrder.degree_add_of_lt (f := c0 b0 * b0)]
-              · exact hcb0_deg
-              · calc m.toSyn (m.degree ((Finsupp.erase b0 c0).sum (fun b q => q • b)))
-                    < D := hrest_deg
-                  _ = m.toSyn (m.degree (c0 b0 * b0)) := hcb0_deg.symm
-            exact absurd this (ne_of_lt hf_lt_D)
-          -- k ≥ 2: reduce k by 1 using an S-polynomial identity.
-          -- Pick b2 ∈ B_hi with b2 ≠ b1, where b1 is any element of B_hi.
-          obtain ⟨b1, hb1_hi⟩ := hBhi_nonempty
-          rw [Finset.mem_filter] at hb1_hi
-          have hb1_supp := hb1_hi.1
-          have hb1_D := hb1_hi.2
-          have hb1_G : b1 ∈ G := hc0G (Finset.mem_coe.mpr hb1_supp)
-          have hcb1_ne : c0 b1 ≠ 0 := Finsupp.mem_support_iff.mp hb1_supp
-          have hb1_ne : b1 ≠ 0 := isUnit_leadingCoeff.mp (hG b1 hb1_G)
-          -- k ≥ 2 so ∃ b2 ∈ B_hi, b2 ≠ b1
-          have hk_ge_2 : k ≥ 2 := by omega
-          set B_hi := c0.support.filter (fun b => m.toSyn (m.degree (c0 b * b)) = D)
-          obtain ⟨b2, hb2_hi, hb2_ne_b1⟩ : ∃ b2 ∈ B_hi, b2 ≠ b1 := by
-            by_contra! hall
-            have : B_hi ⊆ {b1} := by
-              intro x hx
-              rw [Finset.mem_singleton]
-              exact hall x hx
-            have hcard_le := Finset.card_le_card this
-            simp at hcard_le
-            omega
-          rw [Finset.mem_filter] at hb2_hi
-          have hb2_supp := hb2_hi.1
-          have hb2_D := hb2_hi.2
-          have hb2_G : b2 ∈ G := hc0G (Finset.mem_coe.mpr hb2_supp)
-          have hcb2_ne : c0 b2 ≠ 0 := Finsupp.mem_support_iff.mp hb2_supp
-          have hb2_ne : b2 ≠ 0 := isUnit_leadingCoeff.mp (hG b2 hb2_G)
-          -- Get S-polynomial representation from hSP
-          obtain ⟨⟨h12, hh12_eq, hh12_deg⟩, _⟩ :=
-            hSP ⟨b1, hb1_G⟩ ⟨b2, hb2_G⟩
-          -- h12 : ↑G →₀ MvPoly, S(b1,b2) = linearCombination val h12
-          -- hh12_deg : ∀ b, deg(b.val * h12 b) ≼[m] deg(S(b1,b2))
-          rw [add_zero] at hh12_eq
-          -- S-polynomial identity for equal-degree terms:
-          -- S(f1, f2) = C(lc(f2))*f1 - C(lc(f1))*f2  when deg(f1) = deg(f2)
-          -- where fi = leadingTerm(c0 bi) * bi
-          -- So: leadingTerm(c0 b2)*b2 = (lc(f2)/lc(f1)) * leadingTerm(c0 b1)*b1
-          --     - (1/lc(f1)) * S(f1, f2)
-          -- And S(f1,f2) = mono * S(b1, b2) by sPolynomial_monomial_mul.
-          -- Build c1 that replaces c0(b2) with c0(b2) - leadingTerm(c0 b2)
-          -- and adjusts c0(b1) and adds scaled hSP terms.
-          --
-          -- We use the simplest approach: produce c1 with k-1 or fewer
-          -- top-D terms and apply ihk.
-          --
-          -- c1 = c0 + single(b1, ratio*lt(c0 b1))
-          --        - single(b2, lt(c0 b2))
-          --        + mapDomain val (h12.mapRange (fun q => -scale * q) ...)
-          -- where ratio and scale are chosen so that c1.sum = f.
-          --
-          -- For simplicity, we directly work with the algebraic identity.
-          -- Degree calculations show b2 leaves B_hi, reducing k.
-          --
-          -- Rather than building c1 explicitly, we show the result via
-          -- a cleaner Finsupp construction.
-          --
-          -- APPROACH: Apply ihk with k' < k directly.
-          -- We build c1 = c0 - single(b2, leadingTerm(c0 b2))
-          --             + single(b1, ratio * leadingTerm(c0 b1))
-          --             - mapDomain val (h12.mapRange (scale * ·) ...)
-          -- and show c1.sum = f with k' ≤ k-1 top-D terms.
-          --
-          -- Key identity:
-          --   leadingTerm(c0 b2)*b2 = ratio • leadingTerm(c0 b1)*b1
-          --                         - scale_poly * S(b1, b2)
-          -- where scale_poly = (1/lc(f1)) • mono (from sPolynomial_monomial_mul)
-          -- and ratio = lc(f2)/lc(f1).
-          --
-          -- Since this explicit Finsupp construction is quite involved,
-          -- we instead use the following cleaner approach:
-          --
-          -- Observe that f - (c0 b2 - leadingTerm(c0 b2)) * b2
-          --   = f - c0(b2)*b2 + leadingTerm(c0 b2)*b2
-          -- and this is expressible using the remaining c0 terms + leadingTerm stuff.
-          -- Then we handle leadingTerm(c0 b2)*b2 via the S-polynomial identity.
-          --
-          -- SIMPLEST APPROACH: Don't construct c1 explicitly.
-          -- Instead, use the fact that after removing b2's leading term,
-          -- we can express f using c0 with b2 modified, plus S-polynomial terms.
-          -- Show the resulting representation has fewer top-D terms.
-          --
-          -- We proceed by constructing a new Finsupp c1 step by step.
-
-          -- Step 1: Define the modified coefficient for b2.
-          -- c1_b2 = c0 b2 - leadingTerm(c0 b2)
-          -- This has degree < degree(c0 b2), so deg(c1_b2 * b2) < D.
-
-          -- Step 2: The "missing" part is leadingTerm(c0 b2) * b2.
-          -- We express this using S(b1, b2) and leadingTerm(c0 b1) * b1.
-
-          -- Key: when S(b1, b2) = 0, then b1 and b2 have proportional
-          -- leading terms, so leadingTerm(c0 b2)*b2 = ratio*leadingTerm(c0 b1)*b1.
-
-          -- When S(b1, b2) ≠ 0, we use the hSP representation.
-
-          -- For the purposes of reducing k, we use a simpler observation:
-          -- the polynomial
-          --   q := c0 b2 * b2 - (c0 b2 - leadingTerm(c0 b2)) * b2
-          --      = leadingTerm(c0 b2) * b2
-          -- is in Ideal.span G (since b2 ∈ G) and has degree alpha.
-          -- By the S-polynomial identity + sPolynomial_monomial_mul + hSP,
-          -- q has a representation with all terms < D.
-
-          -- However, constructing this representation explicitly as a Finsupp
-          -- is very technical. Instead, we use a trick:
-
-          -- We build c1 directly using Finsupp.update.
-          -- c1 = c0 updated at b2 to (c0 b2 - leadingTerm(c0 b2))
-          -- This gives c1.sum = f - leadingTerm(c0 b2) * b2.
-          -- Then we need to add back leadingTerm(c0 b2) * b2.
-
-          -- For adding back: we know that
-          --   leadingTerm(c0 b2) * b2 ∈ Ideal.span G
-          -- and it has a representation with degree < D (from S-poly + hSP).
-
-          -- Let's take yet another approach. We'll use ihk with a Finsupp
-          -- that has EXACTLY k-1 top-D terms. The simplest way is:
-
-          -- c1 = Finsupp.update c0 b2 (c0 b2 - leadingTerm(c0 b2) + ratio*h_term)
-          -- where h_term accounts for the S-polynomial.
-
-          -- Actually, let me use the most straightforward approach.
-          -- Directly apply Finsupp arithmetic.
-
-          -- Define scale and ratio using the S-polynomial identity
-          set f1 := m.leadingTerm (c0 b1) * b1 with hf1_def
-          set f2 := m.leadingTerm (c0 b2) * b2 with hf2_def
-          have hlt1_ne : m.leadingTerm (c0 b1) ≠ 0 :=
-            mt (m.leadingTerm_eq_zero_iff _).mp hcb1_ne
-          have hlt2_ne : m.leadingTerm (c0 b2) ≠ 0 :=
-            mt (m.leadingTerm_eq_zero_iff _).mp hcb2_ne
-          have hf1_ne : f1 ≠ 0 := mul_ne_zero hlt1_ne hb1_ne
-          have hf2_ne : f2 ≠ 0 := mul_ne_zero hlt2_ne hb2_ne
-          -- Both f1 and f2 have degree alpha
-          have halpha_def : m.degree (c0 b1 * b1) =
-              m.degree (c0 b1) + m.degree b1 :=
-            MonomialOrder.degree_mul hcb1_ne hb1_ne
-          have hf1_deg : m.degree f1 = m.degree (c0 b1 * b1) := by
-            rw [hf1_def, MonomialOrder.degree_mul hlt1_ne hb1_ne,
-              MonomialOrder.degree_leadingTerm, halpha_def]
-          have hf2_deg : m.degree f2 = m.degree (c0 b2 * b2) := by
-            rw [hf2_def, MonomialOrder.degree_mul hlt2_ne hb2_ne,
-              MonomialOrder.degree_leadingTerm,
-              MonomialOrder.degree_mul hcb2_ne hb2_ne]
-          have halpha_eq : m.degree f1 = m.degree f2 := by
-            rw [hf1_deg, hf2_deg]
-            exact m.toSyn.injective (hb1_D.trans hb2_D.symm)
-          -- S-polynomial: S(f1, f2) = C(lc f2)*f1 - C(lc f1)*f2
-          -- when deg(f1) = deg(f2)
-          -- And S(f1, f2) = mono * S(b1, b2)
-          -- So: C(lc f1)*f2 = C(lc f2)*f1 - mono * S(b1, b2)
-          -- i.e.: f2 = (lc f2 / lc f1) • f1 - (1/lc f1) • mono * S(b1, b2)
-          -- Now, S(b1, b2) = h12.sum (fun g q => q • g.val) [from hSP]
-          -- And mono * S(b1, b2) = h12.sum (fun g q => (mono * q) • g.val)
-          -- Define the scaled hSP Finsupp on MvPoly
-          set scale_poly := MvPolynomial.C (m.leadingCoeff f1)⁻¹ *
-            monomial (m.degree f1 ⊔ m.degree f2 - m.degree b1 ⊔ m.degree b2)
-              (m.leadingCoeff (c0 b1) * m.leadingCoeff (c0 b2)) with hscale_def
-          set h12_scaled := h12.mapRange (fun q => scale_poly * q)
-            (by simp [scale_poly]) with hh12_scaled_def
-          set h12_lifted := Finsupp.mapDomain Subtype.val h12_scaled
-            with hh12_lifted_def
-          set ratio := m.leadingCoeff f2 * (m.leadingCoeff f1)⁻¹ with hratio_def
-          -- Build c1 = c0 + single(b1, C(ratio) * leadingTerm(c0 b1))
-          --           - single(b2, leadingTerm(c0 b2))
-          --           - h12_lifted
-          set adj_b1 := Finsupp.single b1
-            (MvPolynomial.C ratio * m.leadingTerm (c0 b1)) with hadj_b1_def
-          set adj_b2 := Finsupp.single b2
-            (m.leadingTerm (c0 b2)) with hadj_b2_def
-          set c1 := c0 + adj_b1 - adj_b2 - h12_lifted with hc1_def
-          -- Apply ihk with k' = card of filtered c1.support
-          set k' := (c1.support.filter
-            (fun b => m.toSyn (m.degree (c1 b * b)) = D)).card
-          apply ihk k' ?_ c1 ?_ ?_ ?_ rfl
-          · -- k' < k: b2 is no longer at level D in c1, so the filtered set
-            -- lost at least b2 compared to B_hi.
-            -- Key: all G elements have degree > 0 (from hG_unit being False).
-            have hG_deg_pos : ∀ g ∈ G, m.degree g ≠ 0 :=
-              fun g hg hdeg => hG_unit ⟨g, hg, hdeg⟩
-            -- S(b1,b2) has degree STRICTLY less than deg(b1) ⊔ deg(b2).
-            -- This holds in both cases: S ≠ 0 (from degree_sPolynomial) and
-            -- S = 0 (since 0 < deg(b1 ⊔ b2) because both have deg > 0).
-            have hSpoly_strict : m.toSyn (m.degree (m.sPolynomial b1 b2)) <
-                m.toSyn (m.degree b1 ⊔ m.degree b2) := by
-              rcases degree_sPolynomial b1 b2 with hlt | hzero
+          -- Non-unit case: every `g ∈ G` has positive (non-zero) degree.
+          push_neg at hG_unit
+          -- Set up `B_hi` and the family `g_top : MvPolynomial σ R → MvPolynomial σ R`.
+          set B_hi := c.support.filter (fun b => m.toSyn (m.degree (c b * b)) = D)
+            with hB_hi_def
+          set g_top : MvPolynomial σ R → MvPolynomial σ R :=
+            fun b => m.leadingTerm (c b) * b with hg_top_def
+          -- Basic facts about elements of `B_hi`.
+          have hB_hi_subset : B_hi ⊆ c.support := Finset.filter_subset _ _
+          have hb_G_of_hi : ∀ b ∈ B_hi, b ∈ G := fun b hb =>
+            hcG (Finset.mem_coe.mpr (hB_hi_subset hb))
+          have hcb_ne_of_hi : ∀ b ∈ B_hi, c b ≠ 0 := fun b hb =>
+            Finsupp.mem_support_iff.mp (hB_hi_subset hb)
+          have hb_ne_of_hi : ∀ b ∈ B_hi, b ≠ 0 := fun b hb =>
+            isUnit_leadingCoeff.mp (hG b (hb_G_of_hi b hb))
+          have hb_deg_pos : ∀ b ∈ B_hi, m.degree b ≠ 0 := fun b hb =>
+            hG_unit b (hb_G_of_hi b hb)
+          have hg_top_deg : ∀ b ∈ B_hi, m.toSyn (m.degree (g_top b)) = D := by
+            intro b hb
+            have hbD : m.toSyn (m.degree (c b * b)) = D :=
+              (Finset.mem_filter.mp hb).2
+            rw [hg_top_def, MonomialOrder.degree_leadingTerm_mul]
+            exact hbD
+          -- Hypothesis `hd` for `sPolynomial_decomposition'`.
+          have hd_spec : ∀ b ∈ B_hi, m.toSyn (m.degree (g_top b)) = D ∨ g_top b = 0 :=
+            fun b hb => Or.inl (hg_top_deg b hb)
+          -- Express `f` as low-part + sum of `g_top`.
+          set f_low : MvPolynomial σ R :=
+              ∑ b ∈ c.support,
+                (if b ∈ B_hi then c b - m.leadingTerm (c b) else c b) * b
+            with hf_low_def
+          have hf_eq : f = f_low + ∑ b ∈ B_hi, g_top b := by
+            rw [hf_def]
+            simp only [Finsupp.sum, smul_eq_mul, hf_low_def, hg_top_def]
+            rw [show (∑ b ∈ c.support, c b * b) =
+                ∑ b ∈ c.support,
+                  ((if b ∈ B_hi then c b - m.leadingTerm (c b) else c b) * b
+                    + (if b ∈ B_hi then m.leadingTerm (c b) * b else 0)) from
+                Finset.sum_congr rfl (fun b _ => by
+                  by_cases hb : b ∈ B_hi
+                  · simp [hb, sub_mul]
+                  · simp [hb]),
+              Finset.sum_add_distrib]
+            congr 1
+            -- ∑ b ∈ c.support, (if b ∈ B_hi then ... else 0) = ∑ b ∈ B_hi, ...
+            rw [← Finset.sum_filter]
+            -- c.support.filter (· ∈ B_hi) = B_hi (since B_hi ⊆ c.support).
+            have hfilt : c.support.filter (· ∈ B_hi) = B_hi := by
+              apply Finset.Subset.antisymm
+              · intro b hb
+                exact (Finset.mem_filter.mp hb).2
+              · intro b hb
+                exact Finset.mem_filter.mpr ⟨hB_hi_subset hb, hb⟩
+            rw [hfilt]
+          -- Each summand of `f_low` has toSyn-degree `< D`.
+          have hf_low_terms_lt :
+              ∀ b ∈ c.support,
+                m.toSyn (m.degree
+                  ((if b ∈ B_hi then c b - m.leadingTerm (c b) else c b) * b)) < D := by
+            intro b hb
+            by_cases hbhi : b ∈ B_hi
+            · simp only [if_pos hbhi]
+              have hcb_ne := hcb_ne_of_hi b hbhi
+              have hb_ne := hb_ne_of_hi b hbhi
+              have hbD : m.toSyn (m.degree (c b * b)) = D :=
+                (Finset.mem_filter.mp hbhi).2
+              by_cases hcb_zero : c b - m.leadingTerm (c b) = 0
+              · rw [hcb_zero, zero_mul, MonomialOrder.degree_zero, map_zero]
+                refine bot_lt_iff_ne_bot.mpr ?_
+                intro hD
+                have : m.toSyn (m.degree f) < (⊥ : m.syn) := hD ▸ hf_lt_D
+                exact not_lt_bot this
+              -- Strict because `m.degree (c b) ≠ 0` (otherwise c b - lt = 0).
+              have hdeg_cb_ne : m.degree (c b) ≠ 0 := by
+                intro hcb_deg
+                apply hcb_zero
+                have hlt_eq : m.leadingTerm (c b) = c b := by
+                  rw [MonomialOrder.leadingTerm, hcb_deg]
+                  exact (MonomialOrder.eq_C_of_degree_eq_zero hcb_deg).symm
+                rw [hlt_eq, sub_self]
+              -- `c b - lt(c b) = subLTerm (c b)`
+              have hsub_eq : c b - m.leadingTerm (c b) = m.subLTerm (c b) := by
+                simp [MonomialOrder.subLTerm, MonomialOrder.leadingTerm]
+              have hsub_lt : m.toSyn (m.degree (c b - m.leadingTerm (c b))) <
+                  m.toSyn (m.degree (c b)) := by
+                rw [hsub_eq]
+                exact m.degree_sub_LTerm_lt hdeg_cb_ne
+              calc m.toSyn (m.degree ((c b - m.leadingTerm (c b)) * b))
+                  ≤ m.toSyn (m.degree (c b - m.leadingTerm (c b)) + m.degree b) :=
+                    MonomialOrder.degree_mul_le
+                _ = m.toSyn (m.degree (c b - m.leadingTerm (c b))) +
+                    m.toSyn (m.degree b) := map_add _ _ _
+                _ < m.toSyn (m.degree (c b)) + m.toSyn (m.degree b) := by
+                    exact (add_lt_add_iff_right _).mpr hsub_lt
+                _ = m.toSyn (m.degree (c b) + m.degree b) := (map_add _ _ _).symm
+                _ = m.toSyn (m.degree (c b * b)) := by
+                    rw [MonomialOrder.degree_mul (hcb_ne_of_hi b hbhi) hb_ne]
+                _ = D := hbD
+            · simp only [if_neg hbhi]
+              have hbnotD : m.toSyn (m.degree (c b * b)) ≠ D := by
+                intro heq
+                exact hbhi (Finset.mem_filter.mpr ⟨hb, heq⟩)
+              exact lt_of_le_of_ne (hdeg b hb) hbnotD
+          -- Therefore `m.toSyn (m.degree f_low) < D`.
+          have hf_low_lt : m.toSyn (m.degree f_low) < D := by
+            rw [hf_low_def]
+            apply lt_of_le_of_lt MonomialOrder.degree_sum_le
+            apply (Finset.sup_lt_iff (lt_of_le_of_lt bot_le hf_lt_D)).mpr
+            intro b hb
+            exact hf_low_terms_lt b hb
+          -- And `m.toSyn (m.degree (∑ b ∈ B_hi, g_top b)) < D`.
+          have hfd_spec : m.toSyn (m.degree (∑ b ∈ B_hi, g_top b)) < D := by
+            have h_eq : ∑ b ∈ B_hi, g_top b = f - f_low := by
+              rw [hf_eq]; ring
+            rw [h_eq]
+            calc m.toSyn (m.degree (f - f_low))
+                ≤ m.toSyn (m.degree f) ⊔ m.toSyn (m.degree f_low) :=
+                  MonomialOrder.degree_sub_le
+              _ < D := sup_lt_iff.mpr ⟨hf_lt_D, hf_low_lt⟩
+          -- Apply `sPolynomial_decomposition'`.
+          obtain ⟨c'', hc''_eq⟩ := m.sPolynomial_decomposition' g_top hd_spec hfd_spec
+          -- For each pair `(b₁, b₂)` in `B_hi`, choose an `hSP` representation.
+          let h_pair : (b : MvPolynomial σ R) → b ∈ B_hi →
+              (b' : MvPolynomial σ R) → b' ∈ B_hi → (↑G →₀ MvPolynomial σ R) :=
+            fun b₁ hb₁ b₂ hb₂ =>
+              Classical.choose (hSP ⟨b₁, hb_G_of_hi b₁ hb₁⟩ ⟨b₂, hb_G_of_hi b₂ hb₂⟩).1
+          have h_pair_spec : ∀ b₁ (hb₁ : b₁ ∈ B_hi) b₂ (hb₂ : b₂ ∈ B_hi),
+              m.sPolynomial b₁ b₂ =
+                Finsupp.linearCombination _ (fun (g : ↑G) => g.val) (h_pair b₁ hb₁ b₂ hb₂) ∧
+              ∀ (g : ↑G), m.degree (g.val * h_pair b₁ hb₁ b₂ hb₂ g) ≼[m]
+                m.degree (m.sPolynomial b₁ b₂) := by
+            intro b₁ hb₁ b₂ hb₂
+            have hSP12 := (hSP ⟨b₁, hb_G_of_hi b₁ hb₁⟩ ⟨b₂, hb_G_of_hi b₂ hb₂⟩).1
+            have hchoose := Classical.choose_spec hSP12
+            refine ⟨?_, hchoose.2⟩
+            have heq := hchoose.1
+            rw [add_zero] at heq
+            exact heq
+          -- "Monomial factor" arising from `sPolynomial_leadingTerm_mul`.
+          set α_mono : MvPolynomial σ R → MvPolynomial σ R → (σ →₀ ℕ) :=
+            fun b₁ b₂ => (m.degree (c b₁) + m.degree b₁) ⊔
+              (m.degree (c b₂) + m.degree b₂) - m.degree b₁ ⊔ m.degree b₂
+            with hα_mono_def
+          set mono_pair : MvPolynomial σ R → MvPolynomial σ R → MvPolynomial σ R :=
+            fun b₁ b₂ => MvPolynomial.monomial (α_mono b₁ b₂)
+              (m.leadingCoeff (c b₁) * m.leadingCoeff (c b₂))
+            with hmono_pair_def
+          have hS_top_eq : ∀ b₁ b₂, m.sPolynomial (g_top b₁) (g_top b₂) =
+              mono_pair b₁ b₂ * m.sPolynomial b₁ b₂ := by
+            intro b₁ b₂
+            rw [hg_top_def, m.sPolynomial_leadingTerm_mul]
+          -- Define `c_low` as a Finsupp on `MvPolynomial σ R`.
+          set c_low : MvPolynomial σ R →₀ MvPolynomial σ R :=
+              ∑ b ∈ c.support,
+                Finsupp.single b
+                  (if b ∈ B_hi then c b - m.leadingTerm (c b) else c b)
+            with hc_low_def
+          -- Define `c_extra` for one pair.
+          let extra_pair : (b : MvPolynomial σ R) → b ∈ B_hi →
+              (b' : MvPolynomial σ R) → b' ∈ B_hi →
+              (MvPolynomial σ R →₀ MvPolynomial σ R) :=
+            fun b₁ hb₁ b₂ hb₂ =>
+              Finsupp.mapDomain Subtype.val
+                ((h_pair b₁ hb₁ b₂ hb₂).mapRange
+                  (fun q => MvPolynomial.C (c'' b₁ b₂) * mono_pair b₁ b₂ * q)
+                  (by simp))
+          -- Define `c_extra` as the sum over pairs.
+          set c_extra : MvPolynomial σ R →₀ MvPolynomial σ R :=
+              ∑ b₁ ∈ B_hi.attach, ∑ b₂ ∈ B_hi.attach,
+                extra_pair b₁.val b₁.prop b₂.val b₂.prop
+            with hc_extra_def
+          -- Final candidate.
+          set c' : MvPolynomial σ R →₀ MvPolynomial σ R := c_low + c_extra with hc'_def
+          refine ⟨c', ?_, ?_, ?_⟩
+          · -- ↑c'.support ⊆ G
+            intro b hb
+            simp only [Finset.mem_coe, Finsupp.mem_support_iff, hc'_def,
+              Finsupp.coe_add, Pi.add_apply] at hb
+            by_cases hbl : c_low b = 0
+            · rw [hbl, zero_add] at hb
+              by_contra hbG
+              apply hb
+              rw [hc_extra_def, Finsupp.finset_sum_apply]
+              refine Finset.sum_eq_zero (fun b₁ _ => ?_)
+              rw [Finsupp.finset_sum_apply]
+              refine Finset.sum_eq_zero (fun b₂ _ => ?_)
+              change extra_pair b₁.val b₁.prop b₂.val b₂.prop b = 0
+              apply Finsupp.mapDomain_notin_range
+              rintro ⟨g, rfl⟩
+              exact hbG g.prop
+            · have hb_in_supp : b ∈ c.support := by
+                rw [hc_low_def] at hbl
+                rw [Finsupp.finset_sum_apply] at hbl
+                by_contra hb_notin
+                apply hbl
+                refine Finset.sum_eq_zero (fun b' hb' => ?_)
+                by_cases hbb : b = b'
+                · exact absurd (hbb ▸ hb') hb_notin
+                · exact Finsupp.single_eq_of_ne hbb
+              exact hcG (Finset.mem_coe.mpr hb_in_supp)
+          · -- c'.sum smul = f
+            have hsmul_add : ∀ (b : MvPolynomial σ R) (q₁ q₂ : MvPolynomial σ R),
+                (q₁ + q₂) • b = q₁ • b + q₂ • b := fun b q₁ q₂ => add_smul q₁ q₂ b
+            have h0 : ∀ (b : MvPolynomial σ R), (0 : MvPolynomial σ R) • b = 0 :=
+              fun b => zero_smul _ b
+            -- General: for any Finset s, the sum-of-singles equals the explicit sum.
+            have hsum_singles : ∀ (s : Finset (MvPolynomial σ R))
+                (g : MvPolynomial σ R → MvPolynomial σ R),
+                ((∑ b ∈ s, Finsupp.single b (g b)).sum
+                    fun (b : MvPolynomial σ R) (q : MvPolynomial σ R) => q • b) =
+                  ∑ b ∈ s, g b * b := by
+              intro s g
+              induction s using Finset.induction_on with
+              | empty => simp [Finsupp.sum_zero_index]
+              | insert a s ha ih =>
+                  rw [Finset.sum_insert ha,
+                    Finsupp.sum_add_index' (h := fun (b : MvPolynomial σ R)
+                      (q : MvPolynomial σ R) => q • b) h0 hsmul_add,
+                    Finsupp.sum_single_index (h0 a), Finset.sum_insert ha,
+                    smul_eq_mul, ih]
+            have hc_low_sum : (c_low.sum fun b q => q • b) = f_low := by
+              rw [hc_low_def, hf_low_def]
+              exact hsum_singles c.support
+                (fun b => if b ∈ B_hi then c b - m.leadingTerm (c b) else c b)
+            have hpair_sum : ∀ b₁ (hb₁ : b₁ ∈ B_hi) b₂ (hb₂ : b₂ ∈ B_hi),
+                ((extra_pair b₁ hb₁ b₂ hb₂).sum fun b q => q • b) =
+                  (c'' b₁ b₂) • m.sPolynomial (g_top b₁) (g_top b₂) := by
+              intro b₁ hb₁ b₂ hb₂
+              change ((Finsupp.mapDomain Subtype.val
+                  ((h_pair b₁ hb₁ b₂ hb₂).mapRange
+                    (fun q => MvPolynomial.C (c'' b₁ b₂) * mono_pair b₁ b₂ * q)
+                    (by simp))).sum (fun b q => q • b)) = _
+              rw [Finsupp.sum_mapDomain_index (h := fun (b : MvPolynomial σ R)
+                  (q : MvPolynomial σ R) => q • b) (fun b => zero_smul _ b)
+                (fun b q₁ q₂ => add_smul q₁ q₂ b)]
+              rw [Finsupp.sum_mapRange_index (h := fun (g : ↑G)
+                  (q : MvPolynomial σ R) => q • g.val) (fun g => zero_smul _ _)]
+              rw [hS_top_eq b₁ b₂]
+              have h_eq := (h_pair_spec b₁ hb₁ b₂ hb₂).1
+              rw [h_eq, Finsupp.linearCombination_apply]
+              -- Goal: h_pair.sum (fun g q => (C(c'') * mono * q) • g.val)
+              --     = c'' • (mono * h_pair.sum (fun g q => q • g.val))
+              simp only [smul_eq_mul, Finsupp.sum, Finset.mul_sum,
+                MvPolynomial.smul_eq_C_mul]
+              refine Finset.sum_congr rfl fun g _ => ?_
+              ring
+            have hc_extra_sum : (c_extra.sum fun b q => q • b) = ∑ b ∈ B_hi, g_top b := by
+              -- Use `Finsupp.liftAddHom` to push the ambient `Finset.sum` through `Finsupp.sum`.
+              -- Concretely: `(∑ i ∈ S, f i).sum (fun b q => q • b) = ∑ i ∈ S, (f i).sum smul`.
+              have hsum_eq : ∀ {ι : Type _} (S : Finset ι)
+                  (f : ι → (MvPolynomial σ R →₀ MvPolynomial σ R)),
+                  ((∑ b ∈ S, f b).sum
+                      fun (b : MvPolynomial σ R) (q : MvPolynomial σ R) => q • b) =
+                    ∑ b ∈ S,
+                      ((f b).sum
+                        fun (b : MvPolynomial σ R) (q : MvPolynomial σ R) => q • b) := by
+                intro ι S f
+                induction S using Finset.induction_on with
+                | empty => simp [Finsupp.sum_zero_index]
+                | insert a s ha ih =>
+                    rw [Finset.sum_insert ha,
+                      Finsupp.sum_add_index' (h := fun (b : MvPolynomial σ R)
+                        (q : MvPolynomial σ R) => q • b) h0 hsmul_add,
+                      Finset.sum_insert ha, ih]
+              rw [hc_extra_def]
+              rw [hsum_eq B_hi.attach (fun b₁ =>
+                ∑ b₂ ∈ B_hi.attach, extra_pair b₁.val b₁.prop b₂.val b₂.prop)]
+              -- Inner: each ∑ over b₂ ∈ B_hi.attach
+              rw [show (∑ b₁ ∈ B_hi.attach,
+                  ((∑ b₂ ∈ B_hi.attach,
+                    extra_pair b₁.val b₁.prop b₂.val b₂.prop).sum
+                    fun b q => q • b)) =
+                  ∑ b₁ ∈ B_hi.attach, ∑ b₂ ∈ B_hi.attach,
+                    (c'' b₁.val b₂.val) • m.sPolynomial (g_top b₁.val) (g_top b₂.val) from
+                Finset.sum_congr rfl fun b₁ _ => by
+                  rw [hsum_eq B_hi.attach (fun b₂ =>
+                    extra_pair b₁.val b₁.prop b₂.val b₂.prop)]
+                  exact Finset.sum_congr rfl fun b₂ _ =>
+                    hpair_sum b₁.val b₁.prop b₂.val b₂.prop]
+              rw [Finset.sum_attach B_hi (fun b₁ =>
+                ∑ b₂ ∈ B_hi.attach, c'' b₁ b₂.val • m.sPolynomial (g_top b₁) (g_top b₂.val))]
+              rw [show (∑ b₁ ∈ B_hi,
+                    ∑ b₂ ∈ B_hi.attach, c'' b₁ b₂.val •
+                      m.sPolynomial (g_top b₁) (g_top b₂.val)) =
+                  ∑ b₁ ∈ B_hi, ∑ b₂ ∈ B_hi,
+                    c'' b₁ b₂ • m.sPolynomial (g_top b₁) (g_top b₂) from
+                Finset.sum_congr rfl fun b₁ _ =>
+                  Finset.sum_attach B_hi (fun b₂ =>
+                    c'' b₁ b₂ • m.sPolynomial (g_top b₁) (g_top b₂))]
+              exact hc''_eq.symm
+            -- Combine: c'.sum smul = c_low.sum smul + c_extra.sum smul = f_low + ∑ g_top = f
+            rw [hc'_def,
+              Finsupp.sum_add_index' (h := fun (b : MvPolynomial σ R)
+                (q : MvPolynomial σ R) => q • b) h0 hsmul_add,
+              hc_low_sum, hc_extra_sum, hf_eq]
+          · -- ∀ b ∈ c'.support, m.toSyn (m.degree (c' b * b)) < D
+            have hclow_eval : ∀ b, c_low b =
+                if b ∈ c.support then
+                  (if b ∈ B_hi then c b - m.leadingTerm (c b) else c b)
+                else 0 := by
+              intro b
+              rw [hc_low_def, Finsupp.finset_sum_apply]
+              by_cases hbsupp : b ∈ c.support
+              · rw [if_pos hbsupp,
+                  Finset.sum_eq_single b
+                    (fun b' _ hbb => by
+                      rw [Finsupp.single_eq_of_ne hbb.symm])
+                    (fun hb_notin => absurd hbsupp hb_notin),
+                  Finsupp.single_eq_same]
+              · rw [if_neg hbsupp]
+                refine Finset.sum_eq_zero fun b' hb' => ?_
+                by_cases h : b = b'
+                · exact absurd (h ▸ hb') hbsupp
+                · exact Finsupp.single_eq_of_ne h
+            have hclow_b_lt : ∀ b, m.toSyn (m.degree (c_low b * b)) < D := by
+              intro b
+              rw [hclow_eval]
+              by_cases hb : b ∈ c.support
+              · simp only [if_pos hb]
+                exact hf_low_terms_lt b hb
+              · simp only [if_neg hb, zero_mul, MonomialOrder.degree_zero, map_zero]
+                exact bot_lt_iff_ne_bot.mpr (fun hD =>
+                  not_lt_bot (hD ▸ hf_lt_D))
+            have hsPoly_strict : ∀ b₁ ∈ B_hi, ∀ b₂ ∈ B_hi,
+                m.toSyn (m.degree (m.sPolynomial b₁ b₂)) <
+                m.toSyn (m.degree b₁ ⊔ m.degree b₂) := by
+              intro b₁ hb₁ b₂ hb₂
+              rcases m.degree_sPolynomial b₁ b₂ with hlt | hzero
               · exact hlt
               · rw [hzero, MonomialOrder.degree_zero, map_zero]
-                have hsup_ne : m.degree b1 ⊔ m.degree b2 ≠ 0 := by
+                have hsup_ne : m.degree b₁ ⊔ m.degree b₂ ≠ 0 := by
                   intro h
-                  exact hG_deg_pos b1 hb1_G
+                  exact hb_deg_pos b₁ hb₁
                     (le_antisymm (h ▸ le_sup_left) bot_le)
                 rw [show (0 : m.syn) = m.toSyn 0 from (map_zero _).symm]
                 exact lt_of_le_of_ne (m.toSyn_monotone bot_le)
                   (fun h => hsup_ne (m.toSyn.injective h.symm))
-            -- h12_lifted b * b has degree STRICTLY less than D for all b.
-            have hh12_strict : ∀ b,
-                m.toSyn (m.degree (h12_lifted b * b)) < D := by
+            have hextra_pair_b_lt : ∀ b₁ (hb₁ : b₁ ∈ B_hi) b₂ (hb₂ : b₂ ∈ B_hi),
+                ∀ b, m.toSyn (m.degree (extra_pair b₁ hb₁ b₂ hb₂ b * b)) < D := by
+              intro b₁ hb₁ b₂ hb₂ b
+              by_cases hb_range : b ∈ Set.range (Subtype.val : ↑G → MvPolynomial σ R)
+              · obtain ⟨⟨b_g, hb_g⟩, hb_eq⟩ := hb_range
+                simp only at hb_eq
+                set g_v : ↑G := ⟨b_g, hb_g⟩
+                have hval :
+                    extra_pair b₁ hb₁ b₂ hb₂ b =
+                      MvPolynomial.C (c'' b₁ b₂) * mono_pair b₁ b₂ *
+                        h_pair b₁ hb₁ b₂ hb₂ g_v := by
+                  change (Finsupp.mapDomain Subtype.val
+                    ((h_pair b₁ hb₁ b₂ hb₂).mapRange
+                      (fun q => MvPolynomial.C (c'' b₁ b₂) * mono_pair b₁ b₂ * q)
+                      (by simp))) b = _
+                  rw [← hb_eq]
+                  change (Finsupp.mapDomain Subtype.val _) (Subtype.val g_v) = _
+                  rw [Finsupp.mapDomain_apply Subtype.val_injective,
+                      Finsupp.mapRange_apply]
+                rw [hval, ← hb_eq]
+                obtain ⟨_, hdeg_h⟩ := h_pair_spec b₁ hb₁ b₂ hb₂
+                have hb₁D : m.toSyn (m.degree (c b₁ * b₁)) = D :=
+                  (Finset.mem_filter.mp hb₁).2
+                have hb₂D : m.toSyn (m.degree (c b₂ * b₂)) = D :=
+                  (Finset.mem_filter.mp hb₂).2
+                have hcb₁_ne := hcb_ne_of_hi b₁ hb₁
+                have hcb₂_ne := hcb_ne_of_hi b₂ hb₂
+                have hb₁_ne := hb_ne_of_hi b₁ hb₁
+                have hb₂_ne := hb_ne_of_hi b₂ hb₂
+                have hsum_eq : α_mono b₁ b₂ + (m.degree b₁ ⊔ m.degree b₂) =
+                    (m.degree (c b₁) + m.degree b₁) ⊔
+                    (m.degree (c b₂) + m.degree b₂) := by
+                  rw [hα_mono_def]
+                  exact tsub_add_cancel_of_le
+                    (sup_le_sup (le_add_left le_rfl) (le_add_left le_rfl))
+                calc m.toSyn (m.degree
+                    (MvPolynomial.C (c'' b₁ b₂) * mono_pair b₁ b₂ *
+                      h_pair b₁ hb₁ b₂ hb₂ g_v * b_g))
+                    = m.toSyn (m.degree
+                      (MvPolynomial.C (c'' b₁ b₂) *
+                        (mono_pair b₁ b₂ * (h_pair b₁ hb₁ b₂ hb₂ g_v * b_g)))) := by
+                      ring_nf
+                  _ ≤ m.toSyn (m.degree (MvPolynomial.C (c'' b₁ b₂))) +
+                      m.toSyn (m.degree
+                        (mono_pair b₁ b₂ * (h_pair b₁ hb₁ b₂ hb₂ g_v * b_g))) := by
+                      rw [← map_add]
+                      exact MonomialOrder.degree_mul_le
+                  _ = 0 + m.toSyn (m.degree
+                      (mono_pair b₁ b₂ * (h_pair b₁ hb₁ b₂ hb₂ g_v * b_g))) := by
+                      rw [MonomialOrder.degree_C, map_zero]
+                  _ = m.toSyn (m.degree
+                      (mono_pair b₁ b₂ * (h_pair b₁ hb₁ b₂ hb₂ g_v * b_g))) := zero_add _
+                  _ ≤ m.toSyn (m.degree (mono_pair b₁ b₂)) +
+                      m.toSyn (m.degree (h_pair b₁ hb₁ b₂ hb₂ g_v * b_g)) := by
+                      rw [← map_add]
+                      exact MonomialOrder.degree_mul_le
+                  _ ≤ m.toSyn (α_mono b₁ b₂) +
+                      m.toSyn (m.degree (h_pair b₁ hb₁ b₂ hb₂ g_v * b_g)) := by
+                      refine add_le_add ?_ le_rfl
+                      rw [hmono_pair_def]
+                      exact MonomialOrder.degree_monomial_le _
+                  _ < m.toSyn (α_mono b₁ b₂) +
+                      m.toSyn (m.degree b₁ ⊔ m.degree b₂) := by
+                      refine add_lt_add_of_le_of_lt le_rfl ?_
+                      calc m.toSyn (m.degree (h_pair b₁ hb₁ b₂ hb₂ g_v * b_g))
+                          = m.toSyn (m.degree (b_g * h_pair b₁ hb₁ b₂ hb₂ g_v)) := by
+                              rw [mul_comm]
+                        _ ≤ m.toSyn (m.degree (m.sPolynomial b₁ b₂)) := hdeg_h g_v
+                        _ < m.toSyn (m.degree b₁ ⊔ m.degree b₂) :=
+                            hsPoly_strict b₁ hb₁ b₂ hb₂
+                  _ = m.toSyn (α_mono b₁ b₂ + (m.degree b₁ ⊔ m.degree b₂)) :=
+                      (map_add _ _ _).symm
+                  _ = m.toSyn ((m.degree (c b₁) + m.degree b₁) ⊔
+                      (m.degree (c b₂) + m.degree b₂)) := by rw [hsum_eq]
+                  _ = D := by
+                    -- The two arguments of `⊔` have the same `m.toSyn` (= D),
+                    -- so by injectivity of `m.toSyn` they're equal as Finsupps,
+                    -- and `⊔` collapses.
+                    have hb₁eq : m.degree (c b₁) + m.degree b₁ = m.degree (c b₁ * b₁) :=
+                      (MonomialOrder.degree_mul hcb₁_ne hb₁_ne).symm
+                    have hb₂eq : m.degree (c b₂) + m.degree b₂ = m.degree (c b₂ * b₂) :=
+                      (MonomialOrder.degree_mul hcb₂_ne hb₂_ne).symm
+                    have hD_eq : m.degree (c b₁ * b₁) = m.degree (c b₂ * b₂) :=
+                      m.toSyn.injective (hb₁D.trans hb₂D.symm)
+                    rw [hb₁eq, hb₂eq, hD_eq, sup_idem]
+                    exact hb₂D
+              · rw [show extra_pair b₁ hb₁ b₂ hb₂ b = 0 from
+                  Finsupp.mapDomain_notin_range _ _ hb_range, zero_mul,
+                  MonomialOrder.degree_zero, map_zero]
+                exact bot_lt_iff_ne_bot.mpr (fun hD =>
+                  not_lt_bot (hD ▸ hf_lt_D))
+            have hcextra_b_lt : ∀ b, m.toSyn (m.degree (c_extra b * b)) < D := by
               intro b
-              by_cases hb_h12 : h12_lifted b = 0
-              · rw [hb_h12, zero_mul, MonomialOrder.degree_zero, map_zero]
-                exact bot_lt_iff_ne_bot.mpr (by
-                  intro hD
-                  have : m.toSyn (m.degree f) < (⊥ : m.syn) := hD ▸ hf_lt_D
-                  exact not_lt_bot this)
-              have hb_range : b ∈ Set.range (Subtype.val : ↑G → _) := by
-                by_contra h
-                exact hb_h12 (Finsupp.mapDomain_notin_range h12_scaled b h)
-              obtain ⟨⟨b_g, hb_g_mem⟩, hb_eq⟩ := hb_range
-              simp only at hb_eq
-              set g : ↑G := ⟨b_g, hb_g_mem⟩
-              have hval : h12_lifted b = scale_poly * h12 g := by
-                rw [← hb_eq, hh12_lifted_def]
-                change (Finsupp.mapDomain Subtype.val h12_scaled)
-                  (Subtype.val g) = _
-                rw [Finsupp.mapDomain_apply Subtype.val_injective,
-                    hh12_scaled_def, Finsupp.mapRange_apply]
-              rw [hval, ← hb_eq, mul_assoc]
-              set mono_exp := m.degree f1 ⊔ m.degree f2 -
-                m.degree b1 ⊔ m.degree b2
-              calc m.toSyn (m.degree (scale_poly * (h12 g * b_g)))
-                  ≤ m.toSyn (m.degree scale_poly +
-                    m.degree (h12 g * b_g)) := degree_mul_le
-                _ = m.toSyn (m.degree scale_poly) +
-                    m.toSyn (m.degree (h12 g * b_g)) := map_add _ _ _
-                _ ≤ m.toSyn mono_exp +
-                    m.toSyn (m.degree (h12 g * b_g)) :=
-                    add_le_add (by
-                    rw [hscale_def]
-                    calc m.toSyn (m.degree (MvPolynomial.C
-                          (m.leadingCoeff f1)⁻¹ *
-                          monomial mono_exp
-                            (m.leadingCoeff (c0 b1) *
-                             m.leadingCoeff (c0 b2))))
-                        ≤ m.toSyn (m.degree (MvPolynomial.C
-                            (m.leadingCoeff f1)⁻¹) +
-                          m.degree (monomial mono_exp
-                            (m.leadingCoeff (c0 b1) *
-                             m.leadingCoeff (c0 b2)))) :=
-                            degree_mul_le
-                      _ = m.toSyn (m.degree (MvPolynomial.C
-                            (m.leadingCoeff f1)⁻¹)) +
-                          m.toSyn (m.degree (monomial mono_exp
-                            (m.leadingCoeff (c0 b1) *
-                             m.leadingCoeff (c0 b2)))) :=
-                            map_add _ _ _
-                      _ = 0 + m.toSyn (m.degree (monomial mono_exp
-                            (m.leadingCoeff (c0 b1) *
-                             m.leadingCoeff (c0 b2)))) := by
-                          rw [MonomialOrder.degree_C, map_zero]
-                      _ = m.toSyn (m.degree (monomial mono_exp
-                            (m.leadingCoeff (c0 b1) *
-                             m.leadingCoeff (c0 b2)))) :=
-                          zero_add _
-                      _ ≤ m.toSyn mono_exp :=
-                          degree_monomial_le _) le_rfl
-                _ < m.toSyn mono_exp +
-                    m.toSyn (m.degree b1 ⊔ m.degree b2) :=
-                    add_lt_add_of_le_of_lt le_rfl (
-                    calc m.toSyn (m.degree (h12 g * b_g))
-                        = m.toSyn (m.degree
-                          ((g : MvPolynomial σ R) * h12 g)) := by
-                            congr 1; rw [mul_comm]
-                      _ ≤ m.toSyn (m.degree (m.sPolynomial b1 b2)) :=
-                            hh12_deg g
-                      _ < m.toSyn (m.degree b1 ⊔ m.degree b2) :=
-                            hSpoly_strict)
-                _ = m.toSyn (mono_exp +
-                      (m.degree b1 ⊔ m.degree b2)) :=
-                    (map_add _ _ _).symm
-                _ = m.toSyn (m.degree f1 ⊔ m.degree f2) := by
-                    congr 1
-                    apply tsub_add_cancel_of_le
-                    apply sup_le_sup
-                    · rw [hf1_deg, halpha_def]
-                      exact le_add_left le_rfl
-                    · rw [hf2_deg, MonomialOrder.degree_mul hcb2_ne hb2_ne]
-                      exact le_add_left le_rfl
-                _ = m.toSyn (m.degree f1) := by
-                    rw [halpha_eq, sup_idem]
-                _ = m.toSyn (m.degree (c0 b1 * b1)) := by rw [hf1_deg]
-                _ = D := hb1_D
-            -- b2 is NOT in the c1 filter set.
-            have hD_pos : (0 : m.syn) < D := by
-              calc (0 : m.syn) = m.toSyn 0 := (map_zero _).symm
-                _ ≤ m.toSyn (m.degree f) :=
-                    m.toSyn_monotone bot_le
-                _ < D := hf_lt_D
-            have hb2_not_D : m.toSyn (m.degree (c1 b2 * b2)) < D := by
-              have hc1_b2 : c1 b2 = (c0 b2 - m.leadingTerm (c0 b2)) -
-                  h12_lifted b2 := by
-                change (c0 + adj_b1 - adj_b2 - h12_lifted) b2 = _
-                simp [Finsupp.coe_add, Finsupp.coe_sub, Pi.add_apply,
-                  Pi.sub_apply, adj_b1, adj_b2, hb2_ne_b1]
-              rw [show c1 b2 * b2 = (c0 b2 - m.leadingTerm (c0 b2)) * b2 -
-                h12_lifted b2 * b2 from by rw [hc1_b2]; ring]
-              -- subLTerm(c0 b2) * b2 has degree < D
-              have hsub_lt : m.toSyn (m.degree
-                  ((c0 b2 - m.leadingTerm (c0 b2)) * b2)) < D := by
-                by_cases hcb2_deg : m.degree (c0 b2) = 0
-                · -- c0 b2 is a constant, so subLTerm = 0
-                  have : c0 b2 - m.leadingTerm (c0 b2) = 0 := by
-                    have hceq := eq_C_of_degree_eq_zero hcb2_deg
-                    rw [hceq, leadingTerm, MonomialOrder.degree_C,
-                      MonomialOrder.leadingCoeff_C]
-                    simp
-                  rw [this, zero_mul, MonomialOrder.degree_zero, map_zero]
-                  exact hD_pos
-                · -- c0 b2 is not a constant, use degree_sub_LTerm_lt
-                  calc m.toSyn (m.degree
-                        ((c0 b2 - m.leadingTerm (c0 b2)) * b2))
-                      ≤ m.toSyn (m.degree (m.subLTerm (c0 b2)) +
-                            m.degree b2) := degree_mul_le
-                    _ = m.toSyn (m.degree (m.subLTerm (c0 b2))) +
-                          m.toSyn (m.degree b2) := map_add _ _ _
-                    _ < m.toSyn (m.degree (c0 b2)) +
-                          m.toSyn (m.degree b2) :=
-                        add_lt_add_of_lt_of_le
-                          (degree_sub_LTerm_lt hcb2_deg) le_rfl
-                    _ = m.toSyn (m.degree (c0 b2) + m.degree b2) :=
-                          (map_add _ _ _).symm
-                    _ = m.toSyn (m.degree (c0 b2 * b2)) := by
-                          rw [MonomialOrder.degree_mul hcb2_ne hb2_ne]
-                    _ = D := hb2_D
-              calc m.toSyn (m.degree
-                    ((c0 b2 - m.leadingTerm (c0 b2)) * b2 -
-                     h12_lifted b2 * b2))
-                  ≤ m.toSyn (m.degree
-                      ((c0 b2 - m.leadingTerm (c0 b2)) * b2)) ⊔
-                    m.toSyn (m.degree (h12_lifted b2 * b2)) :=
-                    MonomialOrder.degree_sub_le
-                _ < D := by
-                    simp only [sup_lt_iff]
-                    exact ⟨hsub_lt, hh12_strict b2⟩
-            -- The c1 filter set is a subset of B_hi minus {b2}.
-            have hfilter_sub : c1.support.filter
-                (fun b => m.toSyn (m.degree (c1 b * b)) = D) ⊆
-                B_hi.erase b2 := by
-              intro b hb
-              rw [Finset.mem_filter] at hb
-              rw [Finset.mem_erase]
-              refine ⟨?_, ?_⟩
-              · -- b ≠ b2
-                intro hb_eq
-                exact absurd (hb_eq ▸ hb.2) (ne_of_lt hb2_not_D)
-              · -- b ∈ B_hi
-                rw [Finset.mem_filter]
-                -- First prove b ∈ c0.support (needed for both parts)
-                have hb_supp : b ∈ c0.support := by
-                  by_contra hb_not_supp
-                  have hc0_zero : c0 b = 0 :=
-                    Finsupp.notMem_support_iff.mp hb_not_supp
-                  have hb_ne_b1 : b ≠ b1 := by
-                    intro h; exact hb_not_supp (h ▸ hb1_supp)
-                  have hb_ne_b2 : b ≠ b2 := by
-                    intro h; exact absurd (h ▸ hb.2) (ne_of_lt hb2_not_D)
-                  have hadj1 : adj_b1 b = 0 :=
-                    Finsupp.single_eq_of_ne hb_ne_b1
-                  have hadj2 : adj_b2 b = 0 :=
-                    Finsupp.single_eq_of_ne hb_ne_b2
-                  have hc1_eq : c1 b = -h12_lifted b := by
-                    change (c0 + adj_b1 - adj_b2 - h12_lifted) b = _
-                    simp [Finsupp.coe_add, Finsupp.coe_sub, Pi.add_apply,
-                      Pi.sub_apply, hc0_zero, hadj1, hadj2]
-                  have : m.toSyn (m.degree (c1 b * b)) < D := by
-                    rw [hc1_eq, neg_mul]
-                    calc m.toSyn (m.degree (-(h12_lifted b * b)))
-                        = m.toSyn (m.degree (h12_lifted b * b)) := by
-                          rw [MonomialOrder.degree_neg]
-                      _ < D := hh12_strict b
-                  exact absurd hb.2 (ne_of_lt this)
-                refine ⟨hb_supp, ?_⟩
-                · -- deg(c0 b * b) = D
-                  by_contra hc0_ne_D
-                  have hc0_lt : m.toSyn (m.degree (c0 b * b)) < D :=
-                    lt_of_le_of_ne (hc0deg b hb_supp) hc0_ne_D
-                  -- Since deg(c0 b * b) < D, b ∉ B_hi, so b ≠ b1 and
-                  -- b ≠ b2 (since both are in B_hi). So adj = 0.
-                  have hb_ne_b1 : b ≠ b1 := by
-                    intro h; rw [h] at hc0_lt
-                    exact absurd hb1_D hc0_lt.ne
-                  have hb_ne_b2 : b ≠ b2 := by
-                    intro h; rw [h] at hc0_lt
-                    exact absurd hb2_D hc0_lt.ne
-                  have hadj1_zero : adj_b1 b = 0 :=
-                    Finsupp.single_eq_of_ne hb_ne_b1
-                  have hadj2_zero : adj_b2 b = 0 :=
-                    Finsupp.single_eq_of_ne hb_ne_b2
-                  have hc1_eq : c1 b = c0 b - h12_lifted b := by
-                    change (c0 + adj_b1 - adj_b2 - h12_lifted) b = _
-                    simp [Finsupp.coe_add, Finsupp.coe_sub, Pi.add_apply,
-                      Pi.sub_apply, hadj1_zero, hadj2_zero]
-                  have : m.toSyn (m.degree (c1 b * b)) < D := by
-                    rw [hc1_eq, sub_mul]
-                    calc m.toSyn (m.degree (c0 b * b - h12_lifted b * b))
-                        ≤ m.toSyn (m.degree (c0 b * b)) ⊔
-                          m.toSyn (m.degree (h12_lifted b * b)) :=
-                          MonomialOrder.degree_sub_le
-                      _ < D := by
-                          simp only [sup_lt_iff]
-                          exact ⟨hc0_lt, hh12_strict b⟩
-                  exact absurd hb.2 (ne_of_lt this)
-            calc k' = (c1.support.filter
-                  (fun b => m.toSyn (m.degree (c1 b * b)) = D)).card :=
-                    rfl
-              _ ≤ (B_hi.erase b2).card :=
-                    Finset.card_le_card hfilter_sub
-              _ < B_hi.card :=
-                    Finset.card_erase_lt_of_mem (by
-                      rw [Finset.mem_filter]
-                      exact ⟨hb2_supp, hb2_D⟩)
-              _ = k := hc0card
-          · -- c1.support ⊆ G
-            intro b hb
-            -- c1 = (c0 + adj_b1) - adj_b2 - h12_lifted
-            -- If b ∉ G, show c1 b = 0 (contradiction with b ∈ support)
-            simp only [Finset.mem_coe] at hb
-            by_contra hbG
-            apply Finsupp.mem_support_iff.mp hb
-            -- c1 b = c0 b + adj_b1 b - adj_b2 b - h12_lifted b
-            -- Each is 0 when b ∉ G:
-            have hc0_zero : c0 b = 0 :=
-              Finsupp.notMem_support_iff.mp
-                (fun h => hbG (hc0G (Finset.mem_coe.mpr h)))
-            have hadj_b1_zero : adj_b1 b = 0 := by
-              simp [adj_b1, show b ≠ b1 from fun h => hbG (h ▸ hb1_G)]
-            have hadj_b2_zero : adj_b2 b = 0 := by
-              simp [adj_b2, show b ≠ b2 from fun h => hbG (h ▸ hb2_G)]
-            have hh12_zero : h12_lifted b = 0 := by
-              rw [hh12_lifted_def]
-              apply Finsupp.mapDomain_notin_range
-              rintro ⟨⟨g, hg⟩, -, rfl⟩
-              exact hbG hg
-            simp [hc1_def, hc0_zero, hadj_b1_zero, hadj_b2_zero, hh12_zero]
-          · -- c1.sum smul = f
-            -- Strategy: show c1.sum g = c0.sum g where g b q := q • b
-            -- by showing the correction terms cancel.
-            --
-            -- Step 1: S-polynomial of f1, f2 when deg f1 = deg f2
-            -- S(f1,f2) = C(lc f2)*f1 - C(lc f1)*f2
-            have hSpoly_eq : m.sPolynomial f1 f2 =
-                MvPolynomial.C (m.leadingCoeff f2) * f1 -
-                MvPolynomial.C (m.leadingCoeff f1) * f2 := by
-              rw [sPolynomial_def]
-              congr 1
-              · rw [halpha_eq, sup_idem, tsub_self]
-                simp [leadingCoeff]
-              · rw [halpha_eq, sup_idem, tsub_self]
-                simp [leadingCoeff]
-            -- Step 2: S(f1,f2) = mono12 * S(b1, b2) via sPolynomial_leadingTerm_mul'
-            set mono12 := monomial (m.degree f1 ⊔ m.degree f2 -
-                m.degree b1 ⊔ m.degree b2)
-              (m.leadingCoeff (c0 b1) * m.leadingCoeff (c0 b2))
-              with hmono12_def
-            have hSpoly_factor : m.sPolynomial f1 f2 =
-                mono12 * m.sPolynomial b1 b2 := by
-              rw [hf1_def, hf2_def, hmono12_def, hf1_deg, hf2_deg,
-                  halpha_def, MonomialOrder.degree_mul hcb2_ne hb2_ne]
-              exact sPolynomial_leadingTerm_mul (c0 b1) (c0 b2) b1 b2
-            -- Step 3: C(lc f1) * f2 = C(lc f2) * f1 - mono12 * S(b1, b2)
-            have hf2_identity : MvPolynomial.C (m.leadingCoeff f1) * f2 =
-                MvPolynomial.C (m.leadingCoeff f2) * f1 -
-                mono12 * m.sPolynomial b1 b2 := by
-              rw [← hSpoly_factor, hSpoly_eq]; ring
-            -- Step 4: lc(f1) is nonzero (f1 ≠ 0, Field)
-            have hlc_f1_ne : m.leadingCoeff f1 ≠ 0 :=
-              leadingCoeff_ne_zero_iff.mpr hf1_ne
-            -- Step 5: f2 = C(ratio) * f1 - scale_poly * S(b1, b2)
-            -- From hf2_identity: C(lc f1) * f2 = C(lc f2) * f1 - mono12 * S(b1, b2)
-            -- Multiply both sides by C(lc f1)⁻¹ on the left:
-            have hf2_expr : f2 = MvPolynomial.C ratio * f1 -
-                scale_poly * m.sPolynomial b1 b2 := by
-              have key : MvPolynomial.C (m.leadingCoeff f1)⁻¹ *
-                  (MvPolynomial.C (m.leadingCoeff f1) * f2) =
-                  MvPolynomial.C (m.leadingCoeff f1)⁻¹ *
-                  (MvPolynomial.C (m.leadingCoeff f2) * f1 -
-                   mono12 * m.sPolynomial b1 b2) :=
-                congrArg _ hf2_identity
-              rw [← mul_assoc, ← map_mul, inv_mul_cancel₀ hlc_f1_ne,
-                  map_one, one_mul] at key
-              rw [key, mul_sub, mul_assoc]
-              congr 1
-              rw [hratio_def, map_mul]
-              ring
-            -- Step 6: h12_lifted.sum g = scale_poly * S(b1, b2)
-            -- First: h12_lifted.sum g = h12_scaled.sum (fun g q => q • g.val)
-            --        by sum_mapDomain_index
-            have h_sum_lifted : h12_lifted.sum (fun b q => q • b) =
-                h12_scaled.sum (fun (g : ↑G) (q : MvPolynomial σ R) =>
-                  q • (g : MvPolynomial σ R)) := by
-              rw [hh12_lifted_def]
-              exact Finsupp.sum_mapDomain_index
-                (h_zero := fun _ => zero_smul _ _)
-                (h_add := fun _ _ _ => add_smul _ _ _)
-            -- Then: h12_scaled.sum = h12.sum (fun g q => (scale_poly * q) • g.val)
-            --       by sum_mapRange_index
-            have h_sum_scaled :
-                h12_scaled.sum (fun (g : ↑G) (q : MvPolynomial σ R) =>
-                  q • (g : MvPolynomial σ R)) =
-                h12.sum (fun (g : ↑G) (q : MvPolynomial σ R) =>
-                  (scale_poly * q) • (g : MvPolynomial σ R)) := by
-              rw [hh12_scaled_def]
-              exact Finsupp.sum_mapRange_index (fun _ => zero_smul _ _)
-            -- Then: h12.sum (fun g q => (scale_poly * q) • g.val)
-            --     = scale_poly * h12.sum (fun g q => q • g.val)
-            --     = scale_poly * linearCombination val h12
-            --     = scale_poly * S(b1, b2)
-            have h_sum_factor :
-                h12.sum (fun (g : ↑G) (q : MvPolynomial σ R) =>
-                  (scale_poly * q) • (g : MvPolynomial σ R)) =
-                scale_poly * m.sPolynomial b1 b2 := by
-              simp only [smul_eq_mul, mul_assoc]
-              rw [← Finsupp.mul_sum]
-              congr 1
-              -- h12.sum (fun g q => q * g.val) = linearCombination val h12
-              -- = S(b1, b2)
-              rw [hh12_eq, Finsupp.linearCombination_apply]
-              simp [smul_eq_mul]
-            have h_sum_eq : h12_lifted.sum (fun b q => q • b) =
-                scale_poly * m.sPolynomial b1 b2 := by
-              rw [h_sum_lifted, h_sum_scaled, h_sum_factor]
-            -- Step 7: Now assemble the proof
-            -- c1.sum g = c0.sum g + adj_b1.sum g - adj_b2.sum g - h12_lifted.sum g
-            -- = f + C(ratio)*lt(c0 b1)*b1 - lt(c0 b2)*b2 - scale_poly*S(b1,b2)
-            -- = f + f1*C(ratio) - f2 - scale_poly*S(b1,b2)
-            -- = f + (f2 + scale_poly*S(b1,b2)) - f2 - scale_poly*S(b1,b2)   [by hf2_expr]
-            -- = f
-            have hsmul_zero : ∀ (a : MvPolynomial σ R),
-                (fun (b : MvPolynomial σ R) (q : MvPolynomial σ R) => q • b) a 0 = 0 :=
-              fun _ => zero_smul _ _
-            have hsmul_add : ∀ (a : MvPolynomial σ R) (b₁ b₂ : MvPolynomial σ R),
-                (fun b q => q • b) a (b₁ + b₂) =
-                (fun b q => q • b) a b₁ + (fun b q => q • b) a b₂ :=
-              fun _ _ _ => add_smul _ _ _
-            have hsmul_sub : ∀ (a : MvPolynomial σ R) (b₁ b₂ : MvPolynomial σ R),
-                (fun b q => q • b) a (b₁ - b₂) =
-                (fun b q => q • b) a b₁ - (fun b q => q • b) a b₂ :=
-              fun _ _ _ => sub_smul _ _ _
-            -- Decompose c1.sum
-            have hc1_sum_decomp :
-                (c1.sum fun b q => q • b) =
-                (c0.sum fun b q => q • b) +
-                (adj_b1.sum fun b q => q • b) -
-                (adj_b2.sum fun b q => q • b) -
-                (h12_lifted.sum fun b q => q • b) := by
-              change c1.sum _ = _
-              rw [show c1 = (c0 + adj_b1 - adj_b2) - h12_lifted from by rw [hc1_def]]
-              rw [Finsupp.sum_sub_index hsmul_sub,
-                  show (c0 + adj_b1 - adj_b2) = (c0 + adj_b1) - adj_b2 from rfl,
-                  Finsupp.sum_sub_index hsmul_sub,
-                  Finsupp.sum_add_index' hsmul_zero hsmul_add]
-            -- Simplify adj sums
-            have hadj_b1_sum : (adj_b1.sum fun b q => q • b) =
-                MvPolynomial.C ratio * m.leadingTerm (c0 b1) * b1 := by
-              rw [hadj_b1_def]
-              rw [Finsupp.sum_single_index (show (0 : MvPolynomial σ R) • b1 = 0
-                from zero_smul _ b1)]
-              rw [smul_eq_mul, mul_assoc]
-            have hadj_b2_sum : (adj_b2.sum fun b q => q • b) =
-                m.leadingTerm (c0 b2) * b2 := by
-              rw [hadj_b2_def]
-              rw [Finsupp.sum_single_index (show (0 : MvPolynomial σ R) • b2 = 0
-                from zero_smul _ b2)]
-              rw [smul_eq_mul]
-            rw [hc1_sum_decomp, hadj_b1_sum, hadj_b2_sum, hc0f, h_sum_eq,
-                show m.leadingTerm (c0 b2) * b2 = f2 from rfl,
-                show MvPolynomial.C ratio * m.leadingTerm (c0 b1) * b1 =
-                  MvPolynomial.C ratio * f1 from by rw [hf1_def, mul_assoc]]
-            -- Goal: f + C(ratio)*f1 - f2 - scale_poly*S(b1,b2) = f
-            rw [hf2_expr]
-            ring
-          · -- ∀ b ∈ c1.support, toSyn(deg(c1 b * b)) ≤ D
-            -- For each b ∈ c1.support, we need:
-            --   toSyn(deg(c1 b * b)) ≤ D
-            -- We use: c1 b = c0 b + adj_b1 b - adj_b2 b - h12_lifted b
-            -- So c1 b * b = (c0 b + adj_b1 b - adj_b2 b - h12_lifted b) * b
-            -- degree_add_le + degree_sub_le give the bound.
-            -- Key: each component * b has toSyn(degree) ≤ D.
-            intro b hb
-            -- Each component's degree bound:
-            -- 1. c0 b * b ≤ D  (from hc0deg, or = 0 if b ∉ c0.support)
-            -- 2. adj_b1 b * b ≤ D  (only nonzero at b1)
-            -- 3. adj_b2 b * b ≤ D  (only nonzero at b2)
-            -- 4. h12_lifted b * b ≤ D  (from hh12_deg + scale_poly degree)
-            --
-            -- Using the triangle inequality on the polynomial ring:
-            -- deg(a + b) ≤ max(deg a, deg b) and deg(a - b) ≤ max(deg a, deg b)
-            -- So deg(c1 b * b) ≤ max(deg(c0 b * b), ..., deg(h12_lifted b * b)) ≤ D.
-            have hc0_bound : m.toSyn (m.degree (c0 b * b)) ≤ D := by
-              by_cases hb_supp : b ∈ c0.support
-              · exact hc0deg b hb_supp
-              · rw [Finsupp.notMem_support_iff.mp hb_supp, zero_mul,
-                    MonomialOrder.degree_zero, map_zero]
-                exact bot_le
-            have hadj_b1_bound :
-                m.toSyn (m.degree (adj_b1 b * b)) ≤ D := by
-              change m.toSyn (m.degree ((Finsupp.single b1
-                (MvPolynomial.C ratio * m.leadingTerm (c0 b1))) b * b)) ≤ D
-              by_cases hb1 : b = b1
-              · rw [hb1, Finsupp.single_eq_same, mul_assoc,
-                    show m.leadingTerm (c0 b1) * b1 = f1 from rfl]
-                -- deg(C(ratio) * f1) ≤ deg(C(ratio)) + deg(f1) ≤ 0 + D
-                calc m.toSyn (m.degree (MvPolynomial.C ratio * f1))
-                    ≤ m.toSyn (m.degree (MvPolynomial.C ratio) +
-                      m.degree f1) := degree_mul_le
-                  _ = m.toSyn (0 + m.degree f1) := by
-                    rw [MonomialOrder.degree_C]
-                  _ = m.toSyn (m.degree f1) := by rw [zero_add]
-                  _ = m.toSyn (m.degree (c0 b1 * b1)) := by rw [hf1_deg]
-                  _ ≤ D := le_of_eq hb1_D
-              · rw [Finsupp.single_eq_of_ne hb1, zero_mul,
-                    MonomialOrder.degree_zero, map_zero]
-                exact bot_le
-            have hadj_b2_bound :
-                m.toSyn (m.degree (adj_b2 b * b)) ≤ D := by
-              change m.toSyn (m.degree ((Finsupp.single b2
-                (m.leadingTerm (c0 b2))) b * b)) ≤ D
-              by_cases hb2' : b = b2
-              · rw [hb2', Finsupp.single_eq_same,
-                    MonomialOrder.degree_leadingTerm_mul]
-                exact le_of_eq hb2_D
-              · rw [Finsupp.single_eq_of_ne hb2', zero_mul,
-                    MonomialOrder.degree_zero, map_zero]
-                exact bot_le
-            have hh12_bound :
-                m.toSyn (m.degree (h12_lifted b * b)) ≤ D := by
-              -- If h12_lifted b = 0, trivial
-              by_cases hb_h12 : h12_lifted b = 0
-              · rw [hb_h12, zero_mul, MonomialOrder.degree_zero, map_zero]
-                exact bot_le
-              -- b must be in range(val), otherwise mapDomain gives 0
-              have hb_range : b ∈ Set.range (Subtype.val : ↑G → _) := by
-                by_contra h
-                exact hb_h12 (Finsupp.mapDomain_notin_range h12_scaled b h)
-              obtain ⟨⟨b_g, hb_g_mem⟩, hb_eq⟩ := hb_range
-              simp only at hb_eq
-              -- h12_lifted b = scale_poly * h12 g  (where g = ⟨b_g, hb_g_mem⟩)
-              set g : ↑G := ⟨b_g, hb_g_mem⟩
-              have hval : h12_lifted b = scale_poly * h12 g := by
-                rw [← hb_eq, hh12_lifted_def]
-                change (Finsupp.mapDomain Subtype.val h12_scaled)
-                  (Subtype.val g) = _
-                rw [Finsupp.mapDomain_apply Subtype.val_injective,
-                    hh12_scaled_def, Finsupp.mapRange_apply]
-              -- Rewrite: h12_lifted b * b = scale_poly * (h12 g * b_g)
-              rw [hval, ← hb_eq, mul_assoc]
-              -- Bound using degree_mul_le + hh12_deg + degree_sPolynomial_le
-              -- Scale_poly degree ≤ deg(monomial(...)) ≤ alpha - deg(b1 ⊔ b2)
-              -- h12 g * b_g degree ≤ deg(S(b1, b2)) ≤ deg(b1 ⊔ b2)
-              -- Sum ≤ alpha = D
-              calc m.toSyn (m.degree (scale_poly * (h12 g * b_g)))
-                  ≤ m.toSyn (m.degree scale_poly +
-                    m.degree (h12 g * b_g)) := degree_mul_le
-                _ = m.toSyn (m.degree scale_poly) +
-                    m.toSyn (m.degree (h12 g * b_g)) := map_add _ _ _
-                _ ≤ m.toSyn (m.degree f1 ⊔ m.degree f2 -
-                      m.degree b1 ⊔ m.degree b2) +
-                    m.toSyn (m.degree b1 ⊔ m.degree b2) := by
-                    apply add_le_add
-                    · -- toSyn(deg(scale_poly)) ≤ toSyn(deg f1 ⊔ deg f2 - deg b1 ⊔ deg b2)
-                      rw [hscale_def]
-                      set mono_exp := m.degree f1 ⊔ m.degree f2 -
-                        m.degree b1 ⊔ m.degree b2
-                      set mono_coeff := m.leadingCoeff (c0 b1) *
-                        m.leadingCoeff (c0 b2)
-                      calc m.toSyn (m.degree (MvPolynomial.C
-                            (m.leadingCoeff f1)⁻¹ *
-                            monomial mono_exp mono_coeff))
-                          ≤ m.toSyn (m.degree (MvPolynomial.C
-                              (m.leadingCoeff f1)⁻¹) +
-                            m.degree (monomial mono_exp mono_coeff)) :=
-                              degree_mul_le
-                        _ = m.toSyn (m.degree (MvPolynomial.C
-                              (m.leadingCoeff f1)⁻¹)) +
-                            m.toSyn (m.degree (monomial mono_exp mono_coeff)) :=
-                              map_add _ _ _
-                        _ = 0 + m.toSyn (m.degree (monomial mono_exp mono_coeff)) := by
-                            rw [MonomialOrder.degree_C, map_zero]
-                        _ = m.toSyn (m.degree (monomial mono_exp mono_coeff)) :=
-                            zero_add _
-                        _ ≤ m.toSyn mono_exp := degree_monomial_le _
-                    · -- deg(h12 g * b_g) ≤ deg(S(b1, b2)) ≤ deg(b1 ⊔ b2)
-                      calc m.toSyn (m.degree (h12 g * b_g))
-                          = m.toSyn (m.degree
-                            ((g : MvPolynomial σ R) * h12 g)) := by
-                              congr 1; rw [mul_comm]
-                        _ ≤ m.toSyn (m.degree (m.sPolynomial b1 b2)) :=
-                              hh12_deg g
-                        _ ≤ m.toSyn (m.degree b1 ⊔ m.degree b2) :=
-                              degree_sPolynomial_le b1 b2
-                _ = m.toSyn ((m.degree f1 ⊔ m.degree f2 -
-                      m.degree b1 ⊔ m.degree b2) +
-                      (m.degree b1 ⊔ m.degree b2)) := (map_add _ _ _).symm
-                _ = m.toSyn (m.degree f1 ⊔ m.degree f2) := by
-                    congr 1
-                    apply tsub_add_cancel_of_le
-                    apply sup_le_sup
-                    · -- deg b1 ≤ deg f1
-                      rw [hf1_deg, halpha_def]
-                      exact le_add_left le_rfl
-                    · -- deg b2 ≤ deg f2
-                      rw [hf2_deg, MonomialOrder.degree_mul hcb2_ne hb2_ne]
-                      exact le_add_left le_rfl
-                _ = m.toSyn (m.degree f1) := by
-                    rw [halpha_eq, sup_idem]
-                _ = m.toSyn (m.degree (c0 b1 * b1)) := by rw [hf1_deg]
-                _ = D := hb1_D
-            -- Combine: deg(c1 b * b) ≤ max of all ≤ D
-            -- c1 b * b = (c0 b + adj_b1 b - adj_b2 b - h12_lifted b) * b
-            have hc1_eval : c1 b = c0 b + adj_b1 b - adj_b2 b - h12_lifted b := by
-              change (c0 + adj_b1 - adj_b2 - h12_lifted) b = _
-              simp [Finsupp.coe_add, Finsupp.coe_sub, Pi.add_apply, Pi.sub_apply]
-            calc m.toSyn (m.degree (c1 b * b))
-              = m.toSyn (m.degree ((c0 b + adj_b1 b - adj_b2 b -
-                  h12_lifted b) * b)) := by rw [hc1_eval]
-            _ = m.toSyn (m.degree ((c0 b * b + adj_b1 b * b) -
-                  (adj_b2 b * b + h12_lifted b * b))) := by ring_nf
-            _ ≤ m.toSyn (m.degree (c0 b * b + adj_b1 b * b)) ⊔
-                  m.toSyn (m.degree (adj_b2 b * b + h12_lifted b * b)) :=
-                MonomialOrder.degree_sub_le
-            _ ≤ (m.toSyn (m.degree (c0 b * b)) ⊔
-                  m.toSyn (m.degree (adj_b1 b * b))) ⊔
-                (m.toSyn (m.degree (adj_b2 b * b)) ⊔
-                  m.toSyn (m.degree (h12_lifted b * b))) :=
-                sup_le_sup MonomialOrder.degree_add_le
-                  MonomialOrder.degree_add_le
-            _ ≤ D := by
-                simp only [sup_le_iff]
-                exact ⟨⟨hc0_bound, hadj_b1_bound⟩,
-                       ⟨hadj_b2_bound, hh12_bound⟩⟩
+              rw [hc_extra_def, Finsupp.finset_sum_apply]
+              rw [show (∑ b₁ ∈ B_hi.attach,
+                    (∑ b₂ ∈ B_hi.attach,
+                      extra_pair b₁.val b₁.prop b₂.val b₂.prop) b) =
+                  ∑ b₁ ∈ B_hi.attach, ∑ b₂ ∈ B_hi.attach,
+                    (extra_pair b₁.val b₁.prop b₂.val b₂.prop) b from
+                  Finset.sum_congr rfl fun b₁ _ =>
+                    Finsupp.finset_sum_apply _ _ _]
+              rw [Finset.sum_mul, show
+                (∑ b₁ ∈ B_hi.attach,
+                  (∑ b₂ ∈ B_hi.attach,
+                      (extra_pair b₁.val b₁.prop b₂.val b₂.prop) b) * b) =
+                  ∑ b₁ ∈ B_hi.attach, ∑ b₂ ∈ B_hi.attach,
+                    (extra_pair b₁.val b₁.prop b₂.val b₂.prop) b * b from
+                  Finset.sum_congr rfl fun b₁ _ =>
+                    Finset.sum_mul B_hi.attach
+                      (fun b₂ : B_hi => (extra_pair b₁.val b₁.prop b₂.val b₂.prop) b) b]
+              apply lt_of_le_of_lt MonomialOrder.degree_sum_le
+              apply (Finset.sup_lt_iff (lt_of_le_of_lt bot_le hf_lt_D)).mpr
+              intro b₁ _
+              apply lt_of_le_of_lt MonomialOrder.degree_sum_le
+              apply (Finset.sup_lt_iff (lt_of_le_of_lt bot_le hf_lt_D)).mpr
+              intro b₂ _
+              exact hextra_pair_b_lt b₁.val b₁.prop b₂.val b₂.prop b
+            intro b _hb
+            have hc'_eval : c' b = c_low b + c_extra b := by
+              rw [hc'_def]; rfl
+            rw [show c' b * b = c_low b * b + c_extra b * b from by
+              rw [hc'_eval]; ring]
+            calc m.toSyn (m.degree (c_low b * b + c_extra b * b))
+                ≤ m.toSyn (m.degree (c_low b * b)) ⊔
+                  m.toSyn (m.degree (c_extra b * b)) :=
+                MonomialOrder.degree_add_le
+              _ < D := sup_lt_iff.mpr ⟨hclow_b_lt b, hcextra_b_lt b⟩
     · -- span(lt(G)) ⊆ span(lt(span G)) — easy direction
       exact Ideal.span_mono (Set.image_mono Ideal.subset_span)
 
