@@ -7,14 +7,38 @@ variable {V : Type*} [LinearOrder V] [DecidableEq V] [Fintype V]
 # Minimal prime ideals of J_G (Propositions 3.8 and 3.9)
 
 This file characterizes the containment order of `{P_S(G)}` and identifies
-which `P_S(G)` are minimal primes of `J_G`.
+which `P_S(G)` are minimal primes of `J_G`. The conceptual outline of
+Corollary 3.9 mirrors the paper:
 
-## Main results
+1. **Containment of components.** `prop_3_8` characterizes `P_T ⊆ P_S` in
+   terms of `T ⊆ S` and a `SameComponent` refinement of induced
+   subgraph components.
+2. **Cut-vertex criterion.** `IsCutVertexRelative` and
+   `cutVertex_iff_componentCount` package the combinatorial cut-vertex
+   condition that drives the minimality argument.
+3. **Minimal-prime conclusion.** `corollary_3_9` assembles 1 and 2 to
+   identify the minimal primes of `J_G`.
 
-- **Proposition 3.8**: `P_T(G) ⊆ P_S(G)` iff T ⊆ S and components of G[V\T]
-  refine into components of G[V\S].
-- **Corollary 3.9**: `P_S(G)` is minimal iff S = ∅ or every vertex of S is a
-  cut-vertex in the appropriate induced subgraph.
+## Public paper-facing endpoints
+
+- `prop_3_8`: containment characterization of `P_T(G) ⊆ P_S(G)`.
+- `corollary_3_9`: minimality characterization for `P_S(G)`.
+- `minimalPrimes_finite`: the minimal primes of `J_G` form a finite set
+  (a Noetherianity consequence).
+
+## Public structural exports
+
+- `IsCutVertexRelative` and `cutVertex_iff_componentCount`: the
+  cut-vertex definition and its component-count reformulation;
+  consumed by `BEI/PrimeDecompositionDimension.lean`,
+  `BEI/CycleUnmixed.lean`, and `BEI/CIIdeals.lean`.
+- `SameComponent_mono`, `sameComponent_to_reachable`,
+  `exists_merged_of_cutVertex`: SameComponent / cut-vertex utility
+  lemmas consumed by `BEI/PrimeDecompositionDimension.lean`.
+
+The key `prop_3_8` sub-lemma `prop_3_8_var_not_mem` and the small walk
+helper `induced_walk_to_reflTransGen` are kept `private`, in line with
+`guides/cleanup/PUBLIC_THEOREM_LAYER.md`.
 
 ## Reference: Herzog et al. (2010), Proposition 3.8, Corollary 3.9
 -/
@@ -131,7 +155,7 @@ private lemma evalPairWitness_cross_eq_one (u v : V) (huv : u ≠ v) :
 omit [DecidableEq V] [Fintype V] in
 /-- If `i ∉ S`, then `X(Sum.inl i) ∉ primeComponent G S`.
 Proved by evaluating at the point `x_i = 1`, everything else `= 0`. -/
-lemma prop_3_8_var_not_mem (G : SimpleGraph V) (S : Finset V) (i : V) (hi : i ∉ S) :
+private lemma prop_3_8_var_not_mem (G : SimpleGraph V) (S : Finset V) (i : V) (hi : i ∉ S) :
     X (Sum.inl i) ∉ primeComponent (K := K) G S := by
   intro hmem
   have h0 : MvPolynomial.eval (evalInlWitness (K := K) i)
@@ -254,7 +278,7 @@ theorem prop_3_8 (G : SimpleGraph V) (S T : Finset V) :
 
 omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 /-- Helper: a walk in the induced subgraph gives a `ReflTransGen` path. -/
-lemma induced_walk_to_reflTransGen {G : SimpleGraph V} {S : Finset V}
+private lemma induced_walk_to_reflTransGen {G : SimpleGraph V} {S : Finset V}
     (u v : {w : V | w ∉ S}) (walk : (G.induce {w : V | w ∉ S}).Walk u v) :
     Relation.ReflTransGen (fun x y => G.Adj x y ∧ x ∉ S ∧ y ∉ S) u.val v.val := by
   induction walk with
