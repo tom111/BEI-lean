@@ -13,15 +13,18 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 
 ## Active Work Packages
 
-- [work_packages/GROEBNER_REDUCED_SAME_ENDPOINTS_REFACTOR.md](work_packages/GROEBNER_REDUCED_SAME_ENDPOINTS_REFACTOR.md)
-  — Refactor `groebnerElement_reduced_same_endpoints` (274 LOC,
-  `BEI/GroebnerBasis.lean:229`) by replacing inline reinventions of
-  `mem_internalVertices_of_ne` and `internal_ne_getLast` (already in
-  `BEI/CoveredWalks.lean`) and extracting a small
-  `endpoint_notMem_internalVertices_admissible` helper that also kills
-  ~27 LOC of duplication in the sister
-  `groebnerElement_leadingMonomial_squarefree`. Estimated 274 → ~190
-  LOC, low risk, 3-stage plan with optional bonus Stage 4.
+There are currently no active work packages. Recently-completed packets
+live in `guides/archive/`.
+
+The `groebnerElement_reduced_same_endpoints` deduplication finished on
+2026-05-02; the guide is archived at
+[archive/GROEBNER_REDUCED_SAME_ENDPOINTS_REFACTOR.md](archive/GROEBNER_REDUCED_SAME_ENDPOINTS_REFACTOR.md).
+Stages 1–2 dropped inline reinventions of `mem_internalVertices_of_ne`
+and `internal_ne_getLast` from `BEI/CoveredWalks.lean`; Stage 3
+extracted `endpoints_notMem_internalVertices` and used it in both the
+primary target and the sister `groebnerElement_leadingMonomial_squarefree`.
+`BEI/GroebnerBasis.lean` shrank from 766 → 652 LOC (the primary itself
+274 → ~210) with no axiom or statement change.
 
 The `groebner_implies_closed` deduplication finished on 2026-05-02; the
 guide is archived at
