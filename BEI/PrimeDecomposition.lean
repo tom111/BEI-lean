@@ -8,16 +8,40 @@ variable {K : Type*} [Field K]
 variable {V : Type*} [LinearOrder V] [DecidableEq V] [Fintype V]
 
 /-!
-# Prime decomposition of J_G (Theorem 3.2)
+# Prime decomposition of J_G (Theorem 3.2 and Section 3 packaging)
 
-This file formalizes:
-- **Theorem 3.2**: `J_G = ⋂_{S ⊆ V} P_S(G)`
-- **Proposition 3.6**: `J_G` is prime iff all components of G are complete
-- **Minimal prime characterization**
+## Public paper-facing endpoints
 
-Dimension results (Corollary 3.3) are in `PrimeDecompositionDimension.lean`.
-Cycle/equidimensional corollaries and related consequences are handled in
-`PrimeDecompositionDimension.lean`.
+- `theorem_3_2`: `J_G = ⋂_{S ⊆ V} P_S(G)` (the intersection decomposition).
+- `minimalPrimes_characterization`: the minimal primes of `J_G` are exactly
+  the minimal elements among `{P_S(G)}`.
+- `prop_3_6`: `J_G` is prime iff every connected component of `G` is complete.
+- `corollary_3_7`: cycle graphs satisfy the unmixed prime decomposition.
+
+## Public structural exports
+
+- `primeComponent_le_prime`: every prime above `J_G` dominates some `P_S(G)`
+  (paper-style "every prime contains a component"); consumed by
+  `BEI/PrimeIdeals.lean`.
+- `Ideal.IsUnmixed` and `Ideal.IsPrime.isUnmixed`: the BEI-side definition
+  of unmixedness for an ideal plus the trivial prime case; consumed by
+  `BEI/CycleUnmixed.lean`.
+- `IsCycleGraph`: definition of "G is a cycle graph"; consumed by
+  `BEI/CycleUnmixed.lean`, `BEI/PrimeDecompositionDimension.lean`, and
+  `BEI/Corollary3_4.lean`.
+
+The proof of `theorem_3_2` reads as a short assembly:
+- `J_G ⊆ P_S(G)` for all `S`: from `binomialEdgeIdeal_le_primeComponent`;
+- `⋂ P_S(G) = radical(J_G)`: a private step lemma using the minimal-prime
+  characterization;
+- `radical(J_G) = J_G`: from Corollary 2.2 (radicality, in `BEI/Radical.lean`).
+
+`minimalPrime_eq_primeComponent` and the telescope lemmas (`x_telescope`,
+`y_telescope`, `bij_mem_*`) are kept private as internal support, in line
+with `guides/cleanup/PUBLIC_THEOREM_LAYER.md`.
+
+Dimension results (Corollary 3.3) and the equidimensional surrogate
+corollaries are in `BEI/PrimeDecompositionDimension.lean`.
 
 ## Reference: Herzog et al. (2010), Section 3
 -/
@@ -153,7 +177,7 @@ omit [DecidableEq V] in
 
 This is proved without assuming radicality: the ≤ direction uses the minimal prime
 characterization, and the ≥ direction uses `Ideal.radical_eq_sInf`. -/
-lemma iInf_primeComponent_eq_radical (G : SimpleGraph V) :
+private lemma iInf_primeComponent_eq_radical (G : SimpleGraph V) :
     ⨅ S : Finset V, primeComponent (K := K) G S = (binomialEdgeIdeal (K := K) G).radical := by
   apply le_antisymm
   · -- ⨅ P_S ≤ radical(J_G) = sInf minimalPrimes
