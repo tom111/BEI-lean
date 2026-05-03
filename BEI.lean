@@ -18,7 +18,6 @@ import BEI.CIIdeals
 import BEI.GroebnerDeformation
 import BEI.Proposition1_6
 import BEI.Corollary3_4
-import BEI.AxiomCheck
 -- toMathlib: general-purpose lemmas for potential Mathlib upstreaming
 import toMathlib.HeightVariableIdeal
 import toMathlib.HeightDeterminantal
