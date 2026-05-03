@@ -1589,97 +1589,21 @@ theorem finiteFree_over_mvPolynomial_of_homogeneous_regular_sop
     -- `Module.Finite P A` follows from `Module.Finite K A` by scalar restriction.
     haveI hFinPA : Module.Finite (MvPolynomial (Fin 0) K) A :=
       Module.Finite.of_restrictScalars_finite K (MvPolynomial (Fin 0) K) A
-    -- For freeness: use `Module.Finite.of_equiv_equiv`-style pattern with ring iso
-    -- `P ≃+* K` from `isEmptyAlgEquiv`.
     refine ⟨hFinPA, ?_⟩
-    -- **Freeness strategy.** We show `Module.Free P A` by exhibiting a basis.
-    -- The ring iso `eRE : P ≃+* K` lets us transfer scalars. Define the submodule
-    -- `Submodule.restrictScalars K (⊤ : Submodule P A) = ⊤`; the K-basis of A gives
-    -- a generating set and linearly independent family over P.
-    --
-    -- Cleaner: use the fact that `Module.Free P A` ⟺ exists a basis. A K-basis of A
-    -- doubles as a P-basis once we notice `r • a = eRE r • a` (scalar action via
-    -- ring iso).
+    -- **Freeness via `Basis.mapCoeffs`.** A `K`-basis of `A` becomes a
+    -- `MvPolynomial (Fin 0) K`-basis along the ring iso
+    -- `eRE.symm : K ≃+* MvPolynomial (Fin 0) K`, with smul-compatibility via
+    -- the algebra map factoring through `aeval θ ∘ C`.
     classical
-    -- Choose a K-basis of A.
     let bK := Module.Free.chooseBasis K A
-    let ιA := Module.Free.ChooseBasisIndex K A
-    -- The ring iso.
     let eRE : MvPolynomial (Fin 0) K ≃+* K := MvPolynomial.isEmptyRingEquiv K (Fin 0)
-    -- For `r : P`, `a : A`, `r • a = algebraMap P A r * a = aeval θ r * a`.
-    -- For `k : K`, `k • a = algebraMap K A k * a`.
-    -- And `aeval θ r = algebraMap K A (eRE r)` because `aeval θ = (ofId K A).comp
-    -- (isEmptyAlgEquiv K (Fin 0))`.
-    have hsmul : ∀ (r : MvPolynomial (Fin 0) K) (a : A), r • a = (eRE r) • a := by
-      intro r a
+    have hsmul_compat : ∀ (c : K) (a : A), eRE.symm c • a = c • a := by
+      intro c a
       rw [Algebra.smul_def, Algebra.smul_def]
       congr 1
-      change MvPolynomial.aeval θ r = algebraMap K A (eRE r)
-      have hfact : (MvPolynomial.aeval θ : MvPolynomial (Fin 0) K →ₐ[K] A) =
-          (Algebra.ofId K A).comp (MvPolynomial.isEmptyAlgEquiv K (Fin 0)).toAlgHom := by
-        ext i; exact isEmptyElim i
-      have hr : (MvPolynomial.aeval θ : MvPolynomial (Fin 0) K →ₐ[K] A) r =
-          (Algebra.ofId K A).comp (MvPolynomial.isEmptyAlgEquiv K (Fin 0)).toAlgHom r := by
-        rw [hfact]
-      simpa [Algebra.ofId_apply, AlgHom.comp_apply, eRE,
-        MvPolynomial.isEmptyRingEquiv] using hr
-    -- Build `Basis ιA P A` using `Basis.ofRepr` with explicit `LinearEquiv`.
-    -- The repr map takes `a : A` to `(bK.repr a).mapRange eRE.symm` : `ιA →₀ P`.
-    -- For this to be P-linear, scalar action on the target must match.
-    -- We build the LinearEquiv manually.
-    -- Scalar action on `ιA →₀ P`: coordinatewise by multiplication.
-    let repr_fun : A → (ιA →₀ MvPolynomial (Fin 0) K) :=
-      fun a => (bK.repr a).mapRange (fun k => (eRE.symm k : MvPolynomial (Fin 0) K))
-        (by simp)
-    let repr_inv : (ιA →₀ MvPolynomial (Fin 0) K) → A :=
-      fun f => bK.repr.symm (f.mapRange (fun p => eRE p) (by simp))
-    -- Additive structure.
-    have repr_fun_add : ∀ a b : A, repr_fun (a + b) = repr_fun a + repr_fun b := by
-      intro a b; ext i
-      simp [repr_fun, Finsupp.mapRange_apply, bK.repr.map_add]
-    have repr_fun_smul :
-        ∀ (r : MvPolynomial (Fin 0) K) (a : A),
-          repr_fun (r • a) = r • repr_fun a := by
-      intro r a
-      apply Finsupp.ext
-      intro i
-      rw [hsmul r a]
-      simp only [repr_fun, Finsupp.mapRange_apply, bK.repr.map_smul, Finsupp.coe_smul,
-        Pi.smul_apply]
-      -- `eRE.symm (eRE r • (bK.repr a) i) = r • (eRE.symm ((bK.repr a) i))` — P-linear.
-      -- Here `eRE r • (bK.repr a) i` in K means `eRE r * (bK.repr a) i`.
-      -- RHS `r • eRE.symm ((bK.repr a) i)` = `r * eRE.symm ((bK.repr a) i)` in P.
-      change eRE.symm (eRE r • (bK.repr a) i) = r • (eRE.symm ((bK.repr a) i))
-      rw [smul_eq_mul, smul_eq_mul, map_mul, RingEquiv.symm_apply_apply]
-    have repr_fun_invFun : ∀ f : (ιA →₀ MvPolynomial (Fin 0) K),
-        repr_fun (repr_inv f) = f := by
-      intro f
-      apply Finsupp.ext
-      intro i
-      simp only [repr_fun, repr_inv, LinearEquiv.apply_symm_apply,
-        Finsupp.mapRange_apply]
-      exact RingEquiv.symm_apply_apply eRE (f i)
-    have repr_fun_funInv : ∀ a : A, repr_inv (repr_fun a) = a := by
-      intro a
-      simp only [repr_fun, repr_inv]
-      have hmap :
-          ((bK.repr a).mapRange (fun k => (eRE.symm k : MvPolynomial (Fin 0) K))
-            (by simp)).mapRange (fun p => eRE p) (by simp) = bK.repr a := by
-        apply Finsupp.ext
-        intro i
-        simp only [Finsupp.mapRange_apply]
-        exact RingEquiv.apply_symm_apply eRE _
-      rw [hmap, LinearEquiv.symm_apply_apply]
-    let repr_LE : A ≃ₗ[MvPolynomial (Fin 0) K] (ιA →₀ MvPolynomial (Fin 0) K) :=
-      { toFun := repr_fun
-        map_add' := repr_fun_add
-        map_smul' := by
-          intro r a
-          simpa [RingHom.id_apply] using repr_fun_smul r a
-        invFun := repr_inv
-        left_inv := repr_fun_funInv
-        right_inv := repr_fun_invFun }
-    exact Module.Free.of_basis (⟨repr_LE⟩ : Module.Basis ιA (MvPolynomial (Fin 0) K) A)
+      change MvPolynomial.aeval θ (eRE.symm c) = algebraMap K A c
+      rw [MvPolynomial.isEmptyRingEquiv_symm_apply, MvPolynomial.aeval_C]
+    exact Module.Free.of_basis (bK.mapCoeffs eRE.symm hsmul_compat)
   | succ d' _ih =>
     classical
     -- Extract homogeneous degrees for θ, then redefine to be positive by bumping to 1
