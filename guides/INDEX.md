@@ -73,13 +73,14 @@ saving estimate before committing to the refactor.
 
 ### Cross-file architectural
 
-- [work_packages/CROSS_FILE_SIDE_ABSTRACTION.md](work_packages/CROSS_FILE_SIDE_ABSTRACTION.md)
-  — the speculative big-picture play: introduce a `BinomialSide`
-  abstraction with `Sum.swap` lemmas, prove half the bipartite
-  lemmas once, derive the other half via swap. **~400–600 LOC
-  saving across the repo if it works**, but **VERY HIGH risk** with
-  multi-week scope and broad blast radius. Do NOT dispatch without
-  first scoping a Stage 0 minimum-viable prototype.
+- [archive/CROSS_FILE_SIDE_ABSTRACTION.md](archive/CROSS_FILE_SIDE_ABSTRACTION.md)
+  — investigated 2026-05-03, **ABORTED** at Stage 0. The unified
+  prototype lemma is 42 % shorter than the sister pair on its own,
+  but the call sites depend on `omega`, which does not unfold
+  `BinomialSide.var` even when `@[reducible]`. The per-call-site
+  `simp only`/`show` tax plus the ~50 LOC of new infrastructure
+  outweighs the savings. No code committed. See the guide for the
+  recorded failure mode and re-entry conditions.
 
 ### Recently-completed work packages
 
