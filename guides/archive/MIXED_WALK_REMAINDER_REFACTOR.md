@@ -46,7 +46,21 @@ more axis.
   `[CARVE-CANDIDATE-HIGH-VALUE]`.
 - Proof is **stable and axiom-clean**; downstream consumer
   `theorem_2_1` is locked in by `BEI/AxiomCheck.lean`.
-- This guide is the dedicated work package.
+- **Completed 2026-05-03** in five committed stages (Stage 1 through
+  Stage 4, see the `mixed_walk_remainder Stage *` commits on master):
+  - File: `BEI/CoveredWalks.lean` 2390 → 1960 LOC (**−430 LOC, ~18%**).
+  - Theorem `isRemainder_fij_of_mixed_walk`: 837 → 402 LOC
+    (**~52% body reduction**).
+  - All four planned helpers landed:
+    `exists_min_bad_vertex` / `exists_max_bad_vertex` (Stage 1),
+    `x_telescope_monomial_eq` / `y_telescope_monomial_eq` plus the
+    bad-vertex packagers `telescope_step_x_bad` / `telescope_step_y_bad`
+    (Stage 2), `ne_head?_of_internal` / `ne_getLast?_of_internal`
+    (Stage 3), and four `sub_add_single_*_eval_*` Finsupp evaluators
+    plus reflowed proc-y/proc-x sub-branches (Stage 4).
+  - `lake build` and `lake build BEI.AxiomCheck` both clean after
+    every stage commit.
+  - Archived 2026-05-03.
 
 ## Goal
 

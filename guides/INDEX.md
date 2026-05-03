@@ -13,21 +13,7 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 
 ## Active Work Packages
 
-Two work packages are now ready for fresh-Claude dispatch, both
-investigated 2026-05-03 by read-only subagents:
-
-- [work_packages/MIXED_WALK_REMAINDER_REFACTOR.md](work_packages/MIXED_WALK_REMAINDER_REFACTOR.md)
-  — **Largest LOC win still available.** Carve
-  `isRemainder_fij_of_mixed_walk` (837 LOC,
-  `BEI/CoveredWalks.lean:1335`) by collapsing its 4 telescope
-  branches and unifying the end-block with the `_covered_walk` /
-  `_covered_walk_y` siblings (6 call sites total, ~120 LOC each).
-  Three helpers proposed (`telescope_remainder_step`,
-  `coverage_transfer_through_subwalk`,
-  `min_bad_vertex` / `max_bad_vertex`). Estimated
-  837 → ~280–350 LOC (~−500 LOC, ~60%), medium risk. The
-  `Sum.inl` / `Sum.inr` simp-set non-uniformity is the main parameterisation
-  hazard.
+One work package is currently available for fresh-Claude dispatch:
 
 - [work_packages/GRADED_FINITE_FREE_REFACTOR.md](work_packages/GRADED_FINITE_FREE_REFACTOR.md)
   — Carve the `toMathlib/Graded*` family: 4 big proofs
@@ -56,6 +42,22 @@ from 1991 to 1455 LOC (−536, 27%). The originally proposed
 "`case2_3_lt_branch` mega-helper" was deliberately skipped per the
 "negative-value extraction" rule — its signature would have grown
 beyond the body savings.
+
+The next-largest LOC target — `isRemainder_fij_of_mixed_walk`
+(837 LOC) — shipped on 2026-05-03 across five stage commits. The
+guide is archived at
+[archive/MIXED_WALK_REMAINDER_REFACTOR.md](archive/MIXED_WALK_REMAINDER_REFACTOR.md).
+Eight private helpers landed across the three flagship walk theorems
+(`isRemainder_fij_of_covered_walk{,_y}` and `_mixed_walk`): the
+bad-vertex pickers `exists_min_bad_vertex` / `exists_max_bad_vertex`,
+the algebraic identities `x_telescope_monomial_eq` /
+`y_telescope_monomial_eq`, the bad-case packagers
+`telescope_step_x_bad` / `telescope_step_y_bad`, the head?/getLast?
+distinctness wrappers `ne_head?_of_internal` /
+`ne_getLast?_of_internal`, and four `sub_add_single_*_eval_*`
+Finsupp evaluators. `isRemainder_fij_of_mixed_walk` itself shrank
+837 → 402 LOC; `BEI/CoveredWalks.lean` shrank 2390 → 1960 LOC
+(−430, ~18%) with no axiom or statement change.
 
 The `groebnerElement_reduced_same_endpoints` deduplication finished on
 2026-05-02; the guide is archived at
