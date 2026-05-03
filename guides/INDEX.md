@@ -13,18 +13,19 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 
 ## Active Work Packages
 
-- [work_packages/THEOREM_2_1_REFACTOR.md](work_packages/THEOREM_2_1_REFACTOR.md)
-  — **Largest LOC win still available in the repo.** Refactor
-  `theorem_2_1` (1848 LOC, `BEI/GroebnerBasisSPolynomial.lean:143`)
-  by collapsing the i<k / k<i and 4-leaf sister symmetries inside
-  Cases 2 & 3. Investigated 2026-05-03; classified
-  `[CARVE-CANDIDATE-HIGH-VALUE]`. Four helpers proposed
-  (`mixed_walk_coverage_lambda`, `case2_3_branch_combine`,
-  `case4_case5_branch`, `case2_3_lt_branch`); estimated 1848 → 900–1000
-  LOC, medium risk. The new `BEI/AxiomCheck.lean` regression file
-  makes the verify cadence one-line — `lake build BEI.AxiomCheck` after
-  every stage commit. Multi-day refactor on the load-bearing Section 2
-  monolith — schedule a fresh-Claude session with care.
+There are no active work packages right now. The largest standing LOC
+target — `theorem_2_1` (1848 LOC, the biggest declaration in the repo)
+— shipped on 2026-05-03 across five stage commits. The guide is
+archived at
+[archive/THEOREM_2_1_REFACTOR.md](archive/THEOREM_2_1_REFACTOR.md).
+Five private helpers were extracted
+(`cov_inr_or_inl_of_admissible_path`, `degree_monomial_mul_fij`,
+`case4_remainder` / `case5_remainder`, `fij_degree_inr_eq_zero` /
+`fij_degree_inl_eq_zero`); `BEI/GroebnerBasisSPolynomial.lean` shrank
+from 1991 to 1455 LOC (−536, 27%). The originally proposed
+"`case2_3_lt_branch` mega-helper" was deliberately skipped per the
+"negative-value extraction" rule — its signature would have grown
+beyond the body savings.
 
 The `groebnerElement_reduced_same_endpoints` deduplication finished on
 2026-05-02; the guide is archived at

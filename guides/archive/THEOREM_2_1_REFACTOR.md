@@ -33,18 +33,37 @@ the original deferral.
 
 ## Status
 
-- Investigated: 2026-05-03 by a read-only subagent; classified
-  `[CARVE-CANDIDATE-HIGH-VALUE]`.
-- Proof is **stable and axiom-clean**
-  (`{propext, Classical.choice, Quot.sound}` — locked in by
-  `BEI/AxiomCheck.lean`); do not touch unless committed to the full
-  refactor.
-- Marked `[!]` in the original "Fat Single-Proof Refactor" table of
-  `TODO.md` (item #11). This guide supersedes that skip note.
-- **Progress (2026-05-03):** Stages 1 and 2 landed.
-  File `BEI/GroebnerBasisSPolynomial.lean`: 1991 → 1718 LOC (−273 LOC).
-  `theorem_2_1` axioms unchanged. Stages 3-4 deferred (see "Remaining
-  work" below).
+**ARCHIVED 2026-05-03** — all five stages landed.
+
+- File `BEI/GroebnerBasisSPolynomial.lean`: **1991 → 1455 LOC (−536 LOC,
+  27% reduction)** across Stages 1–5.
+- `theorem_2_1` axioms unchanged: `[propext, Classical.choice, Quot.sound]`.
+  Locked in by `BEI/AxiomCheck.lean`.
+- Stage commits on master: `d7b5350` (cycle fix), `ed7c8ad` (Stages 1+2),
+  `5269295` (guide progress note), `43de6a1` (Stage 3), `6526e8a` (Stage 4),
+  `368eacf` (Stage 5).
+
+Per-stage savings:
+
+| Stage | Helper | LOC before | LOC after | Δ |
+|---|---|---|---|---|
+| 1 | `cov_inr_or_inl_of_admissible_path` (24× reuse) | 1991 | ~1758 | −233 |
+| 2 | `degree_monomial_mul_fij` (5× reuse) | ~1758 | 1718 | −40 |
+| 3 | `case4_remainder` + `case5_remainder` (each 2× reuse) | 1718 | 1658 | −60 |
+| 4 | `fij_degree_inr_eq_zero` + `fij_degree_inl_eq_zero` (32× reuse) | 1658 | 1550 | −108 |
+| 5 | tighten leftovers (drop now-redundant haves/sets, hoist) | 1550 | 1455 | −95 |
+
+The original guide forecast ~1848 → 900–1000 LOC (~−850). The actual
+−536 was less aggressive because Stage 4's full leaf-fold helper
+described in the guide was **not** attempted: the helper signature
+would have grown beyond what its body savings justified (~14
+parameters, including path-inclusion direction and per-Q "skip"
+witness terms). A smaller cross-cutting `fij_degree_*_eq_zero`
+extraction was substituted, hitting 32 occurrences with a 4-LOC
+helper instead.
+
+Originally marked `[!]` in the "Fat Single-Proof Refactor" table of
+`TODO.md` (item #11). This guide superseded that skip note.
 
 ## Goal
 
