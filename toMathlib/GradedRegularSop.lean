@@ -696,29 +696,11 @@ private theorem exists_homogeneous_regular_sop_aux :
     · -- weak regularity: ℓ :: tail, via cons_iff.
       rw [isWeaklyRegular_cons_iff]
       refine ⟨hℓ_reg, ?_⟩
-      -- `IsWeaklyRegular (QuotSMulTop ℓ A) tail` (over A).
-      -- Bridge: `ℓ • (⊤ : Submodule A A) = (Ideal.span {ℓ} : Submodule A A)`.
-      have heq_submod :
-          ℓ • (⊤ : Submodule A A) =
-            ((Ideal.span ({ℓ} : Set A) : Ideal A) : Submodule A A) := by
-        ext z
-        refine ⟨fun hz => ?_, fun hz => ?_⟩
-        · -- `z ∈ ℓ • ⊤` implies `z = ℓ • w` for some `w ∈ ⊤`.
-          rw [Submodule.mem_smul_pointwise_iff_exists] at hz
-          obtain ⟨w, _, rfl⟩ := hz
-          change ℓ • w ∈ Ideal.span ({ℓ} : Set A)
-          have hmul : ℓ • w = ℓ * w := rfl
-          rw [hmul]
-          exact Ideal.mul_mem_right _ _ (Ideal.subset_span rfl)
-        · -- `z ∈ span {ℓ}` implies `ℓ ∣ z`, so `z = ℓ * c`.
-          rw [Ideal.mem_span_singleton] at hz
-          obtain ⟨c, rfl⟩ := hz
-          rw [Submodule.mem_smul_pointwise_iff_exists]
-          exact ⟨c, Submodule.mem_top, rfl⟩
-      -- `QuotSMulTop ℓ A ≃ₗ[A] A ⧸ Ideal.span {ℓ}`.
+      -- `IsWeaklyRegular (QuotSMulTop ℓ A) tail` (over A) via the canonical
+      -- `A`-linear equiv `QuotSMulTop ℓ A ≃ₗ[A] A ⧸ Ideal.span {ℓ}`.
       have heq_mod :
           (QuotSMulTop ℓ A) ≃ₗ[A] A ⧸ Ideal.span ({ℓ} : Set A) :=
-        Submodule.quotEquivOfEq _ _ heq_submod
+        QuotSMulTop.linearEquivQuotSpanSingleton ℓ
       -- Bridge via `isWeaklyRegular_congr`: regularity over A for tail.
       rw [heq_mod.isWeaklyRegular_congr tail]
       -- Convert to regularity over A ⧸ Ideal.span {ℓ}: scalar tower.

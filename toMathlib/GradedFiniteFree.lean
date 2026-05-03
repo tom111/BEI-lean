@@ -45,6 +45,33 @@ import Mathlib.RingTheory.Regular.RegularSequence
 
 noncomputable section
 
+open scoped Pointwise in
+/-- The submodule `r • ⊤ : Submodule R R` coincides with the principal ideal
+`Ideal.span {r}`. Used to convert between `QuotSMulTop r R` and
+`R ⧸ Ideal.span ({r} : Set R)`. -/
+lemma QuotSMulTop.smul_top_eq_span_singleton {R : Type*} [CommRing R] (r : R) :
+    r • (⊤ : Submodule R R) =
+      ((Ideal.span ({r} : Set R) : Ideal R) : Submodule R R) := by
+  ext z
+  refine ⟨fun hz => ?_, fun hz => ?_⟩
+  · rw [Submodule.mem_smul_pointwise_iff_exists] at hz
+    obtain ⟨w, _, rfl⟩ := hz
+    change r • w ∈ Ideal.span ({r} : Set R)
+    have hmul : r • w = r * w := rfl
+    rw [hmul]
+    exact Ideal.mul_mem_right _ _ (Ideal.subset_span rfl)
+  · rw [Ideal.mem_span_singleton] at hz
+    obtain ⟨c, rfl⟩ := hz
+    rw [Submodule.mem_smul_pointwise_iff_exists]
+    exact ⟨c, Submodule.mem_top, rfl⟩
+
+/-- The canonical `R`-linear equivalence between `QuotSMulTop r R` and
+`R ⧸ Ideal.span ({r} : Set R)`. Used at multiple sites that need to transfer
+weak regularity between the `QuotSMulTop` and the `R ⧸ ⟨r⟩` views. -/
+def QuotSMulTop.linearEquivQuotSpanSingleton {R : Type*} [CommRing R] (r : R) :
+    QuotSMulTop r R ≃ₗ[R] R ⧸ Ideal.span ({r} : Set R) :=
+  Submodule.quotEquivOfEq _ _ (QuotSMulTop.smul_top_eq_span_singleton r)
+
 namespace GradedFiniteFree
 
 open DirectSum HomogeneousIdeal GradedIrrelevant
@@ -1365,25 +1392,10 @@ theorem linearIndependent_aeval_of_basis_lift :
           (MvPolynomial.aeval θ).toAlgebra
         exact linearIndependent_empty_type
       · haveI hBne : Nontrivial (A ⧸ I0) := not_subsingleton_iff_nontrivial.mp htriv
-        -- Translate `hθ'_reg_Q` from `QuotSMulTop x A` to `A ⧸ I0`.
-        -- `QuotSMulTop x A = A ⧸ (x • ⊤ : Submodule A A)`; we need the submodule equality
-        -- `x • ⊤ = (I0 : Submodule A A)`.
-        have hsubmod_eq : x • (⊤ : Submodule A A) = (I0 : Submodule A A) := by
-          ext z
-          refine ⟨fun hz => ?_, fun hz => ?_⟩
-          · rw [Submodule.mem_smul_pointwise_iff_exists] at hz
-            obtain ⟨w, _, rfl⟩ := hz
-            change x • w ∈ I0
-            have hmul : x • w = x * w := rfl
-            rw [hmul, hI0_def]
-            exact Ideal.mul_mem_right _ _ (Ideal.subset_span rfl)
-          · rw [hI0_def, Ideal.mem_span_singleton] at hz
-            obtain ⟨c, rfl⟩ := hz
-            rw [Submodule.mem_smul_pointwise_iff_exists]
-            exact ⟨c, Submodule.mem_top, rfl⟩
-        -- The A-linear equiv between `QuotSMulTop x A` and `A ⧸ I0`.
+        -- Translate `hθ'_reg_Q` from `QuotSMulTop x A` to `A ⧸ I0` via the
+        -- canonical `A`-linear equiv `QuotSMulTop x A ≃ₗ[A] A ⧸ Ideal.span {x}`.
         let eQL : QuotSMulTop x A ≃ₗ[A] (A ⧸ I0) :=
-          Submodule.quotEquivOfEq _ _ hsubmod_eq
+          QuotSMulTop.linearEquivQuotSpanSingleton x
         -- Translate weak regularity following the pattern from GradedRegularSop.lean.
         have hθ'_reg_B :
             RingTheory.Sequence.IsWeaklyRegular (A ⧸ I0)
