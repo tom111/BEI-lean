@@ -13,7 +13,75 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 
 ## Active Work Packages
 
-No active work package is currently queued for fresh-Claude dispatch.
+Ten work packages are now queued for fresh-Claude dispatch, all
+identified during the 2026-05-03 bird's-eye review of the three
+biggest files in the repo (after the 13-carve fat-proof pass).
+**Each is a pre-investigation proposal**: Stage 0 of every guide
+is a read-only investigation that confirms (or refutes) the
+saving estimate before committing to the refactor.
+
+### `BEI/Equidim/IteratedRegularity.lean` (2502 LOC)
+
+- [work_packages/ITERATED_REGULARITY_INL_INR_FOLD.md](work_packages/ITERATED_REGULARITY_INL_INR_FOLD.md)
+  — sister-fold the inl/inr last-NZD pair (Sections 5–6, 595 LOC
+  combined). ~300 LOC saving, medium risk. The mixed_walk-style
+  `Side` parameterisation playbook.
+- [work_packages/ITERATED_REGULARITY_BIND1.md](work_packages/ITERATED_REGULARITY_BIND1.md)
+  — replace `diagSubstHom k` with `MvPolynomial.bind₁` and ride
+  Mathlib's `bind₁` / `aeval` API. ~150–250 LOC saving,
+  low–medium risk. Mathlib-helper-hiding-in-plain-sight pattern.
+- [work_packages/ITERATED_REGULARITY_CORE_INNER.md](work_packages/ITERATED_REGULARITY_CORE_INNER.md)
+  — extract a unified "stepwise NZD on quotient" lemma to
+  `toMathlib/CohenMacaulay/Basic.lean`. ~150 LOC saving, medium–high
+  risk. Most speculative of the three IteratedRegularity proposals.
+
+### `BEI/GroebnerDeformation.lean` (2234 LOC)
+
+- [work_packages/GROEBNER_DEFORMATION_FIBER_FOLD.md](work_packages/GROEBNER_DEFORMATION_FIBER_FOLD.md)
+  — sister-fold the t=1 / t=0 fibre identifications (Sections 5–6,
+  401 LOC combined). ~100 LOC saving, medium risk. Uses the same
+  parameterised-specialisation pattern.
+- [work_packages/GROEBNER_DEFORMATION_GRADING.md](work_packages/GROEBNER_DEFORMATION_GRADING.md)
+  — ride Mathlib's `MvPolynomial.IsWeightedHomogeneous` +
+  `GradedAlgebra` / `HomogeneousIdeal` API for the 245-LOC grading
+  section. ~100 LOC saving if Mathlib's API covers the cases,
+  medium risk. Mathlib hunt.
+- [work_packages/GROEBNER_DEFORMATION_SPOLY_TAIL.md](work_packages/GROEBNER_DEFORMATION_SPOLY_TAIL.md)
+  — transplant the `theorem_2_1` helpers (`mixed_walk_coverage_lambda`,
+  `case4_remainder` / `case5_remainder`, `fij_degree_*_eq_zero`) to
+  the 665-LOC S-poly identities tail. ~200–250 LOC saving,
+  medium–high risk. Direct precedent: the `theorem_2_1` carve.
+
+### `BEI/PrimeIdeals.lean` (2061 LOC)
+
+- [work_packages/PRIMEIDEALS_MONOMIAL_SWAP.md](work_packages/PRIMEIDEALS_MONOMIAL_SWAP.md)
+  — the 490-LOC monomial-swap-by-induction-on-deviation lemma. Most
+  speculative of the PrimeIdeals proposals; saving estimate (~150–200
+  LOC) is contingent on Stage 0 finding either Mathlib normal-form
+  infrastructure or sister-fold structure on the 4-way swap-pair
+  case analysis. High risk.
+- [work_packages/PRIMEIDEALS_KER_PROOF.md](work_packages/PRIMEIDEALS_KER_PROOF.md)
+  — sister-fold the 4-way case analysis in the 371-LOC
+  `ker(φ) ≤ P_S(G)` main proof. ~80–120 LOC saving, medium risk.
+  Best done *after* the monomial-swap refactor (compounding effect).
+- [work_packages/PRIMEIDEALS_HEIGHT_CHAIN_STEP.md](work_packages/PRIMEIDEALS_HEIGHT_CHAIN_STEP.md)
+  — extract `primeHeight_chain_step` to a new
+  `toMathlib/Ideal/PrimeHeight.lean` helper, used 9× in `lemma_3_1`'s
+  3-phase chain. ~80–100 LOC saving, medium risk. Re-frames a
+  previously-INTRINSIC region; bonus consumer at
+  `BEI/PrimeDecompositionDimensionCore.lean`.
+
+### Cross-file architectural
+
+- [work_packages/CROSS_FILE_SIDE_ABSTRACTION.md](work_packages/CROSS_FILE_SIDE_ABSTRACTION.md)
+  — the speculative big-picture play: introduce a `BinomialSide`
+  abstraction with `Sum.swap` lemmas, prove half the bipartite
+  lemmas once, derive the other half via swap. **~400–600 LOC
+  saving across the repo if it works**, but **VERY HIGH risk** with
+  multi-week scope and broad blast radius. Do NOT dispatch without
+  first scoping a Stage 0 minimum-viable prototype.
+
+### Recently-completed work packages
 
 The Graded* family refactor — `toMathlib/GradedFiniteFree.lean` and
 `toMathlib/GradedRegularSop.lean` — shipped on 2026-05-03 across five
