@@ -109,9 +109,16 @@ A re-scan of *all* repo files (not just the originally-curated set) surfaced
   `lean_profile_proof` after recent refactors and remove any that are no
   longer load-bearing. Pairs with
   [`guides/cleanup/LEAN_PERFORMANCE_TRIAGE.md`](guides/cleanup/LEAN_PERFORMANCE_TRIAGE.md).
-- `[ ]` **Add `BEI/AxiomCheck.lean`.** Permanent file with `#print axioms` on
-  the seven flagship paper-facing theorems so axiom regressions are caught
-  at build time instead of via ad-hoc scratch files.
+- `[x]` **Add `BEI/AxiomCheck.lean`.** Done 2026-05-03. Eleven `#guard_msgs`
+  blocks asserting `#print axioms` output for the flagship paper-facing
+  theorems (`theorem_2_1`, `corollary_2_2`,
+  `MonomialOrder.isGroebnerBasis_iff_sPolynomial_isRemainder`,
+  `closed_implies_groebner`, `groebner_implies_closed`, `proposition_1_6`,
+  `theorem_3_2`, `corollary_3_3`, `corollary_3_4`, `corollary_3_7_cm_fin`,
+  `monomialInitialIdeal_isCohenMacaulay`). Each asserts dependence on
+  exactly `[propext, Classical.choice, Quot.sound]`; deviations break
+  `lake build` with a docstring/message diff at the offending block.
+  Imported from `BEI.lean` so the default lake target always runs it.
 - `[ ]` **CI heartbeat ratchet.** Fail CI when a new `set_option maxHeartbeats`
   raise is introduced without justification. Tracked in
   [`guides/cleanup/STATUS_AND_CI_HYGIENE.md`](guides/cleanup/STATUS_AND_CI_HYGIENE.md).
