@@ -160,6 +160,108 @@ lemma nontrivial_quotient_span_singleton_of_mem_irrelevant
     exact hsub htop
   exact (Ideal.Quotient.nontrivial_iff (I := Ideal.span ({ℓ} : Set A))).mpr hne_top
 
+/-- The localization at the irrelevant ideal of the graded quotient
+`A ⧸ ⟨ℓ⟩` is canonically isomorphic to `QuotSMulTop` of the localization of
+`A` at the irrelevant ideal, modulo the image of `ℓ`. This packages the
+duplicated `heq_ring + hPC + hequiv_bridge` reasoning shared by
+`exists_homogeneous_nonZeroDivisor_quotient_cm_of_dim_pos` and
+`ringKrullDim_irrelevant_quotient_eq`. -/
+private noncomputable def localizationAtIrrelevantOfQuotientSpan_ringEquiv
+    (h𝒜₀ : ConnectedGraded 𝒜)
+    {ℓ : A} (hℓ_hom : SetLike.IsHomogeneousElem 𝒜 ℓ)
+    (hℓ_irr : ℓ ∈ (HomogeneousIdeal.irrelevant 𝒜).toIdeal)
+    [GradedRing
+        (GradedQuotient.gradedQuotientPiece 𝒜 (Ideal.span ({ℓ} : Set A)))]
+    [Nontrivial (A ⧸ Ideal.span ({ℓ} : Set A))]
+    (hconn : ConnectedGraded
+        (GradedQuotient.gradedQuotientPiece 𝒜 (Ideal.span ({ℓ} : Set A)))) :
+    haveI := (irrelevant_isMaximal 𝒜 h𝒜₀).isPrime
+    haveI := (GradedIrrelevant.irrelevant_isMaximal _ hconn).isPrime
+    Localization.AtPrime (HomogeneousIdeal.irrelevant
+        (GradedQuotient.gradedQuotientPiece 𝒜
+          (Ideal.span ({ℓ} : Set A)))).toIdeal ≃+*
+      QuotSMulTop (algebraMap A
+        (Localization.AtPrime (HomogeneousIdeal.irrelevant 𝒜).toIdeal) ℓ)
+        (Localization.AtPrime (HomogeneousIdeal.irrelevant 𝒜).toIdeal) := by
+  haveI hm_max : (HomogeneousIdeal.irrelevant 𝒜).toIdeal.IsMaximal :=
+    irrelevant_isMaximal 𝒜 h𝒜₀
+  haveI hm_prime : (HomogeneousIdeal.irrelevant 𝒜).toIdeal.IsPrime := hm_max.isPrime
+  haveI h_quot_irr_max :
+      (HomogeneousIdeal.irrelevant
+        (GradedQuotient.gradedQuotientPiece 𝒜
+          (Ideal.span ({ℓ} : Set A)))).toIdeal.IsMaximal :=
+    irrelevant_isMaximal _ hconn
+  haveI h_quot_irr_prime :
+      (HomogeneousIdeal.irrelevant
+        (GradedQuotient.gradedQuotientPiece 𝒜
+          (Ideal.span ({ℓ} : Set A)))).toIdeal.IsPrime :=
+    h_quot_irr_max.isPrime
+  have hmap_eq :
+      (HomogeneousIdeal.irrelevant
+        (GradedQuotient.gradedQuotientPiece 𝒜
+          (Ideal.span ({ℓ} : Set A)))).toIdeal =
+        (HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
+          (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A))) :=
+    irrelevant_map_quotient_span_singleton 𝒜 h𝒜₀ hℓ_hom hℓ_irr
+  haveI h_mI_prime : ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
+      (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A)))).IsPrime := by
+    refine Ideal.isPrime_map_quotientMk_of_isPrime ?_
+    rw [Ideal.span_le, Set.singleton_subset_iff]; exact hℓ_irr
+  have hcomap : ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
+      (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A)))).comap
+        (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A))) =
+      (HomogeneousIdeal.irrelevant 𝒜).toIdeal := by
+    rw [Ideal.comap_map_of_surjective' _ Ideal.Quotient.mk_surjective, Ideal.mk_ker]
+    refine sup_eq_left.mpr ?_
+    rw [Ideal.span_le, Set.singleton_subset_iff]; exact hℓ_irr
+  have heq_ring :
+      Localization.AtPrime ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
+        (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A)))) ≃+*
+        QuotSMulTop (algebraMap A
+          (Localization.AtPrime (HomogeneousIdeal.irrelevant 𝒜).toIdeal) ℓ)
+          (Localization.AtPrime (HomogeneousIdeal.irrelevant 𝒜).toIdeal) :=
+    (quotSMulTopLocalizationEquiv_of_mem hℓ_irr hcomap).symm
+  haveI hLoc_q : IsLocalRing (Localization.AtPrime (HomogeneousIdeal.irrelevant
+      (GradedQuotient.gradedQuotientPiece 𝒜
+        (Ideal.span ({ℓ} : Set A)))).toIdeal) :=
+    IsLocalization.AtPrime.isLocalRing _ (HomogeneousIdeal.irrelevant
+      (GradedQuotient.gradedQuotientPiece 𝒜
+        (Ideal.span ({ℓ} : Set A)))).toIdeal
+  have hPC :
+      @Ideal.primeCompl _ _ (HomogeneousIdeal.irrelevant
+        (GradedQuotient.gradedQuotientPiece 𝒜
+          (Ideal.span ({ℓ} : Set A)))).toIdeal h_quot_irr_prime =
+        @Ideal.primeCompl _ _ ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
+          (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A)))) h_mI_prime := by
+    apply Submonoid.ext
+    intro x
+    change x ∉ _ ↔ x ∉ _
+    rw [hmap_eq]
+  haveI hIL : IsLocalization
+      (HomogeneousIdeal.irrelevant
+        (GradedQuotient.gradedQuotientPiece 𝒜
+          (Ideal.span ({ℓ} : Set A)))).toIdeal.primeCompl
+      (Localization.AtPrime ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
+        (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A))))) := by
+    rw [hPC]
+    exact Localization.isLocalization
+  have hequiv_bridge :
+      Localization.AtPrime ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
+        (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A)))) ≃+*
+        Localization.AtPrime (HomogeneousIdeal.irrelevant
+          (GradedQuotient.gradedQuotientPiece 𝒜
+            (Ideal.span ({ℓ} : Set A)))).toIdeal :=
+    (IsLocalization.algEquiv
+      (HomogeneousIdeal.irrelevant
+        (GradedQuotient.gradedQuotientPiece 𝒜
+          (Ideal.span ({ℓ} : Set A)))).toIdeal.primeCompl
+      (Localization.AtPrime ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
+        (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A)))))
+      (Localization.AtPrime (HomogeneousIdeal.irrelevant
+        (GradedQuotient.gradedQuotientPiece 𝒜
+          (Ideal.span ({ℓ} : Set A)))).toIdeal)).toRingEquiv
+  exact hequiv_bridge.symm.trans heq_ring
+
 end Transfer
 
 /-! ### Main descent step -/
@@ -239,33 +341,7 @@ theorem exists_homogeneous_nonZeroDivisor_quotient_cm_of_dim_pos
         (GradedQuotient.gradedQuotientPiece 𝒜 (Ideal.span ({ℓ} : Set A))) :=
       connectedGraded_quotient 𝒜 h𝒜₀ hℓ_hom
     refine ⟨hgr, hnt, hconn, ?_⟩
-    -- The irrelevant ideal of the quotient is prime (maximal).
-    haveI h_quot_irr_max :
-        (HomogeneousIdeal.irrelevant
-          (GradedQuotient.gradedQuotientPiece 𝒜
-            (Ideal.span ({ℓ} : Set A)))).toIdeal.IsMaximal :=
-      irrelevant_isMaximal _ hconn
-    haveI h_quot_irr_prime :
-        (HomogeneousIdeal.irrelevant
-          (GradedQuotient.gradedQuotientPiece 𝒜
-            (Ideal.span ({ℓ} : Set A)))).toIdeal.IsPrime :=
-      h_quot_irr_max.isPrime
-    -- Identify `(irrelevant 𝒜').toIdeal` with `m.map (Ideal.Quotient.mk I)`.
-    have hmap_eq :
-        (HomogeneousIdeal.irrelevant
-          (GradedQuotient.gradedQuotientPiece 𝒜
-            (Ideal.span ({ℓ} : Set A)))).toIdeal =
-          (HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
-            (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A))) :=
-      irrelevant_map_quotient_span_singleton 𝒜 h𝒜₀ hℓ_hom hℓ_irr
-    -- Primality of the image.
-    haveI h_mI_prime : ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
-        (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A)))).IsPrime := by
-      refine Ideal.isPrime_map_quotientMk_of_isPrime ?_
-      rw [Ideal.span_le, Set.singleton_subset_iff]
-      exact hℓ_irr
     -- Regularity of `ℓ` and its image in `A_m`.
-    have hℓ_reg_global : IsSMulRegular A ℓ := isSMulRegular_of_mem_nonZeroDivisors hℓ_reg
     have hℓ_max : algebraMap A
         (Localization.AtPrime (HomogeneousIdeal.irrelevant 𝒜).toIdeal) ℓ ∈
         maximalIdeal (Localization.AtPrime (HomogeneousIdeal.irrelevant 𝒜).toIdeal) := by
@@ -276,86 +352,17 @@ theorem exists_homogeneous_nonZeroDivisor_quotient_cm_of_dim_pos
           (Localization.AtPrime (HomogeneousIdeal.irrelevant 𝒜).toIdeal)
           (algebraMap A
             (Localization.AtPrime (HomogeneousIdeal.irrelevant 𝒜).toIdeal) ℓ) :=
-      hℓ_reg_global.of_flat
-    have hcomap : ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
-        (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A)))).comap
-          (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A))) =
-        (HomogeneousIdeal.irrelevant 𝒜).toIdeal := by
-      rw [Ideal.comap_map_of_surjective' _ Ideal.Quotient.mk_surjective, Ideal.mk_ker]
-      refine sup_eq_left.mpr ?_
-      rw [Ideal.span_le, Set.singleton_subset_iff]; exact hℓ_irr
-    haveI hloc_CM : IsCohenMacaulayLocalRing
-        (Localization.AtPrime (HomogeneousIdeal.irrelevant 𝒜).toIdeal) := hCM
+      (isSMulRegular_of_mem_nonZeroDivisors hℓ_reg).of_flat
     haveI hloc := quotSMulTopLocalRing hℓ_max
     haveI hQCM : IsCohenMacaulayLocalRing
         (QuotSMulTop (algebraMap A
           (Localization.AtPrime (HomogeneousIdeal.irrelevant 𝒜).toIdeal) ℓ)
           (Localization.AtPrime (HomogeneousIdeal.irrelevant 𝒜).toIdeal)) :=
       isCohenMacaulayLocalRing_quotient hℓ_reg_loc hℓ_max
-    have heq_ring :
-        Localization.AtPrime ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
-          (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A)))) ≃+*
-          QuotSMulTop (algebraMap A
-            (Localization.AtPrime (HomogeneousIdeal.irrelevant 𝒜).toIdeal) ℓ)
-            (Localization.AtPrime (HomogeneousIdeal.irrelevant 𝒜).toIdeal) :=
-      (quotSMulTopLocalizationEquiv_of_mem hℓ_irr hcomap).symm
-    haveI hLoc_mI : IsLocalRing (Localization.AtPrime
-        ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
-          (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A))))) :=
-      IsLocalization.AtPrime.isLocalRing _
-        ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
-          (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A))))
-    have hCM_mI : IsCohenMacaulayLocalRing
-        (Localization.AtPrime ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
-          (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A))))) :=
-      isCohenMacaulayLocalRing_of_ringEquiv' hQCM heq_ring.symm
-    -- Transport via equality `hmap_eq`: build a ring equivalence
-    -- `Localization.AtPrime (𝒜'.irrelevant.toIdeal) ≃+* Localization.AtPrime (m.map (mk I))`
-    -- from the equality of the two ideals.
-    have hPC :
-        @Ideal.primeCompl _ _ (HomogeneousIdeal.irrelevant
-          (GradedQuotient.gradedQuotientPiece 𝒜
-            (Ideal.span ({ℓ} : Set A)))).toIdeal h_quot_irr_prime =
-          @Ideal.primeCompl _ _ ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
-            (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A)))) h_mI_prime := by
-      apply Submonoid.ext
-      intro x
-      change x ∉ _ ↔ x ∉ _
-      rw [hmap_eq]
-    -- Both Localizations are at the SAME Submonoid (via hPC). Bridge via
-    -- IsLocalization.algEquiv.
-    haveI hLoc_q : IsLocalRing (Localization.AtPrime (HomogeneousIdeal.irrelevant
-        (GradedQuotient.gradedQuotientPiece 𝒜
-          (Ideal.span ({ℓ} : Set A)))).toIdeal) :=
-      IsLocalization.AtPrime.isLocalRing _ (HomogeneousIdeal.irrelevant
-        (GradedQuotient.gradedQuotientPiece 𝒜
-          (Ideal.span ({ℓ} : Set A)))).toIdeal
-    -- The second localization is also IsLocalization for the same submonoid
-    -- (via the primeCompl equality).
-    haveI hIL : IsLocalization
-        (HomogeneousIdeal.irrelevant
-          (GradedQuotient.gradedQuotientPiece 𝒜
-            (Ideal.span ({ℓ} : Set A)))).toIdeal.primeCompl
-        (Localization.AtPrime ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
-          (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A))))) := by
-      rw [hPC]
-      exact Localization.isLocalization
-    have hequiv_bridge :
-        Localization.AtPrime ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
-          (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A)))) ≃+*
-          Localization.AtPrime (HomogeneousIdeal.irrelevant
-            (GradedQuotient.gradedQuotientPiece 𝒜
-              (Ideal.span ({ℓ} : Set A)))).toIdeal :=
-      (IsLocalization.algEquiv
-        (HomogeneousIdeal.irrelevant
-          (GradedQuotient.gradedQuotientPiece 𝒜
-            (Ideal.span ({ℓ} : Set A)))).toIdeal.primeCompl
-        (Localization.AtPrime ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
-          (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A)))))
-        (Localization.AtPrime (HomogeneousIdeal.irrelevant
-          (GradedQuotient.gradedQuotientPiece 𝒜
-            (Ideal.span ({ℓ} : Set A)))).toIdeal)).toRingEquiv
-    exact isCohenMacaulayLocalRing_of_ringEquiv' hCM_mI hequiv_bridge
+    -- Bundle the localization-bridge: `Loc(𝒜'₊) ≃+* QuotSMulTop (image ℓ) (Loc m)`.
+    have hRE := localizationAtIrrelevantOfQuotientSpan_ringEquiv
+      𝒜 h𝒜₀ hℓ_hom hℓ_irr hconn
+    exact isCohenMacaulayLocalRing_of_ringEquiv' hQCM hRE.symm
 
 end Descent
 
@@ -477,28 +484,6 @@ private lemma ringKrullDim_irrelevant_quotient_eq
   haveI hm_max : (HomogeneousIdeal.irrelevant 𝒜).toIdeal.IsMaximal :=
     irrelevant_isMaximal 𝒜 h𝒜₀
   haveI hm_prime : (HomogeneousIdeal.irrelevant 𝒜).toIdeal.IsPrime := hm_max.isPrime
-  haveI h_quot_irr_max :
-      (HomogeneousIdeal.irrelevant
-        (GradedQuotient.gradedQuotientPiece 𝒜
-          (Ideal.span ({ℓ} : Set A)))).toIdeal.IsMaximal :=
-    irrelevant_isMaximal _ hconn
-  haveI h_quot_irr_prime :
-      (HomogeneousIdeal.irrelevant
-        (GradedQuotient.gradedQuotientPiece 𝒜
-          (Ideal.span ({ℓ} : Set A)))).toIdeal.IsPrime :=
-    h_quot_irr_max.isPrime
-  -- Image-primality and identification.
-  have hmap_eq :
-      (HomogeneousIdeal.irrelevant
-        (GradedQuotient.gradedQuotientPiece 𝒜
-          (Ideal.span ({ℓ} : Set A)))).toIdeal =
-        (HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
-          (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A))) :=
-    irrelevant_map_quotient_span_singleton 𝒜 h𝒜₀ hℓ_hom hℓ_irr
-  haveI h_mI_prime : ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
-      (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A)))).IsPrime := by
-    refine Ideal.isPrime_map_quotientMk_of_isPrime ?_
-    rw [Ideal.span_le, Set.singleton_subset_iff]; exact hℓ_irr
   -- Regularity of ℓ in the localization at the irrelevant ideal.
   have hℓ_max : algebraMap A
       (Localization.AtPrime (HomogeneousIdeal.irrelevant 𝒜).toIdeal) ℓ ∈
@@ -511,71 +496,9 @@ private lemma ringKrullDim_irrelevant_quotient_eq
         (algebraMap A
           (Localization.AtPrime (HomogeneousIdeal.irrelevant 𝒜).toIdeal) ℓ) :=
     hℓ_reg.of_flat
-  have hcomap : ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
-      (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A)))).comap
-        (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A))) =
-      (HomogeneousIdeal.irrelevant 𝒜).toIdeal := by
-    rw [Ideal.comap_map_of_surjective' _ Ideal.Quotient.mk_surjective, Ideal.mk_ker]
-    refine sup_eq_left.mpr ?_
-    rw [Ideal.span_le, Set.singleton_subset_iff]; exact hℓ_irr
-  -- `Localization.AtPrime (mI) ≃+* QuotSMulTop (image ℓ) (Localization.AtPrime m)`.
-  have heq_ring :
-      Localization.AtPrime ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
-        (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A)))) ≃+*
-        QuotSMulTop (algebraMap A
-          (Localization.AtPrime (HomogeneousIdeal.irrelevant 𝒜).toIdeal) ℓ)
-          (Localization.AtPrime (HomogeneousIdeal.irrelevant 𝒜).toIdeal) :=
-    (quotSMulTopLocalizationEquiv_of_mem hℓ_irr hcomap).symm
-  -- The `Localization.AtPrime` of the quotient's irrelevant ideal agrees
-  -- with the one of the image ideal, via a canonical bridge.
-  haveI hLoc_q : IsLocalRing (Localization.AtPrime (HomogeneousIdeal.irrelevant
-      (GradedQuotient.gradedQuotientPiece 𝒜
-        (Ideal.span ({ℓ} : Set A)))).toIdeal) :=
-    IsLocalization.AtPrime.isLocalRing _ (HomogeneousIdeal.irrelevant
-      (GradedQuotient.gradedQuotientPiece 𝒜
-        (Ideal.span ({ℓ} : Set A)))).toIdeal
-  have hPC :
-      @Ideal.primeCompl _ _ (HomogeneousIdeal.irrelevant
-        (GradedQuotient.gradedQuotientPiece 𝒜
-          (Ideal.span ({ℓ} : Set A)))).toIdeal h_quot_irr_prime =
-        @Ideal.primeCompl _ _ ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
-          (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A)))) h_mI_prime := by
-    apply Submonoid.ext
-    intro x
-    change x ∉ _ ↔ x ∉ _
-    rw [hmap_eq]
-  haveI hIL : IsLocalization
-      (HomogeneousIdeal.irrelevant
-        (GradedQuotient.gradedQuotientPiece 𝒜
-          (Ideal.span ({ℓ} : Set A)))).toIdeal.primeCompl
-      (Localization.AtPrime ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
-        (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A))))) := by
-    rw [hPC]
-    exact Localization.isLocalization
-  have hequiv_bridge :
-      Localization.AtPrime ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
-        (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A)))) ≃+*
-        Localization.AtPrime (HomogeneousIdeal.irrelevant
-          (GradedQuotient.gradedQuotientPiece 𝒜
-            (Ideal.span ({ℓ} : Set A)))).toIdeal :=
-    (IsLocalization.algEquiv
-      (HomogeneousIdeal.irrelevant
-        (GradedQuotient.gradedQuotientPiece 𝒜
-          (Ideal.span ({ℓ} : Set A)))).toIdeal.primeCompl
-      (Localization.AtPrime ((HomogeneousIdeal.irrelevant 𝒜).toIdeal.map
-        (Ideal.Quotient.mk (Ideal.span ({ℓ} : Set A)))))
-      (Localization.AtPrime (HomogeneousIdeal.irrelevant
-        (GradedQuotient.gradedQuotientPiece 𝒜
-          (Ideal.span ({ℓ} : Set A)))).toIdeal)).toRingEquiv
   -- Compose: `Localization.AtPrime (𝒜'₊) ≃+* QuotSMulTop (image ℓ) ...`.
-  have heq_total :
-      Localization.AtPrime (HomogeneousIdeal.irrelevant
-        (GradedQuotient.gradedQuotientPiece 𝒜
-          (Ideal.span ({ℓ} : Set A)))).toIdeal ≃+*
-        QuotSMulTop (algebraMap A
-          (Localization.AtPrime (HomogeneousIdeal.irrelevant 𝒜).toIdeal) ℓ)
-          (Localization.AtPrime (HomogeneousIdeal.irrelevant 𝒜).toIdeal) :=
-    hequiv_bridge.symm.trans heq_ring
+  have heq_total := localizationAtIrrelevantOfQuotientSpan_ringEquiv
+    𝒜 h𝒜₀ hℓ_hom hℓ_irr hconn
   rw [ringKrullDim_eq_of_ringEquiv heq_total]
   -- Now we need `ringKrullDim QuotSMulTop (image ℓ) Loc = d'`.
   have hsub_eq : ringKrullDim (QuotSMulTop (algebraMap A
