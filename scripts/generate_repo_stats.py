@@ -38,9 +38,9 @@ MILESTONES: list[dict[str, str]] = [
         "note": "Closing Proposition 1.6 then required porting and extending a large amount of Cohen–Macaulay machinery into the project — the costliest infrastructure work of the formalisation.",
     },
     {
-        "date": "2026-05-02",
-        "title": "Proof complete; refactor begins",
-        "description": "All paper results (Sections 1–4) axiom-clean — including Proposition 1.6 (2026-04-22). The fat-proof carving pass begins, shrinking the codebase by reusing existing helpers and collapsing sister-symmetric branches.",
+        "date": "2026-04-24",
+        "title": "Paper formalization complete",
+        "description": "All paper results (Sections 1–4) proved axiom-clean — including Proposition 1.6 (2026-04-22), Corollary 3.4, and the Cohen–Macaulay branch of Corollary 3.7. The decline that follows reflects the fat-proof carving pass that began 2026-05-02.",
     },
 ]
 

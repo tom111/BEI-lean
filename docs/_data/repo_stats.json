@@ -17,14 +17,14 @@
     "lean_snapshot_end_date": "2026-05-03",
     "lean_snapshot_start_label": "Apr 22, 2026",
     "lean_snapshot_end_label": "May 03, 2026",
-    "total_commits": 494,
-    "total_commits_display": "494",
-    "commits_last_30_days": 394,
-    "commits_last_30_days_display": "394",
-    "commits_last_90_days": 494,
-    "commits_last_90_days_display": "494",
-    "commits_last_365_days": 494,
-    "commits_last_365_days_display": "494",
+    "total_commits": 495,
+    "total_commits_display": "495",
+    "commits_last_30_days": 395,
+    "commits_last_30_days_display": "395",
+    "commits_last_90_days": 495,
+    "commits_last_90_days_display": "495",
+    "commits_last_365_days": 495,
+    "commits_last_365_days_display": "495",
     "first_commit_date": "2026-02-17",
     "latest_commit_date": "2026-05-03",
     "active_days": 76,
@@ -232,16 +232,16 @@
       },
       {
         "number": 4,
-        "date": "2026-05-02",
-        "date_label": "May 02, 2026",
-        "title": "Proof complete; refactor begins",
-        "description": "All paper results (Sections 1\u20134) axiom-clean \u2014 including Proposition 1.6 (2026-04-22). The fat-proof carving pass begins, shrinking the codebase by reusing existing helpers and collapsing sister-symmetric branches.",
+        "date": "2026-04-24",
+        "date_label": "Apr 24, 2026",
+        "title": "Paper formalization complete",
+        "description": "All paper results (Sections 1\u20134) proved axiom-clean \u2014 including Proposition 1.6 (2026-04-22), Corollary 3.4, and the Cohen\u2013Macaulay branch of Corollary 3.7. The decline that follows reflects the fat-proof carving pass that began 2026-05-02.",
         "note": "",
-        "x": 686.9,
-        "y": 21.1,
+        "x": 634.6,
+        "y": 20.7,
         "label_y": 14.0,
-        "lean_lines": 39009,
-        "lean_lines_display": "39,009"
+        "lean_lines": 39101,
+        "lean_lines_display": "39,101"
       }
     ]
   },
@@ -267,15 +267,15 @@
     {
       "month": "2026-05",
       "label": "May 2026",
-      "commit_count": 52,
-      "commit_count_display": "52"
+      "commit_count": 53,
+      "commit_count_display": "53"
     }
   ],
   "commits_by_year": [
     {
       "year": "2026",
-      "commit_count": 494,
-      "commit_count_display": "494"
+      "commit_count": 495,
+      "commit_count_display": "495"
     }
   ]
 }
