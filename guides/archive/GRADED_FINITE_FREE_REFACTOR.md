@@ -30,12 +30,27 @@ infra" swing. **All toMathlib-side, so paper-facing theorems
 
 - Discovered: 2026-05-03 broader fat-proof scan; investigated the
   same day.
-- Proofs are **stable and axiom-clean**; the downstream paper-facing
-  flagship theorems (`proposition_1_6` chiefly) all hit
-  `[propext, Classical.choice, Quot.sound]`, locked in by
-  `BEI/AxiomCheck.lean`.
-- Marked `[ ]` in the relevant TODO row (this guide is the dedicated
-  packet).
+- **COMPLETED 2026-05-03.** Stages 0–5 landed in five staged commits
+  (`1c1d1da`, `1782033`, `941dffb`, `758d9fb`, `0fb036e`). Net
+  saving across `toMathlib/GradedFiniteFree.lean` and
+  `toMathlib/GradedRegularSop.lean`: **172 LOC** (185 deletions vs
+  13 insertions in the cumulative diff over targets, ignoring
+  helpers' line bookkeeping). Per-stage stats:
+  - Stage 1 (localization-bridge): 77 LOC
+  - Stage 2 (`QuotSMulTop.linearEquivQuotSpanSingleton`): 6 LOC
+  - Stage 3 (aeval/finSuccEquiv helpers): 3 LOC
+  - Stage 4 (`Module.Basis.mapCoeffs` swing): 76 LOC
+  - Stage 5 (dead-have cleanup): 10 LOC
+- Stage 0 Mathlib hunt found two upstream APIs already in place,
+  matching the guide's optimistic scenarios:
+  - `LinearEquiv.isWeaklyRegular_congr` — already used at the
+    GradedFiniteFree call site; the gap was just the
+    `QuotSMulTop r R ≃ₗ[R] R ⧸ ⟨r⟩` linear equivalence.
+  - `Module.Basis.mapCoeffs` — Stage 4's high-gain swing replaced an
+    85-LOC hand-built `repr_LE` with a one-liner.
+- Proofs remain **stable and axiom-clean**; `BEI.AxiomCheck`
+  passes after every stage commit.
+- Move 2026-05-03 from `guides/work_packages/` to `guides/archive/`.
 
 ## Goal
 

@@ -13,21 +13,25 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 
 ## Active Work Packages
 
-One work package is currently available for fresh-Claude dispatch:
+No active work package is currently queued for fresh-Claude dispatch.
 
-- [work_packages/GRADED_FINITE_FREE_REFACTOR.md](work_packages/GRADED_FINITE_FREE_REFACTOR.md)
-  — Carve the `toMathlib/Graded*` family: 4 big proofs
-  (`linearIndependent_aeval_cons_step` 247,
-  `linearIndependent_aeval_of_basis_lift` 245,
-  `finiteFree_over_mvPolynomial_of_homogeneous_regular_sop` 243,
-  plus the 70-LOC localization-bridge duplicated across
-  `exists_homogeneous_nonZeroDivisor_quotient_cm_of_dim_pos` and
-  `ringKrullDim_irrelevant_quotient_eq` in
-  `toMathlib/GradedRegularSop.lean`). Five stages with escalating
-  risk — Stage 0 zero-risk warmup, Stage 4 the high-gain Mathlib
-  hunt for `Module.Free.of_equiv` / `Basis.mapCoeffs` / similar.
-  Estimated ~230–280 LOC reduction, medium risk, all
-  toMathlib-side so paper-facing theorems are insulated.
+The Graded* family refactor — `toMathlib/GradedFiniteFree.lean` and
+`toMathlib/GradedRegularSop.lean` — shipped on 2026-05-03 across five
+stage commits. The guide is archived at
+[archive/GRADED_FINITE_FREE_REFACTOR.md](archive/GRADED_FINITE_FREE_REFACTOR.md).
+Stage 0 Mathlib hunt found `LinearEquiv.isWeaklyRegular_congr` and
+`Module.Basis.mapCoeffs` already in Mathlib; Stage 1 extracted the
+duplicated localization-bridge helper
+`localizationAtIrrelevantOfQuotientSpan_ringEquiv` (77 LOC saved);
+Stage 2 added `QuotSMulTop.linearEquivQuotSpanSingleton` (6 LOC); Stage
+3 pulled `aeval_finCons_eq_polynomial_aeval` and
+`quotientMk_aeval_finCons_eq_aeval_coeff_zero` out of
+`linearIndependent_aeval_cons_step` (3 LOC); Stage 4's high-gain swing
+replaced an 85-LOC hand-built `repr_LE` in the
+`finiteFree_over_mvPolynomial_of_homogeneous_regular_sop` zero branch
+with a one-line `Module.Basis.mapCoeffs` call (76 LOC); Stage 5
+trimmed three dead `have` blocks (10 LOC). Net: 172 LOC across both
+files; `BEI.AxiomCheck` clean after every stage commit.
 
 The largest standing LOC target — `theorem_2_1` (1848 LOC, the
 biggest declaration in the repo) — shipped on 2026-05-03 across five
