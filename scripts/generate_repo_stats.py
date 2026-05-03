@@ -38,9 +38,9 @@ MILESTONES: list[dict[str, str]] = [
         "note": "Closing Proposition 1.6 then required porting and extending a large amount of Cohen–Macaulay machinery into the project — the costliest infrastructure work of the formalisation.",
     },
     {
-        "date": "2026-04-22",
-        "title": "Proposition 1.6",
-        "description": "Paper-faithful Cohen–Macaulay criterion, axiom-clean.",
+        "date": "2026-05-02",
+        "title": "Proof complete; refactor begins",
+        "description": "All paper results (Sections 1–4) axiom-clean — including Proposition 1.6 (2026-04-22). The fat-proof carving pass begins, shrinking the codebase by reusing existing helpers and collapsing sister-symmetric branches.",
     },
 ]
 

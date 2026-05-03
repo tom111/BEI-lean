@@ -1,53 +1,53 @@
 {
-  "generated_on": "2026-04-23",
+  "generated_on": "2026-05-03",
   "script_path": "scripts/generate_repo_stats.py",
   "summary": {
-    "lean_files": 50,
-    "lean_files_display": "50",
-    "lean_lines": 39095,
-    "lean_lines_display": "39,095",
-    "nonblank_lean_lines": 36666,
-    "nonblank_lean_lines_display": "36,666",
+    "lean_files": 67,
+    "lean_files_display": "67",
+    "lean_lines": 38122,
+    "lean_lines_display": "38,122",
+    "nonblank_lean_lines": 35485,
+    "nonblank_lean_lines_display": "35,485",
     "lean_snapshot_count": 8,
     "lean_snapshot_count_display": "8",
-    "lean_lines_recent_change": 14587,
-    "lean_lines_recent_change_display": "+14,587",
-    "lean_lines_recent_change_direction": "up",
-    "lean_snapshot_start_date": "2026-04-13",
-    "lean_snapshot_end_date": "2026-04-23",
-    "lean_snapshot_start_label": "Apr 13, 2026",
-    "lean_snapshot_end_label": "Apr 23, 2026",
-    "total_commits": 373,
-    "total_commits_display": "373",
-    "commits_last_30_days": 324,
-    "commits_last_30_days_display": "324",
-    "commits_last_90_days": 373,
-    "commits_last_90_days_display": "373",
-    "commits_last_365_days": 373,
-    "commits_last_365_days_display": "373",
+    "lean_lines_recent_change": -431,
+    "lean_lines_recent_change_display": "-431",
+    "lean_lines_recent_change_direction": "down",
+    "lean_snapshot_start_date": "2026-04-22",
+    "lean_snapshot_end_date": "2026-05-03",
+    "lean_snapshot_start_label": "Apr 22, 2026",
+    "lean_snapshot_end_label": "May 03, 2026",
+    "total_commits": 494,
+    "total_commits_display": "494",
+    "commits_last_30_days": 394,
+    "commits_last_30_days_display": "394",
+    "commits_last_90_days": 494,
+    "commits_last_90_days_display": "494",
+    "commits_last_365_days": 494,
+    "commits_last_365_days_display": "494",
     "first_commit_date": "2026-02-17",
-    "latest_commit_date": "2026-04-23",
-    "active_days": 66,
-    "active_days_display": "66"
+    "latest_commit_date": "2026-05-03",
+    "active_days": 76,
+    "active_days_display": "76"
   },
   "directory_breakdown": [
     {
       "label": "BEI/",
-      "file_count": 24,
-      "file_count_display": "24",
-      "total_lines": 27312,
-      "total_lines_display": "27,312",
-      "nonblank_lines": 25851,
-      "nonblank_lines_display": "25,851"
+      "file_count": 38,
+      "file_count_display": "38",
+      "total_lines": 25933,
+      "total_lines_display": "25,933",
+      "nonblank_lines": 24308,
+      "nonblank_lines_display": "24,308"
     },
     {
       "label": "toMathlib/",
-      "file_count": 24,
-      "file_count_display": "24",
-      "total_lines": 10656,
-      "total_lines_display": "10,656",
-      "nonblank_lines": 9753,
-      "nonblank_lines_display": "9,753"
+      "file_count": 27,
+      "file_count_display": "27",
+      "total_lines": 11062,
+      "total_lines_display": "11,062",
+      "nonblank_lines": 10115,
+      "nonblank_lines_display": "10,115"
     },
     {
       "label": "Supplement/",
@@ -70,66 +70,6 @@
   ],
   "recent_lean_history": [
     {
-      "date": "2026-04-13",
-      "label": "Apr 13, 2026",
-      "short_label": "Apr 13",
-      "lean_lines": 24508,
-      "lean_lines_display": "24,508",
-      "delta_from_previous": 1114,
-      "delta_from_previous_display": "+1,114",
-      "delta_direction": "up"
-    },
-    {
-      "date": "2026-04-17",
-      "label": "Apr 17, 2026",
-      "short_label": "Apr 17",
-      "lean_lines": 26252,
-      "lean_lines_display": "26,252",
-      "delta_from_previous": 1744,
-      "delta_from_previous_display": "+1,744",
-      "delta_direction": "up"
-    },
-    {
-      "date": "2026-04-18",
-      "label": "Apr 18, 2026",
-      "short_label": "Apr 18",
-      "lean_lines": 28396,
-      "lean_lines_display": "28,396",
-      "delta_from_previous": 2144,
-      "delta_from_previous_display": "+2,144",
-      "delta_direction": "up"
-    },
-    {
-      "date": "2026-04-19",
-      "label": "Apr 19, 2026",
-      "short_label": "Apr 19",
-      "lean_lines": 31886,
-      "lean_lines_display": "31,886",
-      "delta_from_previous": 3490,
-      "delta_from_previous_display": "+3,490",
-      "delta_direction": "up"
-    },
-    {
-      "date": "2026-04-20",
-      "label": "Apr 20, 2026",
-      "short_label": "Apr 20",
-      "lean_lines": 34246,
-      "lean_lines_display": "34,246",
-      "delta_from_previous": 2360,
-      "delta_from_previous_display": "+2,360",
-      "delta_direction": "up"
-    },
-    {
-      "date": "2026-04-21",
-      "label": "Apr 21, 2026",
-      "short_label": "Apr 21",
-      "lean_lines": 36806,
-      "lean_lines_display": "36,806",
-      "delta_from_previous": 2560,
-      "delta_from_previous_display": "+2,560",
-      "delta_direction": "up"
-    },
-    {
       "date": "2026-04-22",
       "label": "Apr 22, 2026",
       "short_label": "Apr 22",
@@ -143,20 +83,80 @@
       "date": "2026-04-23",
       "label": "Apr 23, 2026",
       "short_label": "Apr 23",
-      "lean_lines": 39095,
-      "lean_lines_display": "39,095",
-      "delta_from_previous": 542,
-      "delta_from_previous_display": "+542",
+      "lean_lines": 39130,
+      "lean_lines_display": "39,130",
+      "delta_from_previous": 577,
+      "delta_from_previous_display": "+577",
       "delta_direction": "up"
+    },
+    {
+      "date": "2026-04-24",
+      "label": "Apr 24, 2026",
+      "short_label": "Apr 24",
+      "lean_lines": 39101,
+      "lean_lines_display": "39,101",
+      "delta_from_previous": -29,
+      "delta_from_previous_display": "-29",
+      "delta_direction": "down"
+    },
+    {
+      "date": "2026-04-27",
+      "label": "Apr 27, 2026",
+      "short_label": "Apr 27",
+      "lean_lines": 39589,
+      "lean_lines_display": "39,589",
+      "delta_from_previous": 488,
+      "delta_from_previous_display": "+488",
+      "delta_direction": "up"
+    },
+    {
+      "date": "2026-04-30",
+      "label": "Apr 30, 2026",
+      "short_label": "Apr 30",
+      "lean_lines": 39677,
+      "lean_lines_display": "39,677",
+      "delta_from_previous": 88,
+      "delta_from_previous_display": "+88",
+      "delta_direction": "up"
+    },
+    {
+      "date": "2026-05-01",
+      "label": "May 01, 2026",
+      "short_label": "May 01",
+      "lean_lines": 39684,
+      "lean_lines_display": "39,684",
+      "delta_from_previous": 7,
+      "delta_from_previous_display": "+7",
+      "delta_direction": "up"
+    },
+    {
+      "date": "2026-05-02",
+      "label": "May 02, 2026",
+      "short_label": "May 02",
+      "lean_lines": 39009,
+      "lean_lines_display": "39,009",
+      "delta_from_previous": -675,
+      "delta_from_previous_display": "-675",
+      "delta_direction": "down"
+    },
+    {
+      "date": "2026-05-03",
+      "label": "May 03, 2026",
+      "short_label": "May 03",
+      "lean_lines": 38122,
+      "lean_lines_display": "38,122",
+      "delta_from_previous": -887,
+      "delta_from_previous_display": "-887",
+      "delta_direction": "down"
     }
   ],
   "lean_line_chart": {
     "width": 720,
     "height": 220,
-    "polyline_points": "20.0,202.0 34.8,196.7 49.6,196.3 64.3,196.1 79.1,195.4 93.9,195.4 108.7,195.2 123.5,194.2 138.3,193.8 153.0,190.9 167.8,186.8 182.6,185.1 197.4,182.1 212.2,182.0 227.0,170.9 241.7,167.6 256.5,168.3 271.3,167.0 286.1,164.9 300.9,163.0 315.7,158.5 330.4,153.9 345.2,150.5 360.0,140.8 374.8,139.7 389.6,136.5 404.3,133.8 419.1,132.6 433.9,130.4 448.7,126.3 463.5,122.4 478.3,117.8 493.0,113.5 507.8,112.4 522.6,110.8 537.4,106.2 552.2,100.9 567.0,95.9 581.7,91.9 596.5,86.7 611.3,78.4 626.1,68.4 640.9,51.9 655.7,40.8 670.4,28.8 685.2,20.6 700.0,18.0",
-    "area_points": "20.0,202.0 20.0,202.0 34.8,196.7 49.6,196.3 64.3,196.1 79.1,195.4 93.9,195.4 108.7,195.2 123.5,194.2 138.3,193.8 153.0,190.9 167.8,186.8 182.6,185.1 197.4,182.1 212.2,182.0 227.0,170.9 241.7,167.6 256.5,168.3 271.3,167.0 286.1,164.9 300.9,163.0 315.7,158.5 330.4,153.9 345.2,150.5 360.0,140.8 374.8,139.7 389.6,136.5 404.3,133.8 419.1,132.6 433.9,130.4 448.7,126.3 463.5,122.4 478.3,117.8 493.0,113.5 507.8,112.4 522.6,110.8 537.4,106.2 552.2,100.9 567.0,95.9 581.7,91.9 596.5,86.7 611.3,78.4 626.1,68.4 640.9,51.9 655.7,40.8 670.4,28.8 685.2,20.6 700.0,18.0 700.0,202.0",
+    "polyline_points": "20.0,202.0 33.1,196.8 46.2,196.4 59.2,196.2 72.3,195.5 85.4,195.5 98.5,195.3 111.5,194.4 124.6,193.9 137.7,191.1 150.8,187.0 163.8,185.3 176.9,182.4 190.0,182.3 203.1,171.4 216.2,168.1 229.2,168.8 242.3,167.5 255.4,165.4 268.5,163.6 281.5,159.1 294.6,154.6 307.7,151.3 320.8,141.7 333.8,140.7 346.9,137.5 360.0,134.8 373.1,133.7 386.2,131.5 399.2,127.5 412.3,123.6 425.4,119.0 438.5,114.8 451.5,113.7 464.6,112.1 477.7,107.6 490.8,102.4 503.8,97.5 516.9,93.5 530.0,88.4 543.1,80.3 556.2,70.3 569.2,54.2 582.3,43.2 595.4,31.3 608.5,23.2 621.5,20.6 634.6,20.7 647.7,18.4 660.8,18.0 673.8,18.0 686.9,21.1 700.0,25.2",
+    "area_points": "20.0,202.0 20.0,202.0 33.1,196.8 46.2,196.4 59.2,196.2 72.3,195.5 85.4,195.5 98.5,195.3 111.5,194.4 124.6,193.9 137.7,191.1 150.8,187.0 163.8,185.3 176.9,182.4 190.0,182.3 203.1,171.4 216.2,168.1 229.2,168.8 242.3,167.5 255.4,165.4 268.5,163.6 281.5,159.1 294.6,154.6 307.7,151.3 320.8,141.7 333.8,140.7 346.9,137.5 360.0,134.8 373.1,133.7 386.2,131.5 399.2,127.5 412.3,123.6 425.4,119.0 438.5,114.8 451.5,113.7 464.6,112.1 477.7,107.6 490.8,102.4 503.8,97.5 516.9,93.5 530.0,88.4 543.1,80.3 556.2,70.3 569.2,54.2 582.3,43.2 595.4,31.3 608.5,23.2 621.5,20.6 634.6,20.7 647.7,18.4 660.8,18.0 673.8,18.0 686.9,21.1 700.0,25.2 700.0,202.0",
     "min_lines_display": "2",
-    "max_lines_display": "39,095",
+    "max_lines_display": "39,684",
     "x_ticks": [
       {
         "x": 20.0,
@@ -164,32 +164,32 @@
         "label": "Feb 17"
       },
       {
-        "x": 197.4,
-        "x_percent": 27.42,
-        "label": "Mar 07"
+        "x": 190.0,
+        "x_percent": 26.39,
+        "label": "Mar 08"
       },
       {
         "x": 360.0,
         "x_percent": 50.0,
-        "label": "Mar 28"
+        "label": "Mar 31"
       },
       {
-        "x": 522.6,
-        "x_percent": 72.58,
-        "label": "Apr 08"
+        "x": 530.0,
+        "x_percent": 73.61,
+        "label": "Apr 13"
       },
       {
         "x": 700.0,
         "x_percent": 97.22,
-        "label": "Apr 23"
+        "label": "May 03"
       }
     ],
     "first_date": "2026-02-17",
-    "latest_date": "2026-04-23",
+    "latest_date": "2026-05-03",
     "first_label": "Feb 17, 2026",
-    "latest_label": "Apr 23, 2026",
-    "point_count": 47,
-    "point_count_display": "47",
+    "latest_label": "May 03, 2026",
+    "point_count": 53,
+    "point_count_display": "53",
     "milestones": [
       {
         "number": 1,
@@ -198,9 +198,9 @@
         "title": "Theorem 1.1",
         "description": "Closed graphs characterised by a quadratic Gr\u00f6bner basis.",
         "note": "The bulk of the work that followed went into Theorem 2.1, which required importing substantial Gr\u00f6bner-basis infrastructure from a Mathlib pull request.",
-        "x": 227.0,
-        "y": 170.9,
-        "label_y": 156.9,
+        "x": 203.1,
+        "y": 171.4,
+        "label_y": 157.4,
         "lean_lines": 6612,
         "lean_lines_display": "6,612"
       },
@@ -211,9 +211,9 @@
         "title": "Theorem 3.2 and Corollary 2.2",
         "description": "Prime decomposition of J_G and radicality.",
         "note": "",
-        "x": 374.8,
-        "y": 139.7,
-        "label_y": 125.7,
+        "x": 333.8,
+        "y": 140.7,
+        "label_y": 126.7,
         "lean_lines": 13231,
         "lean_lines_display": "13,231"
       },
@@ -224,24 +224,24 @@
         "title": "Section 4 bridge",
         "description": "Conditional independence ideals identified with binomial edge ideals.",
         "note": "Closing Proposition 1.6 then required porting and extending a large amount of Cohen\u2013Macaulay machinery into the project \u2014 the costliest infrastructure work of the formalisation.",
-        "x": 493.0,
-        "y": 113.5,
-        "label_y": 99.5,
+        "x": 438.5,
+        "y": 114.8,
+        "label_y": 100.8,
         "lean_lines": 18815,
         "lean_lines_display": "18,815"
       },
       {
         "number": 4,
-        "date": "2026-04-22",
-        "date_label": "Apr 22, 2026",
-        "title": "Proposition 1.6",
-        "description": "Paper-faithful Cohen\u2013Macaulay criterion, axiom-clean.",
+        "date": "2026-05-02",
+        "date_label": "May 02, 2026",
+        "title": "Proof complete; refactor begins",
+        "description": "All paper results (Sections 1\u20134) axiom-clean \u2014 including Proposition 1.6 (2026-04-22). The fat-proof carving pass begins, shrinking the codebase by reusing existing helpers and collapsing sister-symmetric branches.",
         "note": "",
-        "x": 685.2,
-        "y": 20.6,
+        "x": 686.9,
+        "y": 21.1,
         "label_y": 14.0,
-        "lean_lines": 38553,
-        "lean_lines_display": "38,553"
+        "lean_lines": 39009,
+        "lean_lines_display": "39,009"
       }
     ]
   },
@@ -261,15 +261,21 @@
     {
       "month": "2026-04",
       "label": "Apr 2026",
-      "commit_count": 278,
-      "commit_count_display": "278"
+      "commit_count": 347,
+      "commit_count_display": "347"
+    },
+    {
+      "month": "2026-05",
+      "label": "May 2026",
+      "commit_count": 52,
+      "commit_count_display": "52"
     }
   ],
   "commits_by_year": [
     {
       "year": "2026",
-      "commit_count": 373,
-      "commit_count_display": "373"
+      "commit_count": 494,
+      "commit_count_display": "494"
     }
   ]
 }
