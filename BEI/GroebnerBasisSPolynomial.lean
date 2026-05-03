@@ -152,6 +152,26 @@ private lemma degree_monomial_mul_fij {a b : V} (hab : a < b)
     (fij_ne_zero (K := K) a b hab),
     degree_monomial, if_neg one_ne_zero, fij_degree a b hab]
 
+omit [DecidableEq V] in
+/-- `fij a b` has zero degree at `Sum.inr v` whenever `v ≠ b` (since the only
+nonzero `inr` contribution is at `Sum.inr b`). Used 16× across `theorem_2_1`'s
+mixed-walk lambda bodies to eliminate the inline 4-line vanishing-at-`inr` proof. -/
+private lemma fij_degree_inr_eq_zero {a b : V} (hab : a < b) (v : V) (hne : v ≠ b) :
+    binomialEdgeMonomialOrder.degree (fij (K := K) a b) (Sum.inr v) = 0 := by
+  rw [fij_degree _ _ hab, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+  simp [show (Sum.inr b : BinomialEdgeVars V) ≠ Sum.inr v from
+    fun h => hne.symm (Sum.inr_injective h)]
+
+omit [DecidableEq V] in
+/-- `fij a b` has zero degree at `Sum.inl v` whenever `v ≠ a` (since the only
+nonzero `inl` contribution is at `Sum.inl a`). Sister lemma to
+`fij_degree_inr_eq_zero`. -/
+private lemma fij_degree_inl_eq_zero {a b : V} (hab : a < b) (v : V) (hne : v ≠ a) :
+    binomialEdgeMonomialOrder.degree (fij (K := K) a b) (Sum.inl v) = 0 := by
+  rw [fij_degree _ _ hab, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
+  simp [show (Sum.inl a : BinomialEdgeVars V) ≠ Sum.inl v from
+    fun h => hne.symm (Sum.inl_injective h)]
+
 omit [DecidableEq V] [Fintype V] in
 /-- Coverage helper for `theorem_2_1`'s mixed-walk leaves. Given an admissible path
 `π` from `i` to `j`, a vertex `w ∈ π` distinct from both endpoints, and a target
@@ -703,26 +723,10 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                 simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply,
                   reduceCtorEq, ite_true, ite_false]; omega
               · -- w ≠ i, j, k, l: both fij degrees are 0 at w's position, use sPolyD
-                have hfij_inr0 : binomialEdgeMonomialOrder.degree
-                    (fij (K := K) i j) (Sum.inr w) = 0 := by
-                  rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                  simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr w from
-                    fun h => hw_eq_j (Sum.inr_injective h).symm]
-                have hfkl_inr0 : binomialEdgeMonomialOrder.degree
-                    (fij (K := K) k l) (Sum.inr w) = 0 := by
-                  rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                  simp [show (Sum.inr l : BinomialEdgeVars V) ≠ Sum.inr w from
-                    fun h => hw_eq_l (Sum.inr_injective h).symm]
-                have hfij_inl0 : binomialEdgeMonomialOrder.degree
-                    (fij (K := K) i j) (Sum.inl w) = 0 := by
-                  rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                  simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl w from
-                    fun h => hw_ne_i (Sum.inl_injective h).symm]
-                have hfkl_inl0 : binomialEdgeMonomialOrder.degree
-                    (fij (K := K) k l) (Sum.inl w) = 0 := by
-                  rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                  simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl w from
-                    fun h => hw_ne_k (Sum.inl_injective h).symm]
+                have hfij_inr0 := fij_degree_inr_eq_zero (K := K) hij w hw_eq_j
+                have hfkl_inr0 := fij_degree_inr_eq_zero (K := K) hkl w hw_eq_l
+                have hfij_inl0 := fij_degree_inl_eq_zero (K := K) hij w hw_ne_i
+                have hfkl_inl0 := fij_degree_inl_eq_zero (K := K) hkl w hw_ne_k
                 -- Get w's origin and prove coverage via pathMonomial exponents
                 rcases hτ_ik_v w hw with hw_πR | hw_σR | hw_eq_v
                 · have hw_π : w ∈ π := List.mem_reverse.mp
@@ -773,26 +777,10 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                 · right; subst hw_eq_i
                   simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply,
                     reduceCtorEq, ite_true, ite_false]; omega
-                · have hfij_inr0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) i j) (Sum.inr w) = 0 := by
-                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr w from
-                      fun h => hw_ne_j (Sum.inr_injective h).symm]
-                  have hfkl_inr0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) k l) (Sum.inr w) = 0 := by
-                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inr l : BinomialEdgeVars V) ≠ Sum.inr w from
-                      fun h => hw_ne_l (Sum.inr_injective h).symm]
-                  have hfij_inl0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) i j) (Sum.inl w) = 0 := by
-                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl w from
-                      fun h => hw_eq_i (Sum.inl_injective h).symm]
-                  have hfkl_inl0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) k l) (Sum.inl w) = 0 := by
-                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl w from
-                      fun h => hw_eq_k (Sum.inl_injective h).symm]
+                · have hfij_inr0 := fij_degree_inr_eq_zero (K := K) hij w hw_ne_j
+                  have hfkl_inr0 := fij_degree_inr_eq_zero (K := K) hkl w hw_ne_l
+                  have hfij_inl0 := fij_degree_inl_eq_zero (K := K) hij w hw_eq_i
+                  have hfkl_inl0 := fij_degree_inl_eq_zero (K := K) hkl w hw_eq_k
                   rcases hτ_jl_v w hw with hw_πD | hw_σD | hw_eq_v
                   · have hw_π : w ∈ π :=
                       (List.drop_sublist _ _).mem
@@ -896,26 +884,10 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                 · left; subst hw_eq_l
                   simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply,
                     reduceCtorEq, ite_true, ite_false]; omega
-                · have hfij_inr0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) i j) (Sum.inr w) = 0 := by
-                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr w from
-                      fun h => hw_eq_j (Sum.inr_injective h).symm]
-                  have hfkl_inr0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) k l) (Sum.inr w) = 0 := by
-                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inr l : BinomialEdgeVars V) ≠ Sum.inr w from
-                      fun h => hw_eq_l (Sum.inr_injective h).symm]
-                  have hfij_inl0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) i j) (Sum.inl w) = 0 := by
-                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl w from
-                      fun h => hw_ne_i (Sum.inl_injective h).symm]
-                  have hfkl_inl0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) k l) (Sum.inl w) = 0 := by
-                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl w from
-                      fun h => hw_ne_k (Sum.inl_injective h).symm]
+                · have hfij_inr0 := fij_degree_inr_eq_zero (K := K) hij w hw_eq_j
+                  have hfkl_inr0 := fij_degree_inr_eq_zero (K := K) hkl w hw_eq_l
+                  have hfij_inl0 := fij_degree_inl_eq_zero (K := K) hij w hw_ne_i
+                  have hfkl_inl0 := fij_degree_inl_eq_zero (K := K) hkl w hw_ne_k
                   rcases hτ_ik_v w hw with hw_πR | hw_σR | hw_eq_v
                   · have hw_π : w ∈ π := List.mem_reverse.mp
                       ((List.drop_sublist _ _).mem
@@ -973,26 +945,10 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                 · right; subst hw_eq_i
                   simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply,
                     reduceCtorEq, ite_true, ite_false]; omega
-                · have hfij_inr0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) i j) (Sum.inr w) = 0 := by
-                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr w from
-                      fun h => hw_ne_j (Sum.inr_injective h).symm]
-                  have hfkl_inr0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) k l) (Sum.inr w) = 0 := by
-                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inr l : BinomialEdgeVars V) ≠ Sum.inr w from
-                      fun h => hw_ne_l (Sum.inr_injective h).symm]
-                  have hfij_inl0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) i j) (Sum.inl w) = 0 := by
-                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl w from
-                      fun h => hw_eq_i (Sum.inl_injective h).symm]
-                  have hfkl_inl0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) k l) (Sum.inl w) = 0 := by
-                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl w from
-                      fun h => hw_eq_k (Sum.inl_injective h).symm]
+                · have hfij_inr0 := fij_degree_inr_eq_zero (K := K) hij w hw_ne_j
+                  have hfkl_inr0 := fij_degree_inr_eq_zero (K := K) hkl w hw_ne_l
+                  have hfij_inl0 := fij_degree_inl_eq_zero (K := K) hij w hw_eq_i
+                  have hfkl_inl0 := fij_degree_inl_eq_zero (K := K) hkl w hw_eq_k
                   rcases hτ_jl_v w hw_orig with hw_πD | hw_σD | hw_eq_v
                   · have hw_π : w ∈ π :=
                       (List.drop_sublist _ _).mem
@@ -1122,26 +1078,10 @@ theorem theorem_2_1 (G : SimpleGraph V) :
               · left; subst hw_eq_l
                 simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply,
                   reduceCtorEq, ite_true, ite_false]; omega
-              · have hfij_inr0 : binomialEdgeMonomialOrder.degree
-                    (fij (K := K) i j) (Sum.inr w) = 0 := by
-                  rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                  simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr w from
-                    fun h => hw_eq_j (Sum.inr_injective h).symm]
-                have hfkl_inr0 : binomialEdgeMonomialOrder.degree
-                    (fij (K := K) k l) (Sum.inr w) = 0 := by
-                  rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                  simp [show (Sum.inr l : BinomialEdgeVars V) ≠ Sum.inr w from
-                    fun h => hw_eq_l (Sum.inr_injective h).symm]
-                have hfij_inl0 : binomialEdgeMonomialOrder.degree
-                    (fij (K := K) i j) (Sum.inl w) = 0 := by
-                  rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                  simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl w from
-                    fun h => hw_ne_i (Sum.inl_injective h).symm]
-                have hfkl_inl0 : binomialEdgeMonomialOrder.degree
-                    (fij (K := K) k l) (Sum.inl w) = 0 := by
-                  rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                  simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl w from
-                    fun h => hw_ne_k (Sum.inl_injective h).symm]
+              · have hfij_inr0 := fij_degree_inr_eq_zero (K := K) hij w hw_eq_j
+                have hfkl_inr0 := fij_degree_inr_eq_zero (K := K) hkl w hw_eq_l
+                have hfij_inl0 := fij_degree_inl_eq_zero (K := K) hij w hw_ne_i
+                have hfkl_inl0 := fij_degree_inl_eq_zero (K := K) hkl w hw_ne_k
                 rcases hτ_ik_v w hw_orig with hw_πR | hw_σR | hw_eq_v
                 · have hw_π : w ∈ π := List.mem_reverse.mp
                     ((List.drop_sublist _ _).mem
@@ -1191,26 +1131,10 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                 · right; subst hw_eq_i
                   simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply,
                     reduceCtorEq, ite_true, ite_false]; omega
-                · have hfij_inr0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) i j) (Sum.inr w) = 0 := by
-                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr w from
-                      fun h => hw_ne_j (Sum.inr_injective h).symm]
-                  have hfkl_inr0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) k l) (Sum.inr w) = 0 := by
-                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inr l : BinomialEdgeVars V) ≠ Sum.inr w from
-                      fun h => hw_ne_l (Sum.inr_injective h).symm]
-                  have hfij_inl0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) i j) (Sum.inl w) = 0 := by
-                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl w from
-                      fun h => hw_eq_i (Sum.inl_injective h).symm]
-                  have hfkl_inl0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) k l) (Sum.inl w) = 0 := by
-                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl w from
-                      fun h => hw_eq_k (Sum.inl_injective h).symm]
+                · have hfij_inr0 := fij_degree_inr_eq_zero (K := K) hij w hw_ne_j
+                  have hfkl_inr0 := fij_degree_inr_eq_zero (K := K) hkl w hw_ne_l
+                  have hfij_inl0 := fij_degree_inl_eq_zero (K := K) hij w hw_eq_i
+                  have hfkl_inl0 := fij_degree_inl_eq_zero (K := K) hkl w hw_eq_k
                   rcases hτ_jl_v w hw with hw_πD | hw_σD | hw_eq_v
                   · have hw_π : w ∈ π :=
                       (List.drop_sublist _ _).mem
@@ -1337,26 +1261,10 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                 · right; subst hw_eq_l
                   simp only [hR₁_def, Finsupp.add_apply, Finsupp.single_apply,
                     reduceCtorEq, ite_true, ite_false]; omega
-                · have hfij_inr0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) i j) (Sum.inr w) = 0 := by
-                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr w from
-                      fun h => hw_eq_j (Sum.inr_injective h).symm]
-                  have hfkl_inr0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) k l) (Sum.inr w) = 0 := by
-                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inr l : BinomialEdgeVars V) ≠ Sum.inr w from
-                      fun h => hw_eq_l (Sum.inr_injective h).symm]
-                  have hfij_inl0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) i j) (Sum.inl w) = 0 := by
-                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl w from
-                      fun h => hw_ne_i (Sum.inl_injective h).symm]
-                  have hfkl_inl0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) k l) (Sum.inl w) = 0 := by
-                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl w from
-                      fun h => hw_ne_k (Sum.inl_injective h).symm]
+                · have hfij_inr0 := fij_degree_inr_eq_zero (K := K) hij w hw_eq_j
+                  have hfkl_inr0 := fij_degree_inr_eq_zero (K := K) hkl w hw_eq_l
+                  have hfij_inl0 := fij_degree_inl_eq_zero (K := K) hij w hw_ne_i
+                  have hfkl_inl0 := fij_degree_inl_eq_zero (K := K) hkl w hw_ne_k
                   rcases hτ_ik_v w hw_orig with hw_πR | hw_σR | hw_eq_v
                   · have hw_π : w ∈ π := List.mem_reverse.mp
                       ((List.drop_sublist _ _).mem
@@ -1413,26 +1321,10 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                 · right; subst hw_eq_k
                   simp only [hR₂_def, Finsupp.add_apply, Finsupp.single_apply,
                     reduceCtorEq, ite_true, ite_false]; omega
-                · have hfij_inr0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) i j) (Sum.inr w) = 0 := by
-                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr w from
-                      fun h => hw_ne_j (Sum.inr_injective h).symm]
-                  have hfkl_inr0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) k l) (Sum.inr w) = 0 := by
-                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inr l : BinomialEdgeVars V) ≠ Sum.inr w from
-                      fun h => hw_ne_l (Sum.inr_injective h).symm]
-                  have hfij_inl0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) i j) (Sum.inl w) = 0 := by
-                    rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl w from
-                      fun h => hw_eq_i (Sum.inl_injective h).symm]
-                  have hfkl_inl0 : binomialEdgeMonomialOrder.degree
-                      (fij (K := K) k l) (Sum.inl w) = 0 := by
-                    rw [hdeg_kl, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-                    simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl w from
-                      fun h => hw_eq_k (Sum.inl_injective h).symm]
+                · have hfij_inr0 := fij_degree_inr_eq_zero (K := K) hij w hw_ne_j
+                  have hfkl_inr0 := fij_degree_inr_eq_zero (K := K) hkl w hw_ne_l
+                  have hfij_inl0 := fij_degree_inl_eq_zero (K := K) hij w hw_eq_i
+                  have hfkl_inl0 := fij_degree_inl_eq_zero (K := K) hkl w hw_eq_k
                   rcases hτ_jl_v w hw_orig with hw_πD | hw_σD | hw_eq_v
                   · have hw_π : w ∈ π :=
                       (List.drop_sublist _ _).mem
