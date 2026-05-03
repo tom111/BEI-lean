@@ -601,6 +601,52 @@ lemma ne_getLast?_of_internal {l : List V} {b v : V} (hnd : l.Nodup)
   have hne : l ≠ [] := by intro h; simp [h, internalVertices] at hv
   exact (getLast_of_getLast? hLast) ▸ internal_ne_getLast hnd hv hne
 
+/-! ## Finsupp evaluation helpers for shifted-monomial coordinates -/
+
+omit [LinearOrder V] [Fintype V] in
+/-- Evaluating an x-shifted monomial exponent at `Sum.inl v` for `v ≠ v₀`, `v ≠ X`. -/
+private lemma sub_add_single_inl_eval_inl
+    {d_q : BinomialEdgeVars V →₀ ℕ} {v v₀ X : V}
+    (hv_ne_v₀ : v ≠ v₀) (hv_ne_X : v ≠ X) :
+    (d_q - (Finsupp.single (Sum.inl v₀) 1 : BinomialEdgeVars V →₀ ℕ)
+         + (Finsupp.single (Sum.inl X) 1 : BinomialEdgeVars V →₀ ℕ)) (Sum.inl v) =
+      d_q (Sum.inl v) := by
+  unfold BinomialEdgeVars at *
+  simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply, Sum.inl.injEq]
+  rw [if_neg (Ne.symm hv_ne_v₀), if_neg (Ne.symm hv_ne_X)]; omega
+
+omit [LinearOrder V] [Fintype V] in
+/-- Evaluating an x-shifted monomial exponent at `Sum.inr v`: trivially equal to `d_q`. -/
+private lemma sub_add_single_inl_eval_inr
+    {d_q : BinomialEdgeVars V →₀ ℕ} {v v₀ X : V} :
+    (d_q - (Finsupp.single (Sum.inl v₀) 1 : BinomialEdgeVars V →₀ ℕ)
+         + (Finsupp.single (Sum.inl X) 1 : BinomialEdgeVars V →₀ ℕ)) (Sum.inr v) =
+      d_q (Sum.inr v) := by
+  simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply, reduceCtorEq,
+    ↓reduceIte, Nat.sub_zero, Nat.add_zero]
+
+omit [LinearOrder V] [Fintype V] in
+/-- Evaluating a y-shifted monomial exponent at `Sum.inr v` for `v ≠ v₀`, `v ≠ X`. -/
+private lemma sub_add_single_inr_eval_inr
+    {d_q : BinomialEdgeVars V →₀ ℕ} {v v₀ X : V}
+    (hv_ne_v₀ : v ≠ v₀) (hv_ne_X : v ≠ X) :
+    (d_q - (Finsupp.single (Sum.inr v₀) 1 : BinomialEdgeVars V →₀ ℕ)
+         + (Finsupp.single (Sum.inr X) 1 : BinomialEdgeVars V →₀ ℕ)) (Sum.inr v) =
+      d_q (Sum.inr v) := by
+  unfold BinomialEdgeVars at *
+  simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply, Sum.inr.injEq]
+  rw [if_neg (Ne.symm hv_ne_v₀), if_neg (Ne.symm hv_ne_X)]; omega
+
+omit [LinearOrder V] [Fintype V] in
+/-- Evaluating a y-shifted monomial exponent at `Sum.inl v`: trivially equal to `d_q`. -/
+private lemma sub_add_single_inr_eval_inl
+    {d_q : BinomialEdgeVars V →₀ ℕ} {v v₀ X : V} :
+    (d_q - (Finsupp.single (Sum.inr v₀) 1 : BinomialEdgeVars V →₀ ℕ)
+         + (Finsupp.single (Sum.inr X) 1 : BinomialEdgeVars V →₀ ℕ)) (Sum.inl v) =
+      d_q (Sum.inl v) := by
+  simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply, reduceCtorEq,
+    ↓reduceIte, Nat.sub_zero, Nat.add_zero]
+
 /-! ## General IsRemainder lemma for fij via walk decomposition -/
 
 omit [DecidableEq V] [Fintype V] in
@@ -871,16 +917,10 @@ theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
         have hv_τ := hτ₂_int v hv
         have ⟨hc1, hc2, hc3⟩ := hCov v hv_τ
         have hv_ne_a : v ≠ a := ne_head?_of_internal hND hHead hv_τ
-        -- d₁(inr v) = d_q(inr v) since ev₀, ea only affect inl
-        have hinr : d₁ (Sum.inr v) = d_q (Sum.inr v) := by
-          simp only [hd₁_def, hev₀_def, hea_def, Finsupp.add_apply, Finsupp.tsub_apply]
-          simp
-        -- d₁(inl v) = d_q(inl v) when v ≠ v₀ and v ≠ a
-        have hinl (hv₀' : v ≠ v₀) : d₁ (Sum.inl v) = d_q (Sum.inl v) := by
-          simp only [hd₁_def, hev₀_def, hea_def]
-          unfold BinomialEdgeVars at *
-          simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply, Sum.inl.injEq]
-          rw [if_neg (Ne.symm hv₀'), if_neg (Ne.symm hv_ne_a)]; omega
+        have hinr : d₁ (Sum.inr v) = d_q (Sum.inr v) :=
+          sub_add_single_inl_eval_inr
+        have hinl (hv₀' : v ≠ v₀) : d₁ (Sum.inl v) = d_q (Sum.inl v) :=
+          sub_add_single_inl_eval_inl hv₀' hv_ne_a
         refine ⟨fun hvv₀ => ?_, fun hvb => ?_, fun hvv₀ hvb => ?_⟩
         · -- v < v₀: by minimality, v is not bad, so v < a
           rw [hinr]
@@ -904,16 +944,10 @@ theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
         have hv_τ := hτ₁_int v hv
         have ⟨hc1, hc2, hc3⟩ := hCov v hv_τ
         have hv_ne_b : v ≠ b := ne_getLast?_of_internal hND hLast hv_τ
-        -- d₂(inr v) = d_q(inr v)
-        have hinr : d₂ (Sum.inr v) = d_q (Sum.inr v) := by
-          simp only [hd₂_def, hev₀_def, heb_def, Finsupp.add_apply, Finsupp.tsub_apply]
-          simp
-        -- d₂(inl v) = d_q(inl v) when v ≠ v₀ and v ≠ b
-        have hinl (hv₀' : v ≠ v₀) : d₂ (Sum.inl v) = d_q (Sum.inl v) := by
-          simp only [hd₂_def, hev₀_def, heb_def]
-          unfold BinomialEdgeVars at *
-          simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply, Sum.inl.injEq]
-          rw [if_neg (Ne.symm hv₀'), if_neg (Ne.symm hv_ne_b)]; omega
+        have hinr : d₂ (Sum.inr v) = d_q (Sum.inr v) :=
+          sub_add_single_inl_eval_inr
+        have hinl (hv₀' : v ≠ v₀) : d₂ (Sum.inl v) = d_q (Sum.inl v) :=
+          sub_add_single_inl_eval_inl hv₀' hv_ne_b
         refine ⟨fun hva => ?_, fun hvv₀ => ?_, fun hav hvv₀ => ?_⟩
         · -- v < a
           rw [hinr]; exact hc1 hva
@@ -1106,16 +1140,10 @@ theorem isRemainder_fij_of_covered_walk_y (G : SimpleGraph V) :
         have hv_τ := hτ₁_int v hv
         have ⟨hc1, hc2, hc3⟩ := hCov v hv_τ
         have hv_ne_b : v ≠ b := ne_getLast?_of_internal hND hLast hv_τ
-        -- d₁(inl v) = d_q(inl v) since eyv₀, eyb are inr
-        have hinl : d₁ (Sum.inl v) = d_q (Sum.inl v) := by
-          simp only [hd₁_def, heyv₀_def, heyb_def]
-          simp [Finsupp.add_apply, Finsupp.tsub_apply]
-        -- d₁(inr v) = d_q(inr v) when v ≠ v₀ and v ≠ b
-        have hinr (hv₀' : v ≠ v₀) : d₁ (Sum.inr v) = d_q (Sum.inr v) := by
-          simp only [hd₁_def, heyv₀_def, heyb_def]
-          unfold BinomialEdgeVars at *
-          simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply, Sum.inr.injEq]
-          rw [if_neg (Ne.symm hv₀'), if_neg (Ne.symm hv_ne_b)]; omega
+        have hinl : d₁ (Sum.inl v) = d_q (Sum.inl v) :=
+          sub_add_single_inr_eval_inl
+        have hinr (hv₀' : v ≠ v₀) : d₁ (Sum.inr v) = d_q (Sum.inr v) :=
+          sub_add_single_inr_eval_inr hv₀' hv_ne_b
         refine ⟨fun hva => ?_, fun hvv₀ => ?_, fun hav hvv₀ => ?_⟩
         · -- v < a: v ≠ v₀ and v ≠ b
           rw [hinr (ne_of_lt (lt_trans hva hav₀))]; exact hc1 hva
@@ -1137,16 +1165,10 @@ theorem isRemainder_fij_of_covered_walk_y (G : SimpleGraph V) :
         have hv_τ := hτ₂_int v hv
         have ⟨hc1, hc2, hc3⟩ := hCov v hv_τ
         have hv_ne_a : v ≠ a := ne_head?_of_internal hND hHead hv_τ
-        -- d₂(inl v) = d_q(inl v) since eyv₀, eya are inr
-        have hinl : d₂ (Sum.inl v) = d_q (Sum.inl v) := by
-          simp only [hd₂_def, heyv₀_def, heya_def]
-          simp [Finsupp.add_apply, Finsupp.tsub_apply]
-        -- d₂(inr v) = d_q(inr v) when v ≠ v₀ and v ≠ a
-        have hinr (hv₀' : v ≠ v₀) : d₂ (Sum.inr v) = d_q (Sum.inr v) := by
-          simp only [hd₂_def, heyv₀_def, heya_def]
-          unfold BinomialEdgeVars at *
-          simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply, Sum.inr.injEq]
-          rw [if_neg (Ne.symm hv₀'), if_neg (Ne.symm hv_ne_a)]; omega
+        have hinl : d₂ (Sum.inl v) = d_q (Sum.inl v) :=
+          sub_add_single_inr_eval_inl
+        have hinr (hv₀' : v ≠ v₀) : d₂ (Sum.inr v) = d_q (Sum.inr v) :=
+          sub_add_single_inr_eval_inr hv₀' hv_ne_a
         refine ⟨fun hvv₀ => ?_, fun hvb => ?_, fun hvv₀ hvb => ?_⟩
         · -- v < v₀: v ≠ v₀, and a < v (since v internal, v ≠ a) or v < a
           rw [hinr (ne_of_lt hvv₀)]
@@ -1422,17 +1444,9 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
           have hv_τ := hτ₂_int v hv
           have hv_ne_a : v ≠ a := ne_head?_of_internal hND hHead hv_τ
           have hv_ne_v₀ : v ≠ v₀ := ne_head?_of_internal hτ₂_nd hτ₂_head hv
-          -- d₁(inl v) = d_q(inl v) since v ≠ v₀ and v ≠ a
-          have hinl : d₁ (Sum.inl v) = d_q (Sum.inl v) := by
-            simp only [hd₁_def, hev₀_def, hea_def]
-            unfold BinomialEdgeVars at *
-            simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply, Sum.inl.injEq]
-            rw [if_neg (Ne.symm hv_ne_v₀), if_neg (Ne.symm hv_ne_a)]; omega
-          -- d₁(inr v) = d_q(inr v) since ev₀, ea are at inl
-          have hinr : d₁ (Sum.inr v) = d_q (Sum.inr v) := by
-            simp only [hd₁_def, hev₀_def, hea_def, Finsupp.add_apply, Finsupp.tsub_apply,
-              Finsupp.single_apply, reduceCtorEq, ↓reduceIte]; omega
-          rw [hinl, hinr]; exact hCov v hv_τ
+          rw [show d₁ = d_q - ev₀ + ea from rfl, sub_add_single_inl_eval_inl hv_ne_v₀ hv_ne_a,
+              sub_add_single_inl_eval_inr]
+          exact hCov v hv_τ
         -- Coverage for sub-walk τ₁ (a → v₀): disjunctive
         have hCov₁ : ∀ v ∈ internalVertices τ₁,
             d₂ (Sum.inl v) ≥ 1 ∨ d₂ (Sum.inr v) ≥ 1 := by
@@ -1440,17 +1454,9 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
           have hv_τ := hτ₁_int v hv
           have hv_ne_b : v ≠ b := ne_getLast?_of_internal hND hLast hv_τ
           have hv_ne_v₀ : v ≠ v₀ := ne_getLast?_of_internal hτ₁_nd hτ₁_last hv
-          -- d₂(inl v) = d_q(inl v) since v ≠ v₀ and v ≠ b
-          have hinl : d₂ (Sum.inl v) = d_q (Sum.inl v) := by
-            simp only [hd₂_def, hev₀_def, heb_def]
-            unfold BinomialEdgeVars at *
-            simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply, Sum.inl.injEq]
-            rw [if_neg (Ne.symm hv_ne_v₀), if_neg (Ne.symm hv_ne_b)]; omega
-          -- d₂(inr v) = d_q(inr v) since ev₀, eb are at inl
-          have hinr : d₂ (Sum.inr v) = d_q (Sum.inr v) := by
-            simp only [hd₂_def, hev₀_def, heb_def, Finsupp.add_apply, Finsupp.tsub_apply,
-              Finsupp.single_apply, reduceCtorEq, ↓reduceIte]; omega
-          rw [hinl, hinr]; exact hCov v hv_τ
+          rw [show d₂ = d_q - ev₀ + eb from rfl, sub_add_single_inl_eval_inl hv_ne_v₀ hv_ne_b,
+              sub_add_single_inl_eval_inr]
+          exact hCov v hv_τ
         -- Apply IH to both sub-walks, then assemble via x-telescope packager
         have h₁ : binomialEdgeMonomialOrder.IsRemainder
             (monomial d₁ 1 * fij (K := K) v₀ b) (groebnerBasisSet G) 0 :=
@@ -1472,17 +1478,9 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
           have hv_τ := hτ₁_int v hv
           have hv_ne_b : v ≠ b := ne_getLast?_of_internal hND hLast hv_τ
           have hv_ne_v₀ : v ≠ v₀ := ne_getLast?_of_internal hτ₁_nd hτ₁_last hv
-          -- d₁(inl v) = d_q(inl v) since eyv₀, eyb are at inr
-          have hinl : d₁ (Sum.inl v) = d_q (Sum.inl v) := by
-            simp only [hd₁_def, heyv₀_def, heyb_def, Finsupp.add_apply, Finsupp.tsub_apply,
-              Finsupp.single_apply, reduceCtorEq, ↓reduceIte]; omega
-          -- d₁(inr v) = d_q(inr v) since v ≠ v₀ and v ≠ b
-          have hinr : d₁ (Sum.inr v) = d_q (Sum.inr v) := by
-            simp only [hd₁_def, heyv₀_def, heyb_def]
-            unfold BinomialEdgeVars at *
-            simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply, Sum.inr.injEq]
-            rw [if_neg (Ne.symm hv_ne_v₀), if_neg (Ne.symm hv_ne_b)]; omega
-          rw [hinl, hinr]; exact hCov v hv_τ
+          rw [show d₁ = d_q - eyv₀ + eyb from rfl, sub_add_single_inr_eval_inl,
+              sub_add_single_inr_eval_inr hv_ne_v₀ hv_ne_b]
+          exact hCov v hv_τ
         -- Coverage for sub-walk τ₂ (v₀ → b): disjunctive
         have hCov₂ : ∀ v ∈ internalVertices τ₂,
             d₂ (Sum.inl v) ≥ 1 ∨ d₂ (Sum.inr v) ≥ 1 := by
@@ -1490,17 +1488,9 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
           have hv_τ := hτ₂_int v hv
           have hv_ne_a : v ≠ a := ne_head?_of_internal hND hHead hv_τ
           have hv_ne_v₀ : v ≠ v₀ := ne_head?_of_internal hτ₂_nd hτ₂_head hv
-          -- d₂(inl v) = d_q(inl v) since eyv₀, eya are at inr
-          have hinl : d₂ (Sum.inl v) = d_q (Sum.inl v) := by
-            simp only [hd₂_def, heyv₀_def, heya_def, Finsupp.add_apply, Finsupp.tsub_apply,
-              Finsupp.single_apply, reduceCtorEq, ↓reduceIte]; omega
-          -- d₂(inr v) = d_q(inr v) since v ≠ v₀ and v ≠ a
-          have hinr : d₂ (Sum.inr v) = d_q (Sum.inr v) := by
-            simp only [hd₂_def, heyv₀_def, heya_def]
-            unfold BinomialEdgeVars at *
-            simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply, Sum.inr.injEq]
-            rw [if_neg (Ne.symm hv_ne_v₀), if_neg (Ne.symm hv_ne_a)]; omega
-          rw [hinl, hinr]; exact hCov v hv_τ
+          rw [show d₂ = d_q - eyv₀ + eya from rfl, sub_add_single_inr_eval_inl,
+              sub_add_single_inr_eval_inr hv_ne_v₀ hv_ne_a]
+          exact hCov v hv_τ
         -- Apply IH for both sub-walks, then assemble via y-telescope packager
         have h₁ : binomialEdgeMonomialOrder.IsRemainder
             (monomial d₁ 1 * fij (K := K) a v₀) (groebnerBasisSet G) 0 :=
@@ -1605,15 +1595,9 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
             have hv_τ := hτ₁_int v hv
             have hv_ne_b : v ≠ b := ne_getLast?_of_internal hND hLast hv_τ
             have hv_ne_v₀ : v ≠ v₀ := ne_getLast?_of_internal hτ₁_nd hτ₁_last hv
-            have hinl : d₁ (Sum.inl v) = d_q (Sum.inl v) := by
-              simp only [hd₁_def, heyv₀_def, heyb_def, Finsupp.add_apply, Finsupp.tsub_apply,
-                Finsupp.single_apply, reduceCtorEq, ↓reduceIte]; omega
-            have hinr : d₁ (Sum.inr v) = d_q (Sum.inr v) := by
-              simp only [hd₁_def, heyv₀_def, heyb_def]
-              unfold BinomialEdgeVars at *
-              simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply, Sum.inr.injEq]
-              rw [if_neg (Ne.symm hv_ne_v₀), if_neg (Ne.symm hv_ne_b)]; omega
-            rw [hinl, hinr]; exact hCov v hv_τ
+            rw [show d₁ = d_q - eyv₀ + eyb from rfl, sub_add_single_inr_eval_inl,
+                sub_add_single_inr_eval_inr hv_ne_v₀ hv_ne_b]
+            exact hCov v hv_τ
           -- Coverage for τ₂.reverse (b → v₀): disjunctive
           have hCov₂ : ∀ v ∈ internalVertices τ₂.reverse,
               d₂ (Sum.inl v) ≥ 1 ∨ d₂ (Sum.inr v) ≥ 1 := by
@@ -1622,130 +1606,74 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
             have hv_τ := hτ₂_int v hv_int
             have hv_ne_a : v ≠ a := ne_head?_of_internal hND hHead hv_τ
             have hv_ne_v₀ : v ≠ v₀ := ne_head?_of_internal hτ₂_nd hτ₂_head hv_int
-            have hinl : d₂ (Sum.inl v) = d_q (Sum.inl v) := by
-              simp only [hd₂_def, heyv₀_def, heya_def, Finsupp.add_apply, Finsupp.tsub_apply,
-                Finsupp.single_apply, reduceCtorEq, ↓reduceIte]; omega
-            have hinr : d₂ (Sum.inr v) = d_q (Sum.inr v) := by
-              simp only [hd₂_def, heyv₀_def, heya_def]
-              unfold BinomialEdgeVars at *
-              simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply, Sum.inr.injEq]
-              rw [if_neg (Ne.symm hv_ne_v₀), if_neg (Ne.symm hv_ne_a)]; omega
-            rw [hinl, hinr]; exact hCov v hv_τ
+            rw [show d₂ = d_q - eyv₀ + eya from rfl, sub_add_single_inr_eval_inl,
+                sub_add_single_inr_eval_inr hv_ne_v₀ hv_ne_a]
+            exact hCov v hv_τ
           -- Apply IH
           have h₁ : binomialEdgeMonomialOrder.IsRemainder
-              (monomial d₁ 1 * fij (K := K) a v₀)
-              (groebnerBasisSet G) 0 :=
-            ih a v₀ τ₁ d₁ hτ₁_len hav₀ hτ₁_head
-              hτ₁_last hτ₁_nd hτ₁_walk hCov₁
+              (monomial d₁ 1 * fij (K := K) a v₀) (groebnerBasisSet G) 0 :=
+            ih a v₀ τ₁ d₁ hτ₁_len hav₀ hτ₁_head hτ₁_last hτ₁_nd hτ₁_walk hCov₁
           -- For fij(b, v₀) via reversed τ₂
           have hτ₂_rev_len : τ₂.reverse.length ≤ n := by
             simp only [List.length_reverse]; exact hτ₂_len
-          have hτ₂_rev_head : τ₂.reverse.head? =
-              some b := by
+          have hτ₂_rev_head : τ₂.reverse.head? = some b := by
             rw [List.head?_reverse]; exact hτ₂_last
-          have hτ₂_rev_last : τ₂.reverse.getLast? =
-              some v₀ := by
+          have hτ₂_rev_last : τ₂.reverse.getLast? = some v₀ := by
             rw [List.getLast?_reverse]; exact hτ₂_head
-          have hτ₂_rev_nd : τ₂.reverse.Nodup :=
-            List.nodup_reverse.mpr hτ₂_nd
-          have hτ₂_rev_walk : τ₂.reverse.IsChain
-              (fun u v => G.Adj u v) :=
+          have hτ₂_rev_nd : τ₂.reverse.Nodup := List.nodup_reverse.mpr hτ₂_nd
+          have hτ₂_rev_walk : τ₂.reverse.IsChain (fun u v => G.Adj u v) :=
             chain'_reverse' G τ₂ hτ₂_walk
-          have h₂_pre :
-              binomialEdgeMonomialOrder.IsRemainder
-              (monomial d₂ 1 * fij (K := K) b v₀)
-              (groebnerBasisSet G) 0 :=
+          have h₂_pre : binomialEdgeMonomialOrder.IsRemainder
+              (monomial d₂ 1 * fij (K := K) b v₀) (groebnerBasisSet G) 0 :=
             ih b v₀ τ₂.reverse d₂ hτ₂_rev_len hbv₀
-              hτ₂_rev_head hτ₂_rev_last hτ₂_rev_nd
-              hτ₂_rev_walk hCov₂
+              hτ₂_rev_head hτ₂_rev_last hτ₂_rev_nd hτ₂_rev_walk hCov₂
           -- fij(v₀, b) = -fij(b, v₀)
-          have h₂ :
-              binomialEdgeMonomialOrder.IsRemainder
-              (monomial d₂ 1 * fij (K := K) v₀ b)
-              (groebnerBasisSet G) 0 := by
-            have : monomial d₂ (1:K) * fij (K := K) v₀ b
+          have h₂ : binomialEdgeMonomialOrder.IsRemainder
+              (monomial d₂ 1 * fij (K := K) v₀ b) (groebnerBasisSet G) 0 := by
+            have hflip : monomial d₂ (1:K) * fij (K := K) v₀ b
                 = -(monomial d₂ 1 * fij (K := K) b v₀) := by
               rw [fij_antisymm (K := K) v₀ b, mul_neg]
-            rw [this]; exact isRemainder_neg' _ _ h₂_pre
+            rw [hflip]; exact isRemainder_neg' _ _ h₂_pre
           -- Algebraic identity from the y-telescope helper
-          have halg :
-              monomial d_q (1 : K) * fij a b =
-                monomial d₁ 1 * fij (K := K) a v₀ +
-                monomial d₂ 1 * fij (K := K) v₀ b :=
+          have halg : monomial d_q (1 : K) * fij a b =
+              monomial d₁ 1 * fij (K := K) a v₀ + monomial d₂ 1 * fij (K := K) v₀ b :=
             y_telescope_monomial_eq (K := K) a v₀ b d_q hcov_yr
-          -- Degree bounds
-          have hne_deg :
-              binomialEdgeMonomialOrder.degree
-                (monomial d₁ (1:K) * fij a v₀) ≠
-              binomialEdgeMonomialOrder.degree
-                (monomial d₂ (1:K) * fij v₀ b) := by
+          -- Degree bounds: discriminate at Sum.inl a
+          have hne_deg : binomialEdgeMonomialOrder.degree (monomial d₁ (1:K) * fij a v₀) ≠
+                         binomialEdgeMonomialOrder.degree (monomial d₂ (1:K) * fij v₀ b) := by
             classical
-            have hdeg1 :
-                binomialEdgeMonomialOrder.degree
-                  (monomial d₁ (1:K) * fij a v₀) =
-                d₁ + (Finsupp.single
-                  (Sum.inl a : BinomialEdgeVars V) 1 +
-                  Finsupp.single
-                  (Sum.inr v₀ : BinomialEdgeVars V) 1)
-                := by
-              rw [degree_mul
-                (monomial_eq_zero.not.mpr one_ne_zero)
-                (fij_ne_zero a v₀ hav₀),
-                degree_monomial, if_neg one_ne_zero,
-                fij_degree a v₀ hav₀]
+            have hdeg1 : binomialEdgeMonomialOrder.degree (monomial d₁ (1:K) * fij a v₀) =
+                d₁ + (Finsupp.single (Sum.inl a : BinomialEdgeVars V) 1 +
+                       Finsupp.single (Sum.inr v₀ : BinomialEdgeVars V) 1) := by
+              rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero) (fij_ne_zero a v₀ hav₀),
+                  degree_monomial, if_neg one_ne_zero, fij_degree a v₀ hav₀]
             have fij_v₀b_ne : fij (K := K) v₀ b ≠ 0 := by
-              rw [fij_antisymm]
-              exact neg_ne_zero.mpr (fij_ne_zero b v₀ hbv₀)
-            have hdeg2 :
-                binomialEdgeMonomialOrder.degree
-                  (monomial d₂ (1:K) * fij v₀ b) =
-                d₂ + (Finsupp.single
-                  (Sum.inl b : BinomialEdgeVars V) 1 +
-                  Finsupp.single
-                  (Sum.inr v₀ : BinomialEdgeVars V) 1)
-                := by
-              rw [degree_mul
-                (monomial_eq_zero.not.mpr one_ne_zero)
-                fij_v₀b_ne,
-                degree_monomial, if_neg one_ne_zero,
-                fij_antisymm (K := K) v₀ b,
-                MonomialOrder.degree_neg,
-                fij_degree b v₀ hbv₀]
+              rw [fij_antisymm]; exact neg_ne_zero.mpr (fij_ne_zero b v₀ hbv₀)
+            have hdeg2 : binomialEdgeMonomialOrder.degree (monomial d₂ (1:K) * fij v₀ b) =
+                d₂ + (Finsupp.single (Sum.inl b : BinomialEdgeVars V) 1 +
+                       Finsupp.single (Sum.inr v₀ : BinomialEdgeVars V) 1) := by
+              rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero) fij_v₀b_ne,
+                  degree_monomial, if_neg one_ne_zero, fij_antisymm (K := K) v₀ b,
+                  MonomialOrder.degree_neg, fij_degree b v₀ hbv₀]
             rw [hdeg1, hdeg2]
             intro heq
-            have hv := Finsupp.ext_iff.mp heq
-              (Sum.inl a : BinomialEdgeVars V)
-            -- Fully unfold and simplify at Sum.inl a
+            have hv := Finsupp.ext_iff.mp heq (Sum.inl a : BinomialEdgeVars V)
             simp only [d₁, d₂, eyv₀, eyb, eya] at hv
             unfold BinomialEdgeVars at hv
-            simp only [Finsupp.add_apply,
-              Finsupp.tsub_apply, Finsupp.single_apply,
-              Sum.inl.injEq, reduceCtorEq, ite_true,
-              ite_false,
+            simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply,
+              Sum.inl.injEq, reduceCtorEq, ite_true, ite_false,
               if_neg (ne_of_lt hab).symm] at hv
             omega
-          obtain ⟨hdeg₁, hdeg₂⟩ :=
-            degree_bounds_of_ne _ _ hne_deg
+          obtain ⟨hdeg₁, hdeg₂⟩ := degree_bounds_of_ne _ _ hne_deg
           rw [halg]
           exact isRemainder_add _ _ _ h₁ h₂ hdeg₁ hdeg₂
         · -- v₀ < a, d_q(inl v₀) ≥ 1: x-telescope at v₀
-          -- x_{v₀} * fij(a,b) = x_a * fij(v₀,b) + x_b * fij(a,v₀)
-          -- fij(v₀,a) comes into play since v₀ < a
-          -- fij_x_telescope(v₀, a, b) gives:
-          --   x_a * fij(v₀, b) = x_{v₀} * fij(a,b) + x_b * fij(v₀,a)
-          -- Rearranging doesn't help directly. Better:
-          -- fij_x_telescope(a, v₀, b):
-          --   x_{v₀} * fij(a,b) = x_a * fij(v₀,b) + x_b * fij(a,v₀)
-          -- fij(v₀, b): v₀ < a < b, so v₀ < b (good order)
-          -- fij(a, v₀): a > v₀, so fij(v₀, a) with v₀ < a
-          -- fij(a, v₀) = -fij(v₀, a)
+          -- fij_x_telescope(a, v₀, b): x_{v₀} * fij(a,b) = x_a * fij(v₀,b) + x_b * fij(a,v₀)
+          -- v₀ < b auto (since v₀ < a < b); fij(a, v₀) = -fij(v₀, a) since v₀ < a.
           have hv₀b : v₀ < b := lt_trans hv₀a hab
-          set ev₀ : BinomialEdgeVars V →₀ ℕ :=
-            Finsupp.single (Sum.inl v₀) 1 with hev₀_def
-          set ea : BinomialEdgeVars V →₀ ℕ :=
-            Finsupp.single (Sum.inl a) 1 with hea_def
-          set eb : BinomialEdgeVars V →₀ ℕ :=
-            Finsupp.single (Sum.inl b) 1 with heb_def
+          set ev₀ : BinomialEdgeVars V →₀ ℕ := Finsupp.single (Sum.inl v₀) 1 with hev₀_def
+          set ea : BinomialEdgeVars V →₀ ℕ := Finsupp.single (Sum.inl a) 1 with hea_def
+          set eb : BinomialEdgeVars V →₀ ℕ := Finsupp.single (Sum.inl b) 1 with heb_def
           set d₁ := d_q - ev₀ + ea with hd₁_def
           set d₂ := d_q - ev₀ + eb with hd₂_def
           -- Sub-walk extractions via shared helpers
@@ -1762,15 +1690,9 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
             have hv_τ := hτ₂_int v hv
             have hv_ne_a : v ≠ a := ne_head?_of_internal hND hHead hv_τ
             have hv_ne_v₀ : v ≠ v₀ := ne_head?_of_internal hτ₂_nd hτ₂_head hv
-            have hinl : d₁ (Sum.inl v) = d_q (Sum.inl v) := by
-              simp only [hd₁_def, hev₀_def, hea_def]
-              unfold BinomialEdgeVars at *
-              simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply, Sum.inl.injEq]
-              rw [if_neg (Ne.symm hv_ne_v₀), if_neg (Ne.symm hv_ne_a)]; omega
-            have hinr : d₁ (Sum.inr v) = d_q (Sum.inr v) := by
-              simp only [hd₁_def, hev₀_def, hea_def, Finsupp.add_apply, Finsupp.tsub_apply,
-                Finsupp.single_apply, reduceCtorEq, ↓reduceIte]; omega
-            rw [hinl, hinr]; exact hCov v hv_τ
+            rw [show d₁ = d_q - ev₀ + ea from rfl, sub_add_single_inl_eval_inl hv_ne_v₀ hv_ne_a,
+                sub_add_single_inl_eval_inr]
+            exact hCov v hv_τ
           -- Coverage for τ₁.reverse (v₀ → a): disjunctive
           have hCov₁ : ∀ v ∈ internalVertices τ₁.reverse,
               d₂ (Sum.inl v) ≥ 1 ∨ d₂ (Sum.inr v) ≥ 1 := by
@@ -1779,114 +1701,65 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
             have hv_τ := hτ₁_int v hv_int
             have hv_ne_b : v ≠ b := ne_getLast?_of_internal hND hLast hv_τ
             have hv_ne_v₀ : v ≠ v₀ := ne_getLast?_of_internal hτ₁_nd hτ₁_last hv_int
-            have hinl : d₂ (Sum.inl v) = d_q (Sum.inl v) := by
-              simp only [hd₂_def, hev₀_def, heb_def]
-              unfold BinomialEdgeVars at *
-              simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply, Sum.inl.injEq]
-              rw [if_neg (Ne.symm hv_ne_v₀), if_neg (Ne.symm hv_ne_b)]; omega
-            have hinr : d₂ (Sum.inr v) = d_q (Sum.inr v) := by
-              simp only [hd₂_def, hev₀_def, heb_def, Finsupp.add_apply, Finsupp.tsub_apply,
-                Finsupp.single_apply, reduceCtorEq, ↓reduceIte]; omega
-            rw [hinl, hinr]; exact hCov v hv_τ
+            rw [show d₂ = d_q - ev₀ + eb from rfl, sub_add_single_inl_eval_inl hv_ne_v₀ hv_ne_b,
+                sub_add_single_inl_eval_inr]
+            exact hCov v hv_τ
           -- IH for fij(v₀, b) via τ₂
           have h₁ : binomialEdgeMonomialOrder.IsRemainder
-              (monomial d₁ 1 * fij (K := K) v₀ b)
-              (groebnerBasisSet G) 0 :=
-            ih v₀ b τ₂ d₁ hτ₂_len hv₀b hτ₂_head
-              hτ₂_last hτ₂_nd hτ₂_walk hCov₂
+              (monomial d₁ 1 * fij (K := K) v₀ b) (groebnerBasisSet G) 0 :=
+            ih v₀ b τ₂ d₁ hτ₂_len hv₀b hτ₂_head hτ₂_last hτ₂_nd hτ₂_walk hCov₂
           -- IH for fij(v₀, a) via τ₁.reverse
           have hτ₁_rev_len : τ₁.reverse.length ≤ n := by
             simp only [List.length_reverse]; exact hτ₁_len
-          have hτ₁_rev_head : τ₁.reverse.head? =
-              some v₀ := by
+          have hτ₁_rev_head : τ₁.reverse.head? = some v₀ := by
             rw [List.head?_reverse]; exact hτ₁_last
-          have hτ₁_rev_last : τ₁.reverse.getLast? =
-              some a := by
+          have hτ₁_rev_last : τ₁.reverse.getLast? = some a := by
             rw [List.getLast?_reverse]; exact hτ₁_head
-          have hτ₁_rev_nd : τ₁.reverse.Nodup :=
-            List.nodup_reverse.mpr hτ₁_nd
-          have hτ₁_rev_walk : τ₁.reverse.IsChain
-              (fun u v => G.Adj u v) :=
+          have hτ₁_rev_nd : τ₁.reverse.Nodup := List.nodup_reverse.mpr hτ₁_nd
+          have hτ₁_rev_walk : τ₁.reverse.IsChain (fun u v => G.Adj u v) :=
             chain'_reverse' G τ₁ hτ₁_walk
-          -- fij(v₀, a): v₀ < a, good order
-          have h₂_pre :
-              binomialEdgeMonomialOrder.IsRemainder
-              (monomial d₂ 1 * fij (K := K) v₀ a)
-              (groebnerBasisSet G) 0 :=
+          have h₂_pre : binomialEdgeMonomialOrder.IsRemainder
+              (monomial d₂ 1 * fij (K := K) v₀ a) (groebnerBasisSet G) 0 :=
             ih v₀ a τ₁.reverse d₂ hτ₁_rev_len hv₀a
-              hτ₁_rev_head hτ₁_rev_last hτ₁_rev_nd
-              hτ₁_rev_walk hCov₁
+              hτ₁_rev_head hτ₁_rev_last hτ₁_rev_nd hτ₁_rev_walk hCov₁
           -- fij(a, v₀) = -fij(v₀, a)
-          have h₂ :
-              binomialEdgeMonomialOrder.IsRemainder
-              (monomial d₂ 1 * fij (K := K) a v₀)
-              (groebnerBasisSet G) 0 := by
-            have : monomial d₂ (1:K) * fij (K := K) a v₀
-                = -(monomial d₂ 1 * fij (K := K) v₀ a)
-                := by
+          have h₂ : binomialEdgeMonomialOrder.IsRemainder
+              (monomial d₂ 1 * fij (K := K) a v₀) (groebnerBasisSet G) 0 := by
+            have hflip : monomial d₂ (1:K) * fij (K := K) a v₀
+                = -(monomial d₂ 1 * fij (K := K) v₀ a) := by
               rw [fij_antisymm (K := K) a v₀, mul_neg]
-            rw [this]; exact isRemainder_neg' _ _ h₂_pre
+            rw [hflip]; exact isRemainder_neg' _ _ h₂_pre
           -- Algebraic identity from the x-telescope helper
-          have halg :
-              monomial d_q (1 : K) * fij a b =
-                monomial d₁ 1 * fij (K := K) v₀ b +
-                monomial d₂ 1 * fij (K := K) a v₀ :=
+          have halg : monomial d_q (1 : K) * fij a b =
+              monomial d₁ 1 * fij (K := K) v₀ b + monomial d₂ 1 * fij (K := K) a v₀ :=
             x_telescope_monomial_eq (K := K) a v₀ b d_q hcov_xl
-          -- Degree bounds: discriminate at Sum.inl v₀
-          have hne_deg :
-              binomialEdgeMonomialOrder.degree
-                (monomial d₁ (1:K) * fij v₀ b) ≠
-              binomialEdgeMonomialOrder.degree
-                (monomial d₂ (1:K) * fij a v₀) := by
+          -- Degree bounds: discriminate at Sum.inr b
+          have hne_deg : binomialEdgeMonomialOrder.degree (monomial d₁ (1:K) * fij v₀ b) ≠
+                         binomialEdgeMonomialOrder.degree (monomial d₂ (1:K) * fij a v₀) := by
             classical
-            have hdeg1 :
-                binomialEdgeMonomialOrder.degree
-                  (monomial d₁ (1:K) * fij v₀ b) =
-                d₁ + (Finsupp.single
-                  (Sum.inl v₀ : BinomialEdgeVars V) 1 +
-                  Finsupp.single
-                  (Sum.inr b : BinomialEdgeVars V) 1)
-                := by
-              rw [degree_mul
-                (monomial_eq_zero.not.mpr one_ne_zero)
-                (fij_ne_zero v₀ b hv₀b),
-                degree_monomial, if_neg one_ne_zero,
-                fij_degree v₀ b hv₀b]
+            have hdeg1 : binomialEdgeMonomialOrder.degree (monomial d₁ (1:K) * fij v₀ b) =
+                d₁ + (Finsupp.single (Sum.inl v₀ : BinomialEdgeVars V) 1 +
+                       Finsupp.single (Sum.inr b : BinomialEdgeVars V) 1) := by
+              rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero) (fij_ne_zero v₀ b hv₀b),
+                  degree_monomial, if_neg one_ne_zero, fij_degree v₀ b hv₀b]
             have fij_av₀_ne : fij (K := K) a v₀ ≠ 0 := by
-              rw [fij_antisymm]
-              exact neg_ne_zero.mpr (fij_ne_zero v₀ a hv₀a)
-            have hdeg2 :
-                binomialEdgeMonomialOrder.degree
-                  (monomial d₂ (1:K) * fij a v₀) =
-                d₂ + (Finsupp.single
-                  (Sum.inl v₀ : BinomialEdgeVars V) 1 +
-                  Finsupp.single
-                  (Sum.inr a : BinomialEdgeVars V) 1)
-                := by
-              rw [degree_mul
-                (monomial_eq_zero.not.mpr one_ne_zero)
-                fij_av₀_ne,
-                degree_monomial, if_neg one_ne_zero,
-                fij_antisymm (K := K) a v₀,
-                MonomialOrder.degree_neg,
-                fij_degree v₀ a hv₀a]
+              rw [fij_antisymm]; exact neg_ne_zero.mpr (fij_ne_zero v₀ a hv₀a)
+            have hdeg2 : binomialEdgeMonomialOrder.degree (monomial d₂ (1:K) * fij a v₀) =
+                d₂ + (Finsupp.single (Sum.inl v₀ : BinomialEdgeVars V) 1 +
+                       Finsupp.single (Sum.inr a : BinomialEdgeVars V) 1) := by
+              rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero) fij_av₀_ne,
+                  degree_monomial, if_neg one_ne_zero, fij_antisymm (K := K) a v₀,
+                  MonomialOrder.degree_neg, fij_degree v₀ a hv₀a]
             rw [hdeg1, hdeg2]
             intro heq
-            -- Discriminate at Sum.inr b
-            -- LHS at inr b: d₁(inr b) + 0 + 1 = d_q(inr b) + 1
-            -- RHS at inr b: d₂(inr b) + 0 + 0 = d_q(inr b)
-            have hv := Finsupp.ext_iff.mp heq
-              (Sum.inr b : BinomialEdgeVars V)
+            have hv := Finsupp.ext_iff.mp heq (Sum.inr b : BinomialEdgeVars V)
             simp only [d₁, d₂, ev₀, ea, eb] at hv
             unfold BinomialEdgeVars at hv
-            simp only [Finsupp.add_apply,
-              Finsupp.tsub_apply, Finsupp.single_apply,
-              Sum.inr.injEq, reduceCtorEq, ite_true,
-              ite_false,
+            simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply,
+              Sum.inr.injEq, reduceCtorEq, ite_true, ite_false,
               if_neg (ne_of_lt hab)] at hv
             omega
-          obtain ⟨hdeg₁, hdeg₂⟩ :=
-            degree_bounds_of_ne _ _ hne_deg
+          obtain ⟨hdeg₁, hdeg₂⟩ := degree_bounds_of_ne _ _ hne_deg
           rw [halg]
           exact isRemainder_add _ _ _ h₁ h₂ hdeg₁ hdeg₂
       · -- No processable vertices: deterministic coverage
