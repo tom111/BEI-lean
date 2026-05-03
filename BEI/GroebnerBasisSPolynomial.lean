@@ -184,6 +184,148 @@ private lemma cov_inr_or_inl_of_admissible_path
     omega
 
 omit [DecidableEq V] in
+/-- Case 4 fold (shared first endpoint `i`). Given two admissible paths `π : i→a` and
+`σ : i→b` with `a < b`, an exponent `E` covering all internal vertices of either path
+plus the shared `i`, derive `IsRemainder (monomial E 1 * fij a b) ...`. The two
+sub-cases of Case 4 (`j < l` and `l < j`) are recovered by calling this with either
+`(π, σ, j, l)` or `(σ, π, l, j)` and adjusting signs at the call site via
+`fij_antisymm`. -/
+private lemma case4_remainder
+    (G : SimpleGraph V) (i a b : V) {π σ : List V}
+    (hπ : IsAdmissiblePath G i a π) (hσ : IsAdmissiblePath G i b σ)
+    (hia : i < a) (hib : i < b) (hab : a < b)
+    {E : BinomialEdgeVars V →₀ ℕ}
+    (cov_inr_lt_i_π : ∀ v, v ∈ internalVertices π → v < i → E (Sum.inr v) ≥ 1)
+    (cov_inr_lt_i_σ : ∀ v, v ∈ internalVertices σ → v < i → E (Sum.inr v) ≥ 1)
+    (cov_inl_gt_a : ∀ v, v ∈ internalVertices π → a < v → E (Sum.inl v) ≥ 1)
+    (cov_inl_gt_b : ∀ v, v ∈ internalVertices σ → b < v → E (Sum.inl v) ≥ 1)
+    (cov_eq_i : E (Sum.inr i) ≥ 1) :
+    binomialEdgeMonomialOrder.IsRemainder
+      (monomial E 1 * fij (K := K) a b) (groebnerBasisSet G) 0 := by
+  obtain ⟨τ, hτ_head, hτ_last, hτ_nd, hτ_walk, hτ_verts⟩ :=
+    walk_from_shared_first G i a b π σ
+      hπ.2.1 hπ.2.2.1 hπ.2.2.2.1 hπ.2.2.2.2.2.1
+      hσ.2.1 hσ.2.2.1 hσ.2.2.2.1 hσ.2.2.2.2.2.1 (ne_of_lt hab)
+  have hCov : ∀ v ∈ internalVertices τ,
+      (v < a → E (Sum.inr v) ≥ 1) ∧
+      (b < v → E (Sum.inl v) ≥ 1) ∧
+      (a < v → v < b → E (Sum.inl v) ≥ 1) := by
+    intro v hv_int
+    rcases hτ_verts v hv_int with hv_π | hv_σ | hv_eq_i
+    · have hv_mem : v ∈ π :=
+        (List.tail_sublist π).mem ((List.dropLast_sublist _).mem hv_π)
+      have hv_ne_i := not_head_of_internal' π i hπ.2.1 hπ.2.2.2.1 v hv_π
+      have hv_ne_a := not_last_of_internal' π i a hπ.2.1 hπ.2.2.1 hπ.2.2.2.1 v hv_π
+      rcases hπ.2.2.2.2.1 v hv_mem with rfl | rfl | hvi | hav
+      · exact absurd rfl hv_ne_i
+      · exact absurd rfl hv_ne_a
+      · exact ⟨fun _ => cov_inr_lt_i_π v hv_π hvi,
+                fun hbv => absurd (lt_trans hvi (lt_trans hia hab))
+                  (not_lt.mpr (le_of_lt hbv)),
+                fun hav' _ => absurd (lt_trans hvi hia) (not_lt.mpr (le_of_lt hav'))⟩
+      · exact ⟨fun hva => absurd hav (not_lt.mpr (le_of_lt hva)),
+                fun _ => cov_inl_gt_a v hv_π hav,
+                fun _ _ => cov_inl_gt_a v hv_π hav⟩
+    · have hv_mem : v ∈ σ :=
+        (List.tail_sublist σ).mem ((List.dropLast_sublist _).mem hv_σ)
+      have hv_ne_i := not_head_of_internal' σ i hσ.2.1 hσ.2.2.2.1 v hv_σ
+      have hv_ne_b := not_last_of_internal' σ i b hσ.2.1 hσ.2.2.1 hσ.2.2.2.1 v hv_σ
+      rcases hσ.2.2.2.2.1 v hv_mem with rfl | rfl | hvi | hbv
+      · exact absurd rfl hv_ne_i
+      · exact absurd rfl hv_ne_b
+      · exact ⟨fun _ => cov_inr_lt_i_σ v hv_σ hvi,
+                fun hbv' => absurd (lt_trans hvi hib) (not_lt.mpr (le_of_lt hbv')),
+                fun hav' _ => absurd (lt_trans hvi hia) (not_lt.mpr (le_of_lt hav'))⟩
+      · exact ⟨fun hva => absurd (lt_trans hab hbv) (not_lt.mpr (le_of_lt hva)),
+                fun _ => cov_inl_gt_b v hv_σ hbv,
+                fun _ _ => cov_inl_gt_b v hv_σ hbv⟩
+    · exact ⟨fun _ => hv_eq_i ▸ cov_eq_i,
+              fun hbv => absurd (lt_trans hia hab)
+                (not_lt.mpr (le_of_lt (hv_eq_i ▸ hbv))),
+              fun hav' _ => absurd hia (not_lt.mpr (le_of_lt (hv_eq_i ▸ hav')))⟩
+  exact isRemainder_fij_of_covered_walk G τ.length a b τ E le_rfl hab
+    hτ_head hτ_last hτ_nd hτ_walk hCov
+
+omit [DecidableEq V] in
+/-- Case 5 fold (shared last endpoint `j`, y-variant). Given two admissible paths
+`π : a→j` and `σ : b→j` with `a < b`, an exponent `E` covering all internal vertices
+of either path plus the shared `j`, derive `IsRemainder (monomial E 1 * fij a b) ...`.
+The two sub-cases of Case 5 (`i < k` and `k < i`) are recovered by calling this
+with either `(π, σ, i, k)` or `(σ, π, k, i)`. Reverses paths internally to apply
+`walk_from_shared_first` from `j`, and uses `isRemainder_fij_of_covered_walk_y` —
+mid-range vertices contribute `Sum.inr` (i.e. `y_v`) coverage. -/
+private lemma case5_remainder
+    (G : SimpleGraph V) (a b j : V) {π σ : List V}
+    (hπ : IsAdmissiblePath G a j π) (hσ : IsAdmissiblePath G b j σ)
+    (haj : a < j) (hbj : b < j) (hab : a < b)
+    {E : BinomialEdgeVars V →₀ ℕ}
+    (cov_inr_lt_a_π : ∀ v, v ∈ internalVertices π → v < a → E (Sum.inr v) ≥ 1)
+    (cov_inr_lt_b_σ : ∀ v, v ∈ internalVertices σ → v < b → E (Sum.inr v) ≥ 1)
+    (cov_inl_gt_j_π : ∀ v, v ∈ internalVertices π → j < v → E (Sum.inl v) ≥ 1)
+    (cov_inl_gt_j_σ : ∀ v, v ∈ internalVertices σ → j < v → E (Sum.inl v) ≥ 1)
+    (cov_eq_j : E (Sum.inl j) ≥ 1) :
+    binomialEdgeMonomialOrder.IsRemainder
+      (monomial E 1 * fij (K := K) a b) (groebnerBasisSet G) 0 := by
+  obtain ⟨τ, hτ_head, hτ_last, hτ_nd, hτ_walk, hτ_verts⟩ :
+      ∃ τ : List V, τ.head? = some a ∧ τ.getLast? = some b ∧ τ.Nodup ∧
+      τ.IsChain (fun u v => G.Adj u v) ∧
+      (∀ v ∈ internalVertices τ,
+        v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = j) := by
+    obtain ⟨τ', hτ'_head, hτ'_last, hτ'_nd, hτ'_walk, hτ'_verts⟩ :=
+      walk_from_shared_first G j a b π.reverse σ.reverse
+        (List.head?_reverse ▸ hπ.2.2.1)
+        (List.getLast?_reverse ▸ hπ.2.1)
+        (List.nodup_reverse.mpr hπ.2.2.2.1)
+        (chain'_reverse' G π hπ.2.2.2.2.2.1)
+        (List.head?_reverse ▸ hσ.2.2.1)
+        (List.getLast?_reverse ▸ hσ.2.1)
+        (List.nodup_reverse.mpr hσ.2.2.2.1)
+        (chain'_reverse' G σ hσ.2.2.2.2.2.1)
+        (ne_of_lt hab)
+    exact ⟨τ', hτ'_head, hτ'_last, hτ'_nd, hτ'_walk, fun v hv => by
+      rcases hτ'_verts v hv with h | h | h
+      · exact Or.inl (mem_internalVertices_reverse h)
+      · exact Or.inr (Or.inl (mem_internalVertices_reverse h))
+      · exact Or.inr (Or.inr h)⟩
+  have hCov : ∀ v ∈ internalVertices τ,
+      (v < a → E (Sum.inr v) ≥ 1) ∧
+      (b < v → E (Sum.inl v) ≥ 1) ∧
+      (a < v → v < b → E (Sum.inr v) ≥ 1) := by
+    intro v hv_int
+    rcases hτ_verts v hv_int with hv_π | hv_σ | hv_eq_j
+    · have hv_mem : v ∈ π :=
+        (List.tail_sublist π).mem ((List.dropLast_sublist _).mem hv_π)
+      have hv_ne_a := not_head_of_internal' π a hπ.2.1 hπ.2.2.2.1 v hv_π
+      have hv_ne_j := not_last_of_internal' π a j hπ.2.1 hπ.2.2.1 hπ.2.2.2.1 v hv_π
+      rcases hπ.2.2.2.2.1 v hv_mem with rfl | rfl | hva | hjv
+      · exact absurd rfl hv_ne_a
+      · exact absurd rfl hv_ne_j
+      · exact ⟨fun _ => cov_inr_lt_a_π v hv_π hva,
+                fun hbv => absurd (lt_trans hva (lt_trans hab hbv)) (lt_irrefl _),
+                fun hav _ => absurd hva (not_lt.mpr (le_of_lt hav))⟩
+      · exact ⟨fun hva => absurd hjv (not_lt.mpr (le_of_lt (lt_trans hva (lt_trans hab hbj)))),
+                fun _ => cov_inl_gt_j_π v hv_π hjv,
+                fun _ hvb => absurd (lt_trans hjv hvb) (not_lt.mpr (le_of_lt hbj))⟩
+    · have hv_mem : v ∈ σ :=
+        (List.tail_sublist σ).mem ((List.dropLast_sublist _).mem hv_σ)
+      have hv_ne_b := not_head_of_internal' σ b hσ.2.1 hσ.2.2.2.1 v hv_σ
+      have hv_ne_j := not_last_of_internal' σ b j hσ.2.1 hσ.2.2.1 hσ.2.2.2.1 v hv_σ
+      rcases hσ.2.2.2.2.1 v hv_mem with rfl | rfl | hvb | hjv
+      · exact absurd rfl hv_ne_b
+      · exact absurd rfl hv_ne_j
+      · exact ⟨fun _ => cov_inr_lt_b_σ v hv_σ hvb,
+                fun hbv => absurd hbv (not_lt.mpr (le_of_lt hvb)),
+                fun _ _ => cov_inr_lt_b_σ v hv_σ hvb⟩
+      · exact ⟨fun hva => absurd hjv (not_lt.mpr (le_of_lt (lt_trans hva (lt_trans hab hbj)))),
+                fun _ => cov_inl_gt_j_σ v hv_σ hjv,
+                fun _ hvb => absurd (lt_trans hjv hvb) (not_lt.mpr (le_of_lt hbj))⟩
+    · exact ⟨fun hva => absurd haj (not_lt.mpr (le_of_lt (hv_eq_j ▸ hva))),
+              fun _ => hv_eq_j ▸ cov_eq_j,
+              fun _ hvb => absurd (lt_trans hbj (hv_eq_j ▸ hvb)) (lt_irrefl _)⟩
+  exact isRemainder_fij_of_covered_walk_y G τ.length a b τ E le_rfl hab
+    hτ_head hτ_last hτ_nd hτ_walk hCov
+
+omit [DecidableEq V] in
 theorem theorem_2_1 (G : SimpleGraph V) :
     binomialEdgeMonomialOrder.IsGroebnerBasis
       (groebnerBasisSet (K := K) G) (binomialEdgeIdeal (K := K) G) := by
@@ -310,50 +452,9 @@ theorem theorem_2_1 (G : SimpleGraph V) :
           change monomial D (1 : K) * monomial (Finsupp.single (Sum.inr i) 1) 1 = _
           rw [monomial_mul, one_mul]
         rw [heq]; exact isRemainder_neg' _ _ h
-      obtain ⟨τ, hτ_head, hτ_last, hτ_nd, hτ_walk, hτ_verts⟩ :
-          ∃ τ : List V, τ.head? = some j ∧ τ.getLast? = some l ∧ τ.Nodup ∧
-          τ.IsChain (fun u v => G.Adj u v) ∧
-          (∀ v ∈ internalVertices τ,
-            v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = i) := by
-        exact walk_from_shared_first G i j l π σ
-          hπ.2.1 hπ.2.2.1 hπ.2.2.2.1 hπ.2.2.2.2.2.1
-          hσ.2.1 hσ.2.2.1 hσ.2.2.2.1 hσ.2.2.2.2.2.1 (ne_of_lt hjl)
-      have hCov : ∀ v ∈ internalVertices τ,
-          (v < j → E (Sum.inr v) ≥ 1) ∧
-          (l < v → E (Sum.inl v) ≥ 1) ∧
-          (j < v → v < l → E (Sum.inl v) ≥ 1) := by
-        intro v hv_int
-        rcases hτ_verts v hv_int with hv_π | hv_σ | hv_eq_i
-        · have hv_mem : v ∈ π := (List.tail_sublist π).mem ((List.dropLast_sublist _).mem hv_π)
-          have hv_ne_i := not_head_of_internal' π i hπ.2.1 hπ.2.2.2.1 v hv_π
-          have hv_ne_j := not_last_of_internal' π i j hπ.2.1 hπ.2.2.1 hπ.2.2.2.1 v hv_π
-          rcases hπ.2.2.2.2.1 v hv_mem with rfl | rfl | hvi | hjv
-          · exact absurd rfl hv_ne_i
-          · exact absurd rfl hv_ne_j
-          · exact ⟨fun _ => cov_inr_of_lt_i_π v hv_π hvi,
-                    fun hlv => absurd (lt_trans hvi (lt_trans hij hjl)) (not_lt.mpr (le_of_lt hlv)),
-                    fun hjv' => absurd (lt_trans hvi hij) (not_lt.mpr (le_of_lt hjv'))⟩
-          · exact ⟨fun hvj => absurd hjv (not_lt.mpr (le_of_lt hvj)),
-                    fun _ => cov_inl_of_gt_j v hv_π hjv,
-                    fun _ _ => cov_inl_of_gt_j v hv_π hjv⟩
-        · have hv_mem : v ∈ σ := (List.tail_sublist σ).mem ((List.dropLast_sublist _).mem hv_σ)
-          have hv_ne_i := not_head_of_internal' σ i hσ.2.1 hσ.2.2.2.1 v hv_σ
-          have hv_ne_l := not_last_of_internal' σ i l hσ.2.1 hσ.2.2.1 hσ.2.2.2.1 v hv_σ
-          rcases hσ.2.2.2.2.1 v hv_mem with rfl | rfl | hvi | hlv
-          · exact absurd rfl hv_ne_i
-          · exact absurd rfl hv_ne_l
-          · exact ⟨fun _ => cov_inr_of_lt_i_σ v hv_σ hvi,
-                    fun hlv => absurd (lt_trans hvi (lt_trans hij hjl)) (not_lt.mpr (le_of_lt hlv)),
-                    fun hjv' => absurd (lt_trans hvi hij) (not_lt.mpr (le_of_lt hjv'))⟩
-          · exact ⟨fun hvj => absurd (lt_trans hjl hlv) (not_lt.mpr (le_of_lt hvj)),
-                    fun _ => cov_inl_of_gt_l v hv_σ hlv,
-                    fun _ _ => cov_inl_of_gt_l v hv_σ hlv⟩
-        · exact ⟨fun _ => hv_eq_i ▸ cov_eq_i,
-                  fun hlv => absurd (lt_trans hij hjl) (not_lt.mpr (le_of_lt (hv_eq_i ▸ hlv))),
-                  fun hjv => absurd hij (not_lt.mpr (le_of_lt (hv_eq_i ▸ hjv)))⟩
-      exact isRemainder_fij_of_covered_walk G τ.length j l τ E le_rfl hjl
-        hτ_head hτ_last hτ_nd hτ_walk hCov
-    · -- l < j: symmetric, need admissible path from l to j
+      exact case4_remainder G i j l hπ hσ hij hil hjl
+        cov_inr_of_lt_i_π cov_inr_of_lt_i_σ cov_inl_of_gt_j cov_inl_of_gt_l cov_eq_i
+    · -- l < j: symmetric, swap (π, σ) and (j, l) when calling helper
       suffices h : binomialEdgeMonomialOrder.IsRemainder
           (monomial E 1 * fij (K := K) l j) (groebnerBasisSet G) 0 by
         have heq : (monomial D) ((1 : K) * 1) * (-(y (K := K) i) * fij j l) =
@@ -365,56 +466,8 @@ theorem theorem_2_1 (G : SimpleGraph V) :
           change monomial D (1 : K) * monomial (Finsupp.single (Sum.inr i) 1) 1 = _
           rw [monomial_mul, one_mul]
         rw [heq]; exact h
-      -- Goal: IsRemainder (monomial E 1 * fij l j) groebnerBasisSet 0
-      -- Symmetric: walk from l to j through shared vertex i
-      obtain ⟨τ, hτ_head, hτ_last, hτ_nd, hτ_walk, hτ_verts⟩ :
-          ∃ τ : List V, τ.head? = some l ∧ τ.getLast? = some j ∧ τ.Nodup ∧
-          τ.IsChain (fun u v => G.Adj u v) ∧
-          (∀ v ∈ internalVertices τ,
-            v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = i) := by
-        obtain ⟨τ', h1, h2, h3, h4, h5⟩ := walk_from_shared_first G i l j σ π
-          hσ.2.1 hσ.2.2.1 hσ.2.2.2.1 hσ.2.2.2.2.2.1
-          hπ.2.1 hπ.2.2.1 hπ.2.2.2.1 hπ.2.2.2.2.2.1 (ne_of_lt hlj)
-        exact ⟨τ', h1, h2, h3, h4, fun v hv => by
-          rcases h5 v hv with h | h | h
-          · exact Or.inr (Or.inl h)
-          · exact Or.inl h
-          · exact Or.inr (Or.inr h)⟩
-      have hCov : ∀ v ∈ internalVertices τ,
-          (v < l → E (Sum.inr v) ≥ 1) ∧
-          (j < v → E (Sum.inl v) ≥ 1) ∧
-          (l < v → v < j → E (Sum.inl v) ≥ 1) := by
-        intro v hv_int
-        rcases hτ_verts v hv_int with hv_π | hv_σ | hv_eq_i
-        · have hv_mem : v ∈ π := (List.tail_sublist π).mem ((List.dropLast_sublist _).mem hv_π)
-          have hv_ne_i := not_head_of_internal' π i hπ.2.1 hπ.2.2.2.1 v hv_π
-          have hv_ne_j := not_last_of_internal' π i j hπ.2.1 hπ.2.2.1 hπ.2.2.2.1 v hv_π
-          rcases hπ.2.2.2.2.1 v hv_mem with rfl | rfl | hvi | hjv
-          · exact absurd rfl hv_ne_i
-          · exact absurd rfl hv_ne_j
-          · exact ⟨fun _ => cov_inr_of_lt_i_π v hv_π hvi,
-                    fun hjv => absurd (lt_trans hvi hij) (not_lt.mpr (le_of_lt hjv)),
-                    fun hlv => absurd (lt_trans hvi hil) (not_lt.mpr (le_of_lt hlv))⟩
-          · exact ⟨fun hvl => absurd (lt_trans hlj hjv) (not_lt.mpr (le_of_lt hvl)),
-                    fun _ => cov_inl_of_gt_j v hv_π hjv,
-                    fun _ _ => cov_inl_of_gt_j v hv_π hjv⟩
-        · have hv_mem : v ∈ σ := (List.tail_sublist σ).mem ((List.dropLast_sublist _).mem hv_σ)
-          have hv_ne_i := not_head_of_internal' σ i hσ.2.1 hσ.2.2.2.1 v hv_σ
-          have hv_ne_l := not_last_of_internal' σ i l hσ.2.1 hσ.2.2.1 hσ.2.2.2.1 v hv_σ
-          rcases hσ.2.2.2.2.1 v hv_mem with rfl | rfl | hvi | hlv
-          · exact absurd rfl hv_ne_i
-          · exact absurd rfl hv_ne_l
-          · exact ⟨fun _ => cov_inr_of_lt_i_σ v hv_σ hvi,
-                    fun hjv => absurd (lt_trans hvi hij) (not_lt.mpr (le_of_lt hjv)),
-                    fun hlv => absurd (lt_trans hvi hil) (not_lt.mpr (le_of_lt hlv))⟩
-          · exact ⟨fun hvl => absurd hlv (not_lt.mpr (le_of_lt hvl)),
-                    fun _ => cov_inl_of_gt_l v hv_σ hlv,
-                    fun _ _ => cov_inl_of_gt_l v hv_σ hlv⟩
-        · exact ⟨fun _ => hv_eq_i ▸ cov_eq_i,
-                  fun hjv => absurd hij (not_lt.mpr (le_of_lt (hv_eq_i ▸ hjv))),
-                  fun hlv => absurd hil (not_lt.mpr (le_of_lt (hv_eq_i ▸ hlv)))⟩
-      exact isRemainder_fij_of_covered_walk G τ.length l j τ E le_rfl hlj
-        hτ_head hτ_last hτ_nd hτ_walk hCov
+      exact case4_remainder G i l j hσ hπ hil hij hlj
+        cov_inr_of_lt_i_σ cov_inr_of_lt_i_π cov_inl_of_gt_l cov_inl_of_gt_j cov_eq_i
   · -- Case 5: j = l, i ≠ k (shared last endpoint) — symmetric to case 4
     subst heq_j
     -- Factor S-polynomial using sPolynomial_fij_shared_last
@@ -503,66 +556,9 @@ theorem theorem_2_1 (G : SimpleGraph V) :
           change monomial D (1 : K) * monomial (Finsupp.single (Sum.inl j) 1) 1 = _
           rw [monomial_mul, one_mul]
         rw [heq]; exact h
-      obtain ⟨τ, hτ_head, hτ_last, hτ_nd, hτ_walk, hτ_verts⟩ :
-          ∃ τ : List V, τ.head? = some i ∧ τ.getLast? = some k ∧ τ.Nodup ∧
-          τ.IsChain (fun u v => G.Adj u v) ∧
-          (∀ v ∈ internalVertices τ,
-            v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = j) := by
-        -- Reverse paths: π.reverse goes j→i, σ.reverse goes j→k
-        -- Use walk_from_shared_first with shared vertex j
-        obtain ⟨τ', hτ'_head, hτ'_last, hτ'_nd, hτ'_walk, hτ'_verts⟩ :=
-          walk_from_shared_first G j i k π.reverse σ.reverse
-            (List.head?_reverse ▸ hπ.2.2.1)
-            (List.getLast?_reverse ▸ hπ.2.1)
-            (List.nodup_reverse.mpr hπ.2.2.2.1)
-            (chain'_reverse' G π hπ.2.2.2.2.2.1)
-            (List.head?_reverse ▸ hσ.2.2.1)
-            (List.getLast?_reverse ▸ hσ.2.1)
-            (List.nodup_reverse.mpr hσ.2.2.2.1)
-            (chain'_reverse' G σ hσ.2.2.2.2.2.1)
-            (ne_of_lt hik)
-        exact ⟨τ', hτ'_head, hτ'_last, hτ'_nd, hτ'_walk, fun v hv => by
-          rcases hτ'_verts v hv with h | h | h
-          · exact Or.inl (mem_internalVertices_reverse h)
-          · exact Or.inr (Or.inl (mem_internalVertices_reverse h))
-          · exact Or.inr (Or.inr h)⟩
-      -- Use y-variant: bad vertices (i < v < k) from σ's internals have y_v, not x_v
-      have hCov : ∀ v ∈ internalVertices τ,
-          (v < i → E (Sum.inr v) ≥ 1) ∧
-          (k < v → E (Sum.inl v) ≥ 1) ∧
-          (i < v → v < k → E (Sum.inr v) ≥ 1) := by
-        intro v hv_int
-        rcases hτ_verts v hv_int with hv_π | hv_σ | hv_eq_j
-        · have hv_mem : v ∈ π := (List.tail_sublist π).mem ((List.dropLast_sublist _).mem hv_π)
-          have hv_ne_i := not_head_of_internal' π i hπ.2.1 hπ.2.2.2.1 v hv_π
-          have hv_ne_j := not_last_of_internal' π i j hπ.2.1 hπ.2.2.1 hπ.2.2.2.1 v hv_π
-          rcases hπ.2.2.2.2.1 v hv_mem with rfl | rfl | hvi | hjv
-          · exact absurd rfl hv_ne_i
-          · exact absurd rfl hv_ne_j
-          · exact ⟨fun _ => cov_inr_of_lt_i_π v hv_π hvi,
-                    fun hkv => absurd (lt_trans hvi (lt_trans hik hkv)) (lt_irrefl _),
-                    fun hiv => absurd hvi (not_lt.mpr (le_of_lt hiv))⟩
-          · exact ⟨fun hvi' => absurd hjv (not_lt.mpr (le_of_lt (lt_trans hvi' hij))),
-                    fun _ => cov_inl_of_gt_j_π v hv_π hjv,
-                    fun _ hvk => absurd (lt_trans hvk (lt_trans hkj hjv)) (lt_irrefl _)⟩
-        · have hv_mem : v ∈ σ := (List.tail_sublist σ).mem ((List.dropLast_sublist _).mem hv_σ)
-          have hv_ne_k := not_head_of_internal' σ k hσ.2.1 hσ.2.2.2.1 v hv_σ
-          have hv_ne_j := not_last_of_internal' σ k j hσ.2.1 hσ.2.2.1 hσ.2.2.2.1 v hv_σ
-          rcases hσ.2.2.2.2.1 v hv_mem with rfl | rfl | hvk | hjv
-          · exact absurd rfl hv_ne_k
-          · exact absurd rfl hv_ne_j
-          · exact ⟨fun _ => cov_inr_of_lt_k_σ v hv_σ hvk,
-                    fun hkv => absurd hkv (not_lt.mpr (le_of_lt hvk)),
-                    fun _ _ => cov_inr_of_lt_k_σ v hv_σ hvk⟩
-          · exact ⟨fun hvi' => absurd hjv (not_lt.mpr (le_of_lt (lt_trans hvi' hij))),
-                    fun _ => cov_inl_of_gt_j_σ v hv_σ hjv,
-                    fun _ hvk => absurd (lt_trans hvk (lt_trans hkj hjv)) (lt_irrefl _)⟩
-        · exact ⟨fun hvj => absurd hij (not_lt.mpr (le_of_lt (hv_eq_j ▸ hvj))),
-                  fun _ => hv_eq_j ▸ cov_eq_j,
-                  fun _ hvk => absurd (lt_trans hkj (hv_eq_j ▸ hvk)) (lt_irrefl _)⟩
-      exact isRemainder_fij_of_covered_walk_y G τ.length i k τ E le_rfl hik
-        hτ_head hτ_last hτ_nd hτ_walk hCov
-    · -- k < i: reduce to IsRemainder (monomial E 1 * fij k i) groebnerBasisSet 0
+      exact case5_remainder G i k j hπ hσ hij hkj hik
+        cov_inr_of_lt_i_π cov_inr_of_lt_k_σ cov_inl_of_gt_j_π cov_inl_of_gt_j_σ cov_eq_j
+    · -- k < i: symmetric, swap (π, σ) and (i, k) when calling helper
       suffices h : binomialEdgeMonomialOrder.IsRemainder
           (monomial E 1 * fij (K := K) k i) (groebnerBasisSet G) 0 by
         have heq : (monomial D) ((1 : K) * 1) * (x (K := K) j * fij i k) =
@@ -573,64 +569,8 @@ theorem theorem_2_1 (G : SimpleGraph V) :
           change monomial D (1 : K) * monomial (Finsupp.single (Sum.inl j) 1) 1 = _
           rw [monomial_mul, one_mul]
         rw [heq]; exact isRemainder_neg' _ _ h
-      obtain ⟨τ, hτ_head, hτ_last, hτ_nd, hτ_walk, hτ_verts⟩ :
-          ∃ τ : List V, τ.head? = some k ∧ τ.getLast? = some i ∧ τ.Nodup ∧
-          τ.IsChain (fun u v => G.Adj u v) ∧
-          (∀ v ∈ internalVertices τ,
-            v ∈ internalVertices π ∨ v ∈ internalVertices σ ∨ v = j) := by
-        -- Reverse paths: π.reverse goes j→i, σ.reverse goes j→k
-        obtain ⟨τ', hτ'_head, hτ'_last, hτ'_nd, hτ'_walk, hτ'_verts⟩ :=
-          walk_from_shared_first G j k i σ.reverse π.reverse
-            (List.head?_reverse ▸ hσ.2.2.1)
-            (List.getLast?_reverse ▸ hσ.2.1)
-            (List.nodup_reverse.mpr hσ.2.2.2.1)
-            (chain'_reverse' G σ hσ.2.2.2.2.2.1)
-            (List.head?_reverse ▸ hπ.2.2.1)
-            (List.getLast?_reverse ▸ hπ.2.1)
-            (List.nodup_reverse.mpr hπ.2.2.2.1)
-            (chain'_reverse' G π hπ.2.2.2.2.2.1)
-            (ne_of_lt hki)
-        exact ⟨τ', hτ'_head, hτ'_last, hτ'_nd, hτ'_walk, fun v hv => by
-          rcases hτ'_verts v hv with h | h | h
-          · exact Or.inr (Or.inl (mem_internalVertices_reverse h))
-          · exact Or.inl (mem_internalVertices_reverse h)
-          · exact Or.inr (Or.inr h)⟩
-      -- Use y-variant: bad vertices from π's internals have y_v
-      have hCov : ∀ v ∈ internalVertices τ,
-          (v < k → E (Sum.inr v) ≥ 1) ∧
-          (i < v → E (Sum.inl v) ≥ 1) ∧
-          (k < v → v < i → E (Sum.inr v) ≥ 1) := by
-        intro v hv_int
-        rcases hτ_verts v hv_int with hv_π | hv_σ | hv_eq_j
-        · have hv_mem : v ∈ π := (List.tail_sublist π).mem ((List.dropLast_sublist _).mem hv_π)
-          have hv_ne_i := not_head_of_internal' π i hπ.2.1 hπ.2.2.2.1 v hv_π
-          have hv_ne_j := not_last_of_internal' π i j hπ.2.1 hπ.2.2.1 hπ.2.2.2.1 v hv_π
-          rcases hπ.2.2.2.2.1 v hv_mem with rfl | rfl | hvi | hjv
-          · exact absurd rfl hv_ne_i
-          · exact absurd rfl hv_ne_j
-          · exact ⟨fun _ => cov_inr_of_lt_i_π v hv_π hvi,
-                    fun hiv => absurd hvi (not_lt.mpr (le_of_lt hiv)),
-                    fun _ _ => cov_inr_of_lt_i_π v hv_π hvi⟩
-          · exact ⟨fun hvk => absurd (lt_trans hkj hjv) (not_lt.mpr (le_of_lt hvk)),
-                    fun _ => cov_inl_of_gt_j_π v hv_π hjv,
-                    fun _ hvi => absurd (lt_trans hvi (lt_trans hij hjv)) (lt_irrefl _)⟩
-        · have hv_mem : v ∈ σ := (List.tail_sublist σ).mem ((List.dropLast_sublist _).mem hv_σ)
-          have hv_ne_k := not_head_of_internal' σ k hσ.2.1 hσ.2.2.2.1 v hv_σ
-          have hv_ne_j := not_last_of_internal' σ k j hσ.2.1 hσ.2.2.1 hσ.2.2.2.1 v hv_σ
-          rcases hσ.2.2.2.2.1 v hv_mem with rfl | rfl | hvk | hjv
-          · exact absurd rfl hv_ne_k
-          · exact absurd rfl hv_ne_j
-          · exact ⟨fun _ => cov_inr_of_lt_k_σ v hv_σ hvk,
-                    fun hiv => absurd (lt_trans hvk hki) (not_lt.mpr (le_of_lt hiv)),
-                    fun hkv => absurd hvk (not_lt.mpr (le_of_lt hkv))⟩
-          · exact ⟨fun hvk => absurd (lt_trans hkj hjv) (not_lt.mpr (le_of_lt hvk)),
-                    fun _ => cov_inl_of_gt_j_σ v hv_σ hjv,
-                    fun _ hvi => absurd (lt_trans hvi (lt_trans hij hjv)) (lt_irrefl _)⟩
-        · exact ⟨fun hvk => absurd hkj (not_lt.mpr (le_of_lt (hv_eq_j ▸ hvk))),
-                  fun _ => hv_eq_j ▸ cov_eq_j,
-                  fun _ hvi => absurd hij (not_lt.mpr (le_of_lt (hv_eq_j ▸ hvi)))⟩
-      exact isRemainder_fij_of_covered_walk_y G τ.length k i τ E le_rfl hki
-        hτ_head hτ_last hτ_nd hτ_walk hCov
+      exact case5_remainder G k i j hσ hπ hkj hij hki
+        cov_inr_of_lt_k_σ cov_inr_of_lt_i_π cov_inl_of_gt_j_σ cov_inl_of_gt_j_π cov_eq_j
   · -- Cases 2 & 3: disjoint or cross-matched endpoints — coprime leading terms
     -- Factor: S(ge1, ge2) = monomial * S(fij i j, fij k l)
     change binomialEdgeMonomialOrder.IsRemainder
