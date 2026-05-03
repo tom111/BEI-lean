@@ -405,28 +405,6 @@ theorem theorem_2_1 (G : SimpleGraph V) :
       (hπ.2.2.2.1.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
     have hσ_nd : (internalVertices σ).Nodup :=
       (hσ.2.2.2.1.sublist (List.tail_sublist σ)).sublist (List.dropLast_sublist _)
-    have hdeg_ij := fij_degree (K := K) i j hij
-    have hdeg_il := fij_degree (K := K) i l hil
-    have hfij_inr : ∀ v, v ≠ j →
-        binomialEdgeMonomialOrder.degree (fij (K := K) i j) (Sum.inr v) = 0 := by
-      intro v hne; rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-      simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr v from
-        fun h => hne.symm (Sum.inr_injective h)]
-    have hfil_inr : ∀ v, v ≠ l →
-        binomialEdgeMonomialOrder.degree (fij (K := K) i l) (Sum.inr v) = 0 := by
-      intro v hne; rw [hdeg_il, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-      simp [show (Sum.inr l : BinomialEdgeVars V) ≠ Sum.inr v from
-        fun h => hne.symm (Sum.inr_injective h)]
-    have hfij_inl : ∀ v, v ≠ i →
-        binomialEdgeMonomialOrder.degree (fij (K := K) i j) (Sum.inl v) = 0 := by
-      intro v hne; rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-      simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl v from
-        fun h => hne.symm (Sum.inl_injective h)]
-    have hfil_inl : ∀ v, v ≠ i →
-        binomialEdgeMonomialOrder.degree (fij (K := K) i l) (Sum.inl v) = 0 := by
-      intro v hne; rw [hdeg_il, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-      simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl v from
-        fun h => hne.symm (Sum.inl_injective h)]
     have hE_ge_D : ∀ w, E w ≥ D w := by
       intro w; simp only [hE_def, Finsupp.add_apply, Finsupp.single_apply]; split_ifs <;> omega
     -- (using module-level not_head_of_internal' and not_last_of_internal')
@@ -435,26 +413,26 @@ theorem theorem_2_1 (G : SimpleGraph V) :
       intro v hv_π hvi
       have := pathMonomial_exponent_inr_one (K := K) i j π v hv_π hvi hπ_nd dπ hdπ
       exact le_trans (by omega) (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _
-        (hfij_inr v (ne_of_lt (lt_trans hvi hij)))
-        (hfil_inr v (ne_of_lt (lt_trans hvi hil)))).1 (hE_ge_D _))
+        (fij_degree_inr_eq_zero (K := K) hij v (ne_of_lt (lt_trans hvi hij)))
+        (fij_degree_inr_eq_zero (K := K) hil v (ne_of_lt (lt_trans hvi hil)))).1 (hE_ge_D _))
     have cov_inr_of_lt_i_σ : ∀ v, v ∈ internalVertices σ → v < i → E (Sum.inr v) ≥ 1 := by
       intro v hv_σ hvi
       have := pathMonomial_exponent_inr_one (K := K) i l σ v hv_σ hvi hσ_nd dσ hdσ
       exact le_trans (by omega) (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _
-        (hfij_inr v (ne_of_lt (lt_trans hvi hij)))
-        (hfil_inr v (ne_of_lt (lt_trans hvi hil)))).2 (hE_ge_D _))
+        (fij_degree_inr_eq_zero (K := K) hij v (ne_of_lt (lt_trans hvi hij)))
+        (fij_degree_inr_eq_zero (K := K) hil v (ne_of_lt (lt_trans hvi hil)))).2 (hE_ge_D _))
     have cov_inl_of_gt_j : ∀ v, v ∈ internalVertices π → j < v → E (Sum.inl v) ≥ 1 := by
       intro v hv_π hjv
       have := pathMonomial_exponent_inl_one (K := K) i j π v hv_π hjv hπ_nd dπ hdπ
       exact le_trans (by omega) (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _
-        (hfij_inl v (ne_of_gt (lt_trans hij hjv)))
-        (hfil_inl v (ne_of_gt (lt_trans hij hjv)))).1 (hE_ge_D _))
+        (fij_degree_inl_eq_zero (K := K) hij v (ne_of_gt (lt_trans hij hjv)))
+        (fij_degree_inl_eq_zero (K := K) hil v (ne_of_gt (lt_trans hij hjv)))).1 (hE_ge_D _))
     have cov_inl_of_gt_l : ∀ v, v ∈ internalVertices σ → l < v → E (Sum.inl v) ≥ 1 := by
       intro v hv_σ hlv
       have := pathMonomial_exponent_inl_one (K := K) i l σ v hv_σ hlv hσ_nd dσ hdσ
       exact le_trans (by omega) (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _
-        (hfij_inl v (ne_of_gt (lt_trans hil hlv)))
-        (hfil_inl v (ne_of_gt (lt_trans hil hlv)))).2 (hE_ge_D _))
+        (fij_degree_inl_eq_zero (K := K) hij v (ne_of_gt (lt_trans hil hlv)))
+        (fij_degree_inl_eq_zero (K := K) hil v (ne_of_gt (lt_trans hil hlv)))).2 (hE_ge_D _))
     have cov_eq_i : E (Sum.inr i) ≥ 1 := by
       change (D + (Finsupp.single (Sum.inr i) 1 : BinomialEdgeVars V →₀ ℕ)) (Sum.inr i) ≥ 1
       rw [Finsupp.add_apply, Finsupp.single_apply, if_pos rfl]; omega
@@ -513,28 +491,6 @@ theorem theorem_2_1 (G : SimpleGraph V) :
       (hπ.2.2.2.1.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
     have hσ_nd : (internalVertices σ).Nodup :=
       (hσ.2.2.2.1.sublist (List.tail_sublist σ)).sublist (List.dropLast_sublist _)
-    have hdeg_ij := fij_degree (K := K) i j hij
-    have hdeg_kj := fij_degree (K := K) k j hkj
-    have hfij_inr : ∀ v, v ≠ j →
-        binomialEdgeMonomialOrder.degree (fij (K := K) i j) (Sum.inr v) = 0 := by
-      intro v hne; rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-      simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr v from
-        fun h => hne.symm (Sum.inr_injective h)]
-    have hfkj_inr : ∀ v, v ≠ j →
-        binomialEdgeMonomialOrder.degree (fij (K := K) k j) (Sum.inr v) = 0 := by
-      intro v hne; rw [hdeg_kj, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-      simp [show (Sum.inr j : BinomialEdgeVars V) ≠ Sum.inr v from
-        fun h => hne.symm (Sum.inr_injective h)]
-    have hfij_inl : ∀ v, v ≠ i →
-        binomialEdgeMonomialOrder.degree (fij (K := K) i j) (Sum.inl v) = 0 := by
-      intro v hne; rw [hdeg_ij, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-      simp [show (Sum.inl i : BinomialEdgeVars V) ≠ Sum.inl v from
-        fun h => hne.symm (Sum.inl_injective h)]
-    have hfkj_inl : ∀ v, v ≠ k →
-        binomialEdgeMonomialOrder.degree (fij (K := K) k j) (Sum.inl v) = 0 := by
-      intro v hne; rw [hdeg_kj, Finsupp.add_apply, Finsupp.single_apply, Finsupp.single_apply]
-      simp [show (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl v from
-        fun h => hne.symm (Sum.inl_injective h)]
     have hE_ge_D : ∀ w, E w ≥ D w := by
       intro w; simp only [hE_def, Finsupp.add_apply, Finsupp.single_apply]; split_ifs <;> omega
     -- Coverage building blocks for Case 5
@@ -542,26 +498,26 @@ theorem theorem_2_1 (G : SimpleGraph V) :
       intro v hv_π hvi
       have := pathMonomial_exponent_inr_one (K := K) i j π v hv_π hvi hπ_nd dπ hdπ
       exact le_trans (by omega) (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _
-        (hfij_inr v (ne_of_lt (lt_trans hvi hij)))
-        (hfkj_inr v (ne_of_lt (lt_trans hvi hij)))).1 (hE_ge_D _))
+        (fij_degree_inr_eq_zero (K := K) hij v (ne_of_lt (lt_trans hvi hij)))
+        (fij_degree_inr_eq_zero (K := K) hkj v (ne_of_lt (lt_trans hvi hij)))).1 (hE_ge_D _))
     have cov_inr_of_lt_k_σ : ∀ v, v ∈ internalVertices σ → v < k → E (Sum.inr v) ≥ 1 := by
       intro v hv_σ hvk
       have := pathMonomial_exponent_inr_one (K := K) k j σ v hv_σ hvk hσ_nd dσ hdσ
       exact le_trans (by omega) (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _
-        (hfij_inr v (ne_of_lt (lt_trans hvk hkj)))
-        (hfkj_inr v (ne_of_lt (lt_trans hvk hkj)))).2 (hE_ge_D _))
+        (fij_degree_inr_eq_zero (K := K) hij v (ne_of_lt (lt_trans hvk hkj)))
+        (fij_degree_inr_eq_zero (K := K) hkj v (ne_of_lt (lt_trans hvk hkj)))).2 (hE_ge_D _))
     have cov_inl_of_gt_j_π : ∀ v, v ∈ internalVertices π → j < v → E (Sum.inl v) ≥ 1 := by
       intro v hv_π hjv
       have := pathMonomial_exponent_inl_one (K := K) i j π v hv_π hjv hπ_nd dπ hdπ
       exact le_trans (by omega) (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _
-        (hfij_inl v (ne_of_gt (lt_trans hij hjv)))
-        (hfkj_inl v (ne_of_gt (lt_trans hkj hjv)))).1 (hE_ge_D _))
+        (fij_degree_inl_eq_zero (K := K) hij v (ne_of_gt (lt_trans hij hjv)))
+        (fij_degree_inl_eq_zero (K := K) hkj v (ne_of_gt (lt_trans hkj hjv)))).1 (hE_ge_D _))
     have cov_inl_of_gt_j_σ : ∀ v, v ∈ internalVertices σ → j < v → E (Sum.inl v) ≥ 1 := by
       intro v hv_σ hjv
       have := pathMonomial_exponent_inl_one (K := K) k j σ v hv_σ hjv hσ_nd dσ hdσ
       exact le_trans (by omega) (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _
-        (hfij_inl v (ne_of_gt (lt_trans hij hjv)))
-        (hfkj_inl v (ne_of_gt (lt_trans hkj hjv)))).2 (hE_ge_D _))
+        (fij_degree_inl_eq_zero (K := K) hij v (ne_of_gt (lt_trans hij hjv)))
+        (fij_degree_inl_eq_zero (K := K) hkj v (ne_of_gt (lt_trans hkj hjv)))).2 (hE_ge_D _))
     have cov_eq_j : E (Sum.inl j) ≥ 1 := by
       change (D + (Finsupp.single (Sum.inl j) 1 : BinomialEdgeVars V →₀ ℕ)) (Sum.inl j) ≥ 1
       rw [Finsupp.add_apply, Finsupp.single_apply, if_pos rfl]; omega
@@ -635,21 +591,10 @@ theorem theorem_2_1 (G : SimpleGraph V) :
       -- The different-components proof (below) fails here because dπ ≤ Q₁ may fail.
       -- Instead, use coprime swap and the isRemainder_fij_via_two_walks infrastructure.
       obtain ⟨v, hv_π, hv_σ⟩ := hshared
-      -- Membership from head?/getLast?
-      have i_in_π : i ∈ π := List.mem_of_head? hπ.2.1
-      have j_in_π : j ∈ π := List.mem_of_getLast? hπ.2.2.1
-      have k_in_σ : k ∈ σ := List.mem_of_head? hσ.2.1
-      have l_in_σ : l ∈ σ := List.mem_of_getLast? hσ.2.2.1
-      -- Internal vertices ⊆ full path
-      have int_sub_π : ∀ w, w ∈ internalVertices π → w ∈ π :=
-        fun w hw => (List.tail_sublist π).mem ((List.dropLast_sublist _).mem hw)
-      have int_sub_σ : ∀ w, w ∈ internalVertices σ → w ∈ σ :=
-        fun w hw => (List.tail_sublist σ).mem ((List.dropLast_sublist _).mem hw)
-      -- fij degree formulas
-      have hdeg_ij := fij_degree (K := K) i j hij
-      have hdeg_kl := fij_degree (K := K) k l hkl
-      -- D ≥ dπ at positions where both fij degrees vanish
-      -- D ≥ dσ at positions where both fij degrees vanish
+      have hπ_int_nd : (internalVertices π).Nodup :=
+        (hπ.2.2.2.1.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
+      have hσ_int_nd : (internalVertices σ).Nodup :=
+        (hσ.2.2.2.1.sublist (List.tail_sublist σ)).sublist (List.dropLast_sublist _)
       -- Apply coprime swap: rewrite the S-polynomial
       rw [fij_coprime_swap (K := K)]
       -- Goal: IsRemainder (monomial D (1*1) * (x l * y j * fij i k - x k * y i * fij j l)) G 0
@@ -658,6 +603,10 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                      (Finsupp.single (Sum.inr j) 1 : BinomialEdgeVars V →₀ ℕ) with hQ₁_def
       set Q₂ := D + (Finsupp.single (Sum.inl k) 1 : BinomialEdgeVars V →₀ ℕ) +
                      (Finsupp.single (Sum.inr i) 1 : BinomialEdgeVars V →₀ ℕ) with hQ₂_def
+      have hQ₁_ge_D : ∀ s, Q₁ s ≥ D s := fun s => by
+        simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply]; split_ifs <;> omega
+      have hQ₂_ge_D : ∀ s, Q₂ s ≥ D s := fun s => by
+        simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply]; split_ifs <;> omega
       -- Walk construction via drops of reversed paths through shared vertex v
       have hv_πR : v ∈ π.reverse := List.mem_reverse.mpr hv_π
       have hv_σR : v ∈ σ.reverse := List.mem_reverse.mpr hv_σ
@@ -703,16 +652,10 @@ theorem theorem_2_1 (G : SimpleGraph V) :
         -- A mixed-coverage walk helper is needed.
         have h₁ : binomialEdgeMonomialOrder.IsRemainder
             (monomial Q₁ 1 * fij (K := K) i k) (groebnerBasisSet G) 0 := by
-          have hπ_int_nd : (internalVertices π).Nodup :=
-            (hπ.2.2.2.1.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
-          have hσ_int_nd : (internalVertices σ).Nodup :=
-            (hσ.2.2.2.1.sublist (List.tail_sublist σ)).sublist (List.dropLast_sublist _)
           exact isRemainder_fij_of_mixed_walk G τ_ik.length i k τ_ik Q₁ le_rfl hik
             hτ_ik_h hτ_ik_l hτ_ik_nd hτ_ik_w (fun w hw => by
             have hw_ne_i := not_head_of_internal' τ_ik i hτ_ik_h hτ_ik_nd w hw
             have hw_ne_k := not_last_of_internal' τ_ik i k hτ_ik_h hτ_ik_l hτ_ik_nd w hw
-            have hQ₁_ge_D : ∀ s, Q₁ s ≥ D s := fun s => by
-              simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply]; split_ifs <;> omega
             -- Check if w is one of the "easy" values covered by Q₁'s extra terms
             by_cases hw_eq_j : w = j
             · right; subst hw_eq_j
@@ -759,16 +702,10 @@ theorem theorem_2_1 (G : SimpleGraph V) :
         · -- j < l
           have h₂ : binomialEdgeMonomialOrder.IsRemainder
               (monomial Q₂ 1 * fij (K := K) j l) (groebnerBasisSet G) 0 := by
-            have hπ_int_nd : (internalVertices π).Nodup :=
-              (hπ.2.2.2.1.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
-            have hσ_int_nd : (internalVertices σ).Nodup :=
-              (hσ.2.2.2.1.sublist (List.tail_sublist σ)).sublist (List.dropLast_sublist _)
             exact isRemainder_fij_of_mixed_walk G τ_jl.length j l τ_jl Q₂ le_rfl hjl
               hτ_jl_h hτ_jl_l hτ_jl_nd hτ_jl_w (fun w hw => by
               have hw_ne_j := not_head_of_internal' τ_jl j hτ_jl_h hτ_jl_nd w hw
               have hw_ne_l := not_last_of_internal' τ_jl j l hτ_jl_h hτ_jl_l hτ_jl_nd w hw
-              have hQ₂_ge_D : ∀ s, Q₂ s ≥ D s := fun s => by
-                simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply]; split_ifs <;> omega
               by_cases hw_eq_k : w = k
               · left; subst hw_eq_k
                 simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply,
@@ -866,16 +803,10 @@ theorem theorem_2_1 (G : SimpleGraph V) :
           -- h₁ for fij(i,k) with i < k: same as j < l case (4 sorries above)
           have h₁ : binomialEdgeMonomialOrder.IsRemainder
               (monomial Q₁ 1 * fij (K := K) i k) (groebnerBasisSet G) 0 := by
-            have hπ_int_nd : (internalVertices π).Nodup :=
-              (hπ.2.2.2.1.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
-            have hσ_int_nd : (internalVertices σ).Nodup :=
-              (hσ.2.2.2.1.sublist (List.tail_sublist σ)).sublist (List.dropLast_sublist _)
             exact isRemainder_fij_of_mixed_walk G τ_ik.length i k τ_ik Q₁ le_rfl hik
               hτ_ik_h hτ_ik_l hτ_ik_nd hτ_ik_w (fun w hw => by
               have hw_ne_i := not_head_of_internal' τ_ik i hτ_ik_h hτ_ik_nd w hw
               have hw_ne_k := not_last_of_internal' τ_ik i k hτ_ik_h hτ_ik_l hτ_ik_nd w hw
-              have hQ₁_ge_D : ∀ s, Q₁ s ≥ D s := fun s => by
-                simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply]; split_ifs <;> omega
               by_cases hw_eq_j : w = j
               · right; subst hw_eq_j
                 simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply,
@@ -917,10 +848,6 @@ theorem theorem_2_1 (G : SimpleGraph V) :
           -- h₂ for fij(l,j) with l < j
           have h₂ : binomialEdgeMonomialOrder.IsRemainder
               (monomial Q₂ 1 * fij (K := K) l j) (groebnerBasisSet G) 0 := by
-            have hπ_int_nd : (internalVertices π).Nodup :=
-              (hπ.2.2.2.1.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
-            have hσ_int_nd : (internalVertices σ).Nodup :=
-              (hσ.2.2.2.1.sublist (List.tail_sublist σ)).sublist (List.dropLast_sublist _)
             exact isRemainder_fij_of_mixed_walk G τ_jl.reverse.length l j τ_jl.reverse Q₂ le_rfl hlj
               (by rw [List.head?_reverse]; exact hτ_jl_l)
               (by rw [List.getLast?_reverse]; exact hτ_jl_h)
@@ -935,8 +862,6 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                 (by rw [List.head?_reverse]; exact hτ_jl_l)
                 (by rw [List.getLast?_reverse]; exact hτ_jl_h)
                 (List.nodup_reverse.mpr hτ_jl_nd) w hw
-              have hQ₂_ge_D : ∀ s, Q₂ s ≥ D s := fun s => by
-                simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply]; split_ifs <;> omega
               by_cases hw_eq_k : w = k
               · left; subst hw_eq_k
                 simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply,
@@ -1050,10 +975,6 @@ theorem theorem_2_1 (G : SimpleGraph V) :
         -- Walk from k to i via τ_ik.reverse (k < i)
         have h₁ : binomialEdgeMonomialOrder.IsRemainder
             (monomial Q₁ 1 * fij (K := K) k i) (groebnerBasisSet G) 0 := by
-          have hπ_int_nd : (internalVertices π).Nodup :=
-            (hπ.2.2.2.1.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
-          have hσ_int_nd : (internalVertices σ).Nodup :=
-            (hσ.2.2.2.1.sublist (List.tail_sublist σ)).sublist (List.dropLast_sublist _)
           exact isRemainder_fij_of_mixed_walk G τ_ik.reverse.length k i τ_ik.reverse Q₁ le_rfl hki
             (by rw [List.head?_reverse]; exact hτ_ik_l)
             (by rw [List.getLast?_reverse]; exact hτ_ik_h)
@@ -1068,8 +989,6 @@ theorem theorem_2_1 (G : SimpleGraph V) :
               (by rw [List.head?_reverse]; exact hτ_ik_l)
               (by rw [List.getLast?_reverse]; exact hτ_ik_h)
               (List.nodup_reverse.mpr hτ_ik_nd) w hw
-            have hQ₁_ge_D : ∀ s, Q₁ s ≥ D s := fun s => by
-              simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply]; split_ifs <;> omega
             by_cases hw_eq_j : w = j
             · right; subst hw_eq_j
               simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply,
@@ -1113,16 +1032,10 @@ theorem theorem_2_1 (G : SimpleGraph V) :
         · -- j < l: fij(l, j) = -(fij(j, l)), subtraction becomes addition
           have h₂ : binomialEdgeMonomialOrder.IsRemainder
               (monomial Q₂ 1 * fij (K := K) j l) (groebnerBasisSet G) 0 := by
-            have hπ_int_nd : (internalVertices π).Nodup :=
-              (hπ.2.2.2.1.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
-            have hσ_int_nd : (internalVertices σ).Nodup :=
-              (hσ.2.2.2.1.sublist (List.tail_sublist σ)).sublist (List.dropLast_sublist _)
             exact isRemainder_fij_of_mixed_walk G τ_jl.length j l τ_jl Q₂ le_rfl hjl
               hτ_jl_h hτ_jl_l hτ_jl_nd hτ_jl_w (fun w hw => by
               have hw_ne_j := not_head_of_internal' τ_jl j hτ_jl_h hτ_jl_nd w hw
               have hw_ne_l := not_last_of_internal' τ_jl j l hτ_jl_h hτ_jl_l hτ_jl_nd w hw
-              have hQ₂_ge_D : ∀ s, Q₂ s ≥ D s := fun s => by
-                simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply]; split_ifs <;> omega
               by_cases hw_eq_k : w = k
               · left; subst hw_eq_k
                 simp only [hQ₂_def, Finsupp.add_apply, Finsupp.single_apply,
@@ -1233,10 +1146,6 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                          (Finsupp.single (Sum.inr k) 1 : BinomialEdgeVars V →₀ ℕ) with hR₂_def
           have h₁R : binomialEdgeMonomialOrder.IsRemainder
               (monomial R₁ 1 * fij (K := K) k i) (groebnerBasisSet G) 0 := by
-            have hπ_int_nd : (internalVertices π).Nodup :=
-              (hπ.2.2.2.1.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
-            have hσ_int_nd : (internalVertices σ).Nodup :=
-              (hσ.2.2.2.1.sublist (List.tail_sublist σ)).sublist (List.dropLast_sublist _)
             exact isRemainder_fij_of_mixed_walk G τ_ik.reverse.length k i τ_ik.reverse R₁ le_rfl hki
               (by rw [List.head?_reverse]; exact hτ_ik_l)
               (by rw [List.getLast?_reverse]; exact hτ_ik_h)
@@ -1293,10 +1202,6 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                         (hR₁_ge_D _)))
           have h₂R : binomialEdgeMonomialOrder.IsRemainder
               (monomial R₂ 1 * fij (K := K) l j) (groebnerBasisSet G) 0 := by
-            have hπ_int_nd : (internalVertices π).Nodup :=
-              (hπ.2.2.2.1.sublist (List.tail_sublist π)).sublist (List.dropLast_sublist _)
-            have hσ_int_nd : (internalVertices σ).Nodup :=
-              (hσ.2.2.2.1.sublist (List.tail_sublist σ)).sublist (List.dropLast_sublist _)
             exact isRemainder_fij_of_mixed_walk G τ_jl.reverse.length l j τ_jl.reverse R₂ le_rfl hlj
               (by rw [List.head?_reverse]; exact hτ_jl_l)
               (by rw [List.getLast?_reverse]; exact hτ_jl_h)
