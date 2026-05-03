@@ -1120,16 +1120,6 @@ theorem linearIndependent_aeval_cons_step
     (MvPolynomial.aeval (Fin.cons x θ')).toAlgebra
   letI algB : Algebra (MvPolynomial (Fin n) K) (A ⧸ I) :=
     (MvPolynomial.aeval (fun i => (mk (θ' i) : A ⧸ I))).toAlgebra
-  -- The `algebraMap` for these instances is just `aeval ...`.
-  have halg_eq_A : ∀ f : MvPolynomial (Fin (n+1)) K,
-      algebraMap (MvPolynomial (Fin (n+1)) K) A f =
-        MvPolynomial.aeval (Fin.cons x θ') f := fun _ => rfl
-  have halg_eq_B : ∀ g : MvPolynomial (Fin n) K,
-      algebraMap (MvPolynomial (Fin n) K) (A ⧸ I) g =
-        MvPolynomial.aeval (fun i => (mk (θ' i) : A ⧸ I)) g := fun _ => rfl
-  -- Factorization identity: `aeval (Fin.cons x θ')` factors through
-  -- `Polynomial.aeval x ∘ Polynomial.mapRingHom (aeval θ') ∘ finSuccEquiv`.
-  have hfactor := aeval_finCons_eq_polynomial_aeval (K := K) x θ'
   -- Reduction mod x: `mk (aeval (Fin.cons x θ') f)` collapses to
   -- `aeval (mk ∘ θ') ((finSuccEquiv K n f).coeff 0)` in `A/I`.
   have hmod := quotientMk_aeval_finCons_eq_aeval_coeff_zero (K := K) x θ'
