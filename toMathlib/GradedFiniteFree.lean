@@ -1022,6 +1022,75 @@ theorem linearIndependent_aeval_fin_zero
     (show MvPolynomial.isEmptyAlgEquiv K (Fin 0) (g i)
         = MvPolynomial.isEmptyAlgEquiv K (Fin 0) 0 by rw [hgi_K, map_zero])
 
+/-- **`MvPolynomial.aeval` factorization through `finSuccEquiv`.** Evaluating
+a polynomial at `Fin.cons x θ'` factors as `Polynomial.aeval x` after mapping
+the inner `aeval θ'` over the polynomial coefficients of `finSuccEquiv K n f`.
+Pure aeval/finSuccEquiv identity used in `linearIndependent_aeval_cons_step`. -/
+private lemma aeval_finCons_eq_polynomial_aeval
+    {K A : Type*} [CommSemiring K] [CommRing A] [Algebra K A]
+    {n : ℕ} (x : A) (θ' : Fin n → A) (f : MvPolynomial (Fin (n + 1)) K) :
+    MvPolynomial.aeval (Fin.cons x θ') f =
+      Polynomial.aeval x
+        ((Polynomial.mapRingHom
+            ((MvPolynomial.aeval (R := K) (θ' : Fin n → A)).toRingHom))
+          (MvPolynomial.finSuccEquiv K n f)) := by
+  have heq :
+      (MvPolynomial.aeval (Fin.cons x θ') :
+          MvPolynomial (Fin (n + 1)) K →ₐ[K] A) =
+      (((Polynomial.aeval (x : A) : Polynomial A →ₐ[A] A).restrictScalars K).comp
+        (((Polynomial.mapAlgHom
+            (MvPolynomial.aeval (θ' : Fin n → A) :
+              MvPolynomial (Fin n) K →ₐ[K] A)).restrictScalars K).comp
+          ((MvPolynomial.finSuccEquiv K n).toAlgHom))) := by
+    apply MvPolynomial.algHom_ext
+    intro i
+    refine Fin.cases ?_ ?_ i
+    · simp [MvPolynomial.finSuccEquiv_X_zero]
+    · intro k
+      simp [MvPolynomial.finSuccEquiv_X_succ, MvPolynomial.aeval_X]
+  have := AlgHom.congr_fun heq f
+  simpa [AlgHom.comp_apply, Polynomial.coe_mapRingHom] using this
+
+/-- **Reduction mod `x` of `aeval (Fin.cons x θ') f`.** Modulo `Ideal.span {x}`,
+evaluating `f` at `Fin.cons x θ'` collapses to evaluating its constant
+coefficient in `Polynomial`-form at the reduced `θ'`. Pure quotient-map
+identity used in `linearIndependent_aeval_cons_step`. -/
+private lemma quotientMk_aeval_finCons_eq_aeval_coeff_zero
+    {K A : Type*} [Field K] [CommRing A] [Algebra K A]
+    {n : ℕ} (x : A) (θ' : Fin n → A) (f : MvPolynomial (Fin (n + 1)) K) :
+    Ideal.Quotient.mk (Ideal.span ({x} : Set A))
+        (MvPolynomial.aeval (Fin.cons x θ') f) =
+      MvPolynomial.aeval (fun i =>
+          (Ideal.Quotient.mk (Ideal.span ({x} : Set A)) (θ' i) :
+            A ⧸ Ideal.span ({x} : Set A)))
+        ((MvPolynomial.finSuccEquiv K n f).coeff 0) := by
+  set I : Ideal A := Ideal.span ({x} : Set A) with hI_def
+  set mk : A →+* A ⧸ I := Ideal.Quotient.mk I with hmk_def
+  rw [aeval_finCons_eq_polynomial_aeval x θ' f]
+  set P' := (Polynomial.mapRingHom
+      ((MvPolynomial.aeval (R := K) (θ' : Fin n → A)).toRingHom))
+      (MvPolynomial.finSuccEquiv K n f) with hP'_def
+  have hstep1 : mk (Polynomial.aeval x P') =
+      Polynomial.aeval (mk x) (P'.map mk) := by
+    rw [Polynomial.aeval_def, Polynomial.aeval_def, Polynomial.eval₂_map,
+      Polynomial.hom_eval₂]
+    congr 1
+  rw [hstep1]
+  have hmkx : mk x = 0 := by
+    rw [hmk_def, hI_def]
+    exact Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.subset_span rfl)
+  rw [hmkx, Polynomial.aeval_def, Polynomial.eval₂_at_zero,
+    Polynomial.coeff_map]
+  have hP'_coeff : P'.coeff 0 =
+      MvPolynomial.aeval (θ' : Fin n → A)
+        ((MvPolynomial.finSuccEquiv K n f).coeff 0) := by
+    rw [hP'_def]
+    exact Polynomial.coeff_map _ 0
+  rw [hP'_coeff]
+  have hmk_apply : ∀ a : A, mk a = (Ideal.Quotient.mkₐ K I) a := fun _ => rfl
+  rw [hmk_apply, MvPolynomial.comp_aeval_apply]
+  rfl
+
 /-- **Linear independence cons step.** If `x ∈ A` is `A`-regular, and `b : ι → A`
 is such that the images of `b` in `A ⧸ ⟨x⟩` are `MvPolynomial (Fin n) K`-linearly
 independent via `aeval` of `(θ' i mod ⟨x⟩)`, then `b` itself is
@@ -1058,84 +1127,12 @@ theorem linearIndependent_aeval_cons_step
   have halg_eq_B : ∀ g : MvPolynomial (Fin n) K,
       algebraMap (MvPolynomial (Fin n) K) (A ⧸ I) g =
         MvPolynomial.aeval (fun i => (mk (θ' i) : A ⧸ I)) g := fun _ => rfl
-  -- Factorization identity:
-  --   aeval (Fin.cons x θ') = Polynomial.aeval x
-  --       ∘ (Polynomial.mapRingHom (aeval θ'))
-  --       ∘ finSuccEquiv.
-  -- We package this into a ring-hom equation so we can rewrite.
-  have hfactor : ∀ f : MvPolynomial (Fin (n+1)) K,
-      MvPolynomial.aeval (Fin.cons x θ') f =
-        Polynomial.aeval x
-          ((Polynomial.mapRingHom
-              ((MvPolynomial.aeval (R := K) (θ' : Fin n → A)).toRingHom))
-            (MvPolynomial.finSuccEquiv K n f)) := by
-    -- Use `algHom_ext` on `MvPolynomial (Fin (n+1)) K`.
-    have heq :
-        (MvPolynomial.aeval (Fin.cons x θ') :
-            MvPolynomial (Fin (n+1)) K →ₐ[K] A) =
-        (((Polynomial.aeval (x : A) : Polynomial A →ₐ[A] A).restrictScalars K).comp
-          (((Polynomial.mapAlgHom
-              (MvPolynomial.aeval (θ' : Fin n → A) :
-                MvPolynomial (Fin n) K →ₐ[K] A)).restrictScalars K).comp
-            ((MvPolynomial.finSuccEquiv K n).toAlgHom))) := by
-      apply MvPolynomial.algHom_ext
-      intro i
-      refine Fin.cases ?_ ?_ i
-      · -- i = 0 case: LHS = x, RHS = aeval x (mapRingHom (aeval θ') (finSuccEquiv (X 0)))
-        --                         = aeval x (mapRingHom (aeval θ') Polynomial.X) = aeval x X = x
-        simp [MvPolynomial.finSuccEquiv_X_zero]
-      · intro k
-        -- i = k.succ: LHS = θ' k, RHS = aeval x (mapRingHom (aeval θ') (C (X k)))
-        --                             = aeval x (C (aeval θ' (X k))) = aeval θ' (X k) = θ' k
-        simp [MvPolynomial.finSuccEquiv_X_succ,
-          MvPolynomial.aeval_X]
-    intro f
-    have := AlgHom.congr_fun heq f
-    simpa [AlgHom.comp_apply, Polynomial.coe_mapRingHom] using this
-  -- Reduction mod x via `comp_aeval_apply`. For `f : P`, `mk (aeval (Fin.cons x θ') f)`
-  -- equals `aeval (Fin.cons 0 (mk ∘ θ')) f` in `A/I`, which further equals
-  -- `aeval (mk ∘ θ') ((finSuccEquiv K n f).coeff 0)` because the 0-th variable is 0.
-  -- We actually only need a weaker form: mod x kills everything but the X^0 coefficient.
-  have hmod :
-      ∀ f : MvPolynomial (Fin (n+1)) K,
-        mk (MvPolynomial.aeval (Fin.cons x θ') f) =
-          MvPolynomial.aeval (fun i => (mk (θ' i) : A ⧸ I))
-            ((MvPolynomial.finSuccEquiv K n f).coeff 0) := by
-    intro f
-    -- Rewrite LHS via `hfactor`, then via `Polynomial.aeval`.
-    rw [hfactor f]
-    -- `mk (Polynomial.aeval x P') = ...`. Use `Polynomial.aeval_def` to unfold to eval₂.
-    -- We'll compute both sides on a polynomial by induction.
-    set P' := (Polynomial.mapRingHom
-      ((MvPolynomial.aeval (R := K) (θ' : Fin n → A)).toRingHom))
-      (MvPolynomial.finSuccEquiv K n f) with hP'_def
-    -- `mk (Polynomial.aeval x P') = Polynomial.aeval (mk x) (Polynomial.map mk P')`.
-    have hstep1 : mk (Polynomial.aeval x P') =
-        Polynomial.aeval (mk x) (P'.map mk) := by
-      rw [Polynomial.aeval_def, Polynomial.aeval_def, Polynomial.eval₂_map,
-        Polynomial.hom_eval₂]
-      congr 1
-    rw [hstep1]
-    -- `mk x = 0` because `x ∈ I`.
-    have hmkx : mk x = 0 := by
-      rw [hmk_def, hI_def]
-      exact Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.subset_span rfl)
-    rw [hmkx]
-    rw [Polynomial.aeval_def, Polynomial.eval₂_at_zero]
-    -- Now `(P'.map mk).coeff 0 = mk (P'.coeff 0)`.
-    rw [Polynomial.coeff_map]
-    -- `P'.coeff 0 = aeval θ' ((finSuccEquiv K n f).coeff 0)`.
-    have hP'_coeff : P'.coeff 0 =
-        MvPolynomial.aeval (θ' : Fin n → A) ((MvPolynomial.finSuccEquiv K n f).coeff 0) := by
-      rw [hP'_def]
-      exact Polynomial.coeff_map _ 0
-    rw [hP'_coeff]
-    -- `mk (aeval θ' g) = aeval (mk ∘ θ') g` via `comp_aeval_apply`.
-    -- We use `Ideal.Quotient.mkₐ K I` as the `K`-algebra map lifting `mk`.
-    have hmk_apply : ∀ a : A, mk a = (Ideal.Quotient.mkₐ K I) a := fun _ => rfl
-    rw [hmk_apply]
-    rw [MvPolynomial.comp_aeval_apply]
-    rfl
+  -- Factorization identity: `aeval (Fin.cons x θ')` factors through
+  -- `Polynomial.aeval x ∘ Polynomial.mapRingHom (aeval θ') ∘ finSuccEquiv`.
+  have hfactor := aeval_finCons_eq_polynomial_aeval (K := K) x θ'
+  -- Reduction mod x: `mk (aeval (Fin.cons x θ') f)` collapses to
+  -- `aeval (mk ∘ θ') ((finSuccEquiv K n f).coeff 0)` in `A/I`.
+  have hmod := quotientMk_aeval_finCons_eq_aeval_coeff_zero (K := K) x θ'
   -- Scalar-action identity on `A`.
   have hsmulA : ∀ (f : MvPolynomial (Fin (n+1)) K) (a : A),
       f • a = MvPolynomial.aeval (Fin.cons x θ') f * a := fun f a => Algebra.smul_def f a
