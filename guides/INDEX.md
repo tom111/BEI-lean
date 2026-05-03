@@ -13,9 +13,39 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 
 ## Active Work Packages
 
-There are no active work packages right now. The largest standing LOC
-target — `theorem_2_1` (1848 LOC, the biggest declaration in the repo)
-— shipped on 2026-05-03 across five stage commits. The guide is
+Two work packages are now ready for fresh-Claude dispatch, both
+investigated 2026-05-03 by read-only subagents:
+
+- [work_packages/MIXED_WALK_REMAINDER_REFACTOR.md](work_packages/MIXED_WALK_REMAINDER_REFACTOR.md)
+  — **Largest LOC win still available.** Carve
+  `isRemainder_fij_of_mixed_walk` (837 LOC,
+  `BEI/CoveredWalks.lean:1335`) by collapsing its 4 telescope
+  branches and unifying the end-block with the `_covered_walk` /
+  `_covered_walk_y` siblings (6 call sites total, ~120 LOC each).
+  Three helpers proposed (`telescope_remainder_step`,
+  `coverage_transfer_through_subwalk`,
+  `min_bad_vertex` / `max_bad_vertex`). Estimated
+  837 → ~280–350 LOC (~−500 LOC, ~60%), medium risk. The
+  `Sum.inl` / `Sum.inr` simp-set non-uniformity is the main parameterisation
+  hazard.
+
+- [work_packages/GRADED_FINITE_FREE_REFACTOR.md](work_packages/GRADED_FINITE_FREE_REFACTOR.md)
+  — Carve the `toMathlib/Graded*` family: 4 big proofs
+  (`linearIndependent_aeval_cons_step` 247,
+  `linearIndependent_aeval_of_basis_lift` 245,
+  `finiteFree_over_mvPolynomial_of_homogeneous_regular_sop` 243,
+  plus the 70-LOC localization-bridge duplicated across
+  `exists_homogeneous_nonZeroDivisor_quotient_cm_of_dim_pos` and
+  `ringKrullDim_irrelevant_quotient_eq` in
+  `toMathlib/GradedRegularSop.lean`). Five stages with escalating
+  risk — Stage 0 zero-risk warmup, Stage 4 the high-gain Mathlib
+  hunt for `Module.Free.of_equiv` / `Basis.mapCoeffs` / similar.
+  Estimated ~230–280 LOC reduction, medium risk, all
+  toMathlib-side so paper-facing theorems are insulated.
+
+The largest standing LOC target — `theorem_2_1` (1848 LOC, the
+biggest declaration in the repo) — shipped on 2026-05-03 across five
+stage commits. The guide is
 archived at
 [archive/THEOREM_2_1_REFACTOR.md](archive/THEOREM_2_1_REFACTOR.md).
 Five private helpers were extracted
