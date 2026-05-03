@@ -591,6 +591,162 @@ private lemma exists_max_bad_vertex {τ : List V} {a b : V}
   exact Finset.le_max' _ _ (List.mem_toFinset.mpr
     (List.mem_filter.mpr ⟨hw, by simp [haw, hwb]⟩))
 
+omit [DecidableEq V] [Fintype V] in
+/-- The x-telescope identity at the level of monomials: if `x_{v₀}` divides
+`monomial d_q 1`, then `monomial d_q 1 * fij a b` rewrites via `fij_x_telescope`. -/
+private lemma x_telescope_monomial_eq
+    (a v₀ b : V) (d_q : BinomialEdgeVars V →₀ ℕ)
+    (hcov : d_q (Sum.inl v₀) ≥ 1) :
+    (monomial d_q (1:K) : MvPolynomial (BinomialEdgeVars V) K) * fij a b =
+      monomial (d_q - (Finsupp.single (Sum.inl v₀) 1 : BinomialEdgeVars V →₀ ℕ)
+                    + (Finsupp.single (Sum.inl a) 1 : BinomialEdgeVars V →₀ ℕ)) (1:K)
+        * fij v₀ b +
+      monomial (d_q - (Finsupp.single (Sum.inl v₀) 1 : BinomialEdgeVars V →₀ ℕ)
+                    + (Finsupp.single (Sum.inl b) 1 : BinomialEdgeVars V →₀ ℕ)) (1:K)
+        * fij a v₀ := by
+  set ev₀ : BinomialEdgeVars V →₀ ℕ := Finsupp.single (Sum.inl v₀) 1
+  set ea : BinomialEdgeVars V →₀ ℕ := Finsupp.single (Sum.inl a) 1
+  set eb : BinomialEdgeVars V →₀ ℕ := Finsupp.single (Sum.inl b) 1
+  have hle : ev₀ ≤ d_q := by
+    unfold BinomialEdgeVars at *; exact Finsupp.single_le_iff.mpr hcov
+  have hfactor : (monomial d_q (1:K) : MvPolynomial (BinomialEdgeVars V) K) =
+      monomial (d_q - ev₀) (1:K) * monomial ev₀ (1:K) := by
+    rw [monomial_mul, one_mul, tsub_add_cancel_of_le hle]
+  have hxv₀ : (monomial ev₀ (1:K) : MvPolynomial (BinomialEdgeVars V) K) = x v₀ := rfl
+  rw [hfactor, mul_assoc,
+      show monomial ev₀ (1:K) * fij (K := K) a b = x v₀ * fij a b from by rw [← hxv₀],
+      fij_x_telescope (K := K) a v₀ b, mul_add, ← mul_assoc, ← mul_assoc]
+  congr 1
+  · congr 1
+    change monomial (d_q - ev₀) (1:K) * monomial ea (1:K) = _
+    rw [monomial_mul, one_mul]
+  · congr 1
+    change monomial (d_q - ev₀) (1:K) * monomial eb (1:K) = _
+    rw [monomial_mul, one_mul]
+
+omit [DecidableEq V] [Fintype V] in
+/-- The y-telescope identity at the level of monomials: if `y_{v₀}` divides
+`monomial d_q 1`, then `monomial d_q 1 * fij a b` rewrites via `fij_telescope`. -/
+private lemma y_telescope_monomial_eq
+    (a v₀ b : V) (d_q : BinomialEdgeVars V →₀ ℕ)
+    (hcov : d_q (Sum.inr v₀) ≥ 1) :
+    (monomial d_q (1:K) : MvPolynomial (BinomialEdgeVars V) K) * fij a b =
+      monomial (d_q - (Finsupp.single (Sum.inr v₀) 1 : BinomialEdgeVars V →₀ ℕ)
+                    + (Finsupp.single (Sum.inr b) 1 : BinomialEdgeVars V →₀ ℕ)) (1:K)
+        * fij a v₀ +
+      monomial (d_q - (Finsupp.single (Sum.inr v₀) 1 : BinomialEdgeVars V →₀ ℕ)
+                    + (Finsupp.single (Sum.inr a) 1 : BinomialEdgeVars V →₀ ℕ)) (1:K)
+        * fij v₀ b := by
+  set eyv₀ : BinomialEdgeVars V →₀ ℕ := Finsupp.single (Sum.inr v₀) 1
+  set eyb : BinomialEdgeVars V →₀ ℕ := Finsupp.single (Sum.inr b) 1
+  set eya : BinomialEdgeVars V →₀ ℕ := Finsupp.single (Sum.inr a) 1
+  have hle : eyv₀ ≤ d_q := by
+    unfold BinomialEdgeVars at *; exact Finsupp.single_le_iff.mpr hcov
+  have hfactor : (monomial d_q (1:K) : MvPolynomial (BinomialEdgeVars V) K) =
+      monomial (d_q - eyv₀) (1:K) * monomial eyv₀ (1:K) := by
+    rw [monomial_mul, one_mul, tsub_add_cancel_of_le hle]
+  have hyv₀ : (monomial eyv₀ (1:K) : MvPolynomial (BinomialEdgeVars V) K) = y v₀ := rfl
+  rw [hfactor, mul_assoc,
+      show monomial eyv₀ (1:K) * fij (K := K) a b = y v₀ * fij a b from by rw [← hyv₀],
+      fij_telescope (K := K) a v₀ b, mul_add, ← mul_assoc, ← mul_assoc]
+  congr 1
+  · congr 1
+    change monomial (d_q - eyv₀) (1:K) * monomial eyb (1:K) = _
+    rw [monomial_mul, one_mul]
+  · congr 1
+    change monomial (d_q - eyv₀) (1:K) * monomial eya (1:K) = _
+    rw [monomial_mul, one_mul]
+
+omit [DecidableEq V] in
+/-- Bad-vertex x-telescope packager: if `x_{v₀}` divides `monomial d_q 1` and
+`a < v₀ < b`, and the IH applies to both sub-walks (giving `h₁`, `h₂`), then
+the x-telescope identity assembles them into `IsRemainder` for `q * fij a b`.
+The discriminator at `Sum.inl v₀` separates the two summand degrees. -/
+private lemma telescope_step_x_bad
+    (G : SimpleGraph V) {a v₀ b : V} (hav₀ : a < v₀) (hv₀b : v₀ < b)
+    (d_q : BinomialEdgeVars V →₀ ℕ) (hcov : d_q (Sum.inl v₀) ≥ 1)
+    (h₁ : binomialEdgeMonomialOrder.IsRemainder
+      (monomial (d_q - (Finsupp.single (Sum.inl v₀) 1 : BinomialEdgeVars V →₀ ℕ)
+                     + (Finsupp.single (Sum.inl a) 1 : BinomialEdgeVars V →₀ ℕ))
+        (1:K) * fij v₀ b)
+      (groebnerBasisSet G) 0)
+    (h₂ : binomialEdgeMonomialOrder.IsRemainder
+      (monomial (d_q - (Finsupp.single (Sum.inl v₀) 1 : BinomialEdgeVars V →₀ ℕ)
+                     + (Finsupp.single (Sum.inl b) 1 : BinomialEdgeVars V →₀ ℕ))
+        (1:K) * fij a v₀)
+      (groebnerBasisSet G) 0) :
+    binomialEdgeMonomialOrder.IsRemainder
+      (monomial d_q (1:K) * fij a b) (groebnerBasisSet G) 0 := by
+  set ev₀ : BinomialEdgeVars V →₀ ℕ := Finsupp.single (Sum.inl v₀) 1
+  set ea : BinomialEdgeVars V →₀ ℕ := Finsupp.single (Sum.inl a) 1
+  set eb : BinomialEdgeVars V →₀ ℕ := Finsupp.single (Sum.inl b) 1
+  set d₁ := d_q - ev₀ + ea with hd₁_def
+  set d₂ := d_q - ev₀ + eb with hd₂_def
+  have halg := x_telescope_monomial_eq (K := K) a v₀ b d_q hcov
+  have hne_deg : binomialEdgeMonomialOrder.degree (monomial d₁ (1:K) * fij v₀ b) ≠
+                 binomialEdgeMonomialOrder.degree (monomial d₂ (1:K) * fij a v₀) := by
+    classical
+    rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero) (fij_ne_zero v₀ b hv₀b),
+        degree_monomial, if_neg one_ne_zero, fij_degree v₀ b hv₀b,
+        degree_mul (monomial_eq_zero.not.mpr one_ne_zero) (fij_ne_zero a v₀ hav₀),
+        degree_monomial, if_neg one_ne_zero, fij_degree a v₀ hav₀]
+    intro heq
+    have hv := Finsupp.ext_iff.mp heq (Sum.inl v₀ : BinomialEdgeVars V)
+    simp only [d₁, d₂, ev₀, ea, eb] at hv
+    unfold BinomialEdgeVars at hv
+    simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply,
+      Sum.inl.injEq, reduceCtorEq, ite_true, ite_false,
+      if_neg (ne_of_lt hav₀), if_neg (ne_of_lt hv₀b).symm] at hv
+    omega
+  obtain ⟨hdeg₁, hdeg₂⟩ := degree_bounds_of_ne _ _ hne_deg
+  rw [halg]
+  exact isRemainder_add _ _ _ h₁ h₂ hdeg₁ hdeg₂
+
+omit [DecidableEq V] in
+/-- Bad-vertex y-telescope packager: if `y_{v₀}` divides `monomial d_q 1` and
+`a < v₀ < b`, and the IH applies to both sub-walks (giving `h₁`, `h₂`), then
+the y-telescope identity assembles them into `IsRemainder` for `q * fij a b`.
+The discriminator at `Sum.inr v₀` separates the two summand degrees. -/
+private lemma telescope_step_y_bad
+    (G : SimpleGraph V) {a v₀ b : V} (hav₀ : a < v₀) (hv₀b : v₀ < b)
+    (d_q : BinomialEdgeVars V →₀ ℕ) (hcov : d_q (Sum.inr v₀) ≥ 1)
+    (h₁ : binomialEdgeMonomialOrder.IsRemainder
+      (monomial (d_q - (Finsupp.single (Sum.inr v₀) 1 : BinomialEdgeVars V →₀ ℕ)
+                     + (Finsupp.single (Sum.inr b) 1 : BinomialEdgeVars V →₀ ℕ))
+        (1:K) * fij a v₀)
+      (groebnerBasisSet G) 0)
+    (h₂ : binomialEdgeMonomialOrder.IsRemainder
+      (monomial (d_q - (Finsupp.single (Sum.inr v₀) 1 : BinomialEdgeVars V →₀ ℕ)
+                     + (Finsupp.single (Sum.inr a) 1 : BinomialEdgeVars V →₀ ℕ))
+        (1:K) * fij v₀ b)
+      (groebnerBasisSet G) 0) :
+    binomialEdgeMonomialOrder.IsRemainder
+      (monomial d_q (1:K) * fij a b) (groebnerBasisSet G) 0 := by
+  set eyv₀ : BinomialEdgeVars V →₀ ℕ := Finsupp.single (Sum.inr v₀) 1
+  set eyb : BinomialEdgeVars V →₀ ℕ := Finsupp.single (Sum.inr b) 1
+  set eya : BinomialEdgeVars V →₀ ℕ := Finsupp.single (Sum.inr a) 1
+  set d₁ := d_q - eyv₀ + eyb with hd₁_def
+  set d₂ := d_q - eyv₀ + eya with hd₂_def
+  have halg := y_telescope_monomial_eq (K := K) a v₀ b d_q hcov
+  have hne_deg : binomialEdgeMonomialOrder.degree (monomial d₁ (1:K) * fij a v₀) ≠
+                 binomialEdgeMonomialOrder.degree (monomial d₂ (1:K) * fij v₀ b) := by
+    classical
+    rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero) (fij_ne_zero a v₀ hav₀),
+        degree_monomial, if_neg one_ne_zero, fij_degree a v₀ hav₀,
+        degree_mul (monomial_eq_zero.not.mpr one_ne_zero) (fij_ne_zero v₀ b hv₀b),
+        degree_monomial, if_neg one_ne_zero, fij_degree v₀ b hv₀b]
+    intro heq
+    have hv := Finsupp.ext_iff.mp heq (Sum.inr v₀ : BinomialEdgeVars V)
+    simp only [d₁, d₂, eyv₀, eyb, eya] at hv
+    unfold BinomialEdgeVars at hv
+    simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply,
+      Sum.inr.injEq, reduceCtorEq, ite_true, ite_false,
+      if_neg (ne_of_gt hv₀b), if_neg (ne_of_lt hav₀)] at hv
+    omega
+  obtain ⟨hdeg₁, hdeg₂⟩ := degree_bounds_of_ne _ _ hne_deg
+  rw [halg]
+  exact isRemainder_add _ _ _ h₁ h₂ hdeg₁ hdeg₂
+
 omit [DecidableEq V] in
 /-- **Core lemma**: If there is a nodup walk `τ` from `a` to `b` in `G`,
 and the monomial `q = monomial d_q 1` "covers" every internal vertex of
@@ -716,69 +872,14 @@ theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
         · -- a < v < v₀: vacuous by minimality of v₀
           exfalso
           exact absurd (hv₀_min v hv_τ hav (lt_trans hvv₀ hv₀b)) (not_le.mpr hvv₀)
-      -- Apply IH to both sub-walks
+      -- Apply IH to both sub-walks, then assemble via x-telescope packager
       have h₁ : binomialEdgeMonomialOrder.IsRemainder
           (monomial d₁ 1 * fij (K := K) v₀ b) (groebnerBasisSet G) 0 :=
         ih v₀ b τ₂ d₁ hτ₂_len hv₀b hτ₂_head hτ₂_last hτ₂_nd hτ₂_walk hCov₂
       have h₂ : binomialEdgeMonomialOrder.IsRemainder
           (monomial d₂ 1 * fij (K := K) a v₀) (groebnerBasisSet G) 0 :=
         ih a v₀ τ₁ d₂ hτ₁_len hav₀ hτ₁_head hτ₁_last hτ₁_nd hτ₁_walk hCov₁
-      -- Algebraic identity
-      have halg : monomial d_q (1 : K) * fij a b =
-          monomial d₁ 1 * fij (K := K) v₀ b + monomial d₂ 1 * fij (K := K) a v₀ := by
-        -- Factor: monomial d_q 1 = monomial (d_q - ev₀) 1 * monomial ev₀ 1
-        have hle : ev₀ ≤ d_q := by
-          unfold BinomialEdgeVars at *; exact Finsupp.single_le_iff.mpr hcov_v₀
-        have hfactor : (monomial d_q (1:K) : MvPolynomial (BinomialEdgeVars V) K) =
-            monomial (d_q - ev₀) (1:K) * monomial ev₀ (1:K) := by
-          rw [monomial_mul, one_mul, tsub_add_cancel_of_le hle]
-        -- monomial ev₀ 1 = x v₀
-        have hxv₀ : (monomial ev₀ (1:K) : MvPolynomial (BinomialEdgeVars V) K) = x v₀ := rfl
-        -- Apply fij_x_telescope: x v₀ * fij a b = x a * fij v₀ b + x b * fij a v₀
-        rw [hfactor, mul_assoc,
-            show monomial ev₀ (1:K) * fij (K := K) a b = x v₀ * fij a b from by rw [← hxv₀],
-            fij_x_telescope (K := K) a v₀ b, mul_add, ← mul_assoc, ← mul_assoc]
-        -- Recombine monomials
-        congr 1
-        · congr 1
-          change monomial (d_q - ev₀) (1:K) * x (K := K) a = monomial d₁ 1
-          change monomial (d_q - ev₀) (1:K) * monomial ea (1:K) = monomial d₁ 1
-          rw [monomial_mul, one_mul]
-        · congr 1
-          change monomial (d_q - ev₀) (1:K) * x (K := K) b = monomial d₂ 1
-          change monomial (d_q - ev₀) (1:K) * monomial eb (1:K) = monomial d₂ 1
-          rw [monomial_mul, one_mul]
-      -- Degree bounds for isRemainder_add
-      -- The two terms have different degrees (discriminator at inl v₀).
-      have hne_deg : binomialEdgeMonomialOrder.degree (monomial d₁ (1:K) * fij v₀ b) ≠
-                     binomialEdgeMonomialOrder.degree (monomial d₂ (1:K) * fij a v₀) := by
-        classical
-        have hdeg1 : binomialEdgeMonomialOrder.degree (monomial d₁ (1:K) * fij v₀ b) =
-            d₁ + (Finsupp.single (Sum.inl v₀ : BinomialEdgeVars V) 1 +
-                   Finsupp.single (Sum.inr b : BinomialEdgeVars V) 1) := by
-          rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero) (fij_ne_zero v₀ b hv₀b),
-              degree_monomial, if_neg one_ne_zero, fij_degree v₀ b hv₀b]
-        have hdeg2 : binomialEdgeMonomialOrder.degree (monomial d₂ (1:K) * fij a v₀) =
-            d₂ + (Finsupp.single (Sum.inl a : BinomialEdgeVars V) 1 +
-                   Finsupp.single (Sum.inr v₀ : BinomialEdgeVars V) 1) := by
-          rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero) (fij_ne_zero a v₀ hav₀),
-              degree_monomial, if_neg one_ne_zero, fij_degree a v₀ hav₀]
-        -- Show the degree Finsupps differ at Sum.inl v₀:
-        -- M1(inl v₀) = d_q(inl v₀), M2(inl v₀) = d_q(inl v₀) - 1
-        -- Helper: evaluate inner Finsupp sums at inl v₀
-        -- Finsupp.single_eq_of_ne takes (query ≠ key)
-        rw [hdeg1, hdeg2]
-        intro heq
-        have hv := Finsupp.ext_iff.mp heq (Sum.inl v₀ : BinomialEdgeVars V)
-        simp only [d₁, d₂, ev₀, ea, eb] at hv
-        unfold BinomialEdgeVars at hv
-        simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply,
-          Sum.inl.injEq, reduceCtorEq, ite_true, ite_false,
-          if_neg (ne_of_lt hav₀), if_neg (ne_of_lt hv₀b).symm] at hv
-        omega
-      obtain ⟨hdeg₁, hdeg₂⟩ := degree_bounds_of_ne _ _ hne_deg
-      rw [halg]
-      exact isRemainder_add _ _ _ h₁ h₂ hdeg₁ hdeg₂
+      exact telescope_step_x_bad (K := K) G hav₀ hv₀b d_q hcov_v₀ h₁ h₂
     · -- No bad vertices: extract admissible path directly
       push_neg at hBad
       have hne_τ : τ ≠ [] := fun h => by simp [h] at hHead
@@ -1014,67 +1115,14 @@ theorem isRemainder_fij_of_covered_walk_y (G : SimpleGraph V) :
         · -- v₀ < v < b
           rw [hinr (ne_of_gt hvv₀)]
           exact hc3 (lt_trans hav₀ hvv₀) hvb
-      -- Apply IH (using y-variant for both sub-walks)
+      -- Apply IH (using y-variant for both sub-walks), then assemble via y-telescope packager
       have h₁ : binomialEdgeMonomialOrder.IsRemainder
           (monomial d₁ 1 * fij (K := K) a v₀) (groebnerBasisSet G) 0 :=
         ih a v₀ τ₁ d₁ hτ₁_len hav₀ hτ₁_head hτ₁_last hτ₁_nd hτ₁_walk hCov₁
       have h₂ : binomialEdgeMonomialOrder.IsRemainder
           (monomial d₂ 1 * fij (K := K) v₀ b) (groebnerBasisSet G) 0 :=
         ih v₀ b τ₂ d₂ hτ₂_len hv₀b hτ₂_head hτ₂_last hτ₂_nd hτ₂_walk hCov₂
-      -- Algebraic identity and degree bounds
-      have halg : monomial d_q (1 : K) * fij a b =
-          monomial d₁ 1 * fij (K := K) a v₀ + monomial d₂ 1 * fij (K := K) v₀ b := by
-        -- Factor: monomial d_q 1 = monomial (d_q - eyv₀) 1 * monomial eyv₀ 1
-        have hle : eyv₀ ≤ d_q := by
-          unfold BinomialEdgeVars at *; exact Finsupp.single_le_iff.mpr hcov_v₀
-        have hfactor : (monomial d_q (1:K) : MvPolynomial (BinomialEdgeVars V) K) =
-            monomial (d_q - eyv₀) (1:K) * monomial eyv₀ (1:K) := by
-          rw [monomial_mul, one_mul, tsub_add_cancel_of_le hle]
-        -- monomial eyv₀ 1 = y v₀
-        have hyv₀ : (monomial eyv₀ (1:K) : MvPolynomial (BinomialEdgeVars V) K) = y v₀ := rfl
-        -- Apply fij_telescope: y v₀ * fij a b = y b * fij a v₀ + y a * fij v₀ b
-        rw [hfactor, mul_assoc,
-            show monomial eyv₀ (1:K) * fij (K := K) a b = y v₀ * fij a b from by rw [← hyv₀],
-            fij_telescope (K := K) a v₀ b, mul_add, ← mul_assoc, ← mul_assoc]
-        -- Recombine monomials
-        congr 1
-        · congr 1
-          change monomial (d_q - eyv₀) (1:K) * y (K := K) b = monomial d₁ 1
-          change monomial (d_q - eyv₀) (1:K) * monomial eyb (1:K) = monomial d₁ 1
-          rw [monomial_mul, one_mul]
-        · congr 1
-          change monomial (d_q - eyv₀) (1:K) * y (K := K) a = monomial d₂ 1
-          change monomial (d_q - eyv₀) (1:K) * monomial eya (1:K) = monomial d₂ 1
-          rw [monomial_mul, one_mul]
-      -- Degree bounds for isRemainder_add (y-variant)
-      -- The two terms have different degrees (discriminator at inr v₀).
-      have hne_deg : binomialEdgeMonomialOrder.degree (monomial d₁ (1:K) * fij a v₀) ≠
-                     binomialEdgeMonomialOrder.degree (monomial d₂ (1:K) * fij v₀ b) := by
-        classical
-        have hdeg1 : binomialEdgeMonomialOrder.degree (monomial d₁ (1:K) * fij a v₀) =
-            d₁ + (Finsupp.single (Sum.inl a : BinomialEdgeVars V) 1 +
-                   Finsupp.single (Sum.inr v₀ : BinomialEdgeVars V) 1) := by
-          rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero) (fij_ne_zero a v₀ hav₀),
-              degree_monomial, if_neg one_ne_zero, fij_degree a v₀ hav₀]
-        have hdeg2 : binomialEdgeMonomialOrder.degree (monomial d₂ (1:K) * fij v₀ b) =
-            d₂ + (Finsupp.single (Sum.inl v₀ : BinomialEdgeVars V) 1 +
-                   Finsupp.single (Sum.inr b : BinomialEdgeVars V) 1) := by
-          rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero) (fij_ne_zero v₀ b hv₀b),
-              degree_monomial, if_neg one_ne_zero, fij_degree v₀ b hv₀b]
-        -- Show the degree Finsupps differ at Sum.inr v₀:
-        -- M1(inr v₀) = d_q(inr v₀), M2(inr v₀) = d_q(inr v₀) - 1
-        rw [hdeg1, hdeg2]
-        intro heq
-        have hv := Finsupp.ext_iff.mp heq (Sum.inr v₀ : BinomialEdgeVars V)
-        simp only [d₁, d₂, eyv₀, eyb, eya] at hv
-        unfold BinomialEdgeVars at hv
-        simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply,
-          Sum.inr.injEq, reduceCtorEq, ite_true, ite_false,
-          if_neg (ne_of_gt hv₀b), if_neg (ne_of_lt hav₀)] at hv
-        omega
-      obtain ⟨hdeg₁, hdeg₂⟩ := degree_bounds_of_ne _ _ hne_deg
-      rw [halg]
-      exact isRemainder_add _ _ _ h₁ h₂ hdeg₁ hdeg₂
+      exact telescope_step_y_bad (K := K) G hav₀ hv₀b d_q hcov_v₀ h₁ h₂
     · -- No bad vertices: extract admissible path directly
       push_neg at hBad
       have hne_τ : τ ≠ [] := fun h => by simp [h] at hHead
@@ -1427,58 +1475,14 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
             simp only [hd₂_def, hev₀_def, heb_def, Finsupp.add_apply, Finsupp.tsub_apply,
               Finsupp.single_apply, reduceCtorEq, ↓reduceIte]; omega
           rw [hinl, hinr]; exact hCov v hv_τ
-        -- Apply IH to both sub-walks
+        -- Apply IH to both sub-walks, then assemble via x-telescope packager
         have h₁ : binomialEdgeMonomialOrder.IsRemainder
             (monomial d₁ 1 * fij (K := K) v₀ b) (groebnerBasisSet G) 0 :=
           ih v₀ b τ₂ d₁ hτ₂_len hv₀b hτ₂_head hτ₂_last hτ₂_nd hτ₂_walk hCov₂
         have h₂ : binomialEdgeMonomialOrder.IsRemainder
             (monomial d₂ 1 * fij (K := K) a v₀) (groebnerBasisSet G) 0 :=
           ih a v₀ τ₁ d₂ hτ₁_len hav₀ hτ₁_head hτ₁_last hτ₁_nd hτ₁_walk hCov₁
-        -- Algebraic identity
-        have halg : monomial d_q (1 : K) * fij a b =
-            monomial d₁ 1 * fij (K := K) v₀ b + monomial d₂ 1 * fij (K := K) a v₀ := by
-          have hle : ev₀ ≤ d_q := by
-            unfold BinomialEdgeVars at *; exact Finsupp.single_le_iff.mpr hcov_x
-          have hfactor : (monomial d_q (1:K) : MvPolynomial (BinomialEdgeVars V) K) =
-              monomial (d_q - ev₀) (1:K) * monomial ev₀ (1:K) := by
-            rw [monomial_mul, one_mul, tsub_add_cancel_of_le hle]
-          have hxv₀ : (monomial ev₀ (1:K) : MvPolynomial (BinomialEdgeVars V) K) = x v₀ := rfl
-          rw [hfactor, mul_assoc,
-              show monomial ev₀ (1:K) * fij (K := K) a b = x v₀ * fij a b from by rw [← hxv₀],
-              fij_x_telescope (K := K) a v₀ b, mul_add, ← mul_assoc, ← mul_assoc]
-          congr 1
-          · congr 1
-            change monomial (d_q - ev₀) (1:K) * monomial ea (1:K) = monomial d₁ 1
-            rw [monomial_mul, one_mul]
-          · congr 1
-            change monomial (d_q - ev₀) (1:K) * monomial eb (1:K) = monomial d₂ 1
-            rw [monomial_mul, one_mul]
-        -- Degree bounds
-        have hne_deg : binomialEdgeMonomialOrder.degree (monomial d₁ (1:K) * fij v₀ b) ≠
-                       binomialEdgeMonomialOrder.degree (monomial d₂ (1:K) * fij a v₀) := by
-          classical
-          have hdeg1 : binomialEdgeMonomialOrder.degree (monomial d₁ (1:K) * fij v₀ b) =
-              d₁ + (Finsupp.single (Sum.inl v₀ : BinomialEdgeVars V) 1 +
-                     Finsupp.single (Sum.inr b : BinomialEdgeVars V) 1) := by
-            rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero) (fij_ne_zero v₀ b hv₀b),
-                degree_monomial, if_neg one_ne_zero, fij_degree v₀ b hv₀b]
-          have hdeg2 : binomialEdgeMonomialOrder.degree (monomial d₂ (1:K) * fij a v₀) =
-              d₂ + (Finsupp.single (Sum.inl a : BinomialEdgeVars V) 1 +
-                     Finsupp.single (Sum.inr v₀ : BinomialEdgeVars V) 1) := by
-            rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero) (fij_ne_zero a v₀ hav₀),
-                degree_monomial, if_neg one_ne_zero, fij_degree a v₀ hav₀]
-          rw [hdeg1, hdeg2]
-          intro heq
-          have hv := Finsupp.ext_iff.mp heq (Sum.inl v₀ : BinomialEdgeVars V)
-          simp only [d₁, d₂, ev₀, ea, eb] at hv
-          unfold BinomialEdgeVars at hv
-          simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply,
-            Sum.inl.injEq, reduceCtorEq, ite_true, ite_false,
-            if_neg (ne_of_lt hav₀), if_neg (ne_of_lt hv₀b).symm] at hv
-          omega
-        obtain ⟨hdeg₁, hdeg₂⟩ := degree_bounds_of_ne _ _ hne_deg
-        rw [halg]
-        exact isRemainder_add _ _ _ h₁ h₂ hdeg₁ hdeg₂
+        exact telescope_step_x_bad (K := K) G hav₀ hv₀b d_q hcov_x h₁ h₂
       · -- y-telescope at v₀: y_{v₀} * fij a b = y_b * fij a v₀ + y_a * fij v₀ b
         set eyv₀ : BinomialEdgeVars V →₀ ℕ := Finsupp.single (Sum.inr v₀) 1 with heyv₀_def
         set eyb : BinomialEdgeVars V →₀ ℕ := Finsupp.single (Sum.inr b) 1 with heyb_def
@@ -1537,59 +1541,14 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
             simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply, Sum.inr.injEq]
             rw [if_neg (Ne.symm hv_ne_v₀), if_neg (Ne.symm hv_ne_a)]; omega
           rw [hinl, hinr]; exact hCov v hv_τ
-        -- Apply IH (fij_telescope: y v₀ * fij a b = y b * fij a v₀ + y a * fij v₀ b)
+        -- Apply IH for both sub-walks, then assemble via y-telescope packager
         have h₁ : binomialEdgeMonomialOrder.IsRemainder
             (monomial d₁ 1 * fij (K := K) a v₀) (groebnerBasisSet G) 0 :=
           ih a v₀ τ₁ d₁ hτ₁_len hav₀ hτ₁_head hτ₁_last hτ₁_nd hτ₁_walk hCov₁
         have h₂ : binomialEdgeMonomialOrder.IsRemainder
             (monomial d₂ 1 * fij (K := K) v₀ b) (groebnerBasisSet G) 0 :=
           ih v₀ b τ₂ d₂ hτ₂_len hv₀b hτ₂_head hτ₂_last hτ₂_nd hτ₂_walk hCov₂
-        -- Algebraic identity
-        have halg : monomial d_q (1 : K) * fij a b =
-            monomial d₁ 1 * fij (K := K) a v₀ + monomial d₂ 1 * fij (K := K) v₀ b := by
-          have hle : eyv₀ ≤ d_q := by
-            unfold BinomialEdgeVars at *; exact Finsupp.single_le_iff.mpr hcov_y
-          have hfactor : (monomial d_q (1:K) : MvPolynomial (BinomialEdgeVars V) K) =
-              monomial (d_q - eyv₀) (1:K) * monomial eyv₀ (1:K) := by
-            rw [monomial_mul, one_mul, tsub_add_cancel_of_le hle]
-          have hyv₀ : (monomial eyv₀ (1:K) : MvPolynomial (BinomialEdgeVars V) K) = y v₀ := rfl
-          rw [hfactor, mul_assoc,
-              show monomial eyv₀ (1:K) * fij (K := K) a b = y v₀ * fij a b from by rw [← hyv₀],
-              fij_telescope (K := K) a v₀ b, mul_add, ← mul_assoc, ← mul_assoc]
-          congr 1
-          · congr 1
-            change monomial (d_q - eyv₀) (1:K) * monomial eyb (1:K) = monomial d₁ 1
-            rw [monomial_mul, one_mul]
-          · congr 1
-            change monomial (d_q - eyv₀) (1:K) * monomial eya (1:K) = monomial d₂ 1
-            rw [monomial_mul, one_mul]
-        -- Degree bounds
-        have hne_deg : binomialEdgeMonomialOrder.degree (monomial d₁ (1:K) * fij a v₀) ≠
-                       binomialEdgeMonomialOrder.degree (monomial d₂ (1:K) * fij v₀ b) := by
-          classical
-          have hdeg1 : binomialEdgeMonomialOrder.degree (monomial d₁ (1:K) * fij a v₀) =
-              d₁ + (Finsupp.single (Sum.inl a : BinomialEdgeVars V) 1 +
-                     Finsupp.single (Sum.inr v₀ : BinomialEdgeVars V) 1) := by
-            rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero) (fij_ne_zero a v₀ hav₀),
-                degree_monomial, if_neg one_ne_zero, fij_degree a v₀ hav₀]
-          have hdeg2 : binomialEdgeMonomialOrder.degree (monomial d₂ (1:K) * fij v₀ b) =
-              d₂ + (Finsupp.single (Sum.inl v₀ : BinomialEdgeVars V) 1 +
-                     Finsupp.single (Sum.inr b : BinomialEdgeVars V) 1) := by
-            rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero) (fij_ne_zero v₀ b hv₀b),
-                degree_monomial, if_neg one_ne_zero, fij_degree v₀ b hv₀b]
-          rw [hdeg1, hdeg2]
-          intro heq
-          have hv := Finsupp.ext_iff.mp heq (Sum.inr v₀ : BinomialEdgeVars V)
-          simp only [d₁, d₂, eyv₀, eyb, eya] at hv
-          unfold BinomialEdgeVars at hv
-          simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply,
-            Sum.inr.injEq, reduceCtorEq, ite_true, ite_false,
-            if_neg (ne_of_gt hv₀b),
-            if_neg (ne_of_lt hav₀)] at hv
-          omega
-        obtain ⟨hdeg₁, hdeg₂⟩ := degree_bounds_of_ne _ _ hne_deg
-        rw [halg]
-        exact isRemainder_add _ _ _ h₁ h₂ hdeg₁ hdeg₂
+        exact telescope_step_y_bad (K := K) G hav₀ hv₀b d_q hcov_y h₁ h₂
     · -- No bad vertices: all internal vertices satisfy v ≤ a or v ≥ b
       push_neg at hBad
       have hne_τ : τ ≠ [] := fun h => by simp [h] at hHead
@@ -1790,39 +1749,12 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
                 = -(monomial d₂ 1 * fij (K := K) b v₀) := by
               rw [fij_antisymm (K := K) v₀ b, mul_neg]
             rw [this]; exact isRemainder_neg' _ _ h₂_pre
-          -- Algebraic identity
-          have halg : monomial d_q (1 : K) * fij a b =
-              monomial d₁ 1 * fij (K := K) a v₀ +
-              monomial d₂ 1 * fij (K := K) v₀ b := by
-            have hle : eyv₀ ≤ d_q := by
-              unfold BinomialEdgeVars at *
-              exact Finsupp.single_le_iff.mpr hcov_yr
-            have hfactor :
-                (monomial d_q (1:K) :
-                  MvPolynomial (BinomialEdgeVars V) K) =
-                monomial (d_q - eyv₀) (1:K) *
-                monomial eyv₀ (1:K) := by
-              rw [monomial_mul, one_mul,
-                tsub_add_cancel_of_le hle]
-            have hyv₀ :
-                (monomial eyv₀ (1:K) :
-                  MvPolynomial (BinomialEdgeVars V) K) =
-                y v₀ := rfl
-            rw [hfactor, mul_assoc,
-                show monomial eyv₀ (1:K) *
-                  fij (K := K) a b = y v₀ * fij a b
-                  from by rw [← hyv₀],
-                fij_telescope (K := K) a v₀ b,
-                mul_add, ← mul_assoc, ← mul_assoc]
-            congr 1
-            · congr 1
-              change monomial (d_q - eyv₀) (1:K) *
-                monomial eyb (1:K) = monomial d₁ 1
-              rw [monomial_mul, one_mul]
-            · congr 1
-              change monomial (d_q - eyv₀) (1:K) *
-                monomial eya (1:K) = monomial d₂ 1
-              rw [monomial_mul, one_mul]
+          -- Algebraic identity from the y-telescope helper
+          have halg :
+              monomial d_q (1 : K) * fij a b =
+                monomial d₁ 1 * fij (K := K) a v₀ +
+                monomial d₂ 1 * fij (K := K) v₀ b :=
+            y_telescope_monomial_eq (K := K) a v₀ b d_q hcov_yr
           -- Degree bounds
           have hne_deg :
               binomialEdgeMonomialOrder.degree
@@ -2017,40 +1949,12 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
                 := by
               rw [fij_antisymm (K := K) a v₀, mul_neg]
             rw [this]; exact isRemainder_neg' _ _ h₂_pre
-          -- Algebraic identity:
-          -- x_{v₀} * fij(a,b) = x_a * fij(v₀,b) + x_b * fij(a,v₀)
-          have halg : monomial d_q (1 : K) * fij a b =
-              monomial d₁ 1 * fij (K := K) v₀ b +
-              monomial d₂ 1 * fij (K := K) a v₀ := by
-            have hle : ev₀ ≤ d_q := by
-              unfold BinomialEdgeVars at *
-              exact Finsupp.single_le_iff.mpr hcov_xl
-            have hfactor :
-                (monomial d_q (1:K) :
-                  MvPolynomial (BinomialEdgeVars V) K) =
-                monomial (d_q - ev₀) (1:K) *
-                monomial ev₀ (1:K) := by
-              rw [monomial_mul, one_mul,
-                tsub_add_cancel_of_le hle]
-            have hxv₀ :
-                (monomial ev₀ (1:K) :
-                  MvPolynomial (BinomialEdgeVars V) K) =
-                x v₀ := rfl
-            rw [hfactor, mul_assoc,
-                show monomial ev₀ (1:K) *
-                  fij (K := K) a b = x v₀ * fij a b
-                  from by rw [← hxv₀],
-                fij_x_telescope (K := K) a v₀ b,
-                mul_add, ← mul_assoc, ← mul_assoc]
-            congr 1
-            · congr 1
-              change monomial (d_q - ev₀) (1:K) *
-                monomial ea (1:K) = monomial d₁ 1
-              rw [monomial_mul, one_mul]
-            · congr 1
-              change monomial (d_q - ev₀) (1:K) *
-                monomial eb (1:K) = monomial d₂ 1
-              rw [monomial_mul, one_mul]
+          -- Algebraic identity from the x-telescope helper
+          have halg :
+              monomial d_q (1 : K) * fij a b =
+                monomial d₁ 1 * fij (K := K) v₀ b +
+                monomial d₂ 1 * fij (K := K) a v₀ :=
+            x_telescope_monomial_eq (K := K) a v₀ b d_q hcov_xl
           -- Degree bounds: discriminate at Sum.inl v₀
           have hne_deg :
               binomialEdgeMonomialOrder.degree
