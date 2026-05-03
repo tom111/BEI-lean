@@ -537,6 +537,70 @@ private lemma subWalk_take {V : Type*} [DecidableEq V] [LinearOrder V]
   · exact List.IsChain.take hWalk (k + 1)
   · exact fun u hu => internal_of_take τ k a b hne hND hHead hLast hk_lt_pred u hu
 
+/-! ## Internal-vertex / endpoint helpers (used by all `fij` walk theorems) -/
+
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
+private lemma getLast_not_mem_dropLast (l : List V) (hnd : l.Nodup) (hne : l ≠ []) :
+    l.getLast hne ∉ l.dropLast := by
+  rw [← List.dropLast_append_getLast hne] at hnd
+  rw [List.nodup_append] at hnd
+  intro h; exact absurd rfl (hnd.2.2 _ h _ (List.Mem.head []))
+
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
+lemma internal_ne_head {l : List V} (hnd : l.Nodup)
+    {v : V} (hv : v ∈ internalVertices l) (hne : l ≠ []) : v ≠ l.head hne := by
+  simp only [internalVertices] at hv
+  cases l with
+  | nil => exact absurd rfl hne
+  | cons a rest =>
+    simp only [List.tail_cons, List.head_cons] at hv ⊢
+    intro heq; subst heq
+    rw [List.nodup_cons] at hnd
+    exact hnd.1 (List.dropLast_subset rest hv)
+
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
+lemma internal_ne_getLast {l : List V} (hnd : l.Nodup)
+    {v : V} (hv : v ∈ internalVertices l) (hne : l ≠ []) : v ≠ l.getLast hne := by
+  simp only [internalVertices] at hv
+  cases l with
+  | nil => exact absurd rfl hne
+  | cons a rest =>
+    simp only [List.tail_cons] at hv
+    cases rest with
+    | nil => simp at hv
+    | cons b rest' =>
+      simp only [List.getLast_cons (List.cons_ne_nil b rest')]
+      have hnd_rest : (b :: rest').Nodup := by rw [List.nodup_cons] at hnd; exact hnd.2
+      exact fun heq => by subst heq
+                          exact getLast_not_mem_dropLast _ hnd_rest _ hv
+
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
+lemma head_of_head? {l : List V} {a : V} (h : l.head? = some a) :
+    l.head (by intro h'; simp [h'] at h) = a := by
+  cases l with
+  | nil => simp only [List.head?_nil, reduceCtorEq] at h
+  | cons x _ => simp only [List.head?_cons, Option.some.injEq] at h; exact h
+
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
+lemma getLast_of_getLast? {l : List V} {a : V} (h : l.getLast? = some a) :
+    l.getLast (by intro h'; simp [h'] at h) = a := by
+  have hne : l ≠ [] := by intro h'; simp [h'] at h
+  rw [List.getLast?_eq_some_getLast hne] at h; exact Option.some.inj h
+
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
+/-- An internal vertex of a Nodup list is distinct from its head (`head?` form). -/
+lemma ne_head?_of_internal {l : List V} {a v : V} (hnd : l.Nodup)
+    (hHead : l.head? = some a) (hv : v ∈ internalVertices l) : v ≠ a := by
+  have hne : l ≠ [] := by intro h; simp [h, internalVertices] at hv
+  exact (head_of_head? hHead) ▸ internal_ne_head hnd hv hne
+
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
+/-- An internal vertex of a Nodup list is distinct from its last (`getLast?` form). -/
+lemma ne_getLast?_of_internal {l : List V} {b v : V} (hnd : l.Nodup)
+    (hLast : l.getLast? = some b) (hv : v ∈ internalVertices l) : v ≠ b := by
+  have hne : l ≠ [] := by intro h; simp [h, internalVertices] at hv
+  exact (getLast_of_getLast? hLast) ▸ internal_ne_getLast hnd hv hne
+
 /-! ## General IsRemainder lemma for fij via walk decomposition -/
 
 omit [DecidableEq V] [Fintype V] in
@@ -806,13 +870,7 @@ theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
         intro v hv
         have hv_τ := hτ₂_int v hv
         have ⟨hc1, hc2, hc3⟩ := hCov v hv_τ
-        have hv_ne_a : v ≠ a := by
-          intro heq; subst heq
-          have hne_τ : τ ≠ [] := by intro h; simp [h, internalVertices] at hv_τ
-          cases τ with | nil => exact absurd rfl hne_τ | cons w rest =>
-            simp only [List.head?_cons, Option.some.injEq] at hHead; subst hHead
-            simp only [internalVertices, List.tail_cons] at hv_τ
-            exact ((List.nodup_cons.mp hND).1) ((List.dropLast_sublist _).mem hv_τ)
+        have hv_ne_a : v ≠ a := ne_head?_of_internal hND hHead hv_τ
         -- d₁(inr v) = d_q(inr v) since ev₀, ea only affect inl
         have hinr : d₁ (Sum.inr v) = d_q (Sum.inr v) := by
           simp only [hd₁_def, hev₀_def, hea_def, Finsupp.add_apply, Finsupp.tsub_apply]
@@ -845,12 +903,7 @@ theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
         intro v hv
         have hv_τ := hτ₁_int v hv
         have ⟨hc1, hc2, hc3⟩ := hCov v hv_τ
-        have hv_ne_b : v ≠ b := by
-          intro heq; subst heq
-          have hne_τ : τ ≠ [] := by
-            intro h; simp [h, internalVertices] at hv_τ
-          exact (ne_getLast_of_mem_tdl τ hND hne_τ v hv_τ)
-            (Option.some.inj (hLast.symm.trans (List.getLast?_eq_some_getLast hne_τ)))
+        have hv_ne_b : v ≠ b := ne_getLast?_of_internal hND hLast hv_τ
         -- d₂(inr v) = d_q(inr v)
         have hinr : d₂ (Sum.inr v) = d_q (Sum.inr v) := by
           simp only [hd₂_def, hev₀_def, heb_def, Finsupp.add_apply, Finsupp.tsub_apply]
@@ -1052,11 +1105,7 @@ theorem isRemainder_fij_of_covered_walk_y (G : SimpleGraph V) :
         intro v hv
         have hv_τ := hτ₁_int v hv
         have ⟨hc1, hc2, hc3⟩ := hCov v hv_τ
-        have hv_ne_b : v ≠ b := by
-          intro heq; subst heq
-          have hne_τ : τ ≠ [] := by intro h; simp [h, internalVertices] at hv_τ
-          exact (ne_getLast_of_mem_tdl τ hND hne_τ v hv_τ)
-            (Option.some.inj (hLast.symm.trans (List.getLast?_eq_some_getLast hne_τ)))
+        have hv_ne_b : v ≠ b := ne_getLast?_of_internal hND hLast hv_τ
         -- d₁(inl v) = d_q(inl v) since eyv₀, eyb are inr
         have hinl : d₁ (Sum.inl v) = d_q (Sum.inl v) := by
           simp only [hd₁_def, heyv₀_def, heyb_def]
@@ -1087,13 +1136,7 @@ theorem isRemainder_fij_of_covered_walk_y (G : SimpleGraph V) :
         intro v hv
         have hv_τ := hτ₂_int v hv
         have ⟨hc1, hc2, hc3⟩ := hCov v hv_τ
-        have hv_ne_a : v ≠ a := by
-          intro heq; subst heq
-          have hne_τ : τ ≠ [] := by intro h; simp [h, internalVertices] at hv_τ
-          cases τ with | nil => exact absurd rfl hne_τ | cons w rest =>
-            simp only [List.head?_cons, Option.some.injEq] at hHead; subst hHead
-            simp only [internalVertices, List.tail_cons] at hv_τ
-            exact ((List.nodup_cons.mp hND).1) ((List.dropLast_sublist _).mem hv_τ)
+        have hv_ne_a : v ≠ a := ne_head?_of_internal hND hHead hv_τ
         -- d₂(inl v) = d_q(inl v) since eyv₀, eya are inr
         have hinl : d₂ (Sum.inl v) = d_q (Sum.inl v) := by
           simp only [hd₂_def, heyv₀_def, heya_def]
@@ -1310,55 +1353,6 @@ private lemma mem_of_mem_internalVertices {l : List V} {v : V}
     (h : v ∈ internalVertices l) : v ∈ l :=
   (List.tail_sublist l).mem ((List.dropLast_sublist _).mem h)
 
-omit [LinearOrder V] [DecidableEq V] [Fintype V] in
-private lemma getLast_not_mem_dropLast (l : List V) (hnd : l.Nodup) (hne : l ≠ []) :
-    l.getLast hne ∉ l.dropLast := by
-  rw [← List.dropLast_append_getLast hne] at hnd
-  rw [List.nodup_append] at hnd
-  intro h; exact absurd rfl (hnd.2.2 _ h _ (List.Mem.head []))
-
-omit [LinearOrder V] [DecidableEq V] [Fintype V] in
-lemma internal_ne_head {l : List V} (hnd : l.Nodup)
-    {v : V} (hv : v ∈ internalVertices l) (hne : l ≠ []) : v ≠ l.head hne := by
-  simp only [internalVertices] at hv
-  cases l with
-  | nil => exact absurd rfl hne
-  | cons a rest =>
-    simp only [List.tail_cons, List.head_cons] at hv ⊢
-    intro heq; subst heq
-    rw [List.nodup_cons] at hnd
-    exact hnd.1 (List.dropLast_subset rest hv)
-
-omit [LinearOrder V] [DecidableEq V] [Fintype V] in
-lemma internal_ne_getLast {l : List V} (hnd : l.Nodup)
-    {v : V} (hv : v ∈ internalVertices l) (hne : l ≠ []) : v ≠ l.getLast hne := by
-  simp only [internalVertices] at hv
-  cases l with
-  | nil => exact absurd rfl hne
-  | cons a rest =>
-    simp only [List.tail_cons] at hv
-    cases rest with
-    | nil => simp at hv
-    | cons b rest' =>
-      simp only [List.getLast_cons (List.cons_ne_nil b rest')]
-      have hnd_rest : (b :: rest').Nodup := by rw [List.nodup_cons] at hnd; exact hnd.2
-      exact fun heq => by subst heq
-                          exact getLast_not_mem_dropLast _ hnd_rest _ hv
-
--- Head/last from head?/getLast? as plain equalities
-omit [LinearOrder V] [DecidableEq V] [Fintype V] in
-lemma head_of_head? {l : List V} {a : V} (h : l.head? = some a) :
-    l.head (by intro h'; simp [h'] at h) = a := by
-  cases l with
-  | nil => simp only [List.head?_nil, reduceCtorEq] at h
-  | cons x _ => simp only [List.head?_cons, Option.some.injEq] at h; exact h
-
-omit [LinearOrder V] [DecidableEq V] [Fintype V] in
-lemma getLast_of_getLast? {l : List V} {a : V} (h : l.getLast? = some a) :
-    l.getLast (by intro h'; simp [h'] at h) = a := by
-  have hne : l ≠ [] := by intro h'; simp [h'] at h
-  rw [List.getLast?_eq_some_getLast hne] at h; exact Option.some.inj h
-
 -- v ∈ l, v ≠ head, v ≠ getLast → v ∈ internalVertices l
 omit [LinearOrder V] [DecidableEq V] [Fintype V] in
 lemma mem_internalVertices_of_ne {l : List V} {v : V}
@@ -1426,18 +1420,8 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
             d₁ (Sum.inl v) ≥ 1 ∨ d₁ (Sum.inr v) ≥ 1 := by
           intro v hv
           have hv_τ := hτ₂_int v hv
-          have hv_ne_a : v ≠ a := by
-            intro heq; subst heq
-            have hne_τ : τ ≠ [] := by intro h; simp [h, internalVertices] at hv_τ
-            cases τ with | nil => exact absurd rfl hne_τ | cons w rest =>
-              simp only [List.head?_cons, Option.some.injEq] at hHead; subst hHead
-              simp only [internalVertices, List.tail_cons] at hv_τ
-              exact ((List.nodup_cons.mp hND).1) ((List.dropLast_sublist _).mem hv_τ)
-          have hv_ne_v₀ : v ≠ v₀ := by
-            intro heq; subst heq
-            -- v₀ is head of τ₂, so v₀ ∉ internalVertices τ₂
-            have hne_τ₂ : τ₂ ≠ [] := by intro h; simp [h, internalVertices] at hv
-            exact internal_ne_head hτ₂_nd hv hne_τ₂ (head_of_head? hτ₂_head).symm
+          have hv_ne_a : v ≠ a := ne_head?_of_internal hND hHead hv_τ
+          have hv_ne_v₀ : v ≠ v₀ := ne_head?_of_internal hτ₂_nd hτ₂_head hv
           -- d₁(inl v) = d_q(inl v) since v ≠ v₀ and v ≠ a
           have hinl : d₁ (Sum.inl v) = d_q (Sum.inl v) := by
             simp only [hd₁_def, hev₀_def, hea_def]
@@ -1454,16 +1438,8 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
             d₂ (Sum.inl v) ≥ 1 ∨ d₂ (Sum.inr v) ≥ 1 := by
           intro v hv
           have hv_τ := hτ₁_int v hv
-          have hv_ne_b : v ≠ b := by
-            intro heq; subst heq
-            have hne_τ : τ ≠ [] := by intro h; simp [h, internalVertices] at hv_τ
-            exact (ne_getLast_of_mem_tdl τ hND hne_τ v hv_τ)
-              (Option.some.inj (hLast.symm.trans (List.getLast?_eq_some_getLast hne_τ)))
-          have hv_ne_v₀ : v ≠ v₀ := by
-            intro heq; subst heq
-            -- v₀ is last of τ₁, so v₀ ∉ internalVertices τ₁
-            have hne_τ₁ : τ₁ ≠ [] := by intro h; simp [h, internalVertices] at hv
-            exact internal_ne_getLast hτ₁_nd hv hne_τ₁ (getLast_of_getLast? hτ₁_last).symm
+          have hv_ne_b : v ≠ b := ne_getLast?_of_internal hND hLast hv_τ
+          have hv_ne_v₀ : v ≠ v₀ := ne_getLast?_of_internal hτ₁_nd hτ₁_last hv
           -- d₂(inl v) = d_q(inl v) since v ≠ v₀ and v ≠ b
           have hinl : d₂ (Sum.inl v) = d_q (Sum.inl v) := by
             simp only [hd₂_def, hev₀_def, heb_def]
@@ -1494,15 +1470,8 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
             d₁ (Sum.inl v) ≥ 1 ∨ d₁ (Sum.inr v) ≥ 1 := by
           intro v hv
           have hv_τ := hτ₁_int v hv
-          have hv_ne_b : v ≠ b := by
-            intro heq; subst heq
-            have hne_τ : τ ≠ [] := by intro h; simp [h, internalVertices] at hv_τ
-            exact (ne_getLast_of_mem_tdl τ hND hne_τ v hv_τ)
-              (Option.some.inj (hLast.symm.trans (List.getLast?_eq_some_getLast hne_τ)))
-          have hv_ne_v₀ : v ≠ v₀ := by
-            intro heq; subst heq
-            have hne_τ₁ : τ₁ ≠ [] := by intro h; simp [h, internalVertices] at hv
-            exact internal_ne_getLast hτ₁_nd hv hne_τ₁ (getLast_of_getLast? hτ₁_last).symm
+          have hv_ne_b : v ≠ b := ne_getLast?_of_internal hND hLast hv_τ
+          have hv_ne_v₀ : v ≠ v₀ := ne_getLast?_of_internal hτ₁_nd hτ₁_last hv
           -- d₁(inl v) = d_q(inl v) since eyv₀, eyb are at inr
           have hinl : d₁ (Sum.inl v) = d_q (Sum.inl v) := by
             simp only [hd₁_def, heyv₀_def, heyb_def, Finsupp.add_apply, Finsupp.tsub_apply,
@@ -1519,17 +1488,8 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
             d₂ (Sum.inl v) ≥ 1 ∨ d₂ (Sum.inr v) ≥ 1 := by
           intro v hv
           have hv_τ := hτ₂_int v hv
-          have hv_ne_a : v ≠ a := by
-            intro heq; subst heq
-            have hne_τ : τ ≠ [] := by intro h; simp [h, internalVertices] at hv_τ
-            cases τ with | nil => exact absurd rfl hne_τ | cons w rest =>
-              simp only [List.head?_cons, Option.some.injEq] at hHead; subst hHead
-              simp only [internalVertices, List.tail_cons] at hv_τ
-              exact ((List.nodup_cons.mp hND).1) ((List.dropLast_sublist _).mem hv_τ)
-          have hv_ne_v₀ : v ≠ v₀ := by
-            intro heq; subst heq
-            have hne_τ₂ : τ₂ ≠ [] := by intro h; simp [h, internalVertices] at hv
-            exact internal_ne_head hτ₂_nd hv hne_τ₂ (head_of_head? hτ₂_head).symm
+          have hv_ne_a : v ≠ a := ne_head?_of_internal hND hHead hv_τ
+          have hv_ne_v₀ : v ≠ v₀ := ne_head?_of_internal hτ₂_nd hτ₂_head hv
           -- d₂(inl v) = d_q(inl v) since eyv₀, eya are at inr
           have hinl : d₂ (Sum.inl v) = d_q (Sum.inl v) := by
             simp only [hd₂_def, heyv₀_def, heya_def, Finsupp.add_apply, Finsupp.tsub_apply,
@@ -1643,75 +1603,33 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
               d₁ (Sum.inl v) ≥ 1 ∨ d₁ (Sum.inr v) ≥ 1 := by
             intro v hv
             have hv_τ := hτ₁_int v hv
-            have hv_ne_b : v ≠ b := by
-              intro heq; subst heq
-              have hne_τ : τ ≠ [] := by
-                intro h; simp [h, internalVertices] at hv_τ
-              exact (ne_getLast_of_mem_tdl τ hND hne_τ v
-                hv_τ) (Option.some.inj (hLast.symm.trans
-                  (List.getLast?_eq_some_getLast hne_τ)))
-            have hv_ne_v₀ : v ≠ v₀ := by
-              intro heq; subst heq
-              have hne : τ₁ ≠ [] := by
-                intro h; simp [h, internalVertices] at hv
-              exact internal_ne_getLast hτ₁_nd hv hne
-                (getLast_of_getLast? hτ₁_last).symm
-            have hinl : d₁ (Sum.inl v) =
-                d_q (Sum.inl v) := by
-              simp only [hd₁_def, heyv₀_def, heyb_def,
-                Finsupp.add_apply, Finsupp.tsub_apply,
-                Finsupp.single_apply, reduceCtorEq,
-                ↓reduceIte]; omega
-            have hinr : d₁ (Sum.inr v) =
-                d_q (Sum.inr v) := by
+            have hv_ne_b : v ≠ b := ne_getLast?_of_internal hND hLast hv_τ
+            have hv_ne_v₀ : v ≠ v₀ := ne_getLast?_of_internal hτ₁_nd hτ₁_last hv
+            have hinl : d₁ (Sum.inl v) = d_q (Sum.inl v) := by
+              simp only [hd₁_def, heyv₀_def, heyb_def, Finsupp.add_apply, Finsupp.tsub_apply,
+                Finsupp.single_apply, reduceCtorEq, ↓reduceIte]; omega
+            have hinr : d₁ (Sum.inr v) = d_q (Sum.inr v) := by
               simp only [hd₁_def, heyv₀_def, heyb_def]
               unfold BinomialEdgeVars at *
-              simp only [Finsupp.add_apply,
-                Finsupp.tsub_apply, Finsupp.single_apply,
-                Sum.inr.injEq]
-              rw [if_neg (Ne.symm hv_ne_v₀),
-                if_neg (Ne.symm hv_ne_b)]; omega
+              simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply, Sum.inr.injEq]
+              rw [if_neg (Ne.symm hv_ne_v₀), if_neg (Ne.symm hv_ne_b)]; omega
             rw [hinl, hinr]; exact hCov v hv_τ
           -- Coverage for τ₂.reverse (b → v₀): disjunctive
-          -- Internal vertices of τ₂.reverse = internal of τ₂
           have hCov₂ : ∀ v ∈ internalVertices τ₂.reverse,
               d₂ (Sum.inl v) ≥ 1 ∨ d₂ (Sum.inr v) ≥ 1 := by
             intro v hv
             have hv_int := mem_internalVertices_reverse hv
             have hv_τ := hτ₂_int v hv_int
-            have hv_ne_a : v ≠ a := by
-              intro heq; subst heq
-              have hne_τ : τ ≠ [] := by
-                intro h; simp [h, internalVertices] at hv_τ
-              cases τ with
-              | nil => exact absurd rfl hne_τ
-              | cons w rest =>
-                simp only [List.head?_cons, Option.some.injEq] at hHead; subst hHead
-                simp only [internalVertices,
-                  List.tail_cons] at hv_τ
-                exact ((List.nodup_cons.mp hND).1)
-                  ((List.dropLast_sublist _).mem hv_τ)
-            have hv_ne_v₀ : v ≠ v₀ := by
-              intro heq; subst heq
-              have hne : τ₂ ≠ [] := by
-                intro h; simp [h, internalVertices] at hv_int
-              exact internal_ne_head hτ₂_nd hv_int hne
-                (head_of_head? hτ₂_head).symm
-            have hinl : d₂ (Sum.inl v) =
-                d_q (Sum.inl v) := by
-              simp only [hd₂_def, heyv₀_def, heya_def,
-                Finsupp.add_apply, Finsupp.tsub_apply,
-                Finsupp.single_apply, reduceCtorEq,
-                ↓reduceIte]; omega
-            have hinr : d₂ (Sum.inr v) =
-                d_q (Sum.inr v) := by
+            have hv_ne_a : v ≠ a := ne_head?_of_internal hND hHead hv_τ
+            have hv_ne_v₀ : v ≠ v₀ := ne_head?_of_internal hτ₂_nd hτ₂_head hv_int
+            have hinl : d₂ (Sum.inl v) = d_q (Sum.inl v) := by
+              simp only [hd₂_def, heyv₀_def, heya_def, Finsupp.add_apply, Finsupp.tsub_apply,
+                Finsupp.single_apply, reduceCtorEq, ↓reduceIte]; omega
+            have hinr : d₂ (Sum.inr v) = d_q (Sum.inr v) := by
               simp only [hd₂_def, heyv₀_def, heya_def]
               unfold BinomialEdgeVars at *
-              simp only [Finsupp.add_apply,
-                Finsupp.tsub_apply, Finsupp.single_apply,
-                Sum.inr.injEq]
-              rw [if_neg (Ne.symm hv_ne_v₀),
-                if_neg (Ne.symm hv_ne_a)]; omega
+              simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply, Sum.inr.injEq]
+              rw [if_neg (Ne.symm hv_ne_v₀), if_neg (Ne.symm hv_ne_a)]; omega
             rw [hinl, hinr]; exact hCov v hv_τ
           -- Apply IH
           have h₁ : binomialEdgeMonomialOrder.IsRemainder
@@ -1842,39 +1760,16 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
               d₁ (Sum.inl v) ≥ 1 ∨ d₁ (Sum.inr v) ≥ 1 := by
             intro v hv
             have hv_τ := hτ₂_int v hv
-            have hv_ne_a : v ≠ a := by
-              intro heq; subst heq
-              have hne_τ : τ ≠ [] := by
-                intro h; simp [h, internalVertices] at hv_τ
-              cases τ with
-              | nil => exact absurd rfl hne_τ
-              | cons w rest =>
-                simp only [List.head?_cons, Option.some.injEq] at hHead; subst hHead
-                simp only [internalVertices,
-                  List.tail_cons] at hv_τ
-                exact ((List.nodup_cons.mp hND).1)
-                  ((List.dropLast_sublist _).mem hv_τ)
-            have hv_ne_v₀ : v ≠ v₀ := by
-              intro heq; subst heq
-              have hne : τ₂ ≠ [] := by
-                intro h; simp [h, internalVertices] at hv
-              exact internal_ne_head hτ₂_nd hv hne
-                (head_of_head? hτ₂_head).symm
-            have hinl : d₁ (Sum.inl v) =
-                d_q (Sum.inl v) := by
+            have hv_ne_a : v ≠ a := ne_head?_of_internal hND hHead hv_τ
+            have hv_ne_v₀ : v ≠ v₀ := ne_head?_of_internal hτ₂_nd hτ₂_head hv
+            have hinl : d₁ (Sum.inl v) = d_q (Sum.inl v) := by
               simp only [hd₁_def, hev₀_def, hea_def]
               unfold BinomialEdgeVars at *
-              simp only [Finsupp.add_apply,
-                Finsupp.tsub_apply, Finsupp.single_apply,
-                Sum.inl.injEq]
-              rw [if_neg (Ne.symm hv_ne_v₀),
-                if_neg (Ne.symm hv_ne_a)]; omega
-            have hinr : d₁ (Sum.inr v) =
-                d_q (Sum.inr v) := by
-              simp only [hd₁_def, hev₀_def, hea_def,
-                Finsupp.add_apply, Finsupp.tsub_apply,
-                Finsupp.single_apply, reduceCtorEq,
-                ↓reduceIte]; omega
+              simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply, Sum.inl.injEq]
+              rw [if_neg (Ne.symm hv_ne_v₀), if_neg (Ne.symm hv_ne_a)]; omega
+            have hinr : d₁ (Sum.inr v) = d_q (Sum.inr v) := by
+              simp only [hd₁_def, hev₀_def, hea_def, Finsupp.add_apply, Finsupp.tsub_apply,
+                Finsupp.single_apply, reduceCtorEq, ↓reduceIte]; omega
             rw [hinl, hinr]; exact hCov v hv_τ
           -- Coverage for τ₁.reverse (v₀ → a): disjunctive
           have hCov₁ : ∀ v ∈ internalVertices τ₁.reverse,
@@ -1882,34 +1777,16 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
             intro v hv
             have hv_int := mem_internalVertices_reverse hv
             have hv_τ := hτ₁_int v hv_int
-            have hv_ne_b : v ≠ b := by
-              intro heq; subst heq
-              have hne_τ : τ ≠ [] := by
-                intro h; simp [h, internalVertices] at hv_τ
-              exact (ne_getLast_of_mem_tdl τ hND hne_τ v
-                hv_τ) (Option.some.inj (hLast.symm.trans
-                  (List.getLast?_eq_some_getLast hne_τ)))
-            have hv_ne_v₀ : v ≠ v₀ := by
-              intro heq; subst heq
-              have hne : τ₁ ≠ [] := by
-                intro h; simp [h, internalVertices] at hv_int
-              exact internal_ne_getLast hτ₁_nd hv_int hne
-                (getLast_of_getLast? hτ₁_last).symm
-            have hinl : d₂ (Sum.inl v) =
-                d_q (Sum.inl v) := by
+            have hv_ne_b : v ≠ b := ne_getLast?_of_internal hND hLast hv_τ
+            have hv_ne_v₀ : v ≠ v₀ := ne_getLast?_of_internal hτ₁_nd hτ₁_last hv_int
+            have hinl : d₂ (Sum.inl v) = d_q (Sum.inl v) := by
               simp only [hd₂_def, hev₀_def, heb_def]
               unfold BinomialEdgeVars at *
-              simp only [Finsupp.add_apply,
-                Finsupp.tsub_apply, Finsupp.single_apply,
-                Sum.inl.injEq]
-              rw [if_neg (Ne.symm hv_ne_v₀),
-                if_neg (Ne.symm hv_ne_b)]; omega
-            have hinr : d₂ (Sum.inr v) =
-                d_q (Sum.inr v) := by
-              simp only [hd₂_def, hev₀_def, heb_def,
-                Finsupp.add_apply, Finsupp.tsub_apply,
-                Finsupp.single_apply, reduceCtorEq,
-                ↓reduceIte]; omega
+              simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply, Sum.inl.injEq]
+              rw [if_neg (Ne.symm hv_ne_v₀), if_neg (Ne.symm hv_ne_b)]; omega
+            have hinr : d₂ (Sum.inr v) = d_q (Sum.inr v) := by
+              simp only [hd₂_def, hev₀_def, heb_def, Finsupp.add_apply, Finsupp.tsub_apply,
+                Finsupp.single_apply, reduceCtorEq, ↓reduceIte]; omega
             rw [hinl, hinr]; exact hCov v hv_τ
           -- IH for fij(v₀, b) via τ₂
           have h₁ : binomialEdgeMonomialOrder.IsRemainder
