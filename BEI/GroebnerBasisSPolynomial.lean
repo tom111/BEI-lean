@@ -139,6 +139,50 @@ private lemma not_last_of_internal' (ρ : List V) (a b : V)
       rw [← this] at hnd_rest
       exact (List.nodup_append.mp hnd_rest).2.2 _ (hb_last ▸ hv_dp) _ (List.Mem.head _) rfl
 
+/-- Degree of `monomial Q 1 * fij a b` is `Q + Finsupp.single (Sum.inl a) 1 +
+Finsupp.single (Sum.inr b) 1`. Used inside `theorem_2_1` to eliminate repeated
+6-line calculations of leading-monomial degrees. -/
+private lemma degree_monomial_mul_fij {a b : V} (hab : a < b)
+    (Q : BinomialEdgeVars V →₀ ℕ) :
+    binomialEdgeMonomialOrder.degree (monomial Q (1 : K) * fij (K := K) a b) =
+      Q + (Finsupp.single (Sum.inl a : BinomialEdgeVars V) 1 +
+           Finsupp.single (Sum.inr b : BinomialEdgeVars V) 1) := by
+  classical
+  rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero)
+    (fij_ne_zero (K := K) a b hab),
+    degree_monomial, if_neg one_ne_zero, fij_degree a b hab]
+
+omit [DecidableEq V] [Fintype V] in
+/-- Coverage helper for `theorem_2_1`'s mixed-walk leaves. Given an admissible path
+`π` from `i` to `j`, a vertex `w ∈ π` distinct from both endpoints, and a target
+exponent `Q` dominating `dπ` at `Sum.inl w` and `Sum.inr w`, the disjunctive lower
+bound `Q (Sum.inl w) ≥ 1 ∨ Q (Sum.inr w) ≥ 1` holds. The path's vertex
+classification (`v = i ∨ v = j ∨ v < i ∨ j < v`) selects which side is bounded. -/
+private lemma cov_inr_or_inl_of_admissible_path
+    (G : SimpleGraph V) (i j : V) (π : List V)
+    (hπ : IsAdmissiblePath G i j π)
+    (hπ_int_nd : (internalVertices π).Nodup)
+    {dπ : BinomialEdgeVars V →₀ ℕ}
+    (hdπ : pathMonomial (K := K) i j π = monomial dπ 1)
+    {Q : BinomialEdgeVars V →₀ ℕ}
+    {w : V} (hw_π : w ∈ π) (hw_ne_i : w ≠ i) (hw_ne_j : w ≠ j)
+    (hQ_ge_dπ_inr : Q (Sum.inr w) ≥ dπ (Sum.inr w))
+    (hQ_ge_dπ_inl : Q (Sum.inl w) ≥ dπ (Sum.inl w)) :
+    Q (Sum.inl w) ≥ 1 ∨ Q (Sum.inr w) ≥ 1 := by
+  have hw_int_π : w ∈ internalVertices π :=
+    mem_internalVertices_of_ne hπ.2.2.2.1 hw_π (List.ne_nil_of_mem hw_π)
+      (by rwa [head_of_head? hπ.2.1])
+      (by rwa [getLast_of_getLast? hπ.2.2.1])
+  rcases hπ.2.2.2.2.1 w hw_π with hw_eq | hw_eq | hwi | hjw
+  · exact absurd hw_eq hw_ne_i
+  · exact absurd hw_eq hw_ne_j
+  · right
+    have := pathMonomial_exponent_inr_one (K := K) i j π w hw_int_π hwi hπ_int_nd dπ hdπ
+    omega
+  · left
+    have := pathMonomial_exponent_inl_one (K := K) i j π w hw_int_π hjw hπ_int_nd dπ hdπ
+    omega
+
 omit [DecidableEq V] in
 theorem theorem_2_1 (G : SimpleGraph V) :
     binomialEdgeMonomialOrder.IsGroebnerBasis
@@ -744,61 +788,28 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                 · have hw_π : w ∈ π := List.mem_reverse.mp
                     ((List.drop_sublist _ _).mem
                       ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_πR)))
-                  have hw_int_π : w ∈ internalVertices π :=
-                    mem_internalVertices_of_ne hπ.2.2.2.1 hw_π (List.ne_nil_of_mem hw_π)
-                      (by rwa [head_of_head? hπ.2.1])
-                      (by rwa [getLast_of_getLast? hπ.2.2.1])
-                  rcases hπ.2.2.2.2.1 w hw_π with hw_eq | hw_eq | hwi | hjw
-                  · exact absurd hw_eq hw_ne_i
-                  · exact absurd hw_eq hw_eq_j
-                  · right
-                    have := pathMonomial_exponent_inr_one (K := K) i j π w hw_int_π
-                      hwi hπ_int_nd dπ hdπ
-                    exact le_trans (by omega) (le_trans
-                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₁_ge_D _))
-                  · left
-                    have := pathMonomial_exponent_inl_one (K := K) i j π w hw_int_π
-                      hjw hπ_int_nd dπ hdπ
-                    exact le_trans (by omega) (le_trans
-                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₁_ge_D _))
+                  exact cov_inr_or_inl_of_admissible_path G i j π hπ hπ_int_nd hdπ
+                    hw_π hw_ne_i hw_eq_j
+                    (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1
+                      (hQ₁_ge_D _))
+                    (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1
+                      (hQ₁_ge_D _))
                 · have hw_σ : w ∈ σ := List.mem_reverse.mp
                     ((List.drop_sublist _ _).mem
                       ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_σR)))
-                  have hw_int_σ : w ∈ internalVertices σ :=
-                    mem_internalVertices_of_ne hσ.2.2.2.1 hw_σ (List.ne_nil_of_mem hw_σ)
-                      (by rwa [head_of_head? hσ.2.1])
-                      (by rwa [getLast_of_getLast? hσ.2.2.1])
-                  rcases hσ.2.2.2.2.1 w hw_σ with hw_eq | hw_eq | hwk | hlw
-                  · exact absurd hw_eq hw_ne_k
-                  · exact absurd hw_eq hw_eq_l
-                  · right
-                    have := pathMonomial_exponent_inr_one (K := K) k l σ w hw_int_σ
-                      hwk hσ_int_nd dσ hdσ
-                    exact le_trans (by omega) (le_trans
-                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2 (hQ₁_ge_D _))
-                  · left
-                    have := pathMonomial_exponent_inl_one (K := K) k l σ w hw_int_σ
-                      hlw hσ_int_nd dσ hdσ
-                    exact le_trans (by omega) (le_trans
-                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2 (hQ₁_ge_D _))
+                  exact cov_inr_or_inl_of_admissible_path G k l σ hσ hσ_int_nd hdσ
+                    hw_σ hw_ne_k hw_eq_l
+                    (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2
+                      (hQ₁_ge_D _))
+                    (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2
+                      (hQ₁_ge_D _))
                 · subst hw_eq_v
-                  have hv_int_π : w ∈ internalVertices π :=
-                    mem_internalVertices_of_ne hπ.2.2.2.1 hv_π (List.ne_nil_of_mem hv_π)
-                      (by rwa [head_of_head? hπ.2.1])
-                      (by rwa [getLast_of_getLast? hπ.2.2.1])
-                  rcases hπ.2.2.2.2.1 w hv_π with hw_eq | hw_eq | hwi | hjw
-                  · exact absurd hw_eq hw_ne_i
-                  · exact absurd hw_eq hw_eq_j
-                  · right
-                    have := pathMonomial_exponent_inr_one (K := K) i j π w hv_int_π
-                      hwi hπ_int_nd dπ hdπ
-                    exact le_trans (by omega) (le_trans
-                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₁_ge_D _))
-                  · left
-                    have := pathMonomial_exponent_inl_one (K := K) i j π w hv_int_π
-                      hjw hπ_int_nd dπ hdπ
-                    exact le_trans (by omega) (le_trans
-                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₁_ge_D _)))
+                  exact cov_inr_or_inl_of_admissible_path G i j π hπ hπ_int_nd hdπ
+                    hv_π hw_ne_i hw_eq_j
+                    (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1
+                      (hQ₁_ge_D _))
+                    (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1
+                      (hQ₁_ge_D _)))
         -- Now handle fij(j, l)
         rcases lt_or_gt_of_ne heq_j with hjl | hlj
         · -- j < l
@@ -846,61 +857,28 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                   · have hw_π : w ∈ π :=
                       (List.drop_sublist _ _).mem
                         ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_πD))
-                    have hw_int_π : w ∈ internalVertices π :=
-                      mem_internalVertices_of_ne hπ.2.2.2.1 hw_π (List.ne_nil_of_mem hw_π)
-                        (by rwa [head_of_head? hπ.2.1])
-                        (by rwa [getLast_of_getLast? hπ.2.2.1])
-                    rcases hπ.2.2.2.2.1 w hw_π with hw_eq | hw_eq | hwi | hjw
-                    · exact absurd hw_eq hw_eq_i
-                    · exact absurd hw_eq hw_ne_j
-                    · right
-                      have := pathMonomial_exponent_inr_one (K := K) i j π w hw_int_π
-                        hwi hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₂_ge_D _))
-                    · left
-                      have := pathMonomial_exponent_inl_one (K := K) i j π w hw_int_π
-                        hjw hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₂_ge_D _))
+                    exact cov_inr_or_inl_of_admissible_path G i j π hπ hπ_int_nd hdπ
+                      hw_π hw_eq_i hw_ne_j
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1
+                        (hQ₂_ge_D _))
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1
+                        (hQ₂_ge_D _))
                   · have hw_σ : w ∈ σ :=
                       (List.drop_sublist _ _).mem
                         ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_σD))
-                    have hw_int_σ : w ∈ internalVertices σ :=
-                      mem_internalVertices_of_ne hσ.2.2.2.1 hw_σ (List.ne_nil_of_mem hw_σ)
-                        (by rwa [head_of_head? hσ.2.1])
-                        (by rwa [getLast_of_getLast? hσ.2.2.1])
-                    rcases hσ.2.2.2.2.1 w hw_σ with hw_eq | hw_eq | hwk | hlw
-                    · exact absurd hw_eq hw_eq_k
-                    · exact absurd hw_eq hw_ne_l
-                    · right
-                      have := pathMonomial_exponent_inr_one (K := K) k l σ w hw_int_σ
-                        hwk hσ_int_nd dσ hdσ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2 (hQ₂_ge_D _))
-                    · left
-                      have := pathMonomial_exponent_inl_one (K := K) k l σ w hw_int_σ
-                        hlw hσ_int_nd dσ hdσ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2 (hQ₂_ge_D _))
+                    exact cov_inr_or_inl_of_admissible_path G k l σ hσ hσ_int_nd hdσ
+                      hw_σ hw_eq_k hw_ne_l
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2
+                        (hQ₂_ge_D _))
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2
+                        (hQ₂_ge_D _))
                   · subst hw_eq_v
-                    have hv_int_π : w ∈ internalVertices π :=
-                      mem_internalVertices_of_ne hπ.2.2.2.1 hv_π (List.ne_nil_of_mem hv_π)
-                        (by rwa [head_of_head? hπ.2.1])
-                        (by rwa [getLast_of_getLast? hπ.2.2.1])
-                    rcases hπ.2.2.2.2.1 w hv_π with hw_eq | hw_eq | hwi | hjw
-                    · exact absurd hw_eq hw_eq_i
-                    · exact absurd hw_eq hw_ne_j
-                    · right
-                      have := pathMonomial_exponent_inr_one (K := K) i j π w hv_int_π
-                        hwi hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₂_ge_D _))
-                    · left
-                      have := pathMonomial_exponent_inl_one (K := K) i j π w hv_int_π
-                        hjw hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₂_ge_D _)))
+                    exact cov_inr_or_inl_of_admissible_path G i j π hπ hπ_int_nd hdπ
+                      hv_π hw_eq_i hw_ne_j
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1
+                        (hQ₂_ge_D _))
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1
+                        (hQ₂_ge_D _)))
           have h₂' : binomialEdgeMonomialOrder.IsRemainder
               (-(monomial Q₂ 1 * fij (K := K) j l)) (groebnerBasisSet G) 0 :=
             isRemainder_neg' _ _ h₂
@@ -918,18 +896,6 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                 binomialEdgeMonomialOrder.degree (-(monomial Q₂ 1 * fij (K := K) j l)) := by
               rw [MonomialOrder.degree_neg]; intro heq'
               classical
-              have hdeg₁ : binomialEdgeMonomialOrder.degree (monomial Q₁ (1 : K) * fij i k) =
-                  Q₁ + (Finsupp.single (Sum.inl i : BinomialEdgeVars V) 1 +
-                        Finsupp.single (Sum.inr k : BinomialEdgeVars V) 1) := by
-                rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero)
-                  (fij_ne_zero (K := K) i k hik),
-                  degree_monomial, if_neg one_ne_zero, fij_degree i k hik]
-              have hdeg₂ : binomialEdgeMonomialOrder.degree (monomial Q₂ (1 : K) * fij j l) =
-                  Q₂ + (Finsupp.single (Sum.inl j : BinomialEdgeVars V) 1 +
-                        Finsupp.single (Sum.inr l : BinomialEdgeVars V) 1) := by
-                rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero)
-                  (fij_ne_zero (K := K) j l hjl),
-                  degree_monomial, if_neg one_ne_zero, fij_degree j l hjl]
               -- Evaluate at Sum.inl i to derive contradiction
               have ev₁ : (Q₁ + (Finsupp.single (Sum.inl i : BinomialEdgeVars V) 1 +
                   Finsupp.single (Sum.inr k : BinomialEdgeVars V) 1 : BinomialEdgeVars V →₀ ℕ))
@@ -944,7 +910,8 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                     fun h => (ne_of_lt hij) (Sum.inl.inj h).symm,
                   Sum.inr_ne_inl, ite_false, add_zero]
               have h_eval := Finsupp.ext_iff.mp heq' (Sum.inl i : BinomialEdgeVars V)
-              rw [hdeg₁, hdeg₂, ev₁, ev₂] at h_eval
+              rw [degree_monomial_mul_fij (K := K) hik Q₁,
+                  degree_monomial_mul_fij (K := K) hjl Q₂, ev₁, ev₂] at h_eval
               have hQ₁_ge : Q₁ (Sum.inl i) ≥ D (Sum.inl i) := by
                 unfold BinomialEdgeVars at Q₁ hQ₁_def ⊢
                 simp only [hQ₁_def, Finsupp.add_apply, Finsupp.single_apply]; omega
@@ -1013,61 +980,28 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                   · have hw_π : w ∈ π := List.mem_reverse.mp
                       ((List.drop_sublist _ _).mem
                         ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_πR)))
-                    have hw_int_π : w ∈ internalVertices π :=
-                      mem_internalVertices_of_ne hπ.2.2.2.1 hw_π (List.ne_nil_of_mem hw_π)
-                        (by rwa [head_of_head? hπ.2.1])
-                        (by rwa [getLast_of_getLast? hπ.2.2.1])
-                    rcases hπ.2.2.2.2.1 w hw_π with hw_eq | hw_eq | hwi | hjw
-                    · exact absurd hw_eq hw_ne_i
-                    · exact absurd hw_eq hw_eq_j
-                    · right
-                      have := pathMonomial_exponent_inr_one (K := K) i j π w hw_int_π
-                        hwi hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₁_ge_D _))
-                    · left
-                      have := pathMonomial_exponent_inl_one (K := K) i j π w hw_int_π
-                        hjw hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₁_ge_D _))
+                    exact cov_inr_or_inl_of_admissible_path G i j π hπ hπ_int_nd hdπ
+                      hw_π hw_ne_i hw_eq_j
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1
+                        (hQ₁_ge_D _))
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1
+                        (hQ₁_ge_D _))
                   · have hw_σ : w ∈ σ := List.mem_reverse.mp
                       ((List.drop_sublist _ _).mem
                         ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_σR)))
-                    have hw_int_σ : w ∈ internalVertices σ :=
-                      mem_internalVertices_of_ne hσ.2.2.2.1 hw_σ (List.ne_nil_of_mem hw_σ)
-                        (by rwa [head_of_head? hσ.2.1])
-                        (by rwa [getLast_of_getLast? hσ.2.2.1])
-                    rcases hσ.2.2.2.2.1 w hw_σ with hw_eq | hw_eq | hwk | hlw
-                    · exact absurd hw_eq hw_ne_k
-                    · exact absurd hw_eq hw_eq_l
-                    · right
-                      have := pathMonomial_exponent_inr_one (K := K) k l σ w hw_int_σ
-                        hwk hσ_int_nd dσ hdσ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2 (hQ₁_ge_D _))
-                    · left
-                      have := pathMonomial_exponent_inl_one (K := K) k l σ w hw_int_σ
-                        hlw hσ_int_nd dσ hdσ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2 (hQ₁_ge_D _))
+                    exact cov_inr_or_inl_of_admissible_path G k l σ hσ hσ_int_nd hdσ
+                      hw_σ hw_ne_k hw_eq_l
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2
+                        (hQ₁_ge_D _))
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2
+                        (hQ₁_ge_D _))
                   · subst hw_eq_v
-                    have hv_int_π : w ∈ internalVertices π :=
-                      mem_internalVertices_of_ne hπ.2.2.2.1 hv_π (List.ne_nil_of_mem hv_π)
-                        (by rwa [head_of_head? hπ.2.1])
-                        (by rwa [getLast_of_getLast? hπ.2.2.1])
-                    rcases hπ.2.2.2.2.1 w hv_π with hw_eq | hw_eq | hwi | hjw
-                    · exact absurd hw_eq hw_ne_i
-                    · exact absurd hw_eq hw_eq_j
-                    · right
-                      have := pathMonomial_exponent_inr_one (K := K) i j π w hv_int_π
-                        hwi hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₁_ge_D _))
-                    · left
-                      have := pathMonomial_exponent_inl_one (K := K) i j π w hv_int_π
-                        hjw hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₁_ge_D _)))
+                    exact cov_inr_or_inl_of_admissible_path G i j π hπ hπ_int_nd hdπ
+                      hv_π hw_ne_i hw_eq_j
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1
+                        (hQ₁_ge_D _))
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1
+                        (hQ₁_ge_D _)))
           -- h₂ for fij(l,j) with l < j
           have h₂ : binomialEdgeMonomialOrder.IsRemainder
               (monomial Q₂ 1 * fij (K := K) l j) (groebnerBasisSet G) 0 := by
@@ -1123,61 +1057,28 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                   · have hw_π : w ∈ π :=
                       (List.drop_sublist _ _).mem
                         ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_πD))
-                    have hw_int_π : w ∈ internalVertices π :=
-                      mem_internalVertices_of_ne hπ.2.2.2.1 hw_π (List.ne_nil_of_mem hw_π)
-                        (by rwa [head_of_head? hπ.2.1])
-                        (by rwa [getLast_of_getLast? hπ.2.2.1])
-                    rcases hπ.2.2.2.2.1 w hw_π with hw_eq | hw_eq | hwi | hjw
-                    · exact absurd hw_eq hw_eq_i
-                    · exact absurd hw_eq hw_ne_j
-                    · right
-                      have := pathMonomial_exponent_inr_one (K := K) i j π w hw_int_π
-                        hwi hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₂_ge_D _))
-                    · left
-                      have := pathMonomial_exponent_inl_one (K := K) i j π w hw_int_π
-                        hjw hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₂_ge_D _))
+                    exact cov_inr_or_inl_of_admissible_path G i j π hπ hπ_int_nd hdπ
+                      hw_π hw_eq_i hw_ne_j
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1
+                        (hQ₂_ge_D _))
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1
+                        (hQ₂_ge_D _))
                   · have hw_σ : w ∈ σ :=
                       (List.drop_sublist _ _).mem
                         ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_σD))
-                    have hw_int_σ : w ∈ internalVertices σ :=
-                      mem_internalVertices_of_ne hσ.2.2.2.1 hw_σ (List.ne_nil_of_mem hw_σ)
-                        (by rwa [head_of_head? hσ.2.1])
-                        (by rwa [getLast_of_getLast? hσ.2.2.1])
-                    rcases hσ.2.2.2.2.1 w hw_σ with hw_eq | hw_eq | hwk | hlw
-                    · exact absurd hw_eq hw_eq_k
-                    · exact absurd hw_eq hw_ne_l
-                    · right
-                      have := pathMonomial_exponent_inr_one (K := K) k l σ w hw_int_σ
-                        hwk hσ_int_nd dσ hdσ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2 (hQ₂_ge_D _))
-                    · left
-                      have := pathMonomial_exponent_inl_one (K := K) k l σ w hw_int_σ
-                        hlw hσ_int_nd dσ hdσ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2 (hQ₂_ge_D _))
+                    exact cov_inr_or_inl_of_admissible_path G k l σ hσ hσ_int_nd hdσ
+                      hw_σ hw_eq_k hw_ne_l
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2
+                        (hQ₂_ge_D _))
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2
+                        (hQ₂_ge_D _))
                   · subst hw_eq_v
-                    have hv_int_π : w ∈ internalVertices π :=
-                      mem_internalVertices_of_ne hπ.2.2.2.1 hv_π (List.ne_nil_of_mem hv_π)
-                        (by rwa [head_of_head? hπ.2.1])
-                        (by rwa [getLast_of_getLast? hπ.2.2.1])
-                    rcases hπ.2.2.2.2.1 w hv_π with hw_eq | hw_eq | hwi | hjw
-                    · exact absurd hw_eq hw_eq_i
-                    · exact absurd hw_eq hw_ne_j
-                    · right
-                      have := pathMonomial_exponent_inr_one (K := K) i j π w hv_int_π
-                        hwi hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₂_ge_D _))
-                    · left
-                      have := pathMonomial_exponent_inl_one (K := K) i j π w hv_int_π
-                        hjw hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₂_ge_D _)))
+                    exact cov_inr_or_inl_of_admissible_path G i j π hπ hπ_int_nd hdπ
+                      hv_π hw_eq_i hw_ne_j
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1
+                        (hQ₂_ge_D _))
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1
+                        (hQ₂_ge_D _)))
           -- Algebraic equalities
           have hQ₁_eq : monomial D (1 : K) * x l * y j = monomial Q₁ 1 := by
             simp only [x, y, X]; rw [monomial_mul, one_mul, monomial_mul, one_mul]
@@ -1191,19 +1092,9 @@ theorem theorem_2_1 (G : SimpleGraph V) :
             have hdeg_ne : binomialEdgeMonomialOrder.degree (monomial Q₁ 1 * fij (K := K) i k) ≠
                 binomialEdgeMonomialOrder.degree (monomial Q₂ 1 * fij (K := K) l j) := by
               classical
-              have hdeg₁ : binomialEdgeMonomialOrder.degree (monomial Q₁ (1 : K) * fij i k) =
-                  Q₁ + (Finsupp.single (Sum.inl i : BinomialEdgeVars V) 1 +
-                        Finsupp.single (Sum.inr k : BinomialEdgeVars V) 1) := by
-                rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero)
-                  (fij_ne_zero (K := K) i k hik),
-                  degree_monomial, if_neg one_ne_zero, fij_degree i k hik]
-              have hdeg₂ : binomialEdgeMonomialOrder.degree (monomial Q₂ (1 : K) * fij l j) =
-                  Q₂ + (Finsupp.single (Sum.inl l : BinomialEdgeVars V) 1 +
-                        Finsupp.single (Sum.inr j : BinomialEdgeVars V) 1) := by
-                rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero)
-                  (fij_ne_zero (K := K) l j hlj),
-                  degree_monomial, if_neg one_ne_zero, fij_degree l j hlj]
-              rw [hdeg₁, hdeg₂]; intro heq'
+              rw [degree_monomial_mul_fij (K := K) hik Q₁,
+                  degree_monomial_mul_fij (K := K) hlj Q₂]
+              intro heq'
               have h_eval := Finsupp.ext_iff.mp heq' (Sum.inl i : BinomialEdgeVars V)
               have ev₁ : (Q₁ + (Finsupp.single (Sum.inl i : BinomialEdgeVars V) 1 +
                   Finsupp.single (Sum.inr k : BinomialEdgeVars V) 1 : BinomialEdgeVars V →₀ ℕ))
@@ -1315,61 +1206,28 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                 · have hw_π : w ∈ π := List.mem_reverse.mp
                     ((List.drop_sublist _ _).mem
                       ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_πR)))
-                  have hw_int_π : w ∈ internalVertices π :=
-                    mem_internalVertices_of_ne hπ.2.2.2.1 hw_π (List.ne_nil_of_mem hw_π)
-                      (by rwa [head_of_head? hπ.2.1])
-                      (by rwa [getLast_of_getLast? hπ.2.2.1])
-                  rcases hπ.2.2.2.2.1 w hw_π with hw_eq | hw_eq | hwi | hjw
-                  · exact absurd hw_eq hw_ne_i
-                  · exact absurd hw_eq hw_eq_j
-                  · right
-                    have := pathMonomial_exponent_inr_one (K := K) i j π w hw_int_π
-                      hwi hπ_int_nd dπ hdπ
-                    exact le_trans (by omega) (le_trans
-                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₁_ge_D _))
-                  · left
-                    have := pathMonomial_exponent_inl_one (K := K) i j π w hw_int_π
-                      hjw hπ_int_nd dπ hdπ
-                    exact le_trans (by omega) (le_trans
-                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₁_ge_D _))
+                  exact cov_inr_or_inl_of_admissible_path G i j π hπ hπ_int_nd hdπ
+                    hw_π hw_ne_i hw_eq_j
+                    (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1
+                      (hQ₁_ge_D _))
+                    (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1
+                      (hQ₁_ge_D _))
                 · have hw_σ : w ∈ σ := List.mem_reverse.mp
                     ((List.drop_sublist _ _).mem
                       ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_σR)))
-                  have hw_int_σ : w ∈ internalVertices σ :=
-                    mem_internalVertices_of_ne hσ.2.2.2.1 hw_σ (List.ne_nil_of_mem hw_σ)
-                      (by rwa [head_of_head? hσ.2.1])
-                      (by rwa [getLast_of_getLast? hσ.2.2.1])
-                  rcases hσ.2.2.2.2.1 w hw_σ with hw_eq | hw_eq | hwk | hlw
-                  · exact absurd hw_eq hw_ne_k
-                  · exact absurd hw_eq hw_eq_l
-                  · right
-                    have := pathMonomial_exponent_inr_one (K := K) k l σ w hw_int_σ
-                      hwk hσ_int_nd dσ hdσ
-                    exact le_trans (by omega) (le_trans
-                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2 (hQ₁_ge_D _))
-                  · left
-                    have := pathMonomial_exponent_inl_one (K := K) k l σ w hw_int_σ
-                      hlw hσ_int_nd dσ hdσ
-                    exact le_trans (by omega) (le_trans
-                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2 (hQ₁_ge_D _))
+                  exact cov_inr_or_inl_of_admissible_path G k l σ hσ hσ_int_nd hdσ
+                    hw_σ hw_ne_k hw_eq_l
+                    (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2
+                      (hQ₁_ge_D _))
+                    (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2
+                      (hQ₁_ge_D _))
                 · subst hw_eq_v
-                  have hv_int_π : w ∈ internalVertices π :=
-                    mem_internalVertices_of_ne hπ.2.2.2.1 hv_π (List.ne_nil_of_mem hv_π)
-                      (by rwa [head_of_head? hπ.2.1])
-                      (by rwa [getLast_of_getLast? hπ.2.2.1])
-                  rcases hπ.2.2.2.2.1 w hv_π with hw_eq | hw_eq | hwi | hjw
-                  · exact absurd hw_eq hw_ne_i
-                  · exact absurd hw_eq hw_eq_j
-                  · right
-                    have := pathMonomial_exponent_inr_one (K := K) i j π w hv_int_π
-                      hwi hπ_int_nd dπ hdπ
-                    exact le_trans (by omega) (le_trans
-                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₁_ge_D _))
-                  · left
-                    have := pathMonomial_exponent_inl_one (K := K) i j π w hv_int_π
-                      hjw hπ_int_nd dπ hdπ
-                    exact le_trans (by omega) (le_trans
-                      (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₁_ge_D _)))
+                  exact cov_inr_or_inl_of_admissible_path G i j π hπ hπ_int_nd hdπ
+                    hv_π hw_ne_i hw_eq_j
+                    (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1
+                      (hQ₁_ge_D _))
+                    (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1
+                      (hQ₁_ge_D _)))
         -- Now handle fij(l, j) or fij(j, l)
         rcases lt_or_gt_of_ne heq_j with hjl | hlj
         · -- j < l: fij(l, j) = -(fij(j, l)), subtraction becomes addition
@@ -1417,61 +1275,28 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                   · have hw_π : w ∈ π :=
                       (List.drop_sublist _ _).mem
                         ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_πD))
-                    have hw_int_π : w ∈ internalVertices π :=
-                      mem_internalVertices_of_ne hπ.2.2.2.1 hw_π (List.ne_nil_of_mem hw_π)
-                        (by rwa [head_of_head? hπ.2.1])
-                        (by rwa [getLast_of_getLast? hπ.2.2.1])
-                    rcases hπ.2.2.2.2.1 w hw_π with hw_eq | hw_eq | hwi | hjw
-                    · exact absurd hw_eq hw_eq_i
-                    · exact absurd hw_eq hw_ne_j
-                    · right
-                      have := pathMonomial_exponent_inr_one (K := K) i j π w hw_int_π
-                        hwi hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₂_ge_D _))
-                    · left
-                      have := pathMonomial_exponent_inl_one (K := K) i j π w hw_int_π
-                        hjw hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₂_ge_D _))
+                    exact cov_inr_or_inl_of_admissible_path G i j π hπ hπ_int_nd hdπ
+                      hw_π hw_eq_i hw_ne_j
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1
+                        (hQ₂_ge_D _))
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1
+                        (hQ₂_ge_D _))
                   · have hw_σ : w ∈ σ :=
                       (List.drop_sublist _ _).mem
                         ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_σD))
-                    have hw_int_σ : w ∈ internalVertices σ :=
-                      mem_internalVertices_of_ne hσ.2.2.2.1 hw_σ (List.ne_nil_of_mem hw_σ)
-                        (by rwa [head_of_head? hσ.2.1])
-                        (by rwa [getLast_of_getLast? hσ.2.2.1])
-                    rcases hσ.2.2.2.2.1 w hw_σ with hw_eq | hw_eq | hwk | hlw
-                    · exact absurd hw_eq hw_eq_k
-                    · exact absurd hw_eq hw_ne_l
-                    · right
-                      have := pathMonomial_exponent_inr_one (K := K) k l σ w hw_int_σ
-                        hwk hσ_int_nd dσ hdσ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2 (hQ₂_ge_D _))
-                    · left
-                      have := pathMonomial_exponent_inl_one (K := K) k l σ w hw_int_σ
-                        hlw hσ_int_nd dσ hdσ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2 (hQ₂_ge_D _))
+                    exact cov_inr_or_inl_of_admissible_path G k l σ hσ hσ_int_nd hdσ
+                      hw_σ hw_eq_k hw_ne_l
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2
+                        (hQ₂_ge_D _))
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2
+                        (hQ₂_ge_D _))
                   · subst hw_eq_v
-                    have hv_int_π : w ∈ internalVertices π :=
-                      mem_internalVertices_of_ne hπ.2.2.2.1 hv_π (List.ne_nil_of_mem hv_π)
-                        (by rwa [head_of_head? hπ.2.1])
-                        (by rwa [getLast_of_getLast? hπ.2.2.1])
-                    rcases hπ.2.2.2.2.1 w hv_π with hw_eq | hw_eq | hwi | hjw
-                    · exact absurd hw_eq hw_eq_i
-                    · exact absurd hw_eq hw_ne_j
-                    · right
-                      have := pathMonomial_exponent_inr_one (K := K) i j π w hv_int_π
-                        hwi hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hQ₂_ge_D _))
-                    · left
-                      have := pathMonomial_exponent_inl_one (K := K) i j π w hv_int_π
-                        hjw hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hQ₂_ge_D _)))
+                    exact cov_inr_or_inl_of_admissible_path G i j π hπ hπ_int_nd hdπ
+                      hv_π hw_eq_i hw_ne_j
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1
+                        (hQ₂_ge_D _))
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1
+                        (hQ₂_ge_D _)))
           -- Algebraic equalities
           have hQ₁_eq : monomial D (1 : K) * x l * y j = monomial Q₁ 1 := by
             simp only [x, y, X]; rw [monomial_mul, one_mul, monomial_mul, one_mul]
@@ -1487,19 +1312,9 @@ theorem theorem_2_1 (G : SimpleGraph V) :
             have hdeg_ne : binomialEdgeMonomialOrder.degree (monomial Q₁ 1 * fij (K := K) k i) ≠
                 binomialEdgeMonomialOrder.degree (monomial Q₂ 1 * fij (K := K) j l) := by
               classical
-              have hdeg₁ : binomialEdgeMonomialOrder.degree (monomial Q₁ (1 : K) * fij k i) =
-                  Q₁ + (Finsupp.single (Sum.inl k : BinomialEdgeVars V) 1 +
-                        Finsupp.single (Sum.inr i : BinomialEdgeVars V) 1) := by
-                rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero)
-                  (fij_ne_zero (K := K) k i hki),
-                  degree_monomial, if_neg one_ne_zero, fij_degree k i hki]
-              have hdeg₂ : binomialEdgeMonomialOrder.degree (monomial Q₂ (1 : K) * fij j l) =
-                  Q₂ + (Finsupp.single (Sum.inl j : BinomialEdgeVars V) 1 +
-                        Finsupp.single (Sum.inr l : BinomialEdgeVars V) 1) := by
-                rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero)
-                  (fij_ne_zero (K := K) j l hjl),
-                  degree_monomial, if_neg one_ne_zero, fij_degree j l hjl]
-              rw [hdeg₁, hdeg₂]; intro heq'
+              rw [degree_monomial_mul_fij (K := K) hki Q₁,
+                  degree_monomial_mul_fij (K := K) hjl Q₂]
+              intro heq'
               -- Evaluate at Sum.inl l to derive contradiction
               have h_eval := Finsupp.ext_iff.mp heq' (Sum.inl l : BinomialEdgeVars V)
               have ev₁ : (Q₁ + (Finsupp.single (Sum.inl k : BinomialEdgeVars V) 1 +
@@ -1606,61 +1421,28 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                   · have hw_π : w ∈ π := List.mem_reverse.mp
                       ((List.drop_sublist _ _).mem
                         ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_πR)))
-                    have hw_int_π : w ∈ internalVertices π :=
-                      mem_internalVertices_of_ne hπ.2.2.2.1 hw_π (List.ne_nil_of_mem hw_π)
-                        (by rwa [head_of_head? hπ.2.1])
-                        (by rwa [getLast_of_getLast? hπ.2.2.1])
-                    rcases hπ.2.2.2.2.1 w hw_π with hw_eq | hw_eq | hwi | hjw
-                    · exact absurd hw_eq hw_ne_i
-                    · exact absurd hw_eq hw_eq_j
-                    · right
-                      have := pathMonomial_exponent_inr_one (K := K) i j π w hw_int_π
-                        hwi hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hR₁_ge_D _))
-                    · left
-                      have := pathMonomial_exponent_inl_one (K := K) i j π w hw_int_π
-                        hjw hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hR₁_ge_D _))
+                    exact cov_inr_or_inl_of_admissible_path G i j π hπ hπ_int_nd hdπ
+                      hw_π hw_ne_i hw_eq_j
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1
+                        (hR₁_ge_D _))
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1
+                        (hR₁_ge_D _))
                   · have hw_σ : w ∈ σ := List.mem_reverse.mp
                       ((List.drop_sublist _ _).mem
                         ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_σR)))
-                    have hw_int_σ : w ∈ internalVertices σ :=
-                      mem_internalVertices_of_ne hσ.2.2.2.1 hw_σ (List.ne_nil_of_mem hw_σ)
-                        (by rwa [head_of_head? hσ.2.1])
-                        (by rwa [getLast_of_getLast? hσ.2.2.1])
-                    rcases hσ.2.2.2.2.1 w hw_σ with hw_eq | hw_eq | hwk | hlw
-                    · exact absurd hw_eq hw_ne_k
-                    · exact absurd hw_eq hw_eq_l
-                    · right
-                      have := pathMonomial_exponent_inr_one (K := K) k l σ w hw_int_σ
-                        hwk hσ_int_nd dσ hdσ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2 (hR₁_ge_D _))
-                    · left
-                      have := pathMonomial_exponent_inl_one (K := K) k l σ w hw_int_σ
-                        hlw hσ_int_nd dσ hdσ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2 (hR₁_ge_D _))
+                    exact cov_inr_or_inl_of_admissible_path G k l σ hσ hσ_int_nd hdσ
+                      hw_σ hw_ne_k hw_eq_l
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2
+                        (hR₁_ge_D _))
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2
+                        (hR₁_ge_D _))
                   · subst hw_eq_v
-                    have hv_int_π : w ∈ internalVertices π :=
-                      mem_internalVertices_of_ne hπ.2.2.2.1 hv_π (List.ne_nil_of_mem hv_π)
-                        (by rwa [head_of_head? hπ.2.1])
-                        (by rwa [getLast_of_getLast? hπ.2.2.1])
-                    rcases hπ.2.2.2.2.1 w hv_π with hw_eq | hw_eq | hwi | hjw
-                    · exact absurd hw_eq hw_ne_i
-                    · exact absurd hw_eq hw_eq_j
-                    · right
-                      have := pathMonomial_exponent_inr_one (K := K) i j π w hv_int_π
-                        hwi hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hR₁_ge_D _))
-                    · left
-                      have := pathMonomial_exponent_inl_one (K := K) i j π w hv_int_π
-                        hjw hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hR₁_ge_D _)))
+                    exact cov_inr_or_inl_of_admissible_path G i j π hπ hπ_int_nd hdπ
+                      hv_π hw_ne_i hw_eq_j
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1
+                        (hR₁_ge_D _))
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1
+                        (hR₁_ge_D _)))
           have h₂R : binomialEdgeMonomialOrder.IsRemainder
               (monomial R₂ 1 * fij (K := K) l j) (groebnerBasisSet G) 0 := by
             have hπ_int_nd : (internalVertices π).Nodup :=
@@ -1715,61 +1497,28 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                   · have hw_π : w ∈ π :=
                       (List.drop_sublist _ _).mem
                         ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_πD))
-                    have hw_int_π : w ∈ internalVertices π :=
-                      mem_internalVertices_of_ne hπ.2.2.2.1 hw_π (List.ne_nil_of_mem hw_π)
-                        (by rwa [head_of_head? hπ.2.1])
-                        (by rwa [getLast_of_getLast? hπ.2.2.1])
-                    rcases hπ.2.2.2.2.1 w hw_π with hw_eq | hw_eq | hwi | hjw
-                    · exact absurd hw_eq hw_eq_i
-                    · exact absurd hw_eq hw_ne_j
-                    · right
-                      have := pathMonomial_exponent_inr_one (K := K) i j π w hw_int_π
-                        hwi hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hR₂_ge_D _))
-                    · left
-                      have := pathMonomial_exponent_inl_one (K := K) i j π w hw_int_π
-                        hjw hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hR₂_ge_D _))
+                    exact cov_inr_or_inl_of_admissible_path G i j π hπ hπ_int_nd hdπ
+                      hw_π hw_eq_i hw_ne_j
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1
+                        (hR₂_ge_D _))
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1
+                        (hR₂_ge_D _))
                   · have hw_σ : w ∈ σ :=
                       (List.drop_sublist _ _).mem
                         ((List.tail_sublist _).mem ((List.dropLast_sublist _).mem hw_σD))
-                    have hw_int_σ : w ∈ internalVertices σ :=
-                      mem_internalVertices_of_ne hσ.2.2.2.1 hw_σ (List.ne_nil_of_mem hw_σ)
-                        (by rwa [head_of_head? hσ.2.1])
-                        (by rwa [getLast_of_getLast? hσ.2.2.1])
-                    rcases hσ.2.2.2.2.1 w hw_σ with hw_eq | hw_eq | hwk | hlw
-                    · exact absurd hw_eq hw_eq_k
-                    · exact absurd hw_eq hw_ne_l
-                    · right
-                      have := pathMonomial_exponent_inr_one (K := K) k l σ w hw_int_σ
-                        hwk hσ_int_nd dσ hdσ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2 (hR₂_ge_D _))
-                    · left
-                      have := pathMonomial_exponent_inl_one (K := K) k l σ w hw_int_σ
-                        hlw hσ_int_nd dσ hdσ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2 (hR₂_ge_D _))
+                    exact cov_inr_or_inl_of_admissible_path G k l σ hσ hσ_int_nd hdσ
+                      hw_σ hw_eq_k hw_ne_l
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).2
+                        (hR₂_ge_D _))
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).2
+                        (hR₂_ge_D _))
                   · subst hw_eq_v
-                    have hv_int_π : w ∈ internalVertices π :=
-                      mem_internalVertices_of_ne hπ.2.2.2.1 hv_π (List.ne_nil_of_mem hv_π)
-                        (by rwa [head_of_head? hπ.2.1])
-                        (by rwa [getLast_of_getLast? hπ.2.2.1])
-                    rcases hπ.2.2.2.2.1 w hv_π with hw_eq | hw_eq | hwi | hjw
-                    · exact absurd hw_eq hw_eq_i
-                    · exact absurd hw_eq hw_ne_j
-                    · right
-                      have := pathMonomial_exponent_inr_one (K := K) i j π w hv_int_π
-                        hwi hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1 (hR₂_ge_D _))
-                    · left
-                      have := pathMonomial_exponent_inl_one (K := K) i j π w hv_int_π
-                        hjw hπ_int_nd dπ hdπ
-                      exact le_trans (by omega) (le_trans
-                        (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1 (hR₂_ge_D _)))
+                    exact cov_inr_or_inl_of_admissible_path G i j π hπ hπ_int_nd hdπ
+                      hv_π hw_eq_i hw_ne_j
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inr0 hfkl_inr0).1
+                        (hR₂_ge_D _))
+                      (le_trans (sPolyD_ge_of_zero dπ dσ _ _ _ hfij_inl0 hfkl_inl0).1
+                        (hR₂_ge_D _)))
           have h₂R' : binomialEdgeMonomialOrder.IsRemainder
               (-(monomial R₂ 1 * fij (K := K) l j)) (groebnerBasisSet G) 0 :=
             isRemainder_neg' _ _ h₂R
@@ -1787,20 +1536,9 @@ theorem theorem_2_1 (G : SimpleGraph V) :
                 binomialEdgeMonomialOrder.degree (-(monomial R₂ 1 * fij (K := K) l j)) := by
               rw [MonomialOrder.degree_neg]; intro heq'
               classical
-              have hdeg₁ : binomialEdgeMonomialOrder.degree (monomial R₁ (1 : K) * fij k i) =
-                  R₁ + (Finsupp.single (Sum.inl k : BinomialEdgeVars V) 1 +
-                        Finsupp.single (Sum.inr i : BinomialEdgeVars V) 1) := by
-                rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero)
-                  (fij_ne_zero (K := K) k i hki),
-                  degree_monomial, if_neg one_ne_zero, fij_degree k i hki]
-              have hdeg₂ : binomialEdgeMonomialOrder.degree (monomial R₂ (1 : K) * fij l j) =
-                  R₂ + (Finsupp.single (Sum.inl l : BinomialEdgeVars V) 1 +
-                        Finsupp.single (Sum.inr j : BinomialEdgeVars V) 1) := by
-                rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero)
-                  (fij_ne_zero (K := K) l j hlj),
-                  degree_monomial, if_neg one_ne_zero, fij_degree l j hlj]
               -- Evaluate at Sum.inl k to derive contradiction
-              rw [hdeg₁, hdeg₂] at heq'
+              rw [degree_monomial_mul_fij (K := K) hki R₁,
+                  degree_monomial_mul_fij (K := K) hlj R₂] at heq'
               have h_eval := Finsupp.ext_iff.mp heq' (Sum.inl k : BinomialEdgeVars V)
               have ev₁ : (R₁ + (Finsupp.single (Sum.inl k : BinomialEdgeVars V) 1 +
                   Finsupp.single (Sum.inr i : BinomialEdgeVars V) 1 : BinomialEdgeVars V →₀ ℕ))
@@ -1937,21 +1675,10 @@ theorem theorem_2_1 (G : SimpleGraph V) :
             binomialEdgeMonomialOrder.degree (-(monomial Q₂ 1 * fij (K := K) k l)) := by
           rw [MonomialOrder.degree_neg]; intro heq'
           classical
-          have hdeg₁ : binomialEdgeMonomialOrder.degree (monomial Q₁ (1 : K) * fij i j) =
-              Q₁ + (Finsupp.single (Sum.inl i : BinomialEdgeVars V) 1 +
-                    Finsupp.single (Sum.inr j : BinomialEdgeVars V) 1) := by
-            rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero)
-              (fij_ne_zero (K := K) i j hij),
-              degree_monomial, if_neg one_ne_zero, fij_degree i j hij]
-          have hdeg₂ : binomialEdgeMonomialOrder.degree (monomial Q₂ (1 : K) * fij k l) =
-              Q₂ + (Finsupp.single (Sum.inl k : BinomialEdgeVars V) 1 +
-                    Finsupp.single (Sum.inr l : BinomialEdgeVars V) 1) := by
-            rw [degree_mul (monomial_eq_zero.not.mpr one_ne_zero)
-              (fij_ne_zero (K := K) k l hkl),
-              degree_monomial, if_neg one_ne_zero, fij_degree k l hkl]
           -- Evaluate degrees at Sum.inl i to get contradiction
           have h1 := Finsupp.ext_iff.mp heq' (Sum.inl i : BinomialEdgeVars V)
-          rw [hdeg₁, hdeg₂] at h1
+          rw [degree_monomial_mul_fij (K := K) hij Q₁,
+              degree_monomial_mul_fij (K := K) hkl Q₂] at h1
           have hne_ki : (Sum.inl k : BinomialEdgeVars V) ≠ Sum.inl i :=
             fun h => heq_i (Sum.inl.inj h).symm
           have hne_ji : (Sum.inl j : BinomialEdgeVars V) ≠ Sum.inl i :=
