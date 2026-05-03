@@ -539,6 +539,58 @@ private lemma subWalk_take {V : Type*} [DecidableEq V] [LinearOrder V]
 
 /-! ## General IsRemainder lemma for fij via walk decomposition -/
 
+omit [DecidableEq V] [Fintype V] in
+/-- Pick the minimum bad vertex of `τ`: an internal vertex `v₀` with `a < v₀ < b` that is
+minimal among such vertices. Used in the bad-vertex telescope branch of
+`isRemainder_fij_of_covered_walk` and `isRemainder_fij_of_mixed_walk`. -/
+private lemma exists_min_bad_vertex {τ : List V} {a b : V}
+    (hBad : ∃ v ∈ internalVertices τ, a < v ∧ v < b) :
+    ∃ v₀ ∈ internalVertices τ, a < v₀ ∧ v₀ < b ∧
+      ∀ w ∈ internalVertices τ, a < w → w < b → v₀ ≤ w := by
+  obtain ⟨v₀_raw, hv₀_raw_int, hav₀_raw, hv₀_rawb⟩ := hBad
+  have hBadSet : ((internalVertices τ).filter
+      (fun v => decide (a < v) && decide (v < b))).toFinset.Nonempty :=
+    ⟨v₀_raw, List.mem_toFinset.mpr
+      (List.mem_filter.mpr ⟨hv₀_raw_int, by simp [hav₀_raw, hv₀_rawb]⟩)⟩
+  set v₀ := ((internalVertices τ).filter
+      (fun v => decide (a < v) && decide (v < b))).toFinset.min' hBadSet
+  have hv₀_filt : v₀ ∈ (internalVertices τ).filter
+      (fun v => decide (a < v) && decide (v < b)) :=
+    List.mem_toFinset.mp (Finset.min'_mem _ _)
+  have hv₀_int : v₀ ∈ internalVertices τ := (List.mem_filter.mp hv₀_filt).1
+  have hflag := (List.mem_filter.mp hv₀_filt).2
+  simp only [Bool.and_eq_true, decide_eq_true_eq] at hflag
+  refine ⟨v₀, hv₀_int, hflag.1, hflag.2, ?_⟩
+  intro w hw haw hwb
+  exact Finset.min'_le _ _ (List.mem_toFinset.mpr
+    (List.mem_filter.mpr ⟨hw, by simp [haw, hwb]⟩))
+
+omit [DecidableEq V] [Fintype V] in
+/-- Pick the maximum bad vertex of `τ`: an internal vertex `v₀` with `a < v₀ < b` that is
+maximal among such vertices. Used in the bad-vertex telescope branch of
+`isRemainder_fij_of_covered_walk_y`. -/
+private lemma exists_max_bad_vertex {τ : List V} {a b : V}
+    (hBad : ∃ v ∈ internalVertices τ, a < v ∧ v < b) :
+    ∃ v₀ ∈ internalVertices τ, a < v₀ ∧ v₀ < b ∧
+      ∀ w ∈ internalVertices τ, a < w → w < b → w ≤ v₀ := by
+  obtain ⟨v₀_raw, hv₀_raw_int, hav₀_raw, hv₀_rawb⟩ := hBad
+  have hBadSet : ((internalVertices τ).filter
+      (fun v => decide (a < v) && decide (v < b))).toFinset.Nonempty :=
+    ⟨v₀_raw, List.mem_toFinset.mpr
+      (List.mem_filter.mpr ⟨hv₀_raw_int, by simp [hav₀_raw, hv₀_rawb]⟩)⟩
+  set v₀ := ((internalVertices τ).filter
+      (fun v => decide (a < v) && decide (v < b))).toFinset.max' hBadSet
+  have hv₀_filt : v₀ ∈ (internalVertices τ).filter
+      (fun v => decide (a < v) && decide (v < b)) :=
+    List.mem_toFinset.mp (Finset.max'_mem _ _)
+  have hv₀_int : v₀ ∈ internalVertices τ := (List.mem_filter.mp hv₀_filt).1
+  have hflag := (List.mem_filter.mp hv₀_filt).2
+  simp only [Bool.and_eq_true, decide_eq_true_eq] at hflag
+  refine ⟨v₀, hv₀_int, hflag.1, hflag.2, ?_⟩
+  intro w hw haw hwb
+  exact Finset.le_max' _ _ (List.mem_toFinset.mpr
+    (List.mem_filter.mpr ⟨hw, by simp [haw, hwb]⟩))
+
 omit [DecidableEq V] in
 /-- **Core lemma**: If there is a nodup walk `τ` from `a` to `b` in `G`,
 and the monomial `q = monomial d_q 1` "covers" every internal vertex of
@@ -573,33 +625,7 @@ theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
     intro a b τ d_q hlen hab hHead hLast hND hWalk hCov
     by_cases hBad : ∃ v ∈ internalVertices τ, a < v ∧ v < b
     · -- Bad vertex case: telescope split at minimum v₀ ∈ (a, b)
-      -- Choose v₀ as the minimum bad vertex for coverage transfer
-      obtain ⟨v₀_raw, hv₀_raw_int, hav₀_raw, hv₀_rawb⟩ := hBad
-      have hBadSet :
-          ((internalVertices τ).filter
-            (fun v => decide (a < v) && decide (v < b))).toFinset.Nonempty := by
-        refine ⟨v₀_raw, List.mem_toFinset.mpr
-          (List.mem_filter.mpr ⟨hv₀_raw_int, by simp [hav₀_raw, hv₀_rawb]⟩)⟩
-      set v₀ := ((internalVertices τ).filter
-        (fun v => decide (a < v) && decide (v < b))).toFinset.min' hBadSet
-      have hv₀_filt : v₀ ∈ (internalVertices τ).filter
-          (fun v => decide (a < v) && decide (v < b)) := by
-        exact List.mem_toFinset.mp (Finset.min'_mem _ _)
-      have hv₀_int : v₀ ∈ internalVertices τ :=
-        (List.mem_filter.mp hv₀_filt).1
-      have hav₀ : a < v₀ := by
-        have := (List.mem_filter.mp hv₀_filt).2
-        simp only [Bool.and_eq_true, decide_eq_true_eq] at this; exact this.1
-      have hv₀b : v₀ < b := by
-        have := (List.mem_filter.mp hv₀_filt).2
-        simp only [Bool.and_eq_true, decide_eq_true_eq] at this; exact this.2
-      have hv₀_min : ∀ w ∈ internalVertices τ, a < w → w < b → v₀ ≤ w := by
-        intro w hw haw hwb
-        have hw_filt : w ∈ (internalVertices τ).filter
-            (fun v => decide (a < v) && decide (v < b)) :=
-          List.mem_filter.mpr ⟨hw, by simp [haw, hwb]⟩
-        exact Finset.min'_le _ _
-          (List.mem_toFinset.mpr hw_filt)
+      obtain ⟨v₀, hv₀_int, hav₀, hv₀b, hv₀_min⟩ := exists_min_bad_vertex hBad
       -- x_{v₀} divides monomial d_q (from coverage, third clause)
       have hcov_v₀ := (hCov v₀ hv₀_int).2.2 hav₀ hv₀b
       -- Use x-telescope: x_{v₀} * fij a b = x_a * fij v₀ b + x_b * fij a v₀
@@ -895,32 +921,7 @@ theorem isRemainder_fij_of_covered_walk_y (G : SimpleGraph V) :
     intro a b τ d_q hlen hab hHead hLast hND hWalk hCov
     by_cases hBad : ∃ v ∈ internalVertices τ, a < v ∧ v < b
     · -- Bad vertex case: y-telescope split at maximum v₀ ∈ (a, b)
-      obtain ⟨v₀_raw, hv₀_raw_int, hav₀_raw, hv₀_rawb⟩ := hBad
-      have hBadSet :
-          ((internalVertices τ).filter
-            (fun v => decide (a < v) && decide (v < b))).toFinset.Nonempty := by
-        refine ⟨v₀_raw, List.mem_toFinset.mpr
-          (List.mem_filter.mpr ⟨hv₀_raw_int, by simp [hav₀_raw, hv₀_rawb]⟩)⟩
-      set v₀ := ((internalVertices τ).filter
-        (fun v => decide (a < v) && decide (v < b))).toFinset.max' hBadSet
-      have hv₀_filt : v₀ ∈ (internalVertices τ).filter
-          (fun v => decide (a < v) && decide (v < b)) := by
-        exact List.mem_toFinset.mp (Finset.max'_mem _ _)
-      have hv₀_int : v₀ ∈ internalVertices τ :=
-        (List.mem_filter.mp hv₀_filt).1
-      have hav₀ : a < v₀ := by
-        have := (List.mem_filter.mp hv₀_filt).2
-        simp only [Bool.and_eq_true, decide_eq_true_eq] at this; exact this.1
-      have hv₀b : v₀ < b := by
-        have := (List.mem_filter.mp hv₀_filt).2
-        simp only [Bool.and_eq_true, decide_eq_true_eq] at this; exact this.2
-      have hv₀_max : ∀ w ∈ internalVertices τ, a < w → w < b → w ≤ v₀ := by
-        intro w hw haw hwb
-        have hw_filt : w ∈ (internalVertices τ).filter
-            (fun v => decide (a < v) && decide (v < b)) :=
-          List.mem_filter.mpr ⟨hw, by simp [haw, hwb]⟩
-        exact Finset.le_max' _ _
-          (List.mem_toFinset.mpr hw_filt)
+      obtain ⟨v₀, hv₀_int, hav₀, hv₀b, hv₀_max⟩ := exists_max_bad_vertex hBad
       -- y_{v₀} divides monomial d_q (from coverage, third clause)
       have hcov_v₀ := (hCov v₀ hv₀_int).2.2 hav₀ hv₀b
       -- Use y-telescope: y v₀ * fij a b = y b * fij a v₀ + y a * fij v₀ b
@@ -1354,29 +1355,7 @@ theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
     -- Case split: is there a "bad" vertex v ∈ (a, b) among internal vertices?
     by_cases hBad : ∃ v ∈ internalVertices τ, a < v ∧ v < b
     · -- Bad vertex case: pick minimum bad vertex v₀
-      obtain ⟨v₀_raw, hv₀_raw_int, hav₀_raw, hv₀_rawb⟩ := hBad
-      have hBadSet : ((internalVertices τ).filter
-          (fun v => decide (a < v) && decide (v < b))).toFinset.Nonempty := by
-        refine ⟨v₀_raw, List.mem_toFinset.mpr
-          (List.mem_filter.mpr ⟨hv₀_raw_int, by simp [hav₀_raw, hv₀_rawb]⟩)⟩
-      set v₀ := ((internalVertices τ).filter
-          (fun v => decide (a < v) && decide (v < b))).toFinset.min' hBadSet
-      have hv₀_filt : v₀ ∈ (internalVertices τ).filter
-          (fun v => decide (a < v) && decide (v < b)) := by
-        exact List.mem_toFinset.mp (Finset.min'_mem _ _)
-      have hv₀_int : v₀ ∈ internalVertices τ := (List.mem_filter.mp hv₀_filt).1
-      have hav₀ : a < v₀ := by
-        have := (List.mem_filter.mp hv₀_filt).2
-        simp only [Bool.and_eq_true, decide_eq_true_eq] at this; exact this.1
-      have hv₀b : v₀ < b := by
-        have := (List.mem_filter.mp hv₀_filt).2
-        simp only [Bool.and_eq_true, decide_eq_true_eq] at this; exact this.2
-      have hv₀_min : ∀ w ∈ internalVertices τ, a < w → w < b → v₀ ≤ w := by
-        intro w hw haw hwb
-        have hw_filt : w ∈ (internalVertices τ).filter
-            (fun v => decide (a < v) && decide (v < b)) :=
-          List.mem_filter.mpr ⟨hw, by simp [haw, hwb]⟩
-        exact Finset.min'_le _ _ (List.mem_toFinset.mpr hw_filt)
+      obtain ⟨v₀, hv₀_int, hav₀, hv₀b, _hv₀_min⟩ := exists_min_bad_vertex hBad
       -- Coverage at v₀: d_q(inl v₀) ≥ 1 or d_q(inr v₀) ≥ 1
       have hcov_v₀ := hCov v₀ hv₀_int
       -- Sub-walk extractions via shared helpers
