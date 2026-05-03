@@ -601,6 +601,32 @@ lemma ne_getLast?_of_internal {l : List V} {b v : V} (hnd : l.Nodup)
   have hne : l ≠ [] := by intro h; simp [h, internalVertices] at hv
   exact (getLast_of_getLast? hLast) ▸ internal_ne_getLast hnd hv hne
 
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
+/-- An internal vertex is a list element. -/
+private lemma mem_of_mem_internalVertices {l : List V} {v : V}
+    (h : v ∈ internalVertices l) : v ∈ l :=
+  (List.tail_sublist l).mem ((List.dropLast_sublist _).mem h)
+
+omit [LinearOrder V] [DecidableEq V] [Fintype V] in
+/-- `v ∈ l`, `v ≠ head`, `v ≠ getLast` ⇒ `v ∈ internalVertices l`. -/
+lemma mem_internalVertices_of_ne {l : List V} {v : V}
+    (hnd : l.Nodup) (hv : v ∈ l) (hne : l ≠ [])
+    (hnh : v ≠ l.head hne) (hnl : v ≠ l.getLast hne) :
+    v ∈ internalVertices l := by
+  simp only [internalVertices]
+  cases l with
+  | nil => exact absurd rfl hne
+  | cons x rest =>
+    simp only [List.head_cons] at hnh
+    simp only [List.tail_cons]
+    have hv_rest : v ∈ rest := (List.mem_cons.mp hv).resolve_left hnh
+    cases rest with
+    | nil => exact absurd hv_rest (List.not_mem_nil)
+    | cons y rest' =>
+      have := List.getLast_cons (List.cons_ne_nil y rest') (a := x)
+      rw [this] at hnl
+      exact List.mem_dropLast_of_mem_of_ne_getLast hv_rest hnl
+
 /-! ## Finsupp evaluation helpers for shifted-monomial coordinates -/
 
 omit [LinearOrder V] [Fintype V] in
@@ -970,24 +996,10 @@ theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
     · -- No bad vertices: extract admissible path directly
       push_neg at hBad
       have hne_τ : τ ≠ [] := fun h => by simp [h] at hHead
-      -- Helper: v ∈ τ, v ≠ head, v ≠ last → v ∈ internalVertices τ
       have mem_internal : ∀ v ∈ τ, v ≠ a → v ≠ b → v ∈ internalVertices τ := by
         intro v hv hva hvb
-        simp only [internalVertices]
-        match τ, hHead, hLast, hND, hv, hne_τ with
-        | a' :: rest, hH, hL, hN, hv', _ =>
-          simp only [List.head?_cons, Option.some.injEq] at hH; subst hH
-          simp only [List.tail_cons]
-          have hv_rest : v ∈ rest := (List.mem_cons.mp hv').resolve_left hva
-          have hrest_ne : rest ≠ [] := List.ne_nil_of_mem hv_rest
-          refine List.mem_dropLast_of_mem_of_ne_getLast hv_rest
-            (fun heq => hvb ?_)
-          have hlast_eq := List.getLast_cons hrest_ne (a := a')
-          have hb : (a' :: rest).getLast
-              (List.cons_ne_nil a' rest) = b :=
-            Option.some.inj ((List.getLast?_eq_some_getLast
-              (List.cons_ne_nil a' rest)).symm.trans hL)
-          rw [heq, ← hlast_eq, hb]
+        exact mem_internalVertices_of_ne hND hv hne_τ
+          (by rwa [head_of_head? hHead]) (by rwa [getLast_of_getLast? hLast])
       have hVtx :
           ∀ v ∈ τ, v = a ∨ v = b ∨ v < a ∨ b < v := by
         intro v hv
@@ -1015,45 +1027,10 @@ theorem isRemainder_fij_of_covered_walk (G : SimpleGraph V) :
       have hσ_ne : σ ≠ [] := by intro h; simp [h] at hσ_head
       have hint_σ_τ : ∀ v ∈ internalVertices σ, v ∈ internalVertices τ := by
         intro v hv_int_σ
-        have hv_σ : v ∈ σ := (List.tail_sublist σ).mem ((List.dropLast_sublist _).mem hv_int_σ)
-        have hv_τ : v ∈ τ := hσ_sub.mem hv_σ
-        -- Use the admissibility vertex condition to show v ≠ a and v ≠ b
-        have hva : v ≠ a := by
-          intro heq
-          -- v = a: a ∈ internalVertices σ contradicts nodup (a is head of σ)
-          -- internalVertices σ ⊆ σ.tail, and a is the head.
-          -- If a ∈ tail, then a appears twice, contradicting nodup.
-          have hv_tail : v ∈ σ.tail := (List.dropLast_sublist _).mem hv_int_σ
-          rw [heq] at hv_tail
-          have : σ.head? = some a := hσ_head
-          match σ, this, hσ_nd with
-          | x :: rest, hh, hnd =>
-            simp only [List.head?_cons, Option.some.injEq] at hh
-            rw [hh] at hnd; exact (List.nodup_cons.mp hnd).1 hv_tail
-        have hvb : v ≠ b := by
-          intro heq
-          -- v = b: b ∈ internalVertices σ contradicts σ.Nodup (b is the last element)
-          -- internalVertices σ = σ.tail.dropLast, so b ∈ σ.tail.dropLast
-          -- But b = σ.getLast, and nodup prevents this.
-          rw [heq] at hv_int_σ
-          match σ, hσ_head, hσ_last, hσ_nd with
-          | x :: rest, hh, hl, hnd =>
-            simp only [internalVertices, List.tail_cons] at hv_int_σ
-            match rest, hv_int_σ with
-            | y :: rest', hv_dp =>
-              have hnd_rest := (List.nodup_cons.mp hnd).2
-              -- getLast (y :: rest') = b
-              have hb_last : (y :: rest').getLast (List.cons_ne_nil y rest') = b := by
-                simp only [List.getLast?_cons_cons] at hl
-                rw [List.getLast?_eq_some_getLast (List.cons_ne_nil y rest')] at hl
-                exact Option.some.inj hl
-              -- b ∈ dropLast contradicts nodup since b = getLast
-              have : (y :: rest').dropLast ++ [(y :: rest').getLast (List.cons_ne_nil y rest')] =
-                  y :: rest' := List.dropLast_append_getLast (List.cons_ne_nil y rest')
-              rw [← this] at hnd_rest
-              have hb_in_dp := hb_last ▸ hv_dp
-              exact (List.nodup_append.mp hnd_rest).2.2 _ hb_in_dp _ (List.Mem.head _) rfl
-        exact mem_internal v hv_τ hva hvb
+        have hv_τ : v ∈ τ := hσ_sub.mem (mem_of_mem_internalVertices hv_int_σ)
+        exact mem_internal v hv_τ
+          (ne_head?_of_internal hσ_nd hσ_head hv_int_σ)
+          (ne_getLast?_of_internal hσ_nd hσ_last hv_int_σ)
       have hdiv : d_σ ≤ d_q := by
         intro w
         rcases w with ⟨v⟩ | ⟨v⟩
@@ -1193,23 +1170,9 @@ theorem isRemainder_fij_of_covered_walk_y (G : SimpleGraph V) :
       have hne_τ : τ ≠ [] := fun h => by simp [h] at hHead
       have mem_internal : ∀ v ∈ τ, v ≠ a → v ≠ b → v ∈ internalVertices τ := by
         intro v hv hva hvb
-        simp only [internalVertices]
-        match τ, hHead, hLast, hND, hv, hne_τ with
-        | a' :: rest, hH, hL, hN, hv', _ =>
-          simp only [List.head?_cons, Option.some.injEq] at hH; subst hH
-          simp only [List.tail_cons]
-          have hv_rest : v ∈ rest := (List.mem_cons.mp hv').resolve_left hva
-          have hrest_ne : rest ≠ [] := List.ne_nil_of_mem hv_rest
-          refine List.mem_dropLast_of_mem_of_ne_getLast hv_rest
-            (fun heq => hvb ?_)
-          have hlast_eq := List.getLast_cons hrest_ne (a := a')
-          have hb : (a' :: rest).getLast
-              (List.cons_ne_nil a' rest) = b :=
-            Option.some.inj ((List.getLast?_eq_some_getLast
-              (List.cons_ne_nil a' rest)).symm.trans hL)
-          rw [heq, ← hlast_eq, hb]
-      have hVtx :
-          ∀ v ∈ τ, v = a ∨ v = b ∨ v < a ∨ b < v := by
+        exact mem_internalVertices_of_ne hND hv hne_τ
+          (by rwa [head_of_head? hHead]) (by rwa [getLast_of_getLast? hLast])
+      have hVtx : ∀ v ∈ τ, v = a ∨ v = b ∨ v < a ∨ b < v := by
         intro v hv
         rcases eq_or_ne v a with rfl | hva
         · exact Or.inl rfl
@@ -1369,32 +1332,6 @@ private lemma isChain_tail {r : V → V → Prop} {l : List V}
   | nil => exact .nil
   | singleton _ => exact .nil
   | cons_cons _ h2 => exact h2
-
-omit [LinearOrder V] [DecidableEq V] [Fintype V] in
-private lemma mem_of_mem_internalVertices {l : List V} {v : V}
-    (h : v ∈ internalVertices l) : v ∈ l :=
-  (List.tail_sublist l).mem ((List.dropLast_sublist _).mem h)
-
--- v ∈ l, v ≠ head, v ≠ getLast → v ∈ internalVertices l
-omit [LinearOrder V] [DecidableEq V] [Fintype V] in
-lemma mem_internalVertices_of_ne {l : List V} {v : V}
-    (hnd : l.Nodup) (hv : v ∈ l) (hne : l ≠ [])
-    (hnh : v ≠ l.head hne) (hnl : v ≠ l.getLast hne) :
-    v ∈ internalVertices l := by
-  simp only [internalVertices]
-  cases l with
-  | nil => exact absurd rfl hne
-  | cons x rest =>
-    simp only [List.head_cons] at hnh
-    simp only [List.tail_cons]
-    have hv_rest : v ∈ rest := (List.mem_cons.mp hv).resolve_left hnh
-    cases rest with
-    | nil => exact absurd hv_rest (List.not_mem_nil)
-    | cons y rest' =>
-      have := List.getLast_cons (List.cons_ne_nil y rest') (a := x)
-      rw [this] at hnl
-      exact List.mem_dropLast_of_mem_of_ne_getLast hv_rest hnl
-
 
 omit [DecidableEq V] in
 theorem isRemainder_fij_of_mixed_walk (G : SimpleGraph V) :
