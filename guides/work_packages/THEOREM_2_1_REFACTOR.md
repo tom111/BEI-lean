@@ -41,6 +41,10 @@ the original deferral.
   refactor.
 - Marked `[!]` in the original "Fat Single-Proof Refactor" table of
   `TODO.md` (item #11). This guide supersedes that skip note.
+- **Progress (2026-05-03):** Stages 1 and 2 landed.
+  File `BEI/GroebnerBasisSPolynomial.lean`: 1991 → 1718 LOC (−273 LOC).
+  `theorem_2_1` axioms unchanged. Stages 3-4 deferred (see "Remaining
+  work" below).
 
 ## Goal
 
@@ -226,6 +230,32 @@ canonical regression check.
 Revert with `git revert` of the specific stage commits. Each stage
 should be its own commit so individual stages can be rolled back
 independently. Do **not** force-push.
+
+## Remaining work (2026-05-03)
+
+Stages 1 and 2 are done. Two private helpers were added near the top of
+`BEI/GroebnerBasisSPolynomial.lean`:
+
+- `degree_monomial_mul_fij` — eliminates the 6-line
+  `degree (monomial Q 1 * fij a b) = ...` calculation that appeared
+  5×.
+- `cov_inr_or_inl_of_admissible_path` — eliminates the ~12-line
+  per-vertex coverage proof that appeared 24× across the eight
+  `isRemainder_fij_of_mixed_walk` lambda bodies in the Cases 2 & 3
+  same-component branch.
+
+The bonus side-fix: removing the redundant `import BEI.AxiomCheck` from
+`BEI.lean` broke the `BEI ↔ BEI.AxiomCheck` import cycle introduced in
+commit `0362f5e`. The lib glob still picks up `BEI.AxiomCheck`, so the
+`#guard_msgs` regression block still runs.
+
+Stage 3 (Cases 4 & 5 fold) is **not** yet attempted. The local
+`cov_inr_of_lt_i_π` / `cov_inl_of_gt_j` helpers in those cases would
+need lifting to module scope before a fold is feasible; that's a
+larger refactor than the per-leaf path-classification work that Stage
+1 covered. Stage 4 (single helper for the four `isRemainder_fij_of_mixed_walk`
+leaves) remains "highest-risk" per the original plan and was
+deliberately skipped.
 
 ## Methodology reminders (from `feedback_fat_proof_carving.md`)
 
