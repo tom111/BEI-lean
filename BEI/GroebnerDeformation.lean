@@ -420,22 +420,14 @@ private abbrev sumIdeal {n : ℕ} (G : SimpleGraph (Fin n)) : Ideal (DefRing n K
 def baseQuotEquiv {n : ℕ} (G : SimpleGraph (Fin n)) :
     MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ binomialEdgeIdeal (K := K) G ≃+*
     DefRing n K ⧸ sumIdeal (K := K) G := by
-  have h_inr : specOne (K := K) n (X (Sum.inr ())) = C (1 : K) := by
-    rw [specOne_X_inr]; simp
-  have hcomap : binomialEdgeIdeal (K := K) G ≤
-      Ideal.comap (baseInclude (K := K) n).toRingHom
-        (tildeJ (K := K) G ⊔ Ideal.span {tDef (K := K) n - C (1 : K)}) := by
-    have : (C (1 : K) : DefRing n K) = 1 := by simp
-    rw [this]
-    exact binomialEdgeIdeal_le_baseInclude_comap_sup G
+  have hC1 : (C (1 : K) : DefRing n K) = 1 := map_one _
   have heq : sumIdeal (K := K) G =
-      tildeJ (K := K) G ⊔ Ideal.span {tDef (K := K) n - C (1 : K)} := by
-    have : (C (1 : K) : DefRing n K) = 1 := by simp
-    rw [this]
+      tildeJ (K := K) G ⊔ Ideal.span {tDef (K := K) n - C (1 : K)} := by rw [hC1]
   rw [heq]
-  exact defRing_specialize_quotient G (1 : K) (binomialEdgeIdeal G)
-    (specOne (K := K) n)
-    (specOne_X_inl n) h_inr (tildeJ_specOne_eq G) hcomap
+  refine defRing_specialize_quotient G (1 : K) (binomialEdgeIdeal G)
+    (specOne (K := K) n) (specOne_X_inl n) ?_ (tildeJ_specOne_eq G) ?_
+  · rw [specOne_X_inr, ← map_one (C (R := K) (σ := BinomialEdgeVars (Fin n)))]
+  · rw [hC1]; exact binomialEdgeIdeal_le_baseInclude_comap_sup G
 
 /-! ## The `t = 0` quotient is `S ⧸ monomialInitialIdeal G`
 
@@ -497,22 +489,15 @@ induced by the splitting `specZero ∘ baseInclude = id`. -/
 def specZeroQuotEquiv {n : ℕ} (G : SimpleGraph (Fin n)) :
     MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G ≃+*
     DefRing n K ⧸ zeroSumIdeal (K := K) G := by
-  have h_inr : specZero (K := K) n (X (Sum.inr ())) = C (0 : K) := by
-    rw [specZero_X_inr]; simp
-  have hcomap : monomialInitialIdeal (K := K) G ≤
-      Ideal.comap (baseInclude (K := K) n).toRingHom
-        (tildeJ (K := K) G ⊔ Ideal.span {tDef (K := K) n - C (0 : K)}) := by
-    have : (C (0 : K) : DefRing n K) = 0 := by simp
-    rw [this, sub_zero]
-    exact monomialInitialIdeal_le_baseInclude_comap_zeroSum G
+  have hC0 : (C (0 : K) : DefRing n K) = 0 := map_zero _
   have heq : zeroSumIdeal (K := K) G =
       tildeJ (K := K) G ⊔ Ideal.span {tDef (K := K) n - C (0 : K)} := by
-    have : (C (0 : K) : DefRing n K) = 0 := by simp
-    rw [this, sub_zero]
+    rw [hC0, sub_zero]
   rw [heq]
-  exact defRing_specialize_quotient G (0 : K) (monomialInitialIdeal G)
-    (specZero (K := K) n)
-    (specZero_X_inl n) h_inr (tildeJ_specZero_eq G) hcomap
+  refine defRing_specialize_quotient G (0 : K) (monomialInitialIdeal G)
+    (specZero (K := K) n) (specZero_X_inl n) ?_ (tildeJ_specZero_eq G) ?_
+  · rw [specZero_X_inr, ← map_zero (C (R := K) (σ := BinomialEdgeVars (Fin n)))]
+  · rw [hC0, sub_zero]; exact monomialInitialIdeal_le_baseInclude_comap_zeroSum G
 
 /-! ## `K[t]`-algebra structure on the deformation ring
 
