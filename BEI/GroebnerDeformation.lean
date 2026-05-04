@@ -214,6 +214,142 @@ private theorem tildeJ_specZero_eq {n : ℕ} (G : SimpleGraph (Fin n)) :
     rw [specZero_fijTilde i j hij]
     rfl
 
+/-! ## Generic specialisation: `S ⧸ J ≃+* S[t] ⧸ (Ĩ ⊔ span{t − c})`
+
+Both the `t = 1` and `t = 0` fibre identifications are specialisations of the
+same construction. Given a `K`-algebra map `specC : S[t] →ₐ S` sending each
+base variable to itself and `t` to a constant `c ∈ K`, together with the
+asymmetric "init-extraction" hypothesis that the source ideal `J` lies in
+the comap of `Ĩ ⊔ span{t − c}` under `baseInclude`, the splitting
+`specC ∘ baseInclude = id` produces a ring isomorphism
+
+  `MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ J ≃+* DefRing n K ⧸ (Ĩ ⊔ span{t − c})`.
+
+This section packages that construction once; the `t = 1` and `t = 0`
+sister fibres are then one-line specialisations. -/
+
+/-- The generic specialisation iso
+    `MvPolynomial _ ⧸ J ≃+* DefRing ⧸ (Ĩ ⊔ {t − C c})`,
+    induced by the splitting `specC ∘ baseInclude = id`.
+
+    The hypotheses encode that `specC` is a `K`-algebra map agreeing with the
+    base inclusion on `Sum.inl` variables, sending the deformation parameter
+    to `C c`, and pushing `tildeJ G` onto the source ideal `J`. The
+    fibre-specific `hJ_comap` witnesses the asymmetric "init-extraction"
+    direction. -/
+private def defRing_specialize_quotient
+    {n : ℕ} (G : SimpleGraph (Fin n)) (c : K)
+    (J : Ideal (MvPolynomial (BinomialEdgeVars (Fin n)) K))
+    (specC : DefRing n K →ₐ[K] MvPolynomial (BinomialEdgeVars (Fin n)) K)
+    (hSpecC_inl : ∀ v : BinomialEdgeVars (Fin n),
+        specC (X (Sum.inl v)) = (X v : MvPolynomial (BinomialEdgeVars (Fin n)) K))
+    (hSpecC_inr : specC (X (Sum.inr ())) = C c)
+    (hSpecC_J : Ideal.map specC.toRingHom (tildeJ (K := K) G) = J)
+    (hJ_comap : J ≤ Ideal.comap (baseInclude (K := K) n).toRingHom
+        (tildeJ (K := K) G ⊔ Ideal.span {tDef (K := K) n - C c})) :
+    MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ J ≃+*
+    DefRing n K ⧸ (tildeJ (K := K) G ⊔ Ideal.span {tDef (K := K) n - C c}) := by
+  -- Local abbreviation for the target sum ideal.
+  set Sum_id : Ideal (DefRing n K) :=
+    tildeJ (K := K) G ⊔ Ideal.span {tDef (K := K) n - C c} with hSum_def
+  -- Forward map: induced by `baseInclude`.
+  have hFwd_vanish : ∀ a ∈ J,
+      (Ideal.Quotient.mk Sum_id).comp (baseInclude (K := K) n).toRingHom a = 0 := by
+    intro a ha
+    have h := hJ_comap ha
+    rw [Ideal.mem_comap] at h
+    rw [RingHom.comp_apply, Ideal.Quotient.eq_zero_iff_mem]
+    exact h
+  let fwd : MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ J →+* DefRing n K ⧸ Sum_id :=
+    Ideal.Quotient.lift J
+      ((Ideal.Quotient.mk Sum_id).comp (baseInclude (K := K) n).toRingHom) hFwd_vanish
+  -- Backward map: induced by `specC`.
+  have hBwd_vanish : ∀ a ∈ Sum_id, (Ideal.Quotient.mk J).comp specC.toRingHom a = 0 := by
+    intro a ha
+    rw [RingHom.comp_apply, Ideal.Quotient.eq_zero_iff_mem]
+    rw [hSum_def, Submodule.mem_sup] at ha
+    obtain ⟨i, hi, j, hj, rfl⟩ := ha
+    rw [map_add]
+    refine Ideal.add_mem _ ?_ ?_
+    · have hmap : specC.toRingHom i ∈ Ideal.map specC.toRingHom (tildeJ G) :=
+        Ideal.mem_map_of_mem _ hi
+      rw [hSpecC_J] at hmap
+      exact hmap
+    · rw [Ideal.mem_span_singleton] at hj
+      obtain ⟨q, rfl⟩ := hj
+      have hCspecC : specC (C c : DefRing n K) = (C c : MvPolynomial _ K) := by
+        change specC (algebraMap K (DefRing n K) c) = _
+        rw [AlgHom.commutes]; rfl
+      have heq : specC.toRingHom ((tDef n - C c) * q) = 0 := by
+        rw [map_mul, map_sub]
+        change (specC (X (Sum.inr ())) - specC (C c)) * specC q = 0
+        rw [hSpecC_inr, hCspecC, sub_self, zero_mul]
+      rw [heq]
+      exact Ideal.zero_mem _
+  let bwd : DefRing n K ⧸ Sum_id →+* MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ J :=
+    Ideal.Quotient.lift Sum_id ((Ideal.Quotient.mk J).comp specC.toRingHom) hBwd_vanish
+  -- `specC ∘ baseInclude = id`.
+  have h_specC_baseInclude : ∀ p : MvPolynomial (BinomialEdgeVars (Fin n)) K,
+      specC ((baseInclude (K := K) n) p) = p := by
+    intro p
+    induction p using MvPolynomial.induction_on with
+    | C r =>
+      change specC ((baseInclude n) (C r)) = C r
+      rw [show (baseInclude (K := K) n) (C r) = C r from by simp [baseInclude]]
+      exact specC.commutes r
+    | add p q hp hq =>
+      change specC ((baseInclude n) (p + q)) = p + q
+      rw [map_add, map_add, hp, hq]
+    | mul_X p v ih =>
+      change specC ((baseInclude n) (p * X v)) = p * X v
+      rw [map_mul, map_mul, ih]
+      have h1 : (baseInclude (K := K) n) (X v) = X (Sum.inl v) := by simp [baseInclude]
+      rw [h1, hSpecC_inl]
+  -- Modulo `Sum_id`, every variable equals its `baseInclude ∘ specC` image.
+  have h_quot_var : ∀ v : DefVars n,
+      (Ideal.Quotient.mk Sum_id) ((baseInclude (K := K) n) (specC (X v))) =
+      (Ideal.Quotient.mk Sum_id) (X v) := by
+    rintro (v | u)
+    · rw [hSpecC_inl]
+      have h1 : (baseInclude (K := K) n) (X v) = X (Sum.inl v) := by simp [baseInclude]
+      rw [h1]
+    · have hu : u = () := by cases u; rfl
+      subst hu
+      rw [hSpecC_inr]
+      have h2 : (baseInclude (K := K) n) (C c : MvPolynomial _ K) = C c := by simp [baseInclude]
+      rw [h2, Ideal.Quotient.eq]
+      change (C c : DefRing n K) - tDef n ∈ Sum_id
+      have hmem : (C c : DefRing n K) - tDef n = -(tDef n - C c) := by ring
+      rw [hmem]
+      apply (Ideal.neg_mem_iff _).mpr
+      rw [hSum_def]
+      apply Ideal.mem_sup_right
+      exact Ideal.subset_span (Set.mem_singleton _)
+  -- bwd ∘ fwd = id.
+  have h_bwd_fwd : bwd.comp fwd = RingHom.id _ := by
+    apply Ideal.Quotient.ringHom_ext
+    apply RingHom.ext
+    intro p
+    change (Ideal.Quotient.mk J) (specC ((baseInclude n) p)) = (Ideal.Quotient.mk J) p
+    rw [h_specC_baseInclude p]
+  -- fwd ∘ bwd = id.
+  have h_fwd_bwd : fwd.comp bwd = RingHom.id _ := by
+    apply Ideal.Quotient.ringHom_ext
+    apply RingHom.ext
+    intro p
+    change (Ideal.Quotient.mk Sum_id) ((baseInclude n) (specC p)) =
+        (Ideal.Quotient.mk Sum_id) p
+    induction p using MvPolynomial.induction_on with
+    | C r =>
+      have h1 : specC (C r) = C r := specC.commutes r
+      have h2 : (baseInclude (K := K) n) (C r) = C r := by simp [baseInclude]
+      rw [h1, h2]
+    | add p q hp hq =>
+      rw [map_add, map_add, map_add, hp, hq, map_add]
+    | mul_X p v ih =>
+      rw [map_mul, map_mul, map_mul, ih, h_quot_var v, ← map_mul]
+  exact RingEquiv.ofRingHom fwd bwd h_fwd_bwd h_bwd_fwd
+
 /-! ## Identification of `S ⧸ J_G` with the `t = 1` quotient of `S[t] ⧸ Ĩ` -/
 
 /-- The base inclusion `S → S[t]` followed by `mk_{Ĩ ⊔ (t-1)}` factors through
@@ -275,165 +411,36 @@ private lemma binomialEdgeIdeal_le_baseInclude_comap_sup
       Ideal.mul_mem_right _ _ ht1
     exact Ideal.mul_mem_right _ _ h1
 
-/-! ## The `t = 1` quotient is `S ⧸ J_G` -/
-
-section BaseQuotEquiv
-
-variable {n : ℕ} (G : SimpleGraph (Fin n))
-
-/-- Abbreviation for the target sup ideal. -/
-private abbrev sumIdeal : Ideal (DefRing n K) :=
+/-- Abbreviation for the `t = 1` sup ideal. -/
+private abbrev sumIdeal {n : ℕ} (G : SimpleGraph (Fin n)) : Ideal (DefRing n K) :=
   tildeJ (K := K) G ⊔ Ideal.span {tDef (K := K) n - 1}
-
-/-- The composition `(mk (Ĩ ⊔ {t-1})) ∘ baseInclude` vanishes on `binomialEdgeIdeal G`. -/
-private lemma baseInclude_quot_vanishes (a : MvPolynomial (BinomialEdgeVars (Fin n)) K)
-    (ha : a ∈ binomialEdgeIdeal (K := K) G) :
-    (Ideal.Quotient.mk (sumIdeal (K := K) G)).comp (baseInclude (K := K) n).toRingHom a = 0 := by
-  have h := binomialEdgeIdeal_le_baseInclude_comap_sup (K := K) G ha
-  rw [Ideal.mem_comap] at h
-  rw [RingHom.comp_apply, Ideal.Quotient.eq_zero_iff_mem]
-  exact h
-
-/-- Forward map of the iso, induced by `baseInclude`. -/
-def baseQuotForward :
-    MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ binomialEdgeIdeal (K := K) G →+*
-    DefRing n K ⧸ sumIdeal (K := K) G :=
-  Ideal.Quotient.lift (binomialEdgeIdeal (K := K) G)
-    ((Ideal.Quotient.mk (sumIdeal (K := K) G)).comp (baseInclude (K := K) n).toRingHom)
-    (baseInclude_quot_vanishes G)
-
-/-- The composition `(mk J_G) ∘ specOne` vanishes on the sup ideal. -/
-private lemma specOne_quot_vanishes (a : DefRing n K)
-    (ha : a ∈ sumIdeal (K := K) G) :
-    (Ideal.Quotient.mk (binomialEdgeIdeal (K := K) G)).comp
-      (specOne (K := K) n).toRingHom a = 0 := by
-  rw [RingHom.comp_apply, Ideal.Quotient.eq_zero_iff_mem]
-  rw [Submodule.mem_sup] at ha
-  obtain ⟨i, hi, j, hj, rfl⟩ := ha
-  rw [map_add]
-  refine Ideal.add_mem _ ?_ ?_
-  · -- specOne i ∈ Ideal.map specOne (tildeJ G) = binomialEdgeIdeal G
-    have hmap : (specOne (K := K) n).toRingHom i ∈
-        Ideal.map (specOne (K := K) n).toRingHom (tildeJ G) :=
-      Ideal.mem_map_of_mem _ hi
-    rw [tildeJ_specOne_eq] at hmap
-    exact hmap
-  · -- specOne(q*(t-1)) = specOne(q) * 0 = 0
-    rw [Ideal.mem_span_singleton] at hj
-    obtain ⟨q, rfl⟩ := hj
-    have heq : (specOne (K := K) n).toRingHom ((tDef n - 1) * q) = 0 := by
-      rw [map_mul, map_sub]
-      change ((specOne n) (X (Sum.inr ())) - (specOne n) 1) * (specOne n) q = 0
-      rw [specOne_X_inr, map_one, sub_self, zero_mul]
-    rw [heq]
-    exact Ideal.zero_mem _
-
-/-- Backward map of the iso, induced by `specOne`. -/
-def baseQuotBackward :
-    DefRing n K ⧸ sumIdeal (K := K) G →+*
-    MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ binomialEdgeIdeal (K := K) G :=
-  Ideal.Quotient.lift (sumIdeal (K := K) G)
-    ((Ideal.Quotient.mk (binomialEdgeIdeal (K := K) G)).comp (specOne (K := K) n).toRingHom)
-    (specOne_quot_vanishes G)
-
-/-- `specOne ∘ baseInclude = identity` on `MvPolynomial (BinomialEdgeVars (Fin n)) K`. -/
-private lemma specOne_baseInclude (p : MvPolynomial (BinomialEdgeVars (Fin n)) K) :
-    (specOne (K := K) n) ((baseInclude (K := K) n) p) = p := by
-  induction p using MvPolynomial.induction_on with
-  | C r =>
-    change (specOne n) ((baseInclude n) (C r)) = C r
-    rw [show (baseInclude (K := K) n) (C r) = C r from by simp [baseInclude],
-        show (specOne (K := K) n) (C r) = C r from by simp [specOne]]
-  | add p q hp hq =>
-    change (specOne n) ((baseInclude n) (p + q)) = p + q
-    rw [map_add, map_add, hp, hq]
-  | mul_X p v ih =>
-    change (specOne n) ((baseInclude n) (p * X v)) = p * X v
-    rw [map_mul, map_mul, ih]
-    have h1 : (baseInclude (K := K) n) (X v) = X (Sum.inl v) := by
-      simp [baseInclude]
-    rw [h1, specOne_X_inl]
-
-/-- Backward composed with forward equals identity (on the quotient). -/
-private lemma baseQuotBackward_baseQuotForward :
-    (baseQuotBackward (K := K) G).comp (baseQuotForward (K := K) G) =
-      RingHom.id _ := by
-  apply Ideal.Quotient.ringHom_ext
-  apply RingHom.ext
-  intro p
-  change (Ideal.Quotient.mk (binomialEdgeIdeal G)) ((specOne n) ((baseInclude n) p)) =
-      (Ideal.Quotient.mk (binomialEdgeIdeal G)) p
-  rw [specOne_baseInclude]
-
-/-- Modulo the sum ideal, every variable equals its image under
-    `baseInclude ∘ specOne`. -/
-private lemma quot_baseInclude_specOne_X (v : DefVars n) :
-    (Ideal.Quotient.mk (sumIdeal (K := K) G))
-      ((baseInclude (K := K) n) ((specOne (K := K) n) (X v))) =
-    (Ideal.Quotient.mk (sumIdeal (K := K) G)) (X v) := by
-  rcases v with v | u
-  · -- Sum.inl v: specOne(X (Sum.inl v)) = X v, baseInclude(X v) = X (Sum.inl v).
-    rw [specOne_X_inl]
-    have h1 : (baseInclude (K := K) n) (X v) = X (Sum.inl v) := by simp [baseInclude]
-    rw [h1]
-  · -- Sum.inr u: specOne(X (Sum.inr u)) = 1, baseInclude(1) = 1.
-    -- Need 1 ≡ X (Sum.inr u) (i.e. tDef n) modulo {t - 1}.
-    have hu : u = () := by cases u; rfl
-    subst hu
-    rw [specOne_X_inr, map_one, Ideal.Quotient.eq]
-    change (1 : DefRing n K) - tDef n ∈ sumIdeal G
-    have hmem : (1 : DefRing n K) - tDef n = -(tDef n - 1) := by ring
-    rw [hmem]
-    apply (Ideal.neg_mem_iff _).mpr
-    apply Ideal.mem_sup_right
-    exact Ideal.subset_span (Set.mem_singleton _)
-
-/-- Forward composed with backward equals identity (on the quotient). -/
-private lemma baseQuotForward_baseQuotBackward :
-    (baseQuotForward (K := K) G).comp (baseQuotBackward (K := K) G) =
-      RingHom.id _ := by
-  apply Ideal.Quotient.ringHom_ext
-  apply RingHom.ext
-  intro p
-  change (Ideal.Quotient.mk (sumIdeal G))
-    ((baseInclude n) ((specOne n) p)) =
-      (Ideal.Quotient.mk (sumIdeal G)) p
-  induction p using MvPolynomial.induction_on with
-  | C r =>
-    have h1 : (specOne (K := K) n) (C r) = C r := by simp [specOne]
-    have h2 : (baseInclude (K := K) n) (C r) = C r := by simp [baseInclude]
-    rw [h1, h2]
-  | add p q hp hq =>
-    rw [map_add, map_add, map_add, hp, hq, map_add]
-  | mul_X p v ih =>
-    rw [map_mul, map_mul, map_mul, ih, quot_baseInclude_specOne_X, ← map_mul]
 
 /-- The ring iso `MvPolynomial _ ⧸ J_G ≃+* DefRing ⧸ (Ĩ ⊔ {t-1})` induced by
     the splitting `specOne ∘ baseInclude = id`. -/
-def baseQuotEquiv :
+def baseQuotEquiv {n : ℕ} (G : SimpleGraph (Fin n)) :
     MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ binomialEdgeIdeal (K := K) G ≃+*
-    DefRing n K ⧸ sumIdeal (K := K) G :=
-  RingEquiv.ofRingHom
-    (baseQuotForward (K := K) G) (baseQuotBackward (K := K) G)
-    (baseQuotForward_baseQuotBackward (K := K) G)
-    (baseQuotBackward_baseQuotForward (K := K) G)
-
-end BaseQuotEquiv
+    DefRing n K ⧸ sumIdeal (K := K) G := by
+  have h_inr : specOne (K := K) n (X (Sum.inr ())) = C (1 : K) := by
+    rw [specOne_X_inr]; simp
+  have hcomap : binomialEdgeIdeal (K := K) G ≤
+      Ideal.comap (baseInclude (K := K) n).toRingHom
+        (tildeJ (K := K) G ⊔ Ideal.span {tDef (K := K) n - C (1 : K)}) := by
+    have : (C (1 : K) : DefRing n K) = 1 := by simp
+    rw [this]
+    exact binomialEdgeIdeal_le_baseInclude_comap_sup G
+  have heq : sumIdeal (K := K) G =
+      tildeJ (K := K) G ⊔ Ideal.span {tDef (K := K) n - C (1 : K)} := by
+    have : (C (1 : K) : DefRing n K) = 1 := by simp
+    rw [this]
+  rw [heq]
+  exact defRing_specialize_quotient G (1 : K) (binomialEdgeIdeal G)
+    (specOne (K := K) n)
+    (specOne_X_inl n) h_inr (tildeJ_specOne_eq G) hcomap
 
 /-! ## The `t = 0` quotient is `S ⧸ monomialInitialIdeal G`
 
-Parallel to `BaseQuotEquiv`, but for the `t = 0` specialization. The sum
-ideal here is `tildeJ G ⊔ span{tDef n}`; modulo this, the class of `tDef n`
-is zero, so `specZero` serves as the backward map and its composition with
-`baseInclude` equals the identity. -/
-
-section SpecZeroQuotEquiv
-
-variable {n : ℕ} (G : SimpleGraph (Fin n))
-
-/-- Abbreviation for the `t = 0` sum ideal. -/
-private abbrev zeroSumIdeal : Ideal (DefRing n K) :=
-  tildeJ (K := K) G ⊔ Ideal.span {tDef (K := K) n}
+Parallel to the `t = 1` case, but for the `t = 0` specialisation. The sum
+ideal here is `tildeJ G ⊔ span{tDef n}`. -/
 
 /-- The generator `x_i · y_j` of `monomialInitialIdeal G` lifts into
 `tildeJ G ⊔ span{tDef n}` under `baseInclude`, because
@@ -443,9 +450,11 @@ private abbrev zeroSumIdeal : Ideal (DefRing n K) :=
 
 The first summand lies in `tildeJ G`; the second (with `j - i ≥ 1`) lies in
 `span{tDef n}`. -/
-private lemma monomialInitialIdeal_le_baseInclude_comap_zeroSum :
+private lemma monomialInitialIdeal_le_baseInclude_comap_zeroSum
+    {n : ℕ} (G : SimpleGraph (Fin n)) :
     monomialInitialIdeal (K := K) G ≤
-      Ideal.comap (baseInclude (K := K) n).toRingHom (zeroSumIdeal (K := K) G) := by
+      Ideal.comap (baseInclude (K := K) n).toRingHom
+        (tildeJ (K := K) G ⊔ Ideal.span {tDef (K := K) n}) := by
   rw [monomialInitialIdeal, Ideal.span_le]
   rintro p ⟨i, j, hadj, hij, rfl⟩
   rw [SetLike.mem_coe, Ideal.mem_comap]
@@ -479,143 +488,31 @@ private lemma monomialInitialIdeal_le_baseInclude_comap_zeroSum :
     refine Ideal.mul_mem_right _ _ ?_
     exact Ideal.subset_span (Set.mem_singleton _)
 
-/-- The composition `(mk (zeroSumIdeal)) ∘ baseInclude` vanishes on
-`monomialInitialIdeal G`. -/
-private lemma baseInclude_quot_vanishes_zero (a : MvPolynomial (BinomialEdgeVars (Fin n)) K)
-    (ha : a ∈ monomialInitialIdeal (K := K) G) :
-    (Ideal.Quotient.mk (zeroSumIdeal (K := K) G)).comp
-      (baseInclude (K := K) n).toRingHom a = 0 := by
-  have h := monomialInitialIdeal_le_baseInclude_comap_zeroSum (K := K) G ha
-  rw [Ideal.mem_comap] at h
-  rw [RingHom.comp_apply, Ideal.Quotient.eq_zero_iff_mem]
-  exact h
-
-/-- Forward map: induced by `baseInclude` through the `S / monomialInitialIdeal`
-quotient. -/
-def specZeroQuotForward :
-    MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G →+*
-    DefRing n K ⧸ zeroSumIdeal (K := K) G :=
-  Ideal.Quotient.lift (monomialInitialIdeal (K := K) G)
-    ((Ideal.Quotient.mk (zeroSumIdeal (K := K) G)).comp (baseInclude (K := K) n).toRingHom)
-    (baseInclude_quot_vanishes_zero G)
-
-/-- The composition `(mk monomialInitialIdeal) ∘ specZero` vanishes on
-`tildeJ G ⊔ span{tDef n}`. -/
-private lemma specZero_quot_vanishes_zero (a : DefRing n K)
-    (ha : a ∈ zeroSumIdeal (K := K) G) :
-    (Ideal.Quotient.mk (monomialInitialIdeal (K := K) G)).comp
-      (specZero (K := K) n).toRingHom a = 0 := by
-  rw [RingHom.comp_apply, Ideal.Quotient.eq_zero_iff_mem]
-  rw [Submodule.mem_sup] at ha
-  obtain ⟨i, hi, j, hj, rfl⟩ := ha
-  rw [map_add]
-  refine Ideal.add_mem _ ?_ ?_
-  · have hmap : (specZero (K := K) n).toRingHom i ∈
-        Ideal.map (specZero (K := K) n).toRingHom (tildeJ G) :=
-      Ideal.mem_map_of_mem _ hi
-    rw [tildeJ_specZero_eq] at hmap
-    exact hmap
-  · -- specZero(q * tDef) = specZero(q) * 0 = 0
-    rw [Ideal.mem_span_singleton] at hj
-    obtain ⟨q, rfl⟩ := hj
-    have heq : (specZero (K := K) n).toRingHom (tDef n * q) = 0 := by
-      rw [map_mul]
-      change (specZero n) (X (Sum.inr ())) * (specZero n) q = 0
-      rw [specZero_X_inr, zero_mul]
-    rw [heq]
-    exact Ideal.zero_mem _
-
-/-- Backward map: induced by `specZero` through the
-`DefRing / zeroSumIdeal` quotient. -/
-def specZeroQuotBackward :
-    DefRing n K ⧸ zeroSumIdeal (K := K) G →+*
-    MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G :=
-  Ideal.Quotient.lift (zeroSumIdeal (K := K) G)
-    ((Ideal.Quotient.mk (monomialInitialIdeal (K := K) G)).comp
-      (specZero (K := K) n).toRingHom)
-    (specZero_quot_vanishes_zero G)
-
-/-- `specZero ∘ baseInclude = identity` on `S`. -/
-private lemma specZero_baseInclude (p : MvPolynomial (BinomialEdgeVars (Fin n)) K) :
-    (specZero (K := K) n) ((baseInclude (K := K) n) p) = p := by
-  induction p using MvPolynomial.induction_on with
-  | C r =>
-    change (specZero n) ((baseInclude n) (C r)) = C r
-    rw [show (baseInclude (K := K) n) (C r) = C r from by simp [baseInclude],
-        show (specZero (K := K) n) (C r) = C r from by simp [specZero]]
-  | add p q hp hq =>
-    change (specZero n) ((baseInclude n) (p + q)) = p + q
-    rw [map_add, map_add, hp, hq]
-  | mul_X p v ih =>
-    change (specZero n) ((baseInclude n) (p * X v)) = p * X v
-    rw [map_mul, map_mul, ih]
-    have h1 : (baseInclude (K := K) n) (X v) = X (Sum.inl v) := by
-      simp [baseInclude]
-    rw [h1, specZero_X_inl]
-
-/-- Modulo `zeroSumIdeal`, every variable equals its image under
-`baseInclude ∘ specZero`. The only nontrivial case is `X (Sum.inr ()) = tDef n`,
-which is directly in `span{tDef n}`. -/
-private lemma quot_baseInclude_specZero_X (v : DefVars n) :
-    (Ideal.Quotient.mk (zeroSumIdeal (K := K) G))
-      ((baseInclude (K := K) n) ((specZero (K := K) n) (X v))) =
-    (Ideal.Quotient.mk (zeroSumIdeal (K := K) G)) (X v) := by
-  rcases v with v | u
-  · rw [specZero_X_inl]
-    have h1 : (baseInclude (K := K) n) (X v) = X (Sum.inl v) := by simp [baseInclude]
-    rw [h1]
-  · have hu : u = () := by cases u; rfl
-    subst hu
-    rw [specZero_X_inr, map_zero, Ideal.Quotient.eq]
-    change (0 : DefRing n K) - tDef n ∈ zeroSumIdeal G
-    rw [zero_sub]
-    apply (Ideal.neg_mem_iff _).mpr
-    apply Ideal.mem_sup_right
-    exact Ideal.subset_span (Set.mem_singleton _)
-
-/-- Backward composed with forward equals identity. -/
-private lemma specZeroQuotBackward_specZeroQuotForward :
-    (specZeroQuotBackward (K := K) G).comp (specZeroQuotForward (K := K) G) =
-      RingHom.id _ := by
-  apply Ideal.Quotient.ringHom_ext
-  apply RingHom.ext
-  intro p
-  change (Ideal.Quotient.mk (monomialInitialIdeal G))
-      ((specZero n) ((baseInclude n) p)) =
-      (Ideal.Quotient.mk (monomialInitialIdeal G)) p
-  rw [specZero_baseInclude]
-
-/-- Forward composed with backward equals identity. -/
-private lemma specZeroQuotForward_specZeroQuotBackward :
-    (specZeroQuotForward (K := K) G).comp (specZeroQuotBackward (K := K) G) =
-      RingHom.id _ := by
-  apply Ideal.Quotient.ringHom_ext
-  apply RingHom.ext
-  intro p
-  change (Ideal.Quotient.mk (zeroSumIdeal G))
-      ((baseInclude n) ((specZero n) p)) =
-      (Ideal.Quotient.mk (zeroSumIdeal G)) p
-  induction p using MvPolynomial.induction_on with
-  | C r =>
-    have h1 : (specZero (K := K) n) (C r) = C r := by simp [specZero]
-    have h2 : (baseInclude (K := K) n) (C r) = C r := by simp [baseInclude]
-    rw [h1, h2]
-  | add p q hp hq =>
-    rw [map_add, map_add, map_add, hp, hq, map_add]
-  | mul_X p v ih =>
-    rw [map_mul, map_mul, map_mul, ih, quot_baseInclude_specZero_X, ← map_mul]
+/-- Abbreviation for the `t = 0` sup ideal. -/
+private abbrev zeroSumIdeal {n : ℕ} (G : SimpleGraph (Fin n)) : Ideal (DefRing n K) :=
+  tildeJ (K := K) G ⊔ Ideal.span {tDef (K := K) n}
 
 /-- The ring iso `S ⧸ monomialInitialIdeal G ≃+* DefRing ⧸ (Ĩ ⊔ span{t})`
 induced by the splitting `specZero ∘ baseInclude = id`. -/
-def specZeroQuotEquiv :
+def specZeroQuotEquiv {n : ℕ} (G : SimpleGraph (Fin n)) :
     MvPolynomial (BinomialEdgeVars (Fin n)) K ⧸ monomialInitialIdeal (K := K) G ≃+*
-    DefRing n K ⧸ zeroSumIdeal (K := K) G :=
-  RingEquiv.ofRingHom
-    (specZeroQuotForward (K := K) G) (specZeroQuotBackward (K := K) G)
-    (specZeroQuotForward_specZeroQuotBackward (K := K) G)
-    (specZeroQuotBackward_specZeroQuotForward (K := K) G)
-
-end SpecZeroQuotEquiv
+    DefRing n K ⧸ zeroSumIdeal (K := K) G := by
+  have h_inr : specZero (K := K) n (X (Sum.inr ())) = C (0 : K) := by
+    rw [specZero_X_inr]; simp
+  have hcomap : monomialInitialIdeal (K := K) G ≤
+      Ideal.comap (baseInclude (K := K) n).toRingHom
+        (tildeJ (K := K) G ⊔ Ideal.span {tDef (K := K) n - C (0 : K)}) := by
+    have : (C (0 : K) : DefRing n K) = 0 := by simp
+    rw [this, sub_zero]
+    exact monomialInitialIdeal_le_baseInclude_comap_zeroSum G
+  have heq : zeroSumIdeal (K := K) G =
+      tildeJ (K := K) G ⊔ Ideal.span {tDef (K := K) n - C (0 : K)} := by
+    have : (C (0 : K) : DefRing n K) = 0 := by simp
+    rw [this, sub_zero]
+  rw [heq]
+  exact defRing_specialize_quotient G (0 : K) (monomialInitialIdeal G)
+    (specZero (K := K) n)
+    (specZero_X_inl n) h_inr (tildeJ_specZero_eq G) hcomap
 
 /-! ## `K[t]`-algebra structure on the deformation ring
 
