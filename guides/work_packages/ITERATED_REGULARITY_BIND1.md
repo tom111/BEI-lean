@@ -2,10 +2,77 @@
 
 ## Status
 
-**Pre-investigation proposal.** Identified during the 2026-05-03
-bird's-eye review. Has not yet been confirmed by a read-only
-investigator. Stage 0 of the refactor plan below MUST start with
-such an investigation.
+**Stage 0 investigated 2026-05-04 → CLEAN ABORT.**
+The bind₁ rewrite is structurally a no-op for this file. See
+"Stage 0 outcome" section below. The actual leverage point is a
+*different* refactor (closed-form support helper for edge images),
+which is independent of bind₁ vs aeval.
+
+## Stage 0 outcome (2026-05-04)
+
+**Findings.**
+
+1. `diagSubstHom k = aeval (diagSubstFun k)` literally
+   (line 332-334 of `BEI/Equidim/IteratedRegularity.lean`).
+   By `MvPolynomial.aeval_eq_bind₁`, `diagSubstHom k = bind₁ (diagSubstFun k)`
+   is a one-line bridge — Stage 1 would be trivial.
+
+2. Audit of the 25 occurrences of the canonical simp pattern
+   `simp only [map_mul, AlgHom.toRingHom_eq_coe, AlgHom.coe_toRingHom,
+     diagSubstHom, MvPolynomial.aeval_X, diagSubstFun,
+     Sum.elim_inl, Sum.elim_inr]`
+   shows the rewrite would only swap `diagSubstHom`/`aeval_X`
+   for `diagSubstHom_eq_bind₁`/`bind₁_X_right`. Same simp-list
+   length, same number of tokens, same downstream `split_ifs`
+   on `b.val < k ∧ b.val + 1 < n`. **0 LOC saved per call.**
+
+3. The big bookkeeping helpers (`caseB_*`, `caseC_*`, `caseD_*`,
+   `isMonomial_map_diagSubstHom`, `support_divisible_by_generator`)
+   spend their bulk on:
+   - extracting edge data via `obtain ⟨a, b, hb, hadj, hab, rfl⟩`,
+   - computing the singleton support of `±X(inl a) * X(inl b)` or
+     `X(inl a) * X(inr b)` (the *result* of the simp),
+   - propagating exponent constraints through `Finsupp.single`
+     arithmetic.
+   None of this work is touched by `bind₁` rewrites — `bind₁` is
+   an `AlgHom` so `map_mul`/`map_neg`/`map_add` apply identically
+   to `aeval`. Mathlib has no `bind₁`-specific lemma for
+   `bind₁ f (X i * X j)` beyond what `map_mul + bind₁_X_right`
+   gives, which is exactly what `map_mul + aeval_X` already gives.
+
+4. **Cross-file impact**: `diagSubstHom` and `diagSubstFun` are
+   `private` to `IteratedRegularity` (verified with grep — no uses
+   in `BEI/Equidim/Bipartite.lean`, `BEI/Equidim.lean`, or any
+   other file). Refactor scope is purely file-local.
+
+**Decision.** The guide's negative-value rule (Stage 0 reveals
+"the bind₁ rewrites give marginal savings on small AND big
+bookkeeping → STOP, document with concrete LOC measurements,
+abort cleanly") fires here.
+
+**Where the actual win lives.**
+
+The 5–6 places in the file with the body
+```
+split_ifs with hcond
+· exact ⟨single (inl a) 1 + single (inl b) 1, by ...⟩  -- ~9 LOC
+· exact ⟨single (inl a) 1 + single (inr b) 1, by ...⟩  -- ~6 LOC
+```
+duplicate ~15 LOC each (lines 745-760, 911-929, 1273-1291,
+1903-1920, 2103-2117, 2228-2242). A single closed-form helper
+```
+private lemma diagSubstHom_edge_support_singleton
+    (k : ℕ) (a b : Fin n) :
+    ∃ e, ((diagSubstHom k).toRingHom (X (inl a) * X (inr b))).support ⊆ {e}
+```
+could replace ~75–90 LOC of duplication. **This is a separate
+refactor** — it is not the `bind₁` refactor proposed in this
+guide, and it is independent of whether `diagSubstHom` is
+implemented via `aeval` or `bind₁`. It belongs in a new guide
+("`IteratedRegularity`: extract `diagSubstHom` edge-image
+helpers") if pursued.
+
+**No commits made.** No edits made to `BEI/Equidim/IteratedRegularity.lean`.
 
 ## TL;DR
 
