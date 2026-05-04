@@ -13,8 +13,9 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 
 ## Active Work Packages
 
-Eight work packages remain queued for fresh-Claude dispatch from the
-ten identified during the 2026-05-03 bird's-eye review.
+Nine work packages remain queued for fresh-Claude dispatch — eight
+from the 2026-05-03 bird's-eye review plus one bonus finding spun
+out 2026-05-04 from the BIND1 Stage 0 abort.
 **Each is a pre-investigation proposal**: Stage 0 of every guide
 is a read-only investigation that confirms (or refutes) the
 saving estimate before committing to the refactor.
@@ -30,11 +31,15 @@ saving estimate before committing to the refactor.
   aeval (diagSubstFun k)` literally, but the `bind₁_X_right` rewrite
   is exactly the same length as the existing `aeval_X` simp pattern;
   the big helpers spend their bulk on Finsupp arithmetic *after* the
-  substitution is normalised. **Bonus finding**: a different refactor
-  — extracting `diagSubstHom_edge_support_singleton` to dedupe ~75–90
-  LOC across 5–6 sites — is independent of `bind₁` and worth its own
-  guide if pursued. See the guide's Status section for the full
-  Stage 0 record.
+  substitution is normalised. The actual leverage point — closed-form
+  edge-image support helper — is a separate refactor; see
+  EDGE_SUPPORT_HELPER below.
+- [work_packages/ITERATED_REGULARITY_EDGE_SUPPORT_HELPER.md](work_packages/ITERATED_REGULARITY_EDGE_SUPPORT_HELPER.md)
+  — extract `diagSubstHom_edge_support_singleton` to collapse 6
+  duplicated ~15-LOC bodies (lines 745–760, 911–929, 1273–1291,
+  1903–1920, 2103–2117, 2228–2242). ~75–90 LOC saving, low risk.
+  Spun out 2026-05-04 from the BIND1 Stage 0 abort. Independent of
+  `bind₁` vs `aeval`; no public statement changes.
 - [work_packages/ITERATED_REGULARITY_CORE_INNER.md](work_packages/ITERATED_REGULARITY_CORE_INNER.md)
   — extract a unified "stepwise NZD on quotient" lemma to
   `toMathlib/CohenMacaulay/Basic.lean`. ~150 LOC saving, medium–high
