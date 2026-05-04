@@ -2,10 +2,30 @@
 
 ## Status
 
-**Pre-investigation proposal.** Identified during the 2026-05-03
-bird's-eye review. Has not yet been confirmed by a read-only
-investigator. Stage 0 of the refactor plan below MUST start with
-such an investigation.
+**Done 2026-05-04.** Sister-fold landed in two commits:
+
+- `acad325` — Stage 1 + 2: extracted `defRing_specialize_quotient`
+  helper, rewired both `baseQuotEquiv` (t=1) and `specZeroQuotEquiv`
+  (t=0) as one-line specialisations. The shared helper takes
+  `(G, c, J, specC)` plus four hypotheses (specC's action on inl/inr
+  variables, image of `Ĩ` under specC, and the comap inclusion
+  `J ⊆ baseInclude⁻¹(Ĩ ⊔ span{t-Cc})`). The asymmetric
+  `binomialEdgeIdeal_le_baseInclude_comap_sup` (geom_sum identity) and
+  `monomialInitialIdeal_le_baseInclude_comap_zeroSum` (simpler `t^d`
+  divisibility) supply the per-fibre `hJ_comap` witnesses.
+  LOC: 2234 → 2131 (−103).
+- `b331b4e` — Stage 3: collapsed `(C 1 : DefRing) = 1` /
+  `(C 0 : DefRing) = 0` boilerplate into `map_one`/`map_zero`
+  one-liners and folded `hcomap`/`h_inr` haves into `refine` goal
+  slots. LOC: 2131 → 2116 (−15).
+
+**Total**: 2234 → 2116 (−118 LOC). All 11 `BEI.AxiomCheck`
+`#guard_msgs` blocks pass; full `lake build` clean.
+
+The asymmetric "init-extraction" hazard from §Risks turned out to be
+parameterisable cleanly: only the `hJ_comap` input differs between the
+two fibres (each is one private lemma), the rest of the construction
+shares the new helper.
 
 ## TL;DR
 
