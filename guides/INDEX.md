@@ -13,9 +13,8 @@ When a guide is completed or superseded, move it into `archive/`. Do not delete 
 
 ## Active Work Packages
 
-Ten work packages are now queued for fresh-Claude dispatch, all
-identified during the 2026-05-03 bird's-eye review of the three
-biggest files in the repo (after the 13-carve fat-proof pass).
+Eight work packages remain queued for fresh-Claude dispatch from the
+ten identified during the 2026-05-03 bird's-eye review.
 **Each is a pre-investigation proposal**: Stage 0 of every guide
 is a read-only investigation that confirms (or refutes) the
 saving estimate before committing to the refactor.
@@ -27,20 +26,22 @@ saving estimate before committing to the refactor.
   combined). ~300 LOC saving, medium risk. The mixed_walk-style
   `Side` parameterisation playbook.
 - [work_packages/ITERATED_REGULARITY_BIND1.md](work_packages/ITERATED_REGULARITY_BIND1.md)
-  — replace `diagSubstHom k` with `MvPolynomial.bind₁` and ride
-  Mathlib's `bind₁` / `aeval` API. ~150–250 LOC saving,
-  low–medium risk. Mathlib-helper-hiding-in-plain-sight pattern.
+  — investigated 2026-05-04, **ABORTED** at Stage 0. `diagSubstHom k =
+  aeval (diagSubstFun k)` literally, but the `bind₁_X_right` rewrite
+  is exactly the same length as the existing `aeval_X` simp pattern;
+  the big helpers spend their bulk on Finsupp arithmetic *after* the
+  substitution is normalised. **Bonus finding**: a different refactor
+  — extracting `diagSubstHom_edge_support_singleton` to dedupe ~75–90
+  LOC across 5–6 sites — is independent of `bind₁` and worth its own
+  guide if pursued. See the guide's Status section for the full
+  Stage 0 record.
 - [work_packages/ITERATED_REGULARITY_CORE_INNER.md](work_packages/ITERATED_REGULARITY_CORE_INNER.md)
   — extract a unified "stepwise NZD on quotient" lemma to
   `toMathlib/CohenMacaulay/Basic.lean`. ~150 LOC saving, medium–high
   risk. Most speculative of the three IteratedRegularity proposals.
 
-### `BEI/GroebnerDeformation.lean` (2234 LOC)
+### `BEI/GroebnerDeformation.lean` (2116 LOC, post-fibre-fold)
 
-- [work_packages/GROEBNER_DEFORMATION_FIBER_FOLD.md](work_packages/GROEBNER_DEFORMATION_FIBER_FOLD.md)
-  — sister-fold the t=1 / t=0 fibre identifications (Sections 5–6,
-  401 LOC combined). ~100 LOC saving, medium risk. Uses the same
-  parameterised-specialisation pattern.
 - [work_packages/GROEBNER_DEFORMATION_GRADING.md](work_packages/GROEBNER_DEFORMATION_GRADING.md)
   — ride Mathlib's `MvPolynomial.IsWeightedHomogeneous` +
   `GradedAlgebra` / `HomogeneousIdeal` API for the 245-LOC grading
@@ -83,6 +84,15 @@ saving estimate before committing to the refactor.
   recorded failure mode and re-entry conditions.
 
 ### Recently-completed work packages
+
+The `GROEBNER_DEFORMATION_FIBER_FOLD` shipped 2026-05-04 in three
+stage commits via a worktree-isolated agent. Sister-fold of the t=1
+and t=0 fibre identifications in `BEI/GroebnerDeformation.lean` via
+a single `defRing_specialize_quotient (G c J specC …)` helper
+(8-arg signature, within the `>10 args / >25 LOC header` STOP
+threshold). Net: −118 LOC (2234 → 2116), above the 100-LOC estimate.
+`BEI.AxiomCheck` clean. Guide archived at
+[archive/GROEBNER_DEFORMATION_FIBER_FOLD.md](archive/GROEBNER_DEFORMATION_FIBER_FOLD.md).
 
 The Graded* family refactor — `toMathlib/GradedFiniteFree.lean` and
 `toMathlib/GradedRegularSop.lean` — shipped on 2026-05-03 across five
